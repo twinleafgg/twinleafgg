@@ -2,13 +2,11 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import {
-  ADD_CONFUSION_TO_PLAYER_ACTIVE,
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   BLOCK_IF_GX_ATTACK_USED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
@@ -82,14 +80,14 @@ export class PalossandGx extends PokemonCard {
 
       const deckTop = new CardList();
       const count = Math.min(13, opponent.deck.cards.length);
-      opponent.deck.moveTo(deckTop, count);
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: count, sourceCard: this });
 
       // Check if there are any Pokemon in the top cards
       const hasPokemon = deckTop.cards.some((c) => c.superType === SuperType.POKEMON);
 
       if (!hasPokemon) {
         // No Pokemon found, put everything back and shuffle
-        deckTop.moveTo(opponent.deck);
+        MOVE_CARDS(store, state, deckTop, opponent.deck, { sourceCard: this });
         SHUFFLE_DECK(store, state, opponent);
         return state;
       }
@@ -109,11 +107,11 @@ export class PalossandGx extends PokemonCard {
 
           // Discard selected Pokemon
           cards.forEach((card: Card) => {
-            deckTop.moveCardTo(card, opponent.discard);
+            MOVE_CARDS(store, state, deckTop, opponent.discard, { cards: [card], sourceCard: this });
           });
 
           // Put remaining cards back into opponent's deck
-          deckTop.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, deckTop, opponent.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
         },
       );

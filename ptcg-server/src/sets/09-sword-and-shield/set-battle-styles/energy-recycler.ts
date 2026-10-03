@@ -11,8 +11,13 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: EnergyRecycler, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: EnergyRecycler,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   let energyInDiscard: number = 0;
@@ -35,29 +40,32 @@ function* playCard(next: Function, store: StoreLike, state: State,
   effect.preventDefault = true;
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DECK,
-    player.discard,
-    { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-    { min: 1, max: 5, allowCancel: false }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DECK,
+      player.discard,
+      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+      { min: 1, max: 5, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   MOVE_CARDS(store, state, player.discard, player.deck, { cards, sourceCard: self });
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class EnergyRecycler extends TrainerCard {
-
   public regulationMark = 'E';
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BST';
 
@@ -69,8 +77,7 @@ export class EnergyRecycler extends TrainerCard {
 
   public fullName: string = 'Energy Recycler BST';
 
-  public text: string =
-    'Shuffle up to 5 basic Energy cards from your discard pile into your deck.';
+  public text: string = 'Shuffle up to 5 basic Energy cards from your discard pile into your deck.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -80,5 +87,4 @@ export class EnergyRecycler extends TrainerCard {
 
     return state;
   }
-
 }

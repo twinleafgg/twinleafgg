@@ -21,7 +21,7 @@ import {
 } from '../../../game';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LatiasPrismStar extends PokemonCard {
   protected _tags = [CardTag.PRISM_STAR];
@@ -87,7 +87,7 @@ export class LatiasPrismStar extends PokemonCard {
             (selected) => {
               const cards = selected || [];
               cards.forEach((card) => {
-                player.discard.moveCardTo(card, target);
+                MOVE_CARDS(store, state, player.discard, target, { cards: [card], sourceCard: this });
               });
             },
           );

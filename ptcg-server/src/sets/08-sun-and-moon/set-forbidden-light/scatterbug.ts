@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, GameMessage, GameError, ShowCa
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
-import { IS_ABILITY_BLOCKED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Scatterbug extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -89,7 +89,7 @@ export class Scatterbug extends PokemonCard {
             GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
             cards
           ), () => {
-            player.deck.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
           });
         }
 

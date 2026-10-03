@@ -15,13 +15,11 @@ import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 
-import {
-  AFTER_ATTACK,
+import {AFTER_ATTACK,
   BLOCK_IF_GX_ATTACK_USED,
   DAMAGE_OPPONENT_POKEMON,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 
 export class TapuFiniGX extends PokemonCard {
@@ -148,7 +146,7 @@ export class TapuFiniGX extends PokemonCard {
 
       opponent.active.clearEffects();
       opponent.active.damage = 0;
-      opponent.active.moveTo(opponent.deck);
+      MOVE_CARDS(store, state, opponent.active, opponent.deck, { sourceCard: this });
 
       SHUFFLE_DECK(store, state, opponent);
     }

@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ABILITY_USED, ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, BLOCK_IF_DECK_EMPTY, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, SHOW_CARDS_TO_PLAYER, USE_ABILITY_ONCE_PER_TURN, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, BLOCK_IF_DECK_EMPTY, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, SHOW_CARDS_TO_PLAYER, USE_ABILITY_ONCE_PER_TURN, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
@@ -54,7 +54,7 @@ export class Lapras extends PokemonCard {
 
       const count = Math.min(2, player.deck.cards.length);
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, count);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: count, sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, deckTop.cards);
 

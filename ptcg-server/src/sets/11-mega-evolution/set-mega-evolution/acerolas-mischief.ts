@@ -63,7 +63,7 @@ function* playCard(
 }
 
 export class AcerolasMischief extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'MEG';
   public regulationMark = 'I';
   public setNumber: string = '113';

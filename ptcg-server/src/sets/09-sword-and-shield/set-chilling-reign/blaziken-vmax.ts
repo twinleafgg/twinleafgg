@@ -18,7 +18,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class BlazikenVMAX extends PokemonCard {
@@ -117,7 +117,7 @@ export class BlazikenVMAX extends PokemonCard {
 
                 for (const transfer of transfers) {
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  player.discard.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
                 }
               },
             );

@@ -1,5 +1,5 @@
 import { Card } from '../../../game/store/card/card';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { EnergyType, SuperType, TrainerType } from '../../../game/store/card/card-types';
@@ -14,17 +14,23 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { GameError } from '../../../game';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: RoseannesBackup, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: RoseannesBackup,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
   let cards: Card[] = [];
 
-  const hasValidCard = player.discard.cards.some(c =>
-    c instanceof PokemonCard ||
-    (c instanceof TrainerCard && c.trainerType === TrainerType.TOOL) ||
-    (c instanceof TrainerCard && c.trainerType === TrainerType.STADIUM) ||
-    c.superType === SuperType.ENERGY
+  const hasValidCard = player.discard.cards.some(
+    (c) =>
+      c instanceof PokemonCard ||
+      (c instanceof TrainerCard && c.trainerType === TrainerType.TOOL) ||
+      (c instanceof TrainerCard && c.trainerType === TrainerType.STADIUM) ||
+      c.superType === SuperType.ENERGY,
   );
 
   if (!hasValidCard) {
@@ -37,7 +43,10 @@ function* playCard(next: Function, store: StoreLike, state: State,
     throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -72,44 +81,53 @@ function* playCard(next: Function, store: StoreLike, state: State,
   const maxBasicEnergies = Math.min(basicEnergies, 1);
   const maxSpecialEnergies = Math.min(specialEnergies, 1);
 
-  // Total max is sum of max for each 
+  // Total max is sum of max for each
   const count = maxPokemons + maxTools + maxStadiums + maxEnergies;
 
   // Pass max counts to prompt options
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_ONE_ITEM_AND_ONE_TOOL_TO_HAND,
-    player.discard,
-    {},
-    { min: 1, max: count, allowCancel: false, blocked, maxPokemons, maxTools, maxStadiums, maxEnergies, maxBasicEnergies, maxSpecialEnergies }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DECK,
+      player.discard,
+      {},
+      {
+        min: 1,
+        max: count,
+        allowCancel: false,
+        blocked,
+        maxPokemons,
+        maxTools,
+        maxStadiums,
+        maxEnergies,
+        maxBasicEnergies,
+        maxSpecialEnergies,
+      },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   MOVE_CARDS(store, state, player.discard, player.deck, { cards, sourceCard: self });
 
-
-  cards.forEach((card, index) => {
-    store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, { name: player.name, card: card.name });
-  });
-
   if (cards.length > 0) {
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => next(),
+    );
   }
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class RoseannesBackup extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BRS';
 
@@ -119,9 +137,9 @@ export class RoseannesBackup extends TrainerCard {
 
   public setNumber: string = '148';
 
-  public name: string = 'Roseanne\'s Backup';
+  public name: string = "Roseanne's Backup";
 
-  public fullName: string = 'Roseanne\'s Backup BRS';
+  public fullName: string = "Roseanne's Backup BRS";
 
   public text: string = `Choose 1 or more:
 
@@ -131,7 +149,6 @@ export class RoseannesBackup extends TrainerCard {
   • Shuffle an Energy card from your discard pile into your deck.`;
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, this, effect);
       return generator.next().value;
@@ -139,5 +156,4 @@ export class RoseannesBackup extends TrainerCard {
 
     return state;
   }
-
 }

@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Golduck extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -47,7 +47,7 @@ export class Golduck extends PokemonCard {
 
         effect.damage = cards.length * 60;
 
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
         return state;
 

@@ -1,22 +1,22 @@
-import { StoreLike, State, GameError, GameMessage, StateUtils, SelectPrompt, GameLog } from '../../../game';
+import { StoreLike, State, GameError, GameMessage, StateUtils, SelectPrompt } from '../../../game';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { MoveCardsEffect } from '../../../game/store/effects/game-effects';
-import { DRAW_UP_TO_X_CARDS, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {DRAW_UP_TO_X_CARDS, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class TeamGalacticsWager extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'MT';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '115';
-  public name: string = 'Team Galactic\'s Wager';
-  public fullName: string = 'Team Galactic\'s Wager MT';
-  public text = 'Each player shuffles his or her hand into his or her deck, and you and your opponent play "Rock-Paper-Scissors." The player who wins draws up to 6 cards. The player who loses draws up to 3 cards. (You draw your cards first.)';
+  public name: string = "Team Galactic's Wager";
+  public fullName: string = "Team Galactic's Wager MT";
+  public text =
+    'Each player shuffles his or her hand into his or her deck, and you and your opponent play "Rock-Paper-Scissors." The player who wins draws up to 6 cards. The player who loses draws up to 3 cards. (You draw your cards first.)';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
@@ -28,19 +28,25 @@ export class TeamGalacticsWager extends TrainerCard {
       }
 
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
-      const cards = player.hand.cards.filter(c => c !== this);
-      const opponentCards = opponent.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
+      const opponentCards = opponent.hand.cards.filter((c) => c !== this);
 
       if (cards.length === 0 && player.deck.cards.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const playerMoveEffect = new MoveCardsEffect(player.hand, player.deck, { cards, sourceCard: this });
+      const playerMoveEffect = new MoveCardsEffect(player.hand, player.deck, {
+        cards,
+        sourceCard: this,
+      });
       state = store.reduceEffect(state, playerMoveEffect);
 
-      const opponentMoveEffect = new MoveCardsEffect(opponent.hand, opponent.deck, { cards: opponentCards, sourceCard: this });
+      const opponentMoveEffect = new MoveCardsEffect(opponent.hand, opponent.deck, {
+        cards: opponentCards,
+        sourceCard: this,
+      });
       state = store.reduceEffect(state, opponentMoveEffect);
 
       SHUFFLE_DECK(store, state, player);
@@ -53,7 +59,7 @@ export class TeamGalacticsWager extends TrainerCard {
       const options = [
         { value: 'Rock', message: 'Rock' },
         { value: 'Paper', message: 'Paper' },
-        { value: 'Scissors', message: 'Scissors' }
+        { value: 'Scissors', message: 'Scissors' },
       ];
 
       // Default to player losing
@@ -76,9 +82,6 @@ export class TeamGalacticsWager extends TrainerCard {
         // variable time
         const playerChosenValue = results[0];
         const opponentChosenValue = results[1];
-        // outputting what both players chose
-        store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: player.name, string: options[playerChosenValue].message });
-        store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: opponent.name, string: options[opponentChosenValue].message });
         // if they tie, restart it
         if (playerChosenValue === opponentChosenValue) { return this.reduceEffect(store, state, effect); }
 
@@ -97,8 +100,6 @@ export class TeamGalacticsWager extends TrainerCard {
           DRAW_UP_TO_X_CARDS(store, state, opponent, maxOpponentDraw);
         }
       });
-
-
 
     }
 

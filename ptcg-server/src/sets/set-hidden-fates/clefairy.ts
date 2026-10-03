@@ -4,7 +4,7 @@
 
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../game/store/card/card-types';
-import { StoreLike, State, GameMessage, ChooseCardsPrompt, GameLog, StateUtils } from '../../game';
+import { StoreLike, State, GameMessage, ChooseCardsPrompt, StateUtils } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../game/store/prefabs/prefabs';
 
@@ -57,9 +57,6 @@ export class Clefairy extends PokemonCard {
           ), selected => {
             const cards = selected || [];
             if (cards.length > 0) {
-              cards.forEach(card => {
-                store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-              });
               SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
               MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: this });
             }

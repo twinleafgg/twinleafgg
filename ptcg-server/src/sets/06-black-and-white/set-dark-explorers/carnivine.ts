@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChoosePokemonPrompt, GameMessage, StateUtils, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ADD_POISON_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ADD_POISON_TO_PLAYER_ACTIVE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 export class Carnivine extends PokemonCard {
@@ -97,7 +97,7 @@ export class Carnivine extends PokemonCard {
       const defendingPokemon = opponent.active;
 
       // Move the defending Pokémon and all attached cards to opponent's hand
-      defendingPokemon.moveTo(opponent.hand);
+      MOVE_CARDS(store, state, defendingPokemon, opponent.hand, { sourceCard: this });
       defendingPokemon.clearEffects();
     }
 

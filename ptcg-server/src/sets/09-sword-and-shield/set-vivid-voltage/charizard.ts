@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Charizard extends PokemonCard {
 
@@ -76,7 +76,7 @@ export class Charizard extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 3);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 3, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -86,8 +86,8 @@ export class Charizard extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         player.marker.addMarker(this.BATTLE_SENSE_MARKER, this);
-        deckTop.moveCardsTo(selected, player.hand);
-        deckTop.moveTo(player.discard);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
       });
     }
 

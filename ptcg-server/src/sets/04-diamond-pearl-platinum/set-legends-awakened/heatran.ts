@@ -2,7 +2,7 @@ import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, GameError, G
 import { DiscardCardsEffect } from "../../../game/store/effects/attack-effects";
 import { CheckProvidedEnergyEffect } from "../../../game/store/effects/check-effects";
 import { Effect } from "../../../game/store/effects/effect";
-import { WAS_POWER_USED, HAS_MARKER, BLOCK_IF_HAS_SPECIAL_CONDITION, ADD_MARKER, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import {WAS_POWER_USED, HAS_MARKER, BLOCK_IF_HAS_SPECIAL_CONDITION, ADD_MARKER, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class Heatran extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -97,7 +97,7 @@ export class Heatran extends PokemonCard {
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
           return state;
         },

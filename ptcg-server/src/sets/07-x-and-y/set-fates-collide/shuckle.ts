@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, DRAW_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, DRAW_CARDS, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { GameMessage } from '../../../game/game-message';
@@ -51,7 +51,7 @@ export class Shuckle extends PokemonCard {
         ), (selected: Card[]) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, player.deck);
+            MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: this });
           }
         });
       }

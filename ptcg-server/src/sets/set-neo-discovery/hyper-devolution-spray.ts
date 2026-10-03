@@ -1,4 +1,13 @@
-import { CardTarget, ChoosePokemonPrompt, GameError, GameMessage, GameStoreMessage, PlayerType, SlotType, TrainerCard } from '../../game';
+import {
+  CardTarget,
+  ChoosePokemonPrompt,
+  GameError,
+  GameMessage,
+  GameStoreMessage,
+  PlayerType,
+  SlotType,
+  TrainerCard,
+} from '../../game';
 import { SuperType, TrainerType } from '../../game/store/card/card-types';
 import { Effect } from '../../game/store/effects/effect';
 import { TrainerEffect } from '../../game/store/effects/play-card-effects';
@@ -13,9 +22,10 @@ export class HyperDevolutionSpray extends TrainerCard {
   public set = 'N2';
   public fullName = 'Hyper Devolution Spray N2';
   public superType = SuperType.TRAINER;
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
 
-  public text = 'Choose 1 of your evolved Pokémon. Take the highest Stage Evolution card from that Pokémon and put it into your hand. (You can\'t evolve a Pokémon the turn you devolve it.)';
+  public text =
+    "Choose 1 of your evolved Pokémon. Take the highest Stage Evolution card from that Pokémon and put it into your hand. (You can't evolve a Pokémon the turn you devolve it.)";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -41,7 +51,7 @@ export class HyperDevolutionSpray extends TrainerCard {
           GameMessage.CHOOSE_POKEMON,
           PlayerType.BOTTOM_PLAYER,
           [SlotType.ACTIVE, SlotType.BENCH],
-          { allowCancel: false, min: 1, max: 1, blocked }
+          { allowCancel: false, min: 1, max: 1, blocked },
         ),
         (results) => {
           if (results && results.length > 0) {
@@ -49,7 +59,7 @@ export class HyperDevolutionSpray extends TrainerCard {
           }
 
           return state;
-        }
+        },
       );
     }
 

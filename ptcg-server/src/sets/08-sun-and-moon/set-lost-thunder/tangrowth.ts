@@ -6,8 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Tangrowth extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -39,24 +38,14 @@ export class Tangrowth extends PokemonCard {
   public name: string = 'Tangrowth';
   public fullName: string = 'Tangrowth LOT';
 
-  public readonly HEALED_MARKER = 'TANGROWTH_LOT_HEALED_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Track when this Pokemon is healed
-    // Ref: set-forbidden-light/goodra.ts (Soaking Horn - healed this turn marker)
-    if (effect instanceof HealEffect && effect.target.getPokemonCard() === this) {
-      ADD_MARKER(this.HEALED_MARKER, effect.player, this);
-    }
-
     // Attack 1: Hefty Whip
-    // Ref: set-forbidden-light/goodra.ts (Soaking Horn - more damage if healed)
+    // Ref: set-fates-collide/altaria-ex.ts (Powerful Gain — healedThisTurn)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      if (HAS_MARKER(this.HEALED_MARKER, effect.player, this)) {
+      if (effect.player.active.healedThisTurn) {
         effect.damage += 130;
       }
     }
-
-    REMOVE_MARKER_AT_END_OF_TURN(effect, this.HEALED_MARKER, this);
 
     return state;
   }

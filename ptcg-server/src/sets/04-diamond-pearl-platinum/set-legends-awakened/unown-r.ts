@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { PowerType, StoreLike, State, StateUtils, GameError, GameMessage, PokemonCardList, MoveEnergyPrompt, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 function* useHiddenPower(next: Function, store: StoreLike, state: State, effect: AttackEffect): IterableIterator<State> {
   const player = effect.player;
@@ -23,7 +23,7 @@ function* useHiddenPower(next: Function, store: StoreLike, state: State, effect:
     for (const transfer of transfers) {
       const source = StateUtils.getTarget(state, player, transfer.from);
       const target = StateUtils.getTarget(state, player, transfer.to);
-      source.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: effect.source.getPokemonCard()! });
     }
   });
 }
@@ -80,9 +80,11 @@ export class UnownR extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.bench[benchIndex].moveTo(player.discard);
-      player.bench[benchIndex].clearEffects();
-      player.deck.moveTo(player.hand, 1);
+      MOVE_POKEMON_OFF_BOARD(store, state, player.bench[benchIndex], {
+        pokemonDestination: player.discard,
+        sourceCard: this,
+      });
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       return state;
     }
 

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, BLOCK_IF_DISCARD_EMPTY } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_DISCARD_EMPTY, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
@@ -63,7 +63,7 @@ export class Phione extends PokemonCard {
       ), selected => {
         cards = selected || [];
 
-        player.discard.moveCardsTo(cards, deckTop);
+        MOVE_CARDS(store, state, player.discard, deckTop, { cards: cards, sourceCard: this });
         deckTop.moveToTopOfDestination(player.deck);
 
         if (cards.length > 0) {
@@ -87,7 +87,7 @@ export class Phione extends PokemonCard {
       const player = effect.player;
       const activePokemon = player.active;
 
-      activePokemon.moveTo(player.hand);
+      MOVE_CARDS(store, state, activePokemon, player.hand, { sourceCard: this });
       activePokemon.clearEffects();
     }
 

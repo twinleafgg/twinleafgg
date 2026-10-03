@@ -6,7 +6,7 @@ import { State } from '../../../game/store/state/state';
 
 import { StoreLike } from '../../../game/store/store-like';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Wartortle extends PokemonCard {
   public stage = Stage.STAGE_1;
@@ -52,7 +52,7 @@ export class Wartortle extends PokemonCard {
         }
       );
       state = store.prompt(state, prompt, chosenCards => {
-        player.discard.moveCardsTo(chosenCards, player.hand);
+        MOVE_CARDS(store, state, player.discard, player.hand, { cards: chosenCards, sourceCard: this });
       });
     }
     return state;

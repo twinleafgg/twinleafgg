@@ -7,7 +7,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 import { Effect } from '../../../game/store/effects/effect';
 import { GameError, Card, ShuffleDeckPrompt } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eevee extends PokemonCard {
 
@@ -64,7 +64,7 @@ export class Eevee extends PokemonCard {
         cards = selected || [];
 
         cards.forEach((card, index) => {
-          player.deck.moveCardTo(card, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
         });
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);

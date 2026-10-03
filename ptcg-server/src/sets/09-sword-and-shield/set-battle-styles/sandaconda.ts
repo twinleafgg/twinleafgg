@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types
 import { StoreLike, State } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sandaconda extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -50,7 +50,7 @@ export class Sandaconda extends PokemonCard {
 
       for (let i = 0; i < count; i++) {
         const topCard = player.deck.cards[0];
-        player.deck.moveCardTo(topCard, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [topCard], sourceCard: this });
         if (topCard instanceof EnergyCard && topCard.energyType === EnergyType.BASIC && topCard.provides.includes(CardType.FIGHTING)) {
           fightingCount++;
         }

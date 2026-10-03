@@ -8,7 +8,7 @@ import { ConfirmPrompt, GameMessage, PlayerType, PowerType, SlotType, StoreLike,
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import { IS_ABILITY_BLOCKED, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class Corviknight extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -90,11 +90,10 @@ export class Corviknight extends PokemonCard {
             if (!selected || selected.length === 0) {
               return;
             }
-            const benchSlot = selected[0];
-            // Move tools first (moveTo does NOT move tools)
-            const tools = benchSlot.tools.slice();
-            tools.forEach(t => { benchSlot.moveCardTo(t, player.hand); });
-            benchSlot.moveTo(player.hand);
+            MOVE_POKEMON_OFF_BOARD(store, state, selected[0], {
+              pokemonDestination: player.hand,
+              sourceCard: this,
+            });
           });
         }
       });

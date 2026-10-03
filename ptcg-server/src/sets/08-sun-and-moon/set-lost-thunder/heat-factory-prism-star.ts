@@ -9,9 +9,10 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { MoveCardsEffect, UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard } from '../../../game/store/card/energy-card';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HeatFactoryPrismStar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.PRISM_STAR];
   public set: string = 'LOT';
   public setNumber: string = '178';
@@ -58,8 +59,8 @@ export class HeatFactoryPrismStar extends TrainerCard {
             player.stadiumUsedTurn = stadiumUsedTurn;
             return;
           }
-          player.hand.moveCardsTo(selected, player.discard);
-          player.deck.moveTo(player.hand, 3);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected, sourceCard: this });
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
         },
       );
     }

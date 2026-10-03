@@ -11,13 +11,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class AssaultVest extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'BKT';
   public setNumber: string = '133';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Assault Vest';
   public fullName: string = 'Assault Vest BKT';
-  public text: string = 'Any damage done to the Pokémon this card is attached to by attacks from your opponent\'s Pokémon that have any Special Energy attached to them is reduced by 40 (after applying Weakness and Resistance).';
+  public text: string =
+    "Any damage done to the Pokémon this card is attached to by attacks from your opponent's Pokémon that have any Special Energy attached to them is reduced by 40 (after applying Weakness and Resistance).";
 
   // Ref: set-x-and-y/hard-charm.ts (Tool damage reduction with IS_TOOL_BLOCKED + DealDamageEffect)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -31,8 +32,8 @@ export class AssaultVest extends TrainerCard {
       // Only reduce damage from opponent's Pokemon that have Special Energy
       const opponent = StateUtils.getOpponent(state, player);
       if (effect.source === opponent.active || opponent.bench.includes(effect.source)) {
-        const hasSpecialEnergy = effect.source.cards.some(c =>
-          c instanceof EnergyCard && c.energyType === EnergyType.SPECIAL
+        const hasSpecialEnergy = effect.source.cards.some(
+          (c) => c instanceof EnergyCard && c.energyType === EnergyType.SPECIAL,
         );
 
         if (hasSpecialEnergy) {

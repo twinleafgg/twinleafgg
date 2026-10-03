@@ -2,7 +2,7 @@ import { CardTag, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachPokemonToolEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 import { Player } from '../../../game/store/state/player';
 import { State } from '../../../game/store/state/state';
@@ -14,7 +14,7 @@ import {
 } from '../../../game/store/prefabs/ability-lock';
 
 export class CessationCrystal extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CG';
   public name: string = 'Cessation Crystal';
   public fullName: string = 'Cessation Crystal CG';
@@ -28,7 +28,7 @@ export class CessationCrystal extends TrainerCard {
       return false;
     }
     if (player.active.getPokemonCard()?.hasTag(CardTag.POKEMON_ex)) {
-      player.active.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, player.active, player.discard, { cards: [this], sourceCard: this });
       return false;
     }
     return true;

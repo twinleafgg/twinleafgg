@@ -3,7 +3,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { PowerType, StoreLike, State, ConfirmPrompt, GameMessage, CardList, ChooseCardsPrompt, ShowCardsPrompt, StateUtils } from '../../../game';
-import { IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 
@@ -79,7 +79,7 @@ export class Azelf extends PokemonCard {
 
               player.prizes.forEach(p => {
                 if (p.cards[0] === chosenPrize[0]) {
-                  p.moveCardsTo(chosenPrize, player.supporter);
+                  MOVE_CARDS(store, state, p, player.supporter, { cards: chosenPrize, sourceCard: this });
                 }
               });
 
@@ -90,10 +90,10 @@ export class Azelf extends PokemonCard {
                 {},
                 { min: 1, max: 1, allowCancel: false }
               ), selected => {
-                player.supporter.moveCardsTo(chosenPrize, player.hand);
+                MOVE_CARDS(store, state, player.supporter, player.hand, { cards: chosenPrize, sourceCard: this });
                 player.prizes.forEach(p => {
                   if (p.cards.length === 0) {
-                    player.hand.moveCardsTo(selected, p);
+                    MOVE_CARDS(store, state, player.hand, p, { cards: selected, sourceCard: this });
                   }
                 });
               });

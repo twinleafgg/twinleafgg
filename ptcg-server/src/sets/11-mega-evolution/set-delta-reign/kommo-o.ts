@@ -1,7 +1,7 @@
 import { AttachEnergyPrompt, CardList, CardType, ChooseCardsPrompt, EnergyType, GameError, GameMessage, PlayerType, PokemonCard, PowerType, SlotType, Stage, State, StateUtils, StoreLike, SuperType } from "../../../game";
 import { CheckPokemonTypeEffect } from "../../../game/store/effects/check-effects";
 import { Effect } from "../../../game/store/effects/effect";
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, REMOVE_MARKER_AT_END_OF_TURN } from "../../../game/store/prefabs/prefabs";
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class KommoO extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -82,7 +82,7 @@ export class KommoO extends PokemonCard {
 
       const deckTop = new CardList();
       const cardsToLook = Math.min(6, player.deck.cards.length);
-      player.deck.moveTo(deckTop, cardsToLook);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: cardsToLook, sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, deckTop.cards);
 
@@ -96,7 +96,7 @@ export class KommoO extends PokemonCard {
         const energyCards = selected || [];
 
         if (energyCards.length === 0) {
-          deckTop.moveTo(player.deck);
+          MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
           return state;
         }
@@ -116,10 +116,10 @@ export class KommoO extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            deckTop.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, deckTop, target, { cards: [transfer.card], sourceCard: this });
           }
 
-          deckTop.moveTo(player.deck);
+          MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         });
       });

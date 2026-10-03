@@ -17,7 +17,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Terapagos extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -102,7 +102,7 @@ export class Terapagos extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
           return state;
         },

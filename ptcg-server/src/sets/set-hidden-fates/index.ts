@@ -8,7 +8,6 @@ import { Caterpie } from './caterpie';
 import { Chansey } from './chansey';
 import { CharizardGx2 } from './charizard-gx-2';
 import { Charmander } from './charmander';
-import { Charmander2 } from './charmander-2';
 import { Charmeleon } from './charmeleon';
 import { Clefable } from './clefable';
 import { Clefairy } from './clefairy';
@@ -176,7 +175,6 @@ export const setHiddenFates: Card[] = [
   new Chansey(),
   new CharizardGx2(),
   new Charmander(),
-  new Charmander2(),
   new Charmeleon(),
   new Clefable(),
   new Clefairy(),

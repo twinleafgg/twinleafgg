@@ -7,7 +7,7 @@ import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class HerosCape extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   protected _tags = [CardTag.ACE_SPEC];
 

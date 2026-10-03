@@ -63,6 +63,7 @@ ptcg-server/dist
 # Specific Sets
 ptcg-server/src/sets/set-test/
 /.kiro
+/.freebuff
 MEMORY_OPTIMIZATION_GUIDE.md
 frontend-cleanup-report.md
 ptcg-server/implementedCardIds.json

@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { CardTarget, GameMessage, MoveEnergyPrompt, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 
 export class Azelf extends PokemonCard {
@@ -102,7 +102,7 @@ export class Azelf extends PokemonCard {
 
           const source = StateUtils.getTarget(state, opponent, transfer.from);
           const target = StateUtils.getTarget(state, opponent, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

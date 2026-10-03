@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, StateUtils, PowerType, GameError, Card, ChooseCardsPrompt, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK, SEARCH_DECK_FOR_CARDS_TO_HAND, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, SEARCH_DECK_FOR_CARDS_TO_HAND, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 
 export class Azurill extends PokemonCard {
@@ -66,7 +66,7 @@ export class Azurill extends PokemonCard {
         const target = StateUtils.findCardList(state, this);
 
         // Evolve Pokemon
-        player.hand.moveCardTo(evolution, target);
+        MOVE_CARDS(store, state, player.hand, target, { cards: [evolution], sourceCard: this });
         const pokemonTarget = target as PokemonCardList;
         pokemonTarget.clearEffects();
         pokemonTarget.pokemonPlayedTurn = state.turn;

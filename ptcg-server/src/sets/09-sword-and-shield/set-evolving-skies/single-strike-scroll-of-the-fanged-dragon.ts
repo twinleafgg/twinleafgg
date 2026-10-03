@@ -14,7 +14,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class SingleStrikeScrollOfTheFangedDragon extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.SINGLE_STRIKE];
   public regulationMark = 'E';
   public set: string = 'EVS';

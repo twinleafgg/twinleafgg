@@ -15,7 +15,7 @@ import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-e
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RadiantVenusaur extends PokemonCard {
   protected _tags = [CardTag.RADIANT];
@@ -98,7 +98,7 @@ export class RadiantVenusaur extends PokemonCard {
                   if (player.deck.cards.length === 0) {
                     break;
                   }
-                  player.deck.moveTo(player.hand, 1);
+                  MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
                 }
                 return state;
               }

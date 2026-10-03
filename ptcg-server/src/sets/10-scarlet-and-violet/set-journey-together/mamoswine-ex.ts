@@ -22,7 +22,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mamoswineex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -90,7 +90,7 @@ export class Mamoswineex extends PokemonCard {
           { min: 0, max: 1, allowCancel: false },
         ),
         (cards) => {
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
           if (cards.length > 0) {
             state = store.prompt(

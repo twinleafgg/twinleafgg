@@ -1,6 +1,6 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, Card, ChooseCardsPrompt, GameMessage, GameLog, ShuffleDeckPrompt, ShowCardsPrompt } from '../../../game';
+import { StoreLike, State, StateUtils, Card, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, ShowCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AFTER_ATTACK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
@@ -52,7 +52,6 @@ export class Klang extends PokemonCard {
 
         cards.forEach((card, index) => {
           MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this, sourceEffect: this.attacks[0] });
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
         });
 
         state = store.prompt(state, new ShowCardsPrompt(

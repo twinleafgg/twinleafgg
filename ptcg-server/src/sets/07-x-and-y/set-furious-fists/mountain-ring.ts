@@ -6,13 +6,14 @@ import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class MountainRing extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'FFI';
   public setNumber: string = '97';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mountain Ring';
   public fullName: string = 'Mountain Ring FFI';
-  public text: string = 'Prevent all damage done to Benched Pokémon by attacks (both yours and your opponent\'s).';
+  public text: string =
+    "Prevent all damage done to Benched Pokémon by attacks (both yours and your opponent's).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof PutDamageEffect && StateUtils.getStadiumCard(state) === this) {

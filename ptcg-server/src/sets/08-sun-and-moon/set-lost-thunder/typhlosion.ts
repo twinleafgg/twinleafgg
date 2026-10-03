@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, GameError, GameMessage, Card, 
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, ADD_MARKER, HAS_MARKER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, ADD_MARKER, HAS_MARKER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Typhlosion extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -114,7 +114,7 @@ export class Typhlosion extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         cards.forEach(card => {
-          opponent.active.moveCardTo(card, opponent.lostzone);
+          MOVE_CARDS(store, state, opponent.active, opponent.lostzone, { cards: [card], sourceCard: this });
         });
       });
     }

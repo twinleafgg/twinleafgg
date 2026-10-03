@@ -11,7 +11,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { AttachEnergyPrompt, GameMessage, PlayerType, SlotType, StateUtils } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EternatusV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -68,7 +68,7 @@ export class EternatusV extends PokemonCard {
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

@@ -16,7 +16,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MSceptileEx extends PokemonCard {
   protected _tags = [CardTag.MEGA, CardTag.POKEMON_EX];
@@ -83,7 +83,7 @@ export class MSceptileEx extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
 
             const targetKey = JSON.stringify(transfer.to);
             if (!healedTargets.has(targetKey)) {

@@ -5,7 +5,7 @@ import { StoreLike, State, PlayerType, SlotType, StateUtils, EnergyCard } from '
 import { Effect } from '../../game/store/effects/effect';
 import { GameMessage } from '../../game/game-message';
 import { DiscardEnergyPrompt } from '../../game/store/prompts/discard-energy-prompt';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Turtonator extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,7 +58,7 @@ export class Turtonator extends PokemonCard {
         // Move all selected energies to discard
         transfers.forEach(transfer => {
           const source = StateUtils.getTarget(state, player, transfer.from);
-          source.moveCardTo(transfer.card, player.discard);
+          MOVE_CARDS(store, state, source, player.discard, { cards: [transfer.card], sourceCard: this });
         });
 
         // Set damage based on number of discarded cards

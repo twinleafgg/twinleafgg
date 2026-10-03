@@ -2,17 +2,14 @@ import { PokemonCardList, StateUtils } from '../../../game';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { Card } from '../../../game/store/card/card';
-import {
-  Stage,
-  SuperType,
-  TrainerType,
-} from '../../../game/store/card/card-types';
+import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -22,9 +19,7 @@ function* playCard(
 ): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
-  const slots: PokemonCardList[] = opponent.bench.filter(
-    (b) => b.cards.length === 0,
-  );
+  const slots: PokemonCardList[] = opponent.bench.filter((b) => b.cards.length === 0);
 
   if (opponent.discard.cards.length === 0) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -62,12 +57,12 @@ function* playCard(
   }
 
   cards.forEach((card, index) => {
-    opponent.discard.moveCardTo(card, slots[index]);
+    MOVE_CARDS(store, state, opponent.discard, slots[index], { cards: [card], sourceCard: effect.trainerCard });
     slots[index].pokemonPlayedTurn = state.turn;
   });
 }
 export class TargetWhistle extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'PHF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '106';

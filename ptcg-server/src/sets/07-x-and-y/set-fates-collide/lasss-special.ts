@@ -10,13 +10,14 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LasssSpecial extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'FCO';
   public setNumber: string = '103';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Lass\'s Special';
-  public fullName: string = 'Lass\'s Special FCO';
-  public text: string = 'Draw a card for each of your opponent\'s Benched Basic Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Lass's Special";
+  public fullName: string = "Lass's Special FCO";
+  public text: string =
+    "Draw a card for each of your opponent's Benched Basic Pokémon. You may play only 1 Supporter card during your turn (before your attack).";
 
   // Ref: set-temporal-forces/mortys-conviction.ts (draw for each opponent's Benched)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -26,7 +27,7 @@ export class LasssSpecial extends TrainerCard {
 
       // Count opponent's Benched Basic Pokemon
       let basicBenchedCount = 0;
-      opponent.bench.forEach(b => {
+      opponent.bench.forEach((b) => {
         if (b.cards.length > 0) {
           const pokemonCard = b.getPokemonCard();
           if (pokemonCard && pokemonCard.stage === Stage.BASIC) {

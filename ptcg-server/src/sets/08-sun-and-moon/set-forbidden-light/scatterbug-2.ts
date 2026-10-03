@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, GameMessage, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class Scatterbug2 extends PokemonCard {
@@ -60,7 +60,7 @@ export class Scatterbug2 extends PokemonCard {
           ), selected => {
             if (selected && selected.length > 0) {
               const evolutionCard = selected[0] as PokemonCard;
-              player.deck.moveCardTo(evolutionCard, cardList);
+              MOVE_CARDS(store, state, player.deck, cardList, { cards: [evolutionCard], sourceCard: this });
               cardList.clearEffects();
               cardList.pokemonPlayedTurn = state.turn;
             }

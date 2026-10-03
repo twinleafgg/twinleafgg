@@ -21,6 +21,12 @@ export class ChoosePokemonPrompt extends Prompt<PokemonCardList[]> {
 
   public options: ChoosePokemonOptions;
 
+  /**
+   * Retreat already logs a more specific line. Skip the switch outcome so that
+   * prompt does not also say the Pokémon was switched to the active spot.
+   */
+  public skipSwitchLog = false;
+
   constructor(
     playerId: number,
     public message: GameMessage,

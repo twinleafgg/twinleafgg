@@ -15,7 +15,7 @@ import {
 } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class SandyShocksex extends PokemonCard {
   public stage = Stage.BASIC;
@@ -110,7 +110,7 @@ export class SandyShocksex extends PokemonCard {
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             player.marker.addMarker(this.MAGNETIC_ABSORPTION_MARKER, this);
           }
           return state;

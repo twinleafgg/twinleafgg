@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, StateUtils, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CoinFlipEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Talonflame extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -52,7 +52,7 @@ export class Talonflame extends PokemonCard {
         if (result === true && opponent.hand.cards.length > 0) {
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const randomCard = opponent.hand.cards[randomIndex];
-          opponent.hand.moveCardTo(randomCard, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
         }
       });
 

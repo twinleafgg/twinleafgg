@@ -2,11 +2,9 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, CardList, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   IF_OPPONENTS_POKEMON_KO_BY_ATTACK_DAMAGE_TAKE_MORE_PRIZES,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GuzzlordGX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -49,10 +47,10 @@ export class GuzzlordGX extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const temp = new CardList();
-      player.deck.moveTo(temp, 5);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 5, sourceCard: this });
       const energyCards = temp.cards.filter((c) => c instanceof EnergyCard);
-      temp.moveCardsTo(energyCards, player.active);
-      temp.moveTo(player.discard);
+      MOVE_CARDS(store, state, temp, player.active, { cards: energyCards, sourceCard: this });
+      MOVE_CARDS(store, state, temp, player.discard, { sourceCard: this });
       return state;
     }
 

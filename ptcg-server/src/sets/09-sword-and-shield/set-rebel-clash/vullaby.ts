@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Vullaby extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -42,7 +42,7 @@ export class Vullaby extends PokemonCard {
       // Discard all tools from opponent's active Pokemon
       const tools = opponent.active.tools.slice();
       tools.forEach(tool => {
-        opponent.active.moveCardTo(tool, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [tool], sourceCard: this });
       });
     }
 

@@ -8,9 +8,10 @@ import { TrainerType, CardTag } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { ChooseCardsPrompt, Card } from '../../../game';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TowerOfDarkness extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
 
   public regulationMark = 'E';
 
@@ -58,8 +59,8 @@ export class TowerOfDarkness extends TrainerCard {
           if (cards.length === 0) {
             return;
           }
-          player.hand.moveCardsTo(cards, player.discard);
-          player.deck.moveTo(player.hand, 2);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
         },
       );
 

@@ -15,8 +15,7 @@ import {
   MoveEnergyPrompt,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   CONFIRMATION_PROMPT,
@@ -25,8 +24,7 @@ import {
   REMOVE_MARKER_AT_END_OF_TURN,
   SHUFFLE_DECK,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
@@ -130,7 +128,7 @@ export class DarkElectrode extends PokemonCard {
           cards = selected || [];
 
           if (cards.length > 0) {
-            player.deck.moveCardsTo(cards, thisElectrode);
+            MOVE_CARDS(store, state, player.deck, thisElectrode, { cards: cards, sourceCard: this });
           }
 
           SHUFFLE_DECK(store, state, player);
@@ -217,7 +215,7 @@ export class DarkElectrode extends PokemonCard {
                 transfers = transfers || [];
                 for (const transfer of transfers) {
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  player.active.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
                 }
               },
             );

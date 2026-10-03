@@ -14,7 +14,7 @@ import { StoreLike, State, GameMessage, PlayerType, SlotType, EnergyCard } from 
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_BENCHED_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class PalkiaEx extends PokemonCard {
@@ -90,7 +90,7 @@ export class PalkiaEx extends PokemonCard {
             (cards) => {
               cards = cards || [];
               cards.forEach((card) => {
-                player.deck.moveCardTo(card, target);
+                MOVE_CARDS(store, state, player.deck, target, { cards: [card], sourceCard: this });
               });
               return SHUFFLE_DECK(store, state, player);
             },

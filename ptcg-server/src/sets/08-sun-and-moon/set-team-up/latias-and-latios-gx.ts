@@ -17,7 +17,7 @@ import {
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class LatiasAndLatiosGx extends PokemonCard {
@@ -86,7 +86,7 @@ export class LatiasAndLatiosGx extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.discard.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             }
           },
         );

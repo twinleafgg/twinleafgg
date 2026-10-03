@@ -11,13 +11,14 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 
 export class TrainingCenter extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'FFI';
   public name: string = 'Training Center';
   public fullName: string = 'Training Center FFI';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '102';
-  public text: string = 'Each Stage 1 and Stage 2 Pokémon in play (both yours and your opponent\'s) gets +30 HP.';
+  public text: string =
+    "Each Stage 1 and Stage 2 Pokémon in play (both yours and your opponent's) gets +30 HP.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckHpEffect && StateUtils.getStadiumCard(state) === this) {

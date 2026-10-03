@@ -7,18 +7,22 @@ import { SpecialCondition, TrainerType } from '../../../game/store/card/card-typ
 import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { AddSpecialConditionsPowerEffect, CheckTableStateEffect } from '../../../game/store/effects/check-effects';
+import {
+  AddSpecialConditionsPowerEffect,
+  CheckTableStateEffect,
+} from '../../../game/store/effects/check-effects';
 import { PlayStadiumEffect } from '../../../game/store/effects/play-card-effects';
 import { SELECT_PROMPT } from '../../../game/store/prefabs/prefabs';
 
 export class ChaosTower extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'FCO';
   public setNumber: string = '94';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Chaos Tower';
   public fullName: string = 'Chaos Tower FCO';
-  public text: string = 'Choose which way this card faces before you play it. This \u2193 player\'s Pok\u00e9mon can\'t be Confused or Poisoned. (If those Pok\u00e9mon are already Confused or Poisoned, remove those Special Conditions.) Choose which way this card faces before you play it. This \u2193 player\'s Pok\u00e9mon can\'t be Asleep or Paralyzed. (If those Pok\u00e9mon are already Asleep or Paralyzed, remove those Special Conditions.)';
+  public text: string =
+    "Choose which way this card faces before you play it. This \u2193 player's Pok\u00e9mon can't be Confused or Poisoned. (If those Pok\u00e9mon are already Confused or Poisoned, remove those Special Conditions.) Choose which way this card faces before you play it. This \u2193 player's Pok\u00e9mon can't be Asleep or Paralyzed. (If those Pok\u00e9mon are already Asleep or Paralyzed, remove those Special Conditions.)";
 
   // orientation: 0 = player gets Confused/Poison immunity, opponent gets Asleep/Paralyzed immunity
   //              1 = player gets Asleep/Paralyzed immunity, opponent gets Confused/Poison immunity
@@ -32,9 +36,12 @@ export class ChaosTower extends TrainerCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      SELECT_PROMPT(store, state, player,
+      SELECT_PROMPT(
+        store,
+        state,
+        player,
         ['Confused/Poisoned immunity for you', 'Asleep/Paralyzed immunity for you'],
-        choice => {
+        (choice) => {
           if (choice === 0) {
             // Player gets Confused/Poison immunity, Opponent gets Asleep/Paralyzed immunity
             player.marker.addMarker(this.CHAOS_TOWER_CHOICE_MARKER, this);
@@ -47,12 +54,15 @@ export class ChaosTower extends TrainerCard {
 
           // Clear existing conditions based on choice
           this.clearBlockedConditions(state);
-        }
+        },
       );
     }
 
     // Prevent blocked special conditions from being applied
-    if (effect instanceof AddSpecialConditionsEffect || effect instanceof AddSpecialConditionsPowerEffect) {
+    if (
+      effect instanceof AddSpecialConditionsEffect ||
+      effect instanceof AddSpecialConditionsPowerEffect
+    ) {
       const stadiumCard = StateUtils.getStadiumCard(state);
       if (stadiumCard !== this) {
         return state;
@@ -63,7 +73,7 @@ export class ChaosTower extends TrainerCard {
       if (targetOwner.marker.hasMarker(this.CHAOS_TOWER_CHOICE_MARKER, this)) {
         // This player has Confused/Poisoned immunity
         effect.specialConditions = effect.specialConditions.filter(
-          sc => sc !== SpecialCondition.CONFUSED && sc !== SpecialCondition.POISONED
+          (sc) => sc !== SpecialCondition.CONFUSED && sc !== SpecialCondition.POISONED,
         );
         if (effect.specialConditions.length === 0) {
           effect.preventDefault = true;
@@ -71,7 +81,7 @@ export class ChaosTower extends TrainerCard {
       } else if (targetOwner.marker.hasMarker(this.CHAOS_TOWER_CHOICE_B_MARKER, this)) {
         // This player has Asleep/Paralyzed immunity
         effect.specialConditions = effect.specialConditions.filter(
-          sc => sc !== SpecialCondition.ASLEEP && sc !== SpecialCondition.PARALYZED
+          (sc) => sc !== SpecialCondition.ASLEEP && sc !== SpecialCondition.PARALYZED,
         );
         if (effect.specialConditions.length === 0) {
           effect.preventDefault = true;
@@ -92,16 +102,16 @@ export class ChaosTower extends TrainerCard {
   }
 
   private clearBlockedConditions(state: State): void {
-    state.players.forEach(player => {
+    state.players.forEach((player) => {
       if (player.marker.hasMarker(this.CHAOS_TOWER_CHOICE_MARKER, this)) {
         // Player has Confused/Poisoned immunity
-        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
           cardList.removeSpecialCondition(SpecialCondition.CONFUSED);
           cardList.removeSpecialCondition(SpecialCondition.POISONED);
         });
       } else if (player.marker.hasMarker(this.CHAOS_TOWER_CHOICE_B_MARKER, this)) {
         // Player has Asleep/Paralyzed immunity
-        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
           cardList.removeSpecialCondition(SpecialCondition.ASLEEP);
           cardList.removeSpecialCondition(SpecialCondition.PARALYZED);
         });

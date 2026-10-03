@@ -23,7 +23,7 @@ import {
   CheckProvidedEnergyEffect,
   CheckAttackCostEffect,
 } from '../../../game/store/effects/check-effects';
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 
 function* useUltimateRay(
@@ -53,7 +53,7 @@ function* useUltimateRay(
       transfers = transfers || [];
       for (const transfer of transfers) {
         const target = StateUtils.getTarget(state, player, transfer.to);
-        player.deck.moveCardTo(transfer.card, target);
+        MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: effect.source.getPokemonCard()! });
         next();
       }
     },

@@ -15,7 +15,7 @@ import { Card,
   State, pokemonHasCardType } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { BREAK_RULE, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BREAK_RULE, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CarbinkBreak extends PokemonCard {
   protected _tags = [CardTag.BREAK];
@@ -114,7 +114,7 @@ export class CarbinkBreak extends PokemonCard {
             (targets) => {
               if (targets && targets.length > 0) {
                 cards.forEach((card) => {
-                  player.discard.moveCardTo(card, targets[0]);
+                  MOVE_CARDS(store, state, player.discard, targets[0], { cards: [card], sourceCard: this });
                 });
               }
             },

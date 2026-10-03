@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magcargo extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -46,7 +46,7 @@ export class Magcargo extends PokemonCard {
 
       const energyCards = player.active.cards.filter(card => card.superType === SuperType.ENERGY).slice();
       energyCards.forEach(card => {
-        player.active.moveCardTo(card, player.lostzone);
+        MOVE_CARDS(store, state, player.active, player.lostzone, { cards: [card], sourceCard: this });
       });
     }
 

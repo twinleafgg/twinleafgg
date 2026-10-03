@@ -3,7 +3,7 @@ import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 import { State } from '../../../game/store/state/state';
@@ -59,7 +59,7 @@ export class Yveltal extends PokemonCard {
         cards = selected || [];
 
         if (cards.length > 0) {
-          opponent.active.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
         }
       });
     }

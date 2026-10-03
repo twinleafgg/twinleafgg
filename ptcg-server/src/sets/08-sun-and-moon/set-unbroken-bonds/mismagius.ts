@@ -4,7 +4,7 @@ import { GameError, GameMessage, PlayerType, PowerType, State, StoreLike } from 
 import { Effect } from '../../../game/store/effects/effect';
 
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mismagius extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -52,7 +52,7 @@ export class Mismagius extends PokemonCard {
         if (player.deck.cards.length === 0) {
           break;
         }
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {

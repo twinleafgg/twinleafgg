@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Luvdisc extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -48,14 +48,14 @@ export class Luvdisc extends PokemonCard {
       const playerTop = player.deck.cards.slice(0, 2);
       if (playerTop.length > 0) {
         SHOW_CARDS_TO_PLAYER(store, state, opponent, playerTop);
-        player.deck.moveTo(player.hand, playerTop.length);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: playerTop.length, sourceCard: this });
       }
 
       // Opponent reveals top 2, then draws them
       const opponentTop = opponent.deck.cards.slice(0, 2);
       if (opponentTop.length > 0) {
         SHOW_CARDS_TO_PLAYER(store, state, player, opponentTop);
-        opponent.deck.moveTo(opponent.hand, opponentTop.length);
+        MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: opponentTop.length, sourceCard: this });
       }
     }
 

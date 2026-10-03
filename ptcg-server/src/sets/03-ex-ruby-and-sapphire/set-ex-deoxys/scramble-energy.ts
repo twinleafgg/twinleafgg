@@ -5,6 +5,7 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ScrambleEnergy extends EnergyCard {
   public provides: CardType[] = [CardType.COLORLESS];
@@ -57,7 +58,7 @@ export class ScrambleEnergy extends EnergyCard {
             !!attachedTo &&
             (attachedTo.hasTag(CardTag.POKEMON_ex) || cardList.getPokemons().length < 2)
           ) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

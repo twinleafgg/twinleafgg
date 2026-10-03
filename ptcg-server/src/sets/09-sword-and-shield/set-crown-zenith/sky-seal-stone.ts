@@ -11,7 +11,7 @@ import { GamePhase, State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class SkySealStone extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CRZ';
   public setNumber: string = '143';
   public regulationMark: string = 'F';

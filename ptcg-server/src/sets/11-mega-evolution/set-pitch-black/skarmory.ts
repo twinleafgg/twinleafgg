@@ -5,7 +5,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { GameMessage } from '../../../game/game-message';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Skarmory extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -48,7 +48,7 @@ export class Skarmory extends PokemonCard {
         (chosen) => {
           const cards = chosen || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
             effect.damage = 40 * cards.length;
           }
         },

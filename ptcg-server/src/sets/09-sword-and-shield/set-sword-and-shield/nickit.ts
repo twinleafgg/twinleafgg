@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Nickit extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -42,8 +42,8 @@ export class Nickit extends PokemonCard {
       if (cardsInHand > 0) {
         // Shuffle opponent's hand to bottom of deck
         const deckBottom = new CardList();
-        opponent.hand.moveTo(deckBottom);
-        deckBottom.moveTo(opponent.deck);
+        MOVE_CARDS(store, state, opponent.hand, deckBottom, { sourceCard: this });
+        MOVE_CARDS(store, state, deckBottom, opponent.deck, { sourceCard: this });
         // Draw 3 cards
         DRAW_CARDS(store, state, opponent, Math.min(3, opponent.deck.cards.length));
       }

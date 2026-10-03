@@ -10,14 +10,15 @@ import { DRAW_CARDS } from '../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
 
 export class GymTrainer extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'SHF';
   public setNumber: string = '59';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Gym Trainer';
   public fullName: string = 'Gym Trainer SHF';
-  public text: string = 'Draw 2 cards. If any of your Pokémon were Knocked Out during your opponent\'s last turn, draw 2 more cards. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    "Draw 2 cards. If any of your Pokémon were Knocked Out during your opponent's last turn, draw 2 more cards. You may play only 1 Supporter card during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-unbroken-bonds/samson-oak.ts (conditional draw on same-type check),

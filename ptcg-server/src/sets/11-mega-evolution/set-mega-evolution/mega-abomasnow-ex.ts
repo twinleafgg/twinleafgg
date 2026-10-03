@@ -9,7 +9,7 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { CardList, PokemonCard } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MegaAbomasnowEx extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -48,7 +48,7 @@ export class MegaAbomasnowEx extends PokemonCard {
       const deckTop = new CardList();
 
       // Move top 5 cards from deckTop
-      player.deck.moveTo(deckTop, 6);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 6, sourceCard: this });
 
       // Filter for Energy cards
       const energyCount = deckTop.cards.filter(
@@ -59,7 +59,7 @@ export class MegaAbomasnowEx extends PokemonCard {
       );
 
       // Move all cards to discard
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
       effect.damage = energyCount.length * 100;
     }
     if (WAS_ATTACK_USED(effect, 1, this)) {

@@ -24,7 +24,7 @@ function isPokemonEx(pokemon: PokemonCard): boolean {
 }
 
 export class JammingNet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public attachesToOpponentsPokemon = true;
   public set: string = 'PHF';
   public setNumber: string = '98';

@@ -10,7 +10,7 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { CONFIRMATION_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {CONFIRMATION_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TeamRocketsZapdos extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -75,7 +75,7 @@ export class TeamRocketsZapdos extends PokemonCard {
               transfers = transfers || [];
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, opponent, transfer.to);
-                opponent.active.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, opponent.active, target, { cards: [transfer.card], sourceCard: this });
               }
             },
           );

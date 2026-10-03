@@ -11,6 +11,7 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { CardList } from '../../../game/store/state/card-list';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { OrderCardsPrompt, Player } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -28,7 +29,7 @@ function* playCard(
     throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -53,7 +54,7 @@ function* playCard(
     },
   );
 
-  player.deck.moveCardsTo(cards, deckTop);
+  MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: self });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
@@ -78,7 +79,7 @@ function* playCard(
 export class CiphermaniacsCodebreaking extends TrainerCard {
   public regulationMark = 'H';
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   protected _tags = [CardTag.FUTURE];
 

@@ -9,8 +9,7 @@ import { TrainerType } from '../../game/store/card/card-types';
 import { DRAW_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Bill extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -22,8 +21,7 @@ export class Bill extends TrainerCard {
 
   public fullName: string = 'Bill BS';
 
-  public text: string =
-    'Draw 2 cards.';
+  public text: string = 'Draw 2 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -38,5 +36,4 @@ export class Bill extends TrainerCard {
 
     return state;
   }
-
 }

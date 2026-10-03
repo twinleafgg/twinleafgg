@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { CardList } from '../../../game/store/state/card-list';
 import { ChoosePokemonPrompt, EnergyCard, GameMessage, PlayerType, PokemonCard, SlotType, StateUtils } from '../../../game';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Kyogre extends PokemonCard {
 
@@ -60,7 +60,7 @@ export class Kyogre extends PokemonCard {
       const deckTop = new CardList();
 
       // Move top 5 cards from deckTop
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       // Filter for Basic Energy cards
       const basicEnergy = deckTop.cards.filter(c =>
@@ -69,7 +69,7 @@ export class Kyogre extends PokemonCard {
       );
 
       // Move all cards to discard
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
 
       return store.prompt(state, new ChoosePokemonPrompt(
         player.id,

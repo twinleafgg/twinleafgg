@@ -4,7 +4,7 @@ import { PowerType, StoreLike, State, StateUtils, AttachEnergyPrompt, CardList, 
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { IS_ABILITY_BLOCKED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magnezone extends PokemonCard {
 
@@ -74,7 +74,7 @@ export class Magnezone extends PokemonCard {
       }
 
       // Look at top 6 cards
-      player.deck.moveTo(temp, 6);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 6, sourceCard: this });
 
       // Filter for Metal Energy cards
       const metalEnergyCards = temp.cards.filter(card =>
@@ -90,7 +90,7 @@ export class Magnezone extends PokemonCard {
           GameMessage.CARDS,
           temp.cards
         ), () => {
-          temp.moveTo(player.deck);
+          MOVE_CARDS(store, state, temp, player.deck, { sourceCard: this });
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
             player.deck.applyOrder(order);
             return state;
@@ -112,7 +112,7 @@ export class Magnezone extends PokemonCard {
           // Attach selected energy cards
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            temp.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this });
           }
         }
 
@@ -124,7 +124,7 @@ export class Magnezone extends PokemonCard {
         });
 
         // Return remaining cards to deck and shuffle
-        temp.moveTo(player.deck);
+        MOVE_CARDS(store, state, temp, player.deck, { sourceCard: this });
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);
           return state;

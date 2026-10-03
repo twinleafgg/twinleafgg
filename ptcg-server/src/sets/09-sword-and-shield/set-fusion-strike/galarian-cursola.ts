@@ -9,7 +9,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class GalarianCursola extends PokemonCard {
@@ -89,7 +89,7 @@ export class GalarianCursola extends PokemonCard {
             return;
           }
 
-          opponent.discard.moveCardTo(chosenCard, slots[0]);
+          MOVE_CARDS(store, state, opponent.discard, slots[0], { cards: [chosenCard], sourceCard: this });
           slots[0].pokemonPlayedTurn = state.turn;
 
           // Put damage counters until remaining HP is 30

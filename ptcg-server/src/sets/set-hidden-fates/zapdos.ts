@@ -14,11 +14,9 @@ import {
   AttachEnergyPrompt,
 } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   MULTIPLE_COIN_FLIPS_PROMPT,
-  SHUFFLE_DECK,
-} from '../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Zapdos extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -124,7 +122,7 @@ export class Zapdos extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.deck.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
             }
             SHUFFLE_DECK(store, state, player);
           },

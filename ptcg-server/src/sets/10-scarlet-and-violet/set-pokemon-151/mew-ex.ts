@@ -8,7 +8,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { GameError, GameMessage, PlayerType } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { COPY_OPPONENT_ACTIVE_ATTACK } from '../../../game/store/prefabs/attack-effects';
 
 export class Mewex extends PokemonCard {
@@ -69,7 +69,7 @@ export class Mewex extends PokemonCard {
         if (player.deck.cards.length === 0) {
           break;
         }
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
       player.marker.addMarker(this.RESTART_MARKER, this);
 

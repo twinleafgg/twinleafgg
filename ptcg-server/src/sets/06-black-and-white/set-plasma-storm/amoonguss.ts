@@ -7,11 +7,9 @@ import { Stage, CardType, CardTag, SpecialCondition } from '../../../game/store/
 import { GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   COIN_FLIP_PROMPT,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { SelectOptionPrompt } from '../../../game/store/prompts/select-option-prompt';
 
 export class Amoonguss extends PokemonCard {
@@ -53,7 +51,7 @@ export class Amoonguss extends PokemonCard {
         if (result && opponent.hand.cards.length > 0) {
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const cardToShuffle = opponent.hand.cards[randomIndex];
-          opponent.hand.moveCardTo(cardToShuffle, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [cardToShuffle], sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
         }
       });

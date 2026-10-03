@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, Card } from '../../../game';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class NidoranFemale extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,7 +58,7 @@ export class NidoranFemale extends PokemonCard {
       SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
 
       if (pokemon !== undefined) {
-        player.deck.moveCardTo(pokemon, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: [pokemon], sourceCard: this });
       }
       SHUFFLE_DECK(store, state, player);
     }

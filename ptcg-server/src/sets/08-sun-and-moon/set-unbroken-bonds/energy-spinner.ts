@@ -9,16 +9,17 @@ import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import { SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EnergySpinner extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'UNB';
   public setNumber: string = '170';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Energy Spinner';
   public fullName: string = 'Energy Spinner UNB';
-  public text: string = 'Search your deck for a basic Energy card, reveal it, and put it into your hand. If you go second and it\'s your first turn, search for up to 3 basic Energy cards instead of 1. Then, shuffle your deck.';
+  public text: string =
+    "Search your deck for a basic Energy card, reveal it, and put it into your hand. If you go second and it's your first turn, search for up to 3 basic Energy cards instead of 1. Then, shuffle your deck.";
 
   // Ref: set-lost-thunder/magearna.ts (Minor Errand-Running - search deck for basic energy)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -30,29 +31,36 @@ export class EnergySpinner extends TrainerCard {
       const isFirstTurnGoingSecond = state.turn === 2;
       const maxCards = isFirstTurnGoingSecond ? 3 : 1;
 
-      state = store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        player.deck,
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-        { min: 0, max: maxCards, allowCancel: false }
-      ), selected => {
-        const cards: Card[] = selected || [];
+      state = store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          player.deck,
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+          { min: 0, max: maxCards, allowCancel: false },
+        ),
+        (selected) => {
+          const cards: Card[] = selected || [];
 
-        if (cards.length > 0) {
-          store.prompt(state, new ShowCardsPrompt(
-            opponent.id,
-            GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-            cards
-          ), () => {
-            cards.forEach(card => {
-              player.deck.moveCardTo(card, player.hand);
-            });
-          });
-        }
+          if (cards.length > 0) {
+            store.prompt(
+              state,
+              new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+              () => {
+                cards.forEach((card) => {
+                  MOVE_CARDS(store, state, player.deck, player.hand, {
+                    cards: [card],
+                    sourceCard: this,
+                  });
+                });
+              },
+            );
+          }
 
-        SHUFFLE_DECK(store, state, player);
-      });
+          SHUFFLE_DECK(store, state, player);
+        },
+      );
     }
 
     return state;

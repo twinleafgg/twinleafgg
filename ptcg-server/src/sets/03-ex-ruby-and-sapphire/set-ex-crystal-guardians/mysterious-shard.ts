@@ -6,13 +6,13 @@ import { CheckTableStateEffect } from '../../../game/store/effects/check-effects
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { AttachPokemonToolEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_TOOL_BLOCKED, MOVE_CARD_TO } from '../../../game/store/prefabs/prefabs';
+import {IS_TOOL_BLOCKED, MOVE_CARD_TO, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GamePhase, State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class MysteriousShard extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CG';
   public name: string = 'Mysterious Shard';
   public fullName: string = 'Mysterious Shard CG';
@@ -87,7 +87,7 @@ export class MysteriousShard extends TrainerCard {
             cardList.tools.includes(this) &&
             StateUtils.findOwner(state, cardList) !== effect.player
           ) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

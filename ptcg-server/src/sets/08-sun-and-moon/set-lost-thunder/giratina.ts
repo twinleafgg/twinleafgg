@@ -5,7 +5,7 @@ import { StoreLike, State, GameMessage, PlayerType, SlotType, ChoosePokemonPromp
 import { Effect } from '../../../game/store/effects/effect';
 import { EffectOfAbilityEffect } from '../../../game/store/effects/game-effects';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Giratina extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -57,7 +57,7 @@ export class Giratina extends PokemonCard {
 
       const cards = player.discard.cards.filter(c => c === this);
       cards.forEach(card => {
-        player.discard.moveCardTo(card, slots[0]); // Move to Bench
+        MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this }); // Move to Bench
       });
 
       if (!hasBench) {

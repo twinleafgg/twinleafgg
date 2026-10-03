@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, PowerType, ChooseCardsPrompt, ConfirmPrompt, GameMessage, ShowCardsPrompt, StateUtils, SuperType, PlayerType, ShuffleDeckPrompt, BoardEffect } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Drizzile extends PokemonCard {
 
@@ -86,7 +86,7 @@ export class Drizzile extends PokemonCard {
               GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
               cards
             )], () => {
-              player.deck.moveCardsTo(cards, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
             });
 
             return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mienshao extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -52,7 +52,7 @@ export class Mienshao extends PokemonCard {
       const player = effect.player;
       const activePokemon = player.active;
 
-      activePokemon.moveTo(player.hand);
+      MOVE_CARDS(store, state, activePokemon, player.hand, { sourceCard: this });
       activePokemon.clearEffects();
     }
 

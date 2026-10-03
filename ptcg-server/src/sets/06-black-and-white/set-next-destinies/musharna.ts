@@ -12,7 +12,7 @@ import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects
 import { CardList } from '../../../game/store/state/card-list';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Musharna extends PokemonCard {
 
@@ -92,7 +92,7 @@ export class Musharna extends PokemonCard {
         {},
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
-        player.deck.moveCardsTo(selected, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: selected, sourceCard: this });
       });
     }
 

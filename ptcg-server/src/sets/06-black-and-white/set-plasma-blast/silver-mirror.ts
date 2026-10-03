@@ -7,7 +7,7 @@ import { AbstractAttackEffect } from '../../../game/store/effects/attack-effects
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class SilverMirror extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'PLB';
   public name: string = 'Silver Mirror';
   public fullName: string = 'Silver Mirror PLB';

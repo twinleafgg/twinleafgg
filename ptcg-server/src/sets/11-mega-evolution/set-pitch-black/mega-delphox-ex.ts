@@ -9,11 +9,9 @@ import {
 } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   SHOW_CARDS_TO_PLAYER,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MegaDelphoxex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -57,7 +55,7 @@ export class MegaDelphoxex extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(9, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(9, player.deck.cards.length), sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, deckTop.cards);
 
@@ -67,7 +65,7 @@ export class MegaDelphoxex extends PokemonCard {
       ).length;
 
       if (basicCount === 0 || openSlots === 0) {
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
         SHUFFLE_DECK(store, state, player);
         return state;
       }
@@ -88,11 +86,11 @@ export class MegaDelphoxex extends PokemonCard {
           cards.forEach((card) => {
             const emptySlot = player.bench.find((b) => b.cards.length === 0);
             if (emptySlot) {
-              deckTop.moveCardTo(card, emptySlot);
+              MOVE_CARDS(store, state, deckTop, emptySlot, { cards: [card], sourceCard: this });
               emptySlot.pokemonPlayedTurn = state.turn;
             }
           });
-          deckTop.moveTo(player.deck);
+          MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         },
       );

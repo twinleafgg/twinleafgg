@@ -10,7 +10,7 @@ import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class WelcomingLantern extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.SINGLE_STRIKE];
   public regulationMark: string = 'E';
   public set: string = 'CRE';

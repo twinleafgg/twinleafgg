@@ -12,7 +12,7 @@ import { PlayerType } from '../../../game';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eevee extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -85,7 +85,7 @@ export class Eevee extends PokemonCard {
           ), selected => {
             cards = selected || [];
             if (cards) {
-              player.deck.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
               cardList.clearEffects();
               cardList.pokemonPlayedTurn = state.turn;
             }
@@ -100,7 +100,7 @@ export class Eevee extends PokemonCard {
 
       return COIN_FLIP_PROMPT(store, state, player, result => {
         if (result === true) {
-          player.deck.moveTo(player.hand, 1);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
         }
       });
     }

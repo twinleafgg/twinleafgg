@@ -2,7 +2,7 @@ import { CardList, State, StoreLike } from '../../../game';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Groudon extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -38,7 +38,7 @@ export class Groudon extends PokemonCard {
       const deckTop = new CardList();
 
       // Move top 5 cards from deckTop
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       // Filter for Energy cards
       const energyCount = deckTop.cards.filter(c =>
@@ -46,7 +46,7 @@ export class Groudon extends PokemonCard {
       );
 
       // Move all cards to discard
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
 
       effect.damage = energyCount.length * 80;
     }

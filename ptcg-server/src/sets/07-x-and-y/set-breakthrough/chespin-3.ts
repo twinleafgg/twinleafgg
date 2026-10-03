@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Chespin3 extends PokemonCard {
@@ -59,7 +59,7 @@ export class Chespin3 extends PokemonCard {
         { min: 0, max: 1, allowCancel: true, blocked }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.deck.moveCardsTo(selected, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: selected, sourceCard: this });
         }
         SHUFFLE_DECK(store, state, player);
       });

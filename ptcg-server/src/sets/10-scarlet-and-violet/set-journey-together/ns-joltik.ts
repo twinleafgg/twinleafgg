@@ -4,7 +4,7 @@ import { StoreLike, State, StateUtils } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class NsJoltik extends PokemonCard {
   protected _tags = [CardTag.NS];
@@ -36,7 +36,7 @@ export class NsJoltik extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       if (opponent.active.tools.length > 0) {
-        opponent.active.moveCardsTo([...opponent.active.tools], opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [...opponent.active.tools], sourceCard: this });
         const specialCondition = new AddSpecialConditionsEffect(effect, [
           SpecialCondition.PARALYZED,
         ]);

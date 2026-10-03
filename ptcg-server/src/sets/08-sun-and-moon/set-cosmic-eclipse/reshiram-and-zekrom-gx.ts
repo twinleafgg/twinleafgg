@@ -28,7 +28,7 @@ import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ReshiramAndZekromGx extends PokemonCard {
   protected _tags = [CardTag.TAG_TEAM, CardTag.POKEMON_GX];
@@ -149,7 +149,7 @@ export class ReshiramAndZekromGx extends PokemonCard {
           cards.forEach((card) => {
             const source = cardSourceMap.get(card);
             if (source) {
-              source.moveCardTo(card, player.discard);
+              MOVE_CARDS(store, state, source, player.discard, { cards: [card], sourceCard: this });
             }
           });
         },

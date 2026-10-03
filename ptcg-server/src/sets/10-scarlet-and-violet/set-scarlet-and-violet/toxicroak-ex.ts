@@ -4,7 +4,7 @@ import { StoreLike, State, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, Ga
 import { Effect } from '../../../game/store/effects/effect';
 
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Toxicroakex extends PokemonCard {
 
@@ -63,7 +63,7 @@ export class Toxicroakex extends PokemonCard {
         {},
         { min: 1, max: 2, allowCancel: false }
       ), cards => {
-        player.deck.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
         state = store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);

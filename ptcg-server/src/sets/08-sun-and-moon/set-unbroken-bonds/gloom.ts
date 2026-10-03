@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { Card, ChooseCardsPrompt, GameError, GameMessage, PokemonCardList, PowerType, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gloom extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -62,7 +62,7 @@ export class Gloom extends PokemonCard {
             }
 
             cards.forEach((card, index) => {
-              opponent.hand.moveCardTo(card, slots[index]);
+              MOVE_CARDS(store, state, opponent.hand, slots[index], { cards: [card], sourceCard: this });
               slots[index].pokemonPlayedTurn = state.turn;
             });
           });

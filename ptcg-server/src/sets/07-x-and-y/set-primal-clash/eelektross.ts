@@ -9,7 +9,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eelektross extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -91,7 +91,7 @@ export class Eelektross extends PokemonCard {
         if (transfers && transfers.length > 0) {
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.active);
+            MOVE_CARDS(store, state, source, player.active, { cards: [transfer.card], sourceCard: this });
           }
           ABILITY_USED(player, this);
         }

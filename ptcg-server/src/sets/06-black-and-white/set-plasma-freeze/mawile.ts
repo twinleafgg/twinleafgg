@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, HEAL_X_DAMAGE_FROM_THIS_POKEMON, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, HEAL_X_DAMAGE_FROM_THIS_POKEMON, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class Mawile extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -45,7 +45,7 @@ export class Mawile extends PokemonCard {
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const randomCard = opponent.hand.cards[randomIndex];
           SHOW_CARDS_TO_PLAYER(store, state, player, [randomCard]);
-          opponent.hand.moveCardTo(randomCard, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [randomCard], sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
         }
       });

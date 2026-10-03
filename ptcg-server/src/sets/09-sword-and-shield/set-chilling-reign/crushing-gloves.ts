@@ -10,21 +10,24 @@ import { Effect } from '../../../game/store/effects/effect';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class CrushingGloves extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'CRE';
   public setNumber: string = '133';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Crushing Gloves';
   public fullName: string = 'Crushing Gloves CRE';
-  public text: string = 'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. The attacks of the Pokémon this card is attached to do 30 more damage to your opponent\'s Active Metal Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn.';
+  public text: string =
+    "Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached. The attacks of the Pokémon this card is attached to do 30 more damage to your opponent's Active Metal Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-chilling-reign/justified-gloves.ts (DealDamageEffect boost vs specific type when tool attached)
     if (effect instanceof DealDamageEffect && effect.source.tools.includes(this)) {
       const opponent = StateUtils.getOpponent(state, effect.player);
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       // Only boost damage to opponent's active (not bench)
       if (effect.target !== opponent.active) {

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 export class Litwick2 extends PokemonCard {
@@ -42,7 +42,7 @@ export class Litwick2 extends PokemonCard {
         // Pick random card
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const card = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(card, opponent.deck);
+        MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [card], sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
           opponent.deck.applyOrder(order);

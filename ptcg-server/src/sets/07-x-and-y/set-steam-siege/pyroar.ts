@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, StateUtils, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pyroar extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -56,7 +56,7 @@ export class Pyroar extends PokemonCard {
         if (cards.length > 0) {
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           cards.forEach(card => {
-            player.deck.moveCardTo(card, player.active);
+            MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
           });
         }
         SHUFFLE_DECK(store, state, player);
@@ -71,7 +71,7 @@ export class Pyroar extends PokemonCard {
 
       const tools = opponent.active.tools.slice();
       tools.forEach(tool => {
-        opponent.active.moveCardTo(tool, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [tool], sourceCard: this });
       });
     }
 

@@ -13,7 +13,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 
 import { GameMessage } from '../../../game/game-message';
-import { DAMAGE_OPPONENT_POKEMON, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGE_OPPONENT_POKEMON, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MegaSkarmoryex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -49,7 +49,7 @@ export class MegaSkarmoryex extends PokemonCard {
 
       // Move all energy cards to deck
       if (energyCards.length > 0) {
-        player.active.energies.moveCardsTo(energyCards, player.deck);
+        MOVE_CARDS(store, state, player.active.energies, player.deck, { cards: energyCards, sourceCard: this });
       }
 
       // Shuffle the deck

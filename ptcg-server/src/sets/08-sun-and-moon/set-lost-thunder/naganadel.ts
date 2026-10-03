@@ -18,7 +18,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // LOT Naganadel 108 (https://limitlesstcg.com/cards/LOT/108)
 export class Naganadel extends PokemonCard {
@@ -99,7 +99,7 @@ export class Naganadel extends PokemonCard {
           cards = cards || [];
           if (cards.length > 0) {
             player.marker.addMarker(this.CHARGE_MARKER, this);
-            player.discard.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.discard, cardList, { cards: cards, sourceCard: this });
           }
         },
       );

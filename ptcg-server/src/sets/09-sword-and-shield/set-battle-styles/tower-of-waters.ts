@@ -11,7 +11,7 @@ import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class TowerOfWaters extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'E';
   public set: string = 'BST';
   public cardImage: string = 'assets/cardback.png';

@@ -10,9 +10,14 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -22,10 +27,13 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: effect.trainerCard,
+  });
 
   let coin1Result = false;
-  yield COIN_FLIP_PROMPT(store, state, player, result => {
+  yield COIN_FLIP_PROMPT(store, state, player, (result) => {
     coin1Result = result;
 
     next();
@@ -34,24 +42,31 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   let cards: any[] = [];
 
   if (coin1Result) {
-    yield store.prompt(state, new ChooseCardsPrompt(
-      player,
-      GameMessage.CHOOSE_CARD_TO_HAND,
-      player.deck,
-      { superType: SuperType.TRAINER, trainerType: TrainerType.ITEM },
-      { min: 0, max: 1, allowCancel: false }), (selected: any[]) => {
+    yield store.prompt(
+      state,
+      new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_HAND,
+        player.deck,
+        { superType: SuperType.TRAINER, trainerType: TrainerType.ITEM },
+        { min: 0, max: 1, allowCancel: false },
+      ),
+      (selected: any[]) => {
         cards = selected || [];
         next();
-      });
+      },
+    );
     if (cards.length > 0) {
-      player.deck.moveCardsTo(cards, player.hand);
-
+      MOVE_CARDS(store, state, player.deck, player.hand, {
+        cards: cards,
+        sourceCard: effect.trainerCard,
+      });
     }
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => state);
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => state,
+    );
 
     return store.prompt(state, new ShuffleDeckPrompt(player.id), (order: any[]) => {
       player.deck.applyOrder(order);
@@ -60,7 +75,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 }
 
 export class OrderPad extends TrainerCard {
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
 
   public set: string = 'UPR';
   public cardImage: string = 'assets/cardback.png';
@@ -68,7 +83,8 @@ export class OrderPad extends TrainerCard {
   public name: string = 'Order Pad';
   public fullName: string = 'Order Pad UPR';
 
-  public text: string = 'Flip a coin. If heads, search your deck for an Item card, reveal it, and put it into your hand. Shuffle your deck afterward.';
+  public text: string =
+    'Flip a coin. If heads, search your deck for an Item card, reveal it, and put it into your hand. Shuffle your deck afterward.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -77,4 +93,4 @@ export class OrderPad extends TrainerCard {
     }
     return state;
   }
-}                         
+}

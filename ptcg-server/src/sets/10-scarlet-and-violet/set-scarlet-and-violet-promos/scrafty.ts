@@ -2,7 +2,7 @@ import { Card, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, State, StoreLi
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Scrafty extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -47,7 +47,7 @@ export class Scrafty extends PokemonCard {
       ), selected => {
         cards = selected || [];
 
-        player.deck.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);

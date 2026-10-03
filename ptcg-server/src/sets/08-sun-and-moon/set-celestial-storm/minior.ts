@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ApplyWeaknessEffect, AfterDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Minior extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -66,11 +66,11 @@ export class Minior extends PokemonCard {
 
       // Move active to first empty bench slot
       const emptySlot = benchSlots[0];
-      player.active.moveTo(emptySlot);
+      MOVE_CARDS(store, state, player.active, emptySlot, { sourceCard: this });
       player.active.clearEffects();
 
       // Play Minior from hand as new active
-      player.hand.moveCardTo(this, player.active);
+      MOVE_CARDS(store, state, player.hand, player.active, { cards: [this], sourceCard: this });
       player.active.pokemonPlayedTurn = state.turn;
     }
 

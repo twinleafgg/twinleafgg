@@ -16,7 +16,7 @@ import {
   AddSpecialConditionsEffect,
   PutDamageEffect,
 } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magcargoex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex, CardTag.POKEMON_TERA];
@@ -66,8 +66,8 @@ export class Magcargoex extends PokemonCard {
       const opponentTopDeck = new CardList();
       let damageScaling = 0;
 
-      player.deck.moveTo(playerTopDeck, 1);
-      opponent.deck.moveTo(opponentTopDeck, 1);
+      MOVE_CARDS(store, state, player.deck, playerTopDeck, { count: 1, sourceCard: this });
+      MOVE_CARDS(store, state, opponent.deck, opponentTopDeck, { count: 1, sourceCard: this });
 
       if (playerTopDeck.cards[0] instanceof EnergyCard) {
         damageScaling++;
@@ -78,8 +78,8 @@ export class Magcargoex extends PokemonCard {
 
       effect.damage += 140 * damageScaling;
 
-      playerTopDeck.moveTo(player.discard);
-      opponentTopDeck.moveTo(opponent.discard);
+      MOVE_CARDS(store, state, playerTopDeck, player.discard, { sourceCard: this });
+      MOVE_CARDS(store, state, opponentTopDeck, opponent.discard, { sourceCard: this });
     }
 
     if (

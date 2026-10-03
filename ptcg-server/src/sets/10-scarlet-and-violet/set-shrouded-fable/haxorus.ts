@@ -7,7 +7,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { StateUtils } from '../../../game/store/state-utils';
 import { CardList, EnergyCard, GameLog } from '../../../game';
 import { KNOCK_OUT_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Haxorus extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -63,10 +63,10 @@ export class Haxorus extends PokemonCard {
       const player = effect.player;
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 3);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 3, sourceCard: this });
       const discards = deckTop.cards;
 
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
 
       discards.forEach((card, index) => {
         store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD, { name: player.name, card: card.name, effectName: effect.attack.name });

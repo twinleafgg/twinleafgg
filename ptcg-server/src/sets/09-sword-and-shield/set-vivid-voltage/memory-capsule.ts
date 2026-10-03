@@ -10,21 +10,21 @@ import { Effect } from '../../../game/store/effects/effect';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class MemoryCapsule extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'D';
   public set: string = 'VIV';
   public setNumber: string = '155';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Memory Capsule';
   public fullName: string = 'Memory Capsule VIV';
-  public text: string = 'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. The Pokémon this card is attached to can use any attack from its previous Evolutions. (You still need the necessary Energy to use each attack.) You may play any number of Item cards during your turn.';
+  public text: string =
+    "Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached. The Pokémon this card is attached to can use any attack from its previous Evolutions. (You still need the necessary Energy to use each attack.) You may play any number of Item cards during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Memory Capsule: The Pokemon this card is attached to can use attacks from its previous Evolutions.
     // Ref: set-legends-awakened/mewtwo-lv-x.ts (CheckPokemonAttacksEffect + evolution card attacks)
     // Ref: set-plasma-blast/g-scope.ts (CheckPokemonAttacksEffect with tools.includes check)
-    if (effect instanceof CheckPokemonAttacksEffect
-      && effect.player.active.tools.includes(this)) {
+    if (effect instanceof CheckPokemonAttacksEffect && effect.player.active.tools.includes(this)) {
       const player = effect.player;
 
       if (IS_TOOL_BLOCKED(store, state, player, this)) {
@@ -40,9 +40,9 @@ export class MemoryCapsule extends TrainerCard {
         if (card.superType === SuperType.POKEMON && card !== activePokemon) {
           const pokemonCard = card as any;
           if (pokemonCard.attacks) {
-            effect.attacks.push(...pokemonCard.attacks.filter(
-              (a: any) => !effect.attacks.includes(a)
-            ));
+            effect.attacks.push(
+              ...pokemonCard.attacks.filter((a: any) => !effect.attacks.includes(a)),
+            );
           }
         }
       }

@@ -14,7 +14,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 import { GameError, GameMessage, StateUtils } from '../../../game';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* moveEnergy(
   next: Function,
@@ -59,7 +59,7 @@ function* moveEnergy(
   for (const transfer of transfers) {
     const source = StateUtils.getTarget(state, player, transfer.from);
     const target = StateUtils.getTarget(state, player, transfer.to);
-    source.moveCardTo(transfer.card, target);
+    MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: effect.card });
   }
 
   return state;

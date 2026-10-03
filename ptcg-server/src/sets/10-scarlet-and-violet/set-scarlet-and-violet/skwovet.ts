@@ -8,7 +8,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { CardList, GameError, GameMessage, PlayerType } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Skwovet extends PokemonCard {
 
@@ -74,11 +74,11 @@ export class Skwovet extends PokemonCard {
 
       // Create deckBottom and move hand into it
       const deckBottom = new CardList();
-      player.hand.moveTo(deckBottom, cards.length);
+      MOVE_CARDS(store, state, player.hand, deckBottom, { count: cards.length, sourceCard: this });
 
       // Later, move deckBottom to player's deck
 
-      deckBottom.moveTo(player.deck, cards.length);
+      MOVE_CARDS(store, state, deckBottom, player.deck, { count: cards.length, sourceCard: this });
       player.marker.addMarker(this.NEST_STASH_MARKER, this);
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
@@ -87,7 +87,7 @@ export class Skwovet extends PokemonCard {
         }
       });
 
-      player.deck.moveTo(player.hand, 1);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
 
       return state;
     }

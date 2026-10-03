@@ -4,7 +4,7 @@ import { PowerType, StoreLike, State, ShuffleDeckPrompt } from '../../../game';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect, AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cleffa extends PokemonCard {
 
@@ -49,7 +49,7 @@ export class Cleffa extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
 
-      player.hand.moveTo(player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: this });
 
       const specialCondition = new AddSpecialConditionsEffect(effect, [SpecialCondition.ASLEEP]);
       specialCondition.target = player.active;
@@ -59,7 +59,7 @@ export class Cleffa extends PokemonCard {
         new ShuffleDeckPrompt(player.id)
       ], deckOrder => {
         player.deck.applyOrder(deckOrder);
-        player.deck.moveTo(player.hand, 6);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 6, sourceCard: this });
       });
     }
 

@@ -7,16 +7,17 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tierno extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'PHF';
   public setNumber: string = '107';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Tierno';
   public fullName: string = 'Tierno PHF';
-  public text: string = 'Draw 3 cards. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Draw 3 cards. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-sword-and-shield/hop.ts (Draw 3 cards Supporter)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -31,11 +32,12 @@ export class Tierno extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
 
       DRAW_CARDS(store, state, player, 3);
-
-
     }
 
     return state;

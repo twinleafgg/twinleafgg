@@ -6,7 +6,7 @@ import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useDarkTrance(next: Function, store: StoreLike, state: State, effect: PowerEffect): IterableIterator<State> {
   const player = effect.player;
@@ -51,11 +51,10 @@ function* useDarkTrance(next: Function, store: StoreLike, state: State, effect: 
     for (const transfer of transfers) {
       const source = StateUtils.getTarget(state, player, transfer.from);
       const target = StateUtils.getTarget(state, player, transfer.to);
-      source.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: effect.card });
     }
   });
 }
-
 
 export class Hydreigon extends PokemonCard {
 

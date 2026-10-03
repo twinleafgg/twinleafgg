@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameMessage, ChooseCardsPrompt, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Xerneas extends PokemonCard {
@@ -53,7 +53,7 @@ export class Xerneas extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), selected => {
           if (selected && selected.length > 0) {
-            player.discard.moveCardTo(selected[0], player.hand);
+            MOVE_CARDS(store, state, player.discard, player.hand, { cards: [selected[0]], sourceCard: this });
           }
         });
       }

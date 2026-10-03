@@ -15,11 +15,9 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   COIN_FLIP_PROMPT,
-  THIS_POKEMON_DOES_DAMAGE_TO_ITSELF,
-} from '../../../game/store/prefabs/prefabs';
+  THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class KinglerV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -81,7 +79,7 @@ export class KinglerV extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.deck.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
             }
             store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
               player.deck.applyOrder(order);

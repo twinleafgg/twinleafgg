@@ -1020,7 +1020,16 @@
     "LOG_PLAYER_HEALS_POKEMON": "{{name}} cura a {{pokemon}} {{healingAmount}} PS.",
     "LOG_HISUIAN_HEAVY_BALL": "{{name}} toma {{card}} de sus cartas de Premio con Hisuian Heavy Ball.",
     "LOG_PLAYER_CHOOSES": "{{name}} elige {{string}}.",
-    "LOG_SHUFFLE_POKEMON_INTO_DECK": "{{name}} baraja {{card}} en su mazo con el efecto de {{effect}}."
+    "LOG_SHUFFLE_POKEMON_INTO_DECK": "{{name}} baraja {{card}} en su mazo con el efecto de {{effect}}.",
+    "LOG_TRAINER_TARGET_BLOCKED_BENCH": "{{blocker}} impidió que {{card}} afectara al {{pokemon}} en Banca de {{name}}.",
+    "LOG_TRAINER_TARGET_BLOCKED_ACTIVE": "{{blocker}} impidió que {{card}} afectara al {{pokemon}} Activo de {{name}}.",
+    "LOG_CARD_PREVENTS_BENCH": "{{blocker}} impidió que {{effect}} afectara al {{pokemon}} en Banca de {{name}}.",
+    "LOG_CARD_PREVENTS_ACTIVE": "{{blocker}} impidió que {{effect}} afectara al {{pokemon}} Activo de {{name}}.",
+    "LOG_CARD_PREVENTS": "{{blocker}} impidió {{effect}}.",
+    "LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE_FROM_PLAY": "{{name}} pone {{card}} en la Zona Perdida.",
+    "LOG_PLAYER_MOVES_CARD": "{{name}} mueve {{card}} de {{from}} a {{to}}.",
+    "LOG_PLAYER_POKEMON_SPECIAL_CONDITION": "El {{pokemon}} de {{name}} ahora está {{condition}}.",
+    "LOG_PLAYER_POKEMON_RECOVERS_SPECIAL_CONDITION": "El {{pokemon}} de {{name}} ya no está {{condition}}."
   },
   "GAMES_SANDBOX_MODE": "Modo sandbox",
   "GAMES_SANDBOX_ALL_POKEMON_BASIC": "Tratar cada Pokémon como Básico (banquillo y preparación)",

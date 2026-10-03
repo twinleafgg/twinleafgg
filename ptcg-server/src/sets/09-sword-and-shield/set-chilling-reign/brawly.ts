@@ -58,7 +58,7 @@ function* useKeepCalling(
     slots[index].pokemonPlayedTurn = state.turn;
   });
 
-  player.supporter.moveCardTo(self, player.discard);
+  MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [self], sourceCard: self });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
@@ -68,7 +68,7 @@ function* useKeepCalling(
 export class Brawly extends TrainerCard {
   public regulationMark = 'E';
   protected _tags = [CardTag.RAPID_STRIKE];
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'CRE';
   public setNumber: string = '131';
   public cardImage: string = 'assets/cardback.png';

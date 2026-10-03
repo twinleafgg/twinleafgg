@@ -12,14 +12,15 @@ import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RuggedHelmet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'CRE';
   public setNumber: string = '152';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Rugged Helmet';
   public fullName: string = 'Rugged Helmet CRE';
-  public text: string = 'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. If the Pokémon this card is attached to is in the Active Spot and is damaged by an attack from your opponent\'s Pokémon (even if it is Knocked Out), put an Energy attached to the Attacking Pokémon into your opponent\'s hand. You may play any number of Item cards during your turn.';
+  public text: string =
+    "Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached. If the Pokémon this card is attached to is in the Active Spot and is damaged by an attack from your opponent's Pokémon (even if it is Knocked Out), put an Energy attached to the Attacking Pokémon into your opponent's hand. You may play any number of Item cards during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-scarlet-and-violet/rocky-helmet.ts (AfterDamageEffect tool pattern),
@@ -42,25 +43,39 @@ export class RuggedHelmet extends TrainerCard {
 
       if (state.phase === GamePhase.ATTACK) {
         // Get energy attached to the attacking Pokemon
-        const attackerEnergyCards = effect.source.cards.filter(c => c.superType === SuperType.ENERGY);
+        const attackerEnergyCards = effect.source.cards.filter(
+          (c) => c.superType === SuperType.ENERGY,
+        );
 
-        if (attackerEnergyCards.length === 0) { return state; }
+        if (attackerEnergyCards.length === 0) {
+          return state;
+        }
 
         // If only one energy, take it automatically; otherwise let target player choose
         if (attackerEnergyCards.length === 1) {
-          MOVE_CARDS(store, state, effect.source, targetPlayer.hand, { cards: [attackerEnergyCards[0]], sourceCard: this });
-        } else {
-          return store.prompt(state, new ChooseCardsPrompt(
-            targetPlayer,
-            GameMessage.MOVE_ENERGY_CARDS,
-            effect.source,
-            { superType: SuperType.ENERGY },
-            { min: 1, max: 1, allowCancel: false }
-          ), selected => {
-            if (selected && selected.length > 0) {
-              MOVE_CARDS(store, state, effect.source, targetPlayer.hand, { cards: selected, sourceCard: this });
-            }
+          MOVE_CARDS(store, state, effect.source, targetPlayer.hand, {
+            cards: [attackerEnergyCards[0]],
+            sourceCard: this,
           });
+        } else {
+          return store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              targetPlayer,
+              GameMessage.MOVE_ENERGY_CARDS,
+              effect.source,
+              { superType: SuperType.ENERGY },
+              { min: 1, max: 1, allowCancel: false },
+            ),
+            (selected) => {
+              if (selected && selected.length > 0) {
+                MOVE_CARDS(store, state, effect.source, targetPlayer.hand, {
+                  cards: selected,
+                  sourceCard: this,
+                });
+              }
+            },
+          );
         }
       }
     }

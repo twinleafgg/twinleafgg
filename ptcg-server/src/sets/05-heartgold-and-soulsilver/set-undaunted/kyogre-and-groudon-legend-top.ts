@@ -85,8 +85,8 @@ export class KyogreAndGroudonLegendTop extends PokemonCard {
 
       if (topPiece && bottomPiece && topCard && bottomCard) {
         if (slots.length > 0) {
-          player.hand.moveCardTo(bottomCard, slots[0]);
-          player.hand.moveCardTo(topCard, slots[0]);
+          MOVE_CARDS(store, state, player.hand, slots[0], { cards: [bottomCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.hand, slots[0], { cards: [topCard], sourceCard: this });
           slots[0].pokemonPlayedTurn = state.turn;
         }
       } else {
@@ -102,7 +102,7 @@ export class KyogreAndGroudonLegendTop extends PokemonCard {
       const deckTop = new CardList();
 
       // Move top 5 cards from deckTop
-      opponent.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 5, sourceCard: this });
 
       // Filter for Energy cards
       const energyCount = deckTop.cards.filter((c) => c instanceof EnergyCard);
@@ -131,13 +131,13 @@ export class KyogreAndGroudonLegendTop extends PokemonCard {
       const deckTop = new CardList();
 
       // Move top 5 cards from deckTop
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       // Filter for Energy cards
       const energyCount = deckTop.cards.filter((c) => c instanceof EnergyCard);
 
       // Move all cards to discard
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
 
       effect.damage = energyCount.length * 100;
     }

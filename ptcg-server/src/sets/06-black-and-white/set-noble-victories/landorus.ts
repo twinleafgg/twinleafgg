@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 
 export class Landorus extends PokemonCard {
@@ -57,7 +57,7 @@ export class Landorus extends PokemonCard {
         { min: 0, max: 1, allowCancel: true }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.discard.moveCardTo(selected[0], player.active);
+          MOVE_CARDS(store, state, player.discard, player.active, { cards: [selected[0]], sourceCard: this });
         }
       });
     }

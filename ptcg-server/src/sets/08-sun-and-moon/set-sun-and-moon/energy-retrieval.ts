@@ -8,13 +8,19 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard } from '../../../game/store/card/energy-card';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   // Player has no Basic Energy in the discard pile
   let basicEnergyCards = 0;
-  player.discard.cards.forEach(c => {
+  player.discard.cards.forEach((c) => {
     if (c instanceof EnergyCard && c.energyType === EnergyType.BASIC) {
       basicEnergyCards++;
     }
@@ -27,25 +33,30 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   effect.preventDefault = true;
 
   const min = Math.min(basicEnergyCards, 2);
-  return store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.discard,
-    { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-    { min, max: min, allowCancel: true }
-  ), cards => {
-    cards = cards || [];
-    if (cards.length > 0) {
-      // Recover discarded Pokemon
-      player.discard.moveCardsTo(cards, player.hand);
-    }
-
-  });
+  return store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.discard,
+      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+      { min, max: min, allowCancel: true },
+    ),
+    (cards) => {
+      cards = cards || [];
+      if (cards.length > 0) {
+        // Recover discarded Pokemon
+        MOVE_CARDS(store, state, player.discard, player.hand, {
+          cards: cards,
+          sourceCard: effect.trainerCard,
+        });
+      }
+    },
+  );
 }
 
 export class EnergyRetrieval extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'SUM';
 
@@ -57,8 +68,7 @@ export class EnergyRetrieval extends TrainerCard {
 
   public setNumber: string = '116';
 
-  public text: string =
-    'Put 2 basic Energy cards from your discard pile into your hand.';
+  public text: string = 'Put 2 basic Energy cards from your discard pile into your hand.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -68,5 +78,4 @@ export class EnergyRetrieval extends TrainerCard {
 
     return state;
   }
-
 }

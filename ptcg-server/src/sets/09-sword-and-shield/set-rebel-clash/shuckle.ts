@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 import {
@@ -67,7 +67,7 @@ export class Shuckle extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         cards.forEach(card => {
-          player.discard.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [card], sourceCard: this });
         });
         SHUFFLE_DECK(store, state, player);
       });

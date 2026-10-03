@@ -6,14 +6,24 @@ import { State } from '../../../game/store/state/state';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { Card, CardList, CardType, ChooseCardsPrompt, GameError, GameLog, GameMessage, PowerType } from '../../../game';
+import {
+  Card,
+  CardList,
+  CardType,
+  ChooseCardsPrompt,
+  GameError,
+  GameMessage,
+  PowerType,
+} from '../../../game';
 import { TrainerPowerEffect } from '../../../game/store/effects/game-effects';
-import { CheckPokemonPowersEffect, CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
+import {
+  CheckPokemonPowersEffect,
+  CheckPokemonTypeEffect,
+} from '../../../game/store/effects/check-effects';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Grant extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'F';
 
@@ -28,21 +38,24 @@ export class Grant extends TrainerCard {
   public fullName: string = 'Grant ASR';
 
   public text: string =
-    'During this turn, your [F] Pokémon\'s attacks do 30 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance).';
+    "During this turn, your [F] Pokémon's attacks do 30 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance).";
 
-  public powers = [{
-    name: 'Grant',
-    useFromDiscard: true,
-    powerType: PowerType.ABILITY,
-    text: 'During your turn, if this Grant is in your discard pile, you may discard 2 cards, except any Grant, from your hand. If you do, put this Grant into your hand. (This effect doesn\'t use up your Supporter card for the turn.)'
-  }];
+  public powers = [
+    {
+      name: 'Grant',
+      useFromDiscard: true,
+      powerType: PowerType.ABILITY,
+      text: "During your turn, if this Grant is in your discard pile, you may discard 2 cards, except any Grant, from your hand. If you do, put this Grant into your hand. (This effect doesn't use up your Supporter card for the turn.)",
+    },
+  ];
 
   private readonly GRANT_MARKER = 'GRANT_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
-    if (effect instanceof CheckPokemonPowersEffect &&
-      !effect.powers.find(p => p.name === this.powers[0].name)) {
+    if (
+      effect instanceof CheckPokemonPowersEffect &&
+      !effect.powers.find((p) => p.name === this.powers[0].name)
+    ) {
       effect.powers.push(this.powers[0]);
     }
 
@@ -54,7 +67,10 @@ export class Grant extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -73,7 +89,10 @@ export class Grant extends TrainerCard {
       }
     }
 
-    if (effect instanceof EndTurnEffect && effect.player.marker.hasMarker(this.GRANT_MARKER, this)) {
+    if (
+      effect instanceof EndTurnEffect &&
+      effect.player.marker.hasMarker(this.GRANT_MARKER, this)
+    ) {
       const player = effect.player;
       player.marker.removeMarker(this.GRANT_MARKER, this);
       return state;
@@ -84,7 +103,7 @@ export class Grant extends TrainerCard {
       // Check if card is in the discard
       let cards: Card[] = [];
 
-      cards = player.hand.cards.filter(c => c !== this);
+      cards = player.hand.cards.filter((c) => c !== this);
       if (cards.length < 2) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
@@ -102,28 +121,31 @@ export class Grant extends TrainerCard {
       });
 
       const handTemp = new CardList();
-      handTemp.cards = player.hand.cards.filter(c => c !== this);
+      handTemp.cards = player.hand.cards.filter((c) => c !== this);
 
-      state = store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DISCARD,
-        handTemp,
-        {},
-        { min: 2, max: 2, allowCancel: true, blocked: blocked }
-      ), selected => {
-        cards = selected || [];
+      state = store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DISCARD,
+          handTemp,
+          {},
+          { min: 2, max: 2, allowCancel: true, blocked: blocked },
+        ),
+        (selected) => {
+          cards = selected || [];
 
-        cards.forEach((card, index) => {
-          store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, { name: player.name, card: card.name });
-        });
+          if (cards.length === 0) {
+            return state;
+          }
 
-        if (cards.length === 0) {
-          return state;
-        }
-
-        MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: this });
-        MOVE_CARDS(store, state, player.discard, player.hand, { cards: [this], sourceCard: this });
-      });
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: this });
+          MOVE_CARDS(store, state, player.discard, player.hand, {
+            cards: [this],
+            sourceCard: this,
+          });
+        },
+      );
 
       return state;
     }
@@ -131,4 +153,3 @@ export class Grant extends TrainerCard {
     return state;
   }
 }
-

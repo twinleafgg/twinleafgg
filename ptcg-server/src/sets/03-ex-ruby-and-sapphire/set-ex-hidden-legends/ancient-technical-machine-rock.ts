@@ -31,9 +31,10 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AncientTechnicalMachineRock extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.TECHNICAL_MACHINE];
   public set: string = 'HL';
   public cardImage: string = 'assets/cardback.png';
@@ -83,7 +84,7 @@ export class AncientTechnicalMachineRock extends TrainerCard {
           { min: 1, max: 1, allowCancel: false, blocked },
         ),
         (transfers) => {
-          player.supporter.moveCardTo(effect.trainerCard, transfers[0]);
+          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
         },
       );
     }
@@ -93,7 +94,7 @@ export class AncientTechnicalMachineRock extends TrainerCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, index) => {
         if (cardList.cards.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         }
       });
     }
@@ -111,7 +112,7 @@ export class AncientTechnicalMachineRock extends TrainerCard {
             !!attachedTo &&
             (attachedTo.hasTag(CardTag.POKEMON_ex) || cardList.getPokemons().length < 2)
           ) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });
@@ -174,7 +175,7 @@ export class AncientTechnicalMachineRock extends TrainerCard {
           }
           if (lastPlayedPokemonIndex >= 0) {
             const lastPlayedPokemon = activePokemon[lastPlayedPokemonIndex];
-            opponent.active.moveCardTo(lastPlayedPokemon, opponent.hand);
+            MOVE_CARDS(store, state, opponent.active, opponent.hand, { cards: [lastPlayedPokemon], sourceCard: this });
           }
         }
       }
@@ -195,7 +196,7 @@ export class AncientTechnicalMachineRock extends TrainerCard {
             }
             if (lastPlayedPokemonIndex >= 0) {
               const lastPlayedPokemon = benchPokemon[lastPlayedPokemonIndex];
-              benchSpot.moveCardTo(lastPlayedPokemon, opponent.hand);
+              MOVE_CARDS(store, state, benchSpot, opponent.hand, { cards: [lastPlayedPokemon], sourceCard: this });
             }
           }
         }

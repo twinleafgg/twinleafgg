@@ -26,7 +26,7 @@ import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { MorpekoVUNIONTopRight } from './morpeko-v-union-tr';
 import { MorpekoVUNIONBottomLeft } from './morpeko-v-union-bl';
 import { MorpekoVUNIONBottomRight } from './morpeko-v-union-br';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MorpekoVUNIONTopLeft extends PokemonCard {
   public stage: Stage = Stage.VUNION;
@@ -117,23 +117,23 @@ export class MorpekoVUNIONTopLeft extends PokemonCard {
         if (slots.length > 0) {
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONTopRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONBottomLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONBottomRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           // gotta make sure the actual mon ends up on top
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONTopLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.assembledVUNIONs.push(this.name);
@@ -192,7 +192,7 @@ export class MorpekoVUNIONTopLeft extends PokemonCard {
             }
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.discard.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             }
           },
         );
@@ -211,7 +211,7 @@ export class MorpekoVUNIONTopLeft extends PokemonCard {
       }
 
       while (player.hand.cards.length < 10 && player.deck.cards.length > 0) {
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
     }
 

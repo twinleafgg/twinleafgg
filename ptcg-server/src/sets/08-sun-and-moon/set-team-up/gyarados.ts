@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types
 import { CardList, StoreLike, State } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Gyarados extends PokemonCard {
@@ -51,7 +51,7 @@ export class Gyarados extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(7, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(7, player.deck.cards.length), sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, deckTop.cards);
 
@@ -64,11 +64,11 @@ export class Gyarados extends PokemonCard {
 
       // Shuffle Water Energy back into deck
       waterEnergy.forEach(c => {
-        deckTop.moveCardTo(c, player.deck);
+        MOVE_CARDS(store, state, deckTop, player.deck, { cards: [c], sourceCard: this });
       });
 
       // Discard the other cards
-      deckTop.moveTo(player.discard);
+      MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
 
       // Shuffle deck after putting energy back
       SHUFFLE_DECK(store, state, player);

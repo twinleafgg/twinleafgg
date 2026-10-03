@@ -15,10 +15,8 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
-  THIS_POKEMON_DOES_DAMAGE_TO_ITSELF,
-} from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED,
+  THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class KinglerVmax extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VMAX];
@@ -76,7 +74,7 @@ export class KinglerVmax extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
           store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);

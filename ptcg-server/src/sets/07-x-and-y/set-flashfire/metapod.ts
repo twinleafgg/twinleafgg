@@ -4,17 +4,12 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PokemonCardList, PowerType, StoreLike, State, StateUtils, PlayerType } from '../../../game';
-import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
+import { PowerType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, CAN_EVOLVE_ON_FIRST_TURN_GOING_SECOND } from '../../../game/store/prefabs/prefabs';
+import { ADAPTIVE_EVOLUTION, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Metapod extends PokemonCard {
-  public readonly HARDEN_MARKER = 'METAPOD_FLF_HARDEN_MARKER';
-  public readonly CLEAR_HARDEN_MARKER = 'METAPOD_FLF_CLEAR_HARDEN_MARKER';
-
   public stage: Stage = Stage.STAGE_1;
   public evolvesFrom: string = 'Caterpie';
   public cardType: CardType[] = [G];
@@ -45,40 +40,10 @@ export class Metapod extends PokemonCard {
   public fullName: string = 'Metapod FLF';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Ref: set-cosmic-eclipse/clamperl.ts (Evolutionary Advantage)
-    if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
-      const player = effect.player;
-      const cardList = StateUtils.findCardList(state, this) as PokemonCardList;
-      if (IS_ABILITY_BLOCKED(store, state, player, this)) {
-        return state;
-      }
-      CAN_EVOLVE_ON_FIRST_TURN_GOING_SECOND(state, player, cardList);
-    }
+    state = ADAPTIVE_EVOLUTION(store, state, effect, this);
 
-    // Ref: set-x-and-y/kakuna.ts (Harden)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      player.active.marker.addMarker(this.HARDEN_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_HARDEN_MARKER, this);
-    }
-
-    // Prevent damage of 60 or less
-    if (effect instanceof DealDamageEffect && effect.target.cards.includes(this)) {
-      if (effect.target.marker.hasMarker(this.HARDEN_MARKER, this) && effect.damage <= 60) {
-        effect.preventDefault = true;
-        return state;
-      }
-    }
-
-    // Cleanup markers at end of opponent's turn
-    if (effect instanceof EndTurnEffect
-      && effect.player.marker.hasMarker(this.CLEAR_HARDEN_MARKER, this)) {
-      effect.player.marker.removeMarker(this.CLEAR_HARDEN_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.HARDEN_MARKER, this);
-      });
+      PREVENT_DAMAGE(store, state, effect, this, { maxDamage: 60 });
     }
 
     return state;

@@ -15,15 +15,13 @@ import {
   SlotType,
 } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   ATTACH_X_TYPE_ENERGY_FROM_DISCARD_TO_1_OF_YOUR_POKEMON,
   USE_ABILITY_ONCE_PER_TURN,
   ABILITY_USED,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../game/store/prefabs/prefabs';
+  REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class DittoV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -128,11 +126,11 @@ export class DittoV extends PokemonCard {
           const replacement = cards[0];
 
           if (benchIndex >= 0) {
-            player.bench[benchIndex].moveCardTo(this, player.discard);
-            player.discard.moveCardTo(replacement, player.bench[benchIndex]);
+            MOVE_CARDS(store, state, player.bench[benchIndex], player.discard, { cards: [this], sourceCard: this });
+            MOVE_CARDS(store, state, player.discard, player.bench[benchIndex], { cards: [replacement], sourceCard: this });
           } else {
-            player.active.moveCardTo(this, player.discard);
-            player.discard.moveCardTo(replacement, player.active);
+            MOVE_CARDS(store, state, player.active, player.discard, { cards: [this], sourceCard: this });
+            MOVE_CARDS(store, state, player.discard, player.active, { cards: [replacement], sourceCard: this });
           }
         },
       );

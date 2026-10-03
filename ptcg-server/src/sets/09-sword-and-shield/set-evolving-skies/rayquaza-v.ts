@@ -11,7 +11,7 @@ import { StoreLike, State, ChooseCardsPrompt, SelectPrompt } from '../../../game
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RayquazaV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V, CardTag.RAPID_STRIKE];
@@ -56,7 +56,7 @@ export class RayquazaV extends PokemonCard {
       const player = effect.player;
 
       // Discard 4 cards from your deck
-      player.deck.moveTo(player.discard, 2);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 2, sourceCard: this });
       return state;
     }
 

@@ -10,13 +10,18 @@ import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt'
 import { Card, CardList } from '../../game';
 import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   let cards: Card[] = [];
 
   // Player has no Basic Energy in the discard pile
   let basicEnergyCards = 0;
-  player.discard.cards.forEach(c => {
+  player.discard.cards.forEach((c) => {
     if (c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC) {
       basicEnergyCards++;
     }
@@ -30,18 +35,22 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // prepare card list without Junk Arm
   const handTemp = new CardList();
-  handTemp.cards = player.hand.cards.filter(c => c !== effect.trainerCard);
+  handTemp.cards = player.hand.cards.filter((c) => c !== effect.trainerCard);
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    handTemp,
-    {},
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      handTemp,
+      {},
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (cards.length === 0) {
@@ -51,25 +60,31 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: effect.trainerCard });
 
   const max = Math.min(basicEnergyCards, 2);
-  return store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.discard,
-    { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-    { min: 1, max: max, allowCancel: false }
-  ), cards => {
-    cards = cards || [];
-    if (cards.length > 0) {
-      // Recover discarded Pokemon
-      MOVE_CARDS(store, state, player.discard, player.hand, { cards, sourceCard: effect.trainerCard });
-      // Discard item card
-    }
-  });
+  return store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.discard,
+      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+      { min: 1, max: max, allowCancel: false },
+    ),
+    (cards) => {
+      cards = cards || [];
+      if (cards.length > 0) {
+        // Recover discarded Pokemon
+        MOVE_CARDS(store, state, player.discard, player.hand, {
+          cards,
+          sourceCard: effect.trainerCard,
+        });
+        // Discard item card
+      }
+    },
+  );
 }
 
 export class EnergyRetrieval extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -92,5 +107,4 @@ export class EnergyRetrieval extends TrainerCard {
 
     return state;
   }
-
 }

@@ -3,16 +3,22 @@ import { EnergyType, SuperType, TrainerType } from '../../../game/store/card/car
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
-import { EnergyCard, GameMessage, PlayerType, SlotType, AttachEnergyPrompt, StateUtils } from '../../../game';
+import {
+  EnergyCard,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  AttachEnergyPrompt,
+  StateUtils,
+} from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
-
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PowerHourglass extends TrainerCard {
-
   public regulationMark = 'H';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'SFA';
 
@@ -24,12 +30,11 @@ export class PowerHourglass extends TrainerCard {
 
   public fullName: string = 'Powerglass SFA';
 
-  public text: string = 'At the end of your turn, if the Pokémon this card is attached to is in the Active Spot, you may attach a Basic Energy from your discard pile to that Pokémon.';
+  public text: string =
+    'At the end of your turn, if the Pokémon this card is attached to is in the Active Spot, you may attach a Basic Energy from your discard pile to that Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof EndTurnEffect && effect.player.active.tools.includes(this)) {
-
       const player = effect.player;
 
       // Try to reduce ToolEffect, to check if something is blocking the tool from working
@@ -40,40 +45,43 @@ export class PowerHourglass extends TrainerCard {
         return state;
       }
 
-      const hasEnergyInDiscard = player.discard.cards.some(c => {
-        return c instanceof EnergyCard
-          && c.energyType === EnergyType.BASIC;
+      const hasEnergyInDiscard = player.discard.cards.some((c) => {
+        return c instanceof EnergyCard && c.energyType === EnergyType.BASIC;
       });
 
       if (!hasEnergyInDiscard) {
         return state;
       }
 
+      state = store.prompt(
+        state,
+        new AttachEnergyPrompt(
+          player.id,
+          GameMessage.ATTACH_ENERGY_TO_ACTIVE,
+          player.discard,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE],
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+          { allowCancel: false, min: 0, max: 1 },
+        ),
+        (transfers) => {
+          transfers = transfers || [];
 
+          if (transfers.length === 0) {
+            return;
+          }
 
-      state = store.prompt(state, new AttachEnergyPrompt(
-        player.id,
-        GameMessage.ATTACH_ENERGY_TO_ACTIVE,
-        player.discard,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE],
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-        { allowCancel: false, min: 0, max: 1 }
-      ), transfers => {
-        transfers = transfers || [];
-
-        if (transfers.length === 0) {
-          return;
-        }
-
-        for (const transfer of transfers) {
-          const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
-        }
-      });
+          for (const transfer of transfers) {
+            const target = StateUtils.getTarget(state, player, transfer.to);
+            MOVE_CARDS(store, state, player.discard, target, {
+              cards: [transfer.card],
+              sourceCard: this,
+            });
+          }
+        },
+      );
     }
 
     return state;
   }
-
 }

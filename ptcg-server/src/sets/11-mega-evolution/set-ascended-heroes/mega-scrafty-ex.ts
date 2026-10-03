@@ -85,7 +85,7 @@ export class MegaScraftyex extends PokemonCard {
       if (opponent.hand.cards.length > 0) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const randomCard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(randomCard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
       }
 
       // Discard the top card of opponent's deck

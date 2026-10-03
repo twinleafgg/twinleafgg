@@ -5,10 +5,11 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { GameError } from '../../../game/game-error';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { Player, ShowCardsPrompt, StateUtils } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -30,7 +31,7 @@ function* playCard(
 
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
 
   let cards: Card[] = [];
   yield store.prompt(
@@ -48,10 +49,6 @@ function* playCard(
     },
   );
 
-  cards.forEach((card, index) => {
-    store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-  });
-
   if (cards.length > 0) {
     yield store.prompt(
       state,
@@ -61,17 +58,17 @@ function* playCard(
   }
 
   if (cards.length > 0) {
-    player.hand.moveCardTo(self, player.discard);
-    player.discard.moveCardsTo(cards, player.hand);
+    MOVE_CARDS(store, state, player.hand, player.discard, { cards: [self], sourceCard: self });
+    MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: self });
   }
 
-  player.supporter.moveCardTo(self, player.discard);
+  MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [self], sourceCard: self });
 
   return state;
 }
 
 export class MiraculousIntercom extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ACE_SPEC];
   public regulationMark = 'H';
   public set: string = 'SSP';

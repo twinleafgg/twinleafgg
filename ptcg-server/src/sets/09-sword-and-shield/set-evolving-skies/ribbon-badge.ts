@@ -10,7 +10,7 @@ import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class RibbonBadge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'EVS';
   public setNumber: string = '155';

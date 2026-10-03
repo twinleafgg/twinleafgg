@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 import {
@@ -60,7 +60,7 @@ export class Chimecho extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
         }
         return SHUFFLE_DECK(store, state, player);
       });

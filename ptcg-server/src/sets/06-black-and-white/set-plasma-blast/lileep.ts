@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Lileep extends PokemonCard {
@@ -51,7 +51,7 @@ export class Lileep extends PokemonCard {
       ABILITY_USED(player, this);
 
       // Move to bottom of deck
-      player.discard.moveCardTo(this, player.deck);
+      MOVE_CARDS(store, state, player.discard, player.deck, { cards: [this], sourceCard: this });
       // Move to bottom: remove from current position and push to end
       const index = player.deck.cards.indexOf(this);
       if (index !== -1) {

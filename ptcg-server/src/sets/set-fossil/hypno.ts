@@ -6,7 +6,7 @@ import { State } from '../../game/store/state/state';
 import { Effect } from '../../game/store/effects/effect';
 import { StateUtils, ChoosePokemonPrompt, GameMessage, PlayerType, SlotType, CardList, GameError, OrderCardsPrompt, SelectPrompt } from '../../game';
 import { PutDamageEffect } from '../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Hypno extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -56,7 +56,7 @@ export class Hypno extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, 3);
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: 3, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -83,7 +83,7 @@ export class Hypno extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 3);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 3, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,

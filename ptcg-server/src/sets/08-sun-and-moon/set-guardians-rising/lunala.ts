@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, StateUtils, PlayerType, SlotType, GameMessage, AttachEnergyPrompt } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lunala extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -87,7 +87,7 @@ export class Lunala extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

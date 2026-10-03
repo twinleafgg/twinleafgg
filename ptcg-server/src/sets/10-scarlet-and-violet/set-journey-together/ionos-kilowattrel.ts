@@ -21,12 +21,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   DRAW_CARDS_UNTIL_CARDS_IN_HAND,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class IonosKilowattrel extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -102,7 +100,7 @@ export class IonosKilowattrel extends PokemonCard {
 
       // If we have exactly 1 basic [L] energy attached, do it without a prompt
       if (lightningEnergy.length === 1) {
-        lightningEnergy.forEach((card) => cardList.moveCardTo(card, player.discard));
+        lightningEnergy.forEach((card) => MOVE_CARDS(store, state, cardList, player.discard, { cards: [card], sourceCard: this }));
 
         DRAW_CARDS_UNTIL_CARDS_IN_HAND(player, 6);
         ADD_MARKER(this.RUMBLING_ENGINE_MARKER, player, this);
@@ -125,7 +123,7 @@ export class IonosKilowattrel extends PokemonCard {
             return state;
           }
 
-          energy.forEach((card) => cardList.moveCardTo(card, player.discard));
+          energy.forEach((card) => MOVE_CARDS(store, state, cardList, player.discard, { cards: [card], sourceCard: this }));
 
           DRAW_CARDS_UNTIL_CARDS_IN_HAND(player, 6);
           ADD_MARKER(this.RUMBLING_ENGINE_MARKER, player, this);

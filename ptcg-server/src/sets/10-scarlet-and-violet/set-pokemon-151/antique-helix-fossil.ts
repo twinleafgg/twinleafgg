@@ -18,7 +18,7 @@ import {
   StoreLike,
   TrainerCard,
 } from '../../../game';
-import { IS_ABILITY_BLOCKED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import {
   PlayItemEffect,
   PlayPokemonEffect,
@@ -94,7 +94,7 @@ export class AntiqueHelixFossil extends TrainerCard {
       });
 
       const cardList = StateUtils.findCardList(state, this);
-      cardList.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
     }
 
     // Play fossil from hand ability

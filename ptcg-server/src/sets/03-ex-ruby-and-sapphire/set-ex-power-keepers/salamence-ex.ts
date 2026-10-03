@@ -45,7 +45,7 @@ export class Salamenceex extends PokemonCard {
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
-      player.deck.moveTo(player.discard, 5);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 5, sourceCard: this });
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {

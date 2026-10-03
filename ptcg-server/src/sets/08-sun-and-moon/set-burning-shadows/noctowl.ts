@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameMessage } from '../../../game/game-message';
@@ -81,7 +81,7 @@ export class Noctowl extends PokemonCard {
         ), selected => {
           const cards = selected || [];
           cards.forEach(card => {
-            opponent.hand.moveCardTo(card, opponent.discard);
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [card], sourceCard: this });
           });
         });
       });

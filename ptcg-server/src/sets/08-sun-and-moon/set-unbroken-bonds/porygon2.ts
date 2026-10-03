@@ -3,7 +3,7 @@ import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Porygon2 extends PokemonCard {
 
@@ -51,7 +51,7 @@ export class Porygon2 extends PokemonCard {
         return state;
       }
 
-      player.deck.moveTo(player.hand, Math.min(player.deck.cards.length, 2));
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: Math.min(player.deck.cards.length, 2), sourceCard: this });
       return state;
     }
 

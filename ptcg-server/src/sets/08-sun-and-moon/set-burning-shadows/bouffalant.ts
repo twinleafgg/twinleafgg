@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ConfirmPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Bouffalant extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -48,7 +48,7 @@ export class Bouffalant extends PokemonCard {
           if (wantToDiscard) {
             const cardList = StateUtils.findCardList(state, stadiumCard);
             const owner = StateUtils.findOwner(state, cardList);
-            cardList.moveTo(owner.discard);
+            MOVE_CARDS(store, state, cardList, owner.discard, { sourceCard: this });
           }
         });
       }

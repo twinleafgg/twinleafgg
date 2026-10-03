@@ -3,10 +3,18 @@
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike, State, ConfirmPrompt, GameMessage, pokemonHasCardType } from '../../../game';
+import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
+import {
+  StoreLike,
+  State,
+  ConfirmPrompt,
+  GameMessage,
+  pokemonHasCardType,
+  ChooseCardsPrompt,
+  Card,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Chandelure extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -34,7 +42,6 @@ export class Chandelure extends PokemonCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Attack 1: Spirit Burner
-    // Ref: set-lost-thunder/chandelure.ts (Spirit Burner pattern)
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
 
@@ -43,7 +50,7 @@ export class Chandelure extends PokemonCard {
       const discardedPokemon: PokemonCard[] = [];
 
       cardsToDiscard.forEach((card) => {
-        player.deck.moveCardTo(card, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
         if (card instanceof PokemonCard) {
           discardedPokemon.push(card);
         }
@@ -54,29 +61,47 @@ export class Chandelure extends PokemonCard {
 
       // Find Fire Pokemon among the discarded
       const firePokemon = discardedPokemon.filter((p) => pokemonHasCardType(p, CardType.FIRE));
+      const openSlots = player.bench.filter((b) => b.cards.length === 0);
 
-      // Put any number of Fire Pokemon onto bench
-      if (firePokemon.length > 0) {
-        const availableBenchSlots = player.bench.filter((b) => b.cards.length === 0).length;
-        if (availableBenchSlots > 0) {
-          const pokemonToPlace = firePokemon.slice(0, availableBenchSlots);
-          pokemonToPlace.forEach((pokemon) => {
-            // Ask if they want to place each one
-            store.prompt(
+      if (firePokemon.length > 0 && openSlots.length > 0) {
+        return store.prompt(
+          state,
+          new ConfirmPrompt(player.id, GameMessage.WANT_TO_USE_EFFECT_OF_ATTACK),
+          (wantToPlace) => {
+            if (!wantToPlace) {
+              return state;
+            }
+
+            const max = Math.min(firePokemon.length, openSlots.length);
+            const blocked: number[] = [];
+            player.discard.cards.forEach((card, index) => {
+              if (!firePokemon.includes(card as PokemonCard)) {
+                blocked.push(index);
+              }
+            });
+
+            return store.prompt(
               state,
-              new ConfirmPrompt(player.id, GameMessage.WANT_TO_USE_ABILITY),
-              (wantToPlace) => {
-                if (wantToPlace) {
-                  const emptySlot = player.bench.find((b) => b.cards.length === 0);
-                  if (emptySlot) {
-                    player.discard.moveCardTo(pokemon, emptySlot);
-                    emptySlot.pokemonPlayedTurn = state.turn;
-                  }
-                }
+              new ChooseCardsPrompt(
+                player,
+                GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+                player.discard,
+                { superType: SuperType.POKEMON },
+                { min: 0, max, allowCancel: false, blocked },
+              ),
+              (selected) => {
+                const cards: Card[] = selected || [];
+                cards.forEach((card, index) => {
+                  MOVE_CARDS(store, state, player.discard, openSlots[index], {
+                    cards: [card],
+                    sourceCard: this,
+                  });
+                  openSlots[index].pokemonPlayedTurn = state.turn;
+                });
               },
             );
-          });
-        }
+          },
+        );
       }
     }
 

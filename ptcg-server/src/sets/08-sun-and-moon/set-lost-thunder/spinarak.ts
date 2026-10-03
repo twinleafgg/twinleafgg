@@ -8,7 +8,7 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED, YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED } from '../../../game/store/prefabs/attack-effects';
 
 export class Spinarak extends PokemonCard {
@@ -57,8 +57,8 @@ export class Spinarak extends PokemonCard {
 
       // Move this Pokemon and all cards attached to it to the Lost Zone
       const tools = player.active.tools.slice();
-      tools.forEach(t => { player.active.moveCardTo(t, player.lostzone); });
-      player.active.moveTo(player.lostzone);
+      tools.forEach(t => { MOVE_CARDS(store, state, player.active, player.lostzone, { cards: [t], sourceCard: this }); });
+      MOVE_CARDS(store, state, player.active, player.lostzone, { sourceCard: this });
       player.active.clearEffects();
     }
 

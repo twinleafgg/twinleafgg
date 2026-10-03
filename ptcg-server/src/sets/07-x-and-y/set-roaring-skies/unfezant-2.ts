@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { NEXT_TURN_ATTACK_BONUS_ALL_ATTACKS } from '../../../game/store/prefabs/attack-effects';
 
 export class Unfezant2 extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -37,25 +36,12 @@ export class Unfezant2 extends PokemonCard {
   public name: string = 'Unfezant';
   public fullName: string = 'Unfezant ROS 81';
 
-  public readonly FEATHER_DANCE_MARKER = 'FEATHER_DANCE_MARKER';
-  public readonly CLEAR_FEATHER_DANCE_MARKER = 'CLEAR_FEATHER_DANCE_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Check for bonus damage on ANY attack from this Pokemon
-    // Ref: set-plasma-blast/ursaring.ts (Adrenalash - all-attacks next-turn bonus)
-    if (effect instanceof AttackEffect && effect.player.active.getPokemonCard() === this) {
-      const player = effect.player;
-      const cardList = player.active;
-      if (HAS_MARKER(this.FEATHER_DANCE_MARKER, cardList, this)) {
-        effect.damage += 80;
-      }
-    }
-
-    // Attack 1: Feather Dance - set marker for next turn bonus
-    if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      ADD_MARKER(this.FEATHER_DANCE_MARKER, player.active, this);
-    }
+    NEXT_TURN_ATTACK_BONUS_ALL_ATTACKS(effect, {
+      source: this,
+      bonusDamage: 80,
+      setupAttack: this.attacks[0],
+    });
 
     // Attack 2: Sky Attack
     // Ref: AGENTS-patterns.md (flip tails does nothing)
@@ -63,21 +49,6 @@ export class Unfezant2 extends PokemonCard {
       COIN_FLIP_PROMPT(store, state, effect.player, result => {
         if (!result) {
           effect.damage = 0;
-        }
-      });
-    }
-
-    // Two-marker pattern: marker persists through our next turn, then is cleared
-    if (effect instanceof EndTurnEffect) {
-      const player = effect.player;
-      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
-        if (cardList.getPokemonCard() === this) {
-          if (HAS_MARKER(this.CLEAR_FEATHER_DANCE_MARKER, cardList, this)) {
-            REMOVE_MARKER(this.FEATHER_DANCE_MARKER, cardList, this);
-            REMOVE_MARKER(this.CLEAR_FEATHER_DANCE_MARKER, cardList, this);
-          } else if (HAS_MARKER(this.FEATHER_DANCE_MARKER, cardList, this)) {
-            ADD_MARKER(this.CLEAR_FEATHER_DANCE_MARKER, cardList, this);
-          }
         }
       });
     }

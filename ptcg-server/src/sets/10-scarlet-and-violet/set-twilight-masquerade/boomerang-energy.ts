@@ -3,7 +3,7 @@ import { CardType, EnergyType } from '../../../game/store/card/card-types';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
@@ -52,7 +52,7 @@ export class BoomerangEnergy extends EnergyCard {
         if (effect.player.active !== undefined) {
           effect.player.discard.cards.forEach(card => {
             if (card === this) {
-              effect.player.discard.moveCardTo(card, effect.player.active);
+              MOVE_CARDS(store, state, effect.player.discard, effect.player.active, { cards: [card], sourceCard: this });
             }
           });
         }

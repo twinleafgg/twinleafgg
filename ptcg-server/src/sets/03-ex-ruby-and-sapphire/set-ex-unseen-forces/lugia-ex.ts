@@ -5,11 +5,9 @@ import { GamePhase, State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { Card, ChooseCardsPrompt, ChooseEnergyPrompt, PowerType, StateUtils } from '../../../game';
-import {
-  COIN_FLIP_PROMPT,
+import {COIN_FLIP_PROMPT,
   IS_POKEBODY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { AfterDamageEffect, DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 
@@ -83,7 +81,7 @@ export class Lugiaex extends PokemonCard {
                 { min: 0, max: 1, allowCancel: false },
               ),
               (selected) => {
-                player.active.moveCardsTo(selected, player.hand);
+                MOVE_CARDS(store, state, player.active, player.hand, { cards: selected, sourceCard: this });
               },
             );
           }

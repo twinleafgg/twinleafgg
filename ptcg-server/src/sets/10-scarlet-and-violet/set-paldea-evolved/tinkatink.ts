@@ -3,6 +3,7 @@ import { Stage, CardType, TrainerType, SuperType } from '../../../game/store/car
 import { StoreLike, State, TrainerCard, GameError, GameMessage, Card, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useScrapPickup(next: Function, store: StoreLike, state: State, self: Tinkatink, effect: AttackEffect): IterableIterator<State> {
   const player = effect.player;
@@ -31,8 +32,8 @@ function* useScrapPickup(next: Function, store: StoreLike, state: State, self: T
   });
 
   if (cards.length > 0) {
-    player.hand.moveCardTo(self, player.discard);
-    player.discard.moveCardsTo(cards, player.hand);
+    MOVE_CARDS(store, state, player.hand, player.discard, { cards: [self], sourceCard: self });
+    MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: self });
   }
 
   return state;

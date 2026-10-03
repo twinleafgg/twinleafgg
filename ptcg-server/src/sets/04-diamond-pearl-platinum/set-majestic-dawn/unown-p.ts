@@ -10,7 +10,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ADD_MARKER, REMOVE_MARKER, HAS_MARKER } from '../../../game/store/prefabs/prefabs';
 
 export class UnownP extends PokemonCard {
@@ -106,8 +106,8 @@ export class UnownP extends PokemonCard {
       const opponentTopDeck = new CardList();
       let damageScaling = 0;
 
-      player.deck.moveTo(playerTopDeck, 1);
-      opponent.deck.moveTo(opponentTopDeck, 1);
+      MOVE_CARDS(store, state, player.deck, playerTopDeck, { count: 1, sourceCard: this });
+      MOVE_CARDS(store, state, opponent.deck, opponentTopDeck, { count: 1, sourceCard: this });
 
       if (playerTopDeck.cards[0] instanceof PokemonCard && playerTopDeck.cards[0].name.includes('Unown')) {
         damageScaling++;
@@ -118,8 +118,8 @@ export class UnownP extends PokemonCard {
 
       effect.damage += (20 * damageScaling);
 
-      playerTopDeck.moveTo(player.discard);
-      opponentTopDeck.moveTo(opponent.discard);
+      MOVE_CARDS(store, state, playerTopDeck, player.discard, { sourceCard: this });
+      MOVE_CARDS(store, state, opponentTopDeck, opponent.discard, { sourceCard: this });
     }
 
     REMOVE_MARKER_AT_END_OF_TURN(effect, this.PUT_MARKER, this);

@@ -6,10 +6,8 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
-  HEAL_X_DAMAGE_FROM_THIS_POKEMON,
-} from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED,
+  HEAL_X_DAMAGE_FROM_THIS_POKEMON, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class MewtwoEx extends PokemonCard {
@@ -67,7 +65,7 @@ export class MewtwoEx extends PokemonCard {
           (cards) => {
             cards = cards || [];
             if (cards.length > 0) {
-              player.discard.moveCardsTo(cards, player.active);
+              MOVE_CARDS(store, state, player.discard, player.active, { cards: cards, sourceCard: this });
             }
           },
         );

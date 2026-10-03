@@ -10,7 +10,7 @@ import {
 } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LugiaV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -72,8 +72,8 @@ export class LugiaV extends PokemonCard {
           if (cards.length === 0) {
             return;
           }
-          player.hand.moveCardsTo(cards, player.discard);
-          player.deck.moveTo(player.hand, 3);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
         },
       );
 
@@ -91,7 +91,7 @@ export class LugiaV extends PokemonCard {
               // Discard Stadium
               const cardList = StateUtils.findCardList(state, stadiumCard);
               const player = StateUtils.findOwner(state, cardList);
-              cardList.moveTo(player.discard);
+              MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
               return state;
             }
             return state;

@@ -8,17 +8,18 @@ import { StoreLike, State, GameError, GameMessage, Card, ChooseCardsPrompt } fro
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CaraLiss extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'VIV';
   public setNumber: string = '149';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Cara Liss';
   public fullName: string = 'Cara Liss VIV';
-  public text: string = 'Search your deck for up to 2 Rare Fossil cards and put them onto your Bench. Then, shuffle your deck. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Search your deck for up to 2 Rare Fossil cards and put them onto your Bench. Then, shuffle your deck. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-darkness-ablaze/relicanth.ts (Fossil Search)
@@ -30,10 +31,10 @@ export class CaraLiss extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
-      const slots = player.bench.filter(b => b.cards.length === 0);
+      const slots = player.bench.filter((b) => b.cards.length === 0);
       if (slots.length > 0 && player.deck.cards.length > 0) {
         // Block all cards that are not Rare Fossil
         const blocked: number[] = [];
@@ -45,22 +46,26 @@ export class CaraLiss extends TrainerCard {
 
         const max = Math.min(2, slots.length);
 
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-          player.deck,
-          {},
-          { min: 0, max, allowCancel: false, blocked }
-        ), selected => {
-          const cards: Card[] = selected || [];
-          cards.forEach((card, index) => {
-            if (index < slots.length) {
-              const playPokemonEffect = new PlayPokemonEffect(player, card as any, slots[index]);
-              store.reduceEffect(state, playPokemonEffect);
-            }
-          });
-          SHUFFLE_DECK(store, state, player);
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+            player.deck,
+            {},
+            { min: 0, max, allowCancel: false, blocked },
+          ),
+          (selected) => {
+            const cards: Card[] = selected || [];
+            cards.forEach((card, index) => {
+              if (index < slots.length) {
+                const playPokemonEffect = new PlayPokemonEffect(player, card as any, slots[index]);
+                store.reduceEffect(state, playPokemonEffect);
+              }
+            });
+            SHUFFLE_DECK(store, state, player);
+          },
+        );
       } else {
         SHUFFLE_DECK(store, state, player);
       }

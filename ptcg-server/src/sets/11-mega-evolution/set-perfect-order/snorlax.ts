@@ -1,6 +1,6 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, EnergyType, SuperType, SpecialCondition } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Snorlax extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -66,7 +66,7 @@ export class Snorlax extends PokemonCard {
           const cards = selected || [];
           if (cards.length > 0) {
             for (const card of cards) {
-              player.deck.moveCardTo(card, player.active);
+              MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
             }
           }
           store.prompt(stateForCallback, new ShuffleDeckPrompt(player.id), order => {

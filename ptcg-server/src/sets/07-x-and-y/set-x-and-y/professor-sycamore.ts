@@ -6,7 +6,7 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ProfessorSycamore extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'XY';
   public setNumber: string = '122';
   public cardImage: string = 'assets/cardback.png';

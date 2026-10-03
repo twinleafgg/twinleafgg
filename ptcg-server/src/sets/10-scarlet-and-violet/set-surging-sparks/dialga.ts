@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ShuffleDeckPrompt, ChooseCardsPrompt, GameError, Card, CardList, OrderCardsPrompt } from '../../../game';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useTimeControl(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -28,7 +28,7 @@ function* useTimeControl(next: Function, store: StoreLike, state: State,
     next();
   });
 
-  player.deck.moveCardsTo(cards, deckTop);
+  MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
     player.deck.applyOrder(order);
@@ -47,7 +47,6 @@ function* useTimeControl(next: Function, store: StoreLike, state: State,
     });
   });
 }
-
 
 export class Dialga extends PokemonCard {
 

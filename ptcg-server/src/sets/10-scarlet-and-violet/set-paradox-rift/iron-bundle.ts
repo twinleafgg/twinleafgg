@@ -13,7 +13,7 @@ import { GameMessage } from '../../../game/game-message';
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { MOVE_CARDS, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { MOVE_POKEMON_OFF_BOARD, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 import { DEFENDING_POKEMON_CANNOT_ATTACK } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class IronBundle extends PokemonCard {
@@ -81,37 +81,10 @@ export class IronBundle extends PokemonCard {
           if (targets && targets.length > 0) {
             opponent.active.clearEffects();
             opponent.switchPokemon(targets[0]);
-            const cardList = player.bench[benchIndex];
-            const pokemons = cardList.getPokemons();
-            const otherCards = cardList.cards.filter(
-              (card) =>
-                !(card instanceof PokemonCard) &&
-                !pokemons.includes(card as PokemonCard) &&
-                (!cardList.tools || !cardList.tools.includes(card)),
-            );
-            const tools = [...cardList.tools];
-            if (pokemons.length > 0) {
-              MOVE_CARDS(store, state, cardList, player.discard, { cards: pokemons });
-            }
-            if (otherCards.length > 0) {
-              MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-            }
-            if (tools.length > 0) {
-              for (const tool of tools) {
-                cardList.moveCardTo(tool, player.discard);
-              }
-              // Move other cards (tools, energies, etc.) to the discard
-              if (otherCards.length > 0) {
-                MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-              }
-              // Move tools to the discard
-              if (tools.length > 0) {
-                for (const tool of tools) {
-                  cardList.moveCardTo(tool, player.discard);
-                }
-              }
-              return state;
-            }
+            MOVE_POKEMON_OFF_BOARD(store, state, player.bench[benchIndex], {
+              pokemonDestination: player.discard,
+              sourceCard: this,
+            });
           }
         },
       );

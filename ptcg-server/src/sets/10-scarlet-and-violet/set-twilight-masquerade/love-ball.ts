@@ -7,8 +7,14 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { GameMessage } from '../../../game/game-message';
 import { Card, GameError, Player, PokemonCard, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
   let cards: Card[] = [];
@@ -17,7 +23,9 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  const opponentBenchNames = opponent.bench.filter(card => card instanceof PokemonCard).map(card => (card as unknown as PokemonCard).name);
+  const opponentBenchNames = opponent.bench
+    .filter((card) => card instanceof PokemonCard)
+    .map((card) => (card as unknown as PokemonCard).name);
   const opponentActiveName = opponent.active.cards[0].name;
 
   const allowedNames = [opponentActiveName, ...opponentBenchNames];
@@ -28,36 +36,38 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
       blocked.push(index);
     }
   });
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.deck,
-    { superType: SuperType.POKEMON },
-    { min: 1, max: 1, allowCancel: true, blocked: blocked }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.deck,
+      { superType: SuperType.POKEMON },
+      { min: 1, max: 1, allowCancel: true, blocked: blocked },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
-  player.deck.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: effect.trainerCard });
 
   if (cards.length > 0) {
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => next(),
+    );
   }
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
-
 export class LoveBall extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'H';
   public set: string = 'TWM';
   public cardImage: string = 'assets/cardback.png';
@@ -66,7 +76,7 @@ export class LoveBall extends TrainerCard {
   public fullName: string = 'Love Ball TWM';
 
   public text =
-    'Search your deck for a Pokémon with the same name as 1 of your opponent\'s Pokémon in play, reveal it, and put it into your hand. Then, shuffle your deck.';
+    "Search your deck for a Pokémon with the same name as 1 of your opponent's Pokémon in play, reveal it, and put it into your hand. Then, shuffle your deck.";
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.deck.cards.length === 0) {
@@ -75,9 +85,7 @@ export class LoveBall extends TrainerCard {
     return true;
   }
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, effect);
       return generator.next().value;
@@ -85,5 +93,4 @@ export class LoveBall extends TrainerCard {
 
     return state;
   }
-
 }

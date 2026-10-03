@@ -12,6 +12,7 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { PokemonCard } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -49,7 +50,7 @@ function* playCard(
     }
   });
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -76,8 +77,8 @@ function* playCard(
     // }
     // else {
 
-    player.deck.moveCardsTo(cards, player.hand);
-    player.hand.moveCardTo(self, player.discard);
+    MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: self });
+    MOVE_CARDS(store, state, player.hand, player.discard, { cards: [self], sourceCard: self });
 
     yield store.prompt(
       state,
@@ -92,7 +93,7 @@ function* playCard(
 }
 
 export class Arezu extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'F';
   public set: string = 'LOR';
   public cardImage: string = 'assets/cardback.png';

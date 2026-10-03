@@ -11,7 +11,7 @@ import { UseStadiumEffect } from '../../game/store/effects/game-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../game/store/prefabs/stadium-effect';
 
 export class RocketsHideout extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'N3';
   public name: string = "Rocket's Hideout";
   public fullName: string = "Rocket's Hideout N3";

@@ -4,7 +4,7 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage, GameLog, ShowCardsPrompt, Card } from '../../../game';
+import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage, ShowCardsPrompt, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED, CONFIRMATION_PROMPT, DRAW_CARDS, MOVE_CARDS, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
 
@@ -96,9 +96,6 @@ export class ShiningMagikarp extends PokemonCard {
             GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
             cards
           )], () => {
-            cards.forEach(card => {
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-            });
           });
           MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: this });
         }

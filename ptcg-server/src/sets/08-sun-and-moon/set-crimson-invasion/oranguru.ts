@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/car
 import { StoreLike, State, Card, GameMessage, TrainerCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Oranguru extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -64,7 +64,7 @@ export class Oranguru extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         cards.forEach(card => {
-          player.discard.moveCardTo(card, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: [card], sourceCard: this });
         });
       });
     }

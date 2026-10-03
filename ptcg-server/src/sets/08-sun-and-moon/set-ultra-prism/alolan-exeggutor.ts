@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { Card, PlayerType, SlotType, StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { Player } from '../../../game/store/state/player';
 
@@ -56,7 +56,7 @@ export class AlolanExeggutor extends PokemonCard {
         return state;
       }
 
-      const generator = useExeggutorsParadise(() => generator.next(), store, state, player, benchedExeggcute);
+      const generator = useExeggutorsParadise(() => generator.next(), store, state, player, benchedExeggcute, this);
       return generator.next().value;
     }
 
@@ -92,7 +92,8 @@ function* useExeggutorsParadise(
   store: StoreLike,
   state: State,
   player: Player,
-  benchedExeggcute: { list: PokemonCardList, card: PokemonCard }[]
+  benchedExeggcute: { list: PokemonCardList, card: PokemonCard }[],
+  sourceCard: Card,
 ): IterableIterator<State> {
   for (const exeggcute of benchedExeggcute) {
     if (player.deck.cards.length === 0) break;
@@ -127,7 +128,7 @@ function* useExeggutorsParadise(
 
     if (cards.length > 0) {
       const evolution = cards[0] as PokemonCard;
-      player.deck.moveCardTo(evolution, exeggcute.list);
+      MOVE_CARDS(store, state, player.deck, exeggcute.list, { cards: [evolution], sourceCard });
       exeggcute.list.clearEffects();
       exeggcute.list.pokemonPlayedTurn = state.turn;
     }

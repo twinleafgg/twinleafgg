@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Rotom extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -46,7 +46,7 @@ export class Rotom extends PokemonCard {
 
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
         if (cardList.tools.length > 0) {
-          cardList.moveCardsTo([...cardList.tools], opponent.discard);
+          MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [...cardList.tools], sourceCard: this });
         }
       });
     }

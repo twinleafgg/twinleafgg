@@ -6,7 +6,7 @@ import { Effect } from '../../game/store/effects/effect';
 
 import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Dragonair extends PokemonCard {
   public set = 'BS';
@@ -73,7 +73,7 @@ export class Dragonair extends PokemonCard {
       ), selected => {
         card = selected[0];
 
-        opponent.active.moveCardTo(card, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [card], sourceCard: this });
         return state;
       });
 

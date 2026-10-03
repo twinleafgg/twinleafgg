@@ -17,7 +17,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 export class TeamRocketsProton extends TrainerCard {
   public regulationMark = 'I';
   protected _tags = [CardTag.TEAM_ROCKET];
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'DRI';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '177';
@@ -55,7 +55,7 @@ Search your deck for up to 3 Basic Team Rocket's Pokémon, reveal them, and put 
 
       player.rocketSupporter = true;
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       const blocked = player.deck.cards
         .filter((c) => !c.hasTag(CardTag.TEAM_ROCKET))

@@ -9,10 +9,9 @@ import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class VengefulPunch extends TrainerCard {
-
   public regulationMark = 'G';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'OBF';
 
@@ -25,7 +24,7 @@ export class VengefulPunch extends TrainerCard {
   public fullName = 'Vengeful Punch OBF';
 
   public text: string =
-    'If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent\'s Pokémon, put 4 damage counters on the Attacking Pokémon.';
+    "If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, put 4 damage counters on the Attacking Pokémon.";
 
   public damageDealt = false;
 
@@ -50,22 +49,28 @@ export class VengefulPunch extends TrainerCard {
       }
     }*/
 
-    if ((effect instanceof DealDamageEffect || effect instanceof PutDamageEffect) &&
-      effect.target.tools.includes(this)) {
+    if (
+      (effect instanceof DealDamageEffect || effect instanceof PutDamageEffect) &&
+      effect.target.tools.includes(this)
+    ) {
       const player = StateUtils.getOpponent(state, effect.player);
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       if (player.active.tools.includes(this)) {
         this.damageDealt = true;
       }
     }
 
-    if (effect instanceof KnockOutEffect && effect.target.tools.includes(this) && effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+    if (
+      effect instanceof KnockOutEffect &&
+      effect.target.tools.includes(this) &&
+      effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
+    ) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-
-
 
       if (this.damageDealt) {
         opponent.active.damage += 40;

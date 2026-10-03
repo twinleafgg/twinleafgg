@@ -1,12 +1,15 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import {
-  PowerType, StoreLike, State, GameError, GameMessage,
+  PowerType,
+  StoreLike,
+  State,
+  GameError,
+  GameMessage,
   ChooseCardsPrompt,
   StateUtils,
   ShowCardsPrompt,
-  GameLog,
-  PlayerType
+  PlayerType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
@@ -106,10 +109,6 @@ export class Magneton extends PokemonCard {
             cards
           )], () => {
             MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this, sourceEffect: this.powers[0] });
-          });
-
-          cards.forEach(card => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
           });
 
           // Move the discarded card to the discard pile after energy cards are added to the hand

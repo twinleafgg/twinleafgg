@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, ShowCardsPrompt, StateUtils, EnergyType, SuperType, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Aromatisse extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -68,7 +68,7 @@ export class Aromatisse extends PokemonCard {
         { min: 0, max: maxToTake, allowCancel: false }
       ), selected => {
         selectedCards = selected || [];
-        player.deck.moveCardsTo(selectedCards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: selectedCards, sourceCard: this });
 
         // Show cards to opponent
         if (selectedCards.length > 0) {

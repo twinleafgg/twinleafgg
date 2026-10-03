@@ -19,13 +19,11 @@ import {
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { MovedToActiveEffect } from '../../../game/store/effects/game-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   IS_ABILITY_BLOCKED,
   MOVED_TO_ACTIVE_THIS_TURN,
   REMOVE_MARKER_AT_END_OF_TURN,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HeatranGX extends PokemonCard {
   public cardType: CardType[] = [R];
@@ -153,7 +151,7 @@ export class HeatranGX extends PokemonCard {
           for (const transfer of transfers) {
             const target = player.active;
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

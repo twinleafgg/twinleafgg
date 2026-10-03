@@ -7,9 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, pokemonHasCardType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
-import {
-  WAS_ATTACK_USED, DRAW_CARDS, SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND
-} from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Manaphy extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -47,7 +45,7 @@ export class Manaphy extends PokemonCard {
 
       // Shuffle hand into deck
       const cardsToShuffle = player.hand.cards.slice();
-      player.hand.moveCardsTo(cardsToShuffle, player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { cards: cardsToShuffle, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
         player.deck.applyOrder(order);

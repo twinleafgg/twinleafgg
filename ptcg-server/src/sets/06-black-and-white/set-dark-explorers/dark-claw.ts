@@ -5,10 +5,8 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TOOL_ACTIVE_DAMAGE_BONUS } from '../../../game/store/prefabs/tool-prefabs';
 
-
 export class DarkClaw extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'DEX';
 
@@ -29,10 +27,9 @@ export class DarkClaw extends TrainerCard {
     // Refs: set-boundaries-crossed/crystal-edge.ts (tool active-damage bonus), prefabs/prefabs.ts (TOOL_ACTIVE_DAMAGE_BONUS)
     TOOL_ACTIVE_DAMAGE_BONUS(store, state, effect, this, {
       damageBonus: 20,
-      sourceCardType: CardType.DARK
+      sourceCardType: CardType.DARK,
     });
 
     return state;
   }
-
 }

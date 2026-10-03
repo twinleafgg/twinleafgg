@@ -7,7 +7,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { KNOCK_OUT_DEFENDING_POKEMON_AT_END_OF_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianSlowkingV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V, CardTag.SINGLE_STRIKE];
@@ -57,7 +57,7 @@ export class GalarianSlowkingV extends PokemonCard {
           if (cards.length === 0) {
             return;
           }
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
           DRAW_CARDS(store, state, player, 3);
         },
       );

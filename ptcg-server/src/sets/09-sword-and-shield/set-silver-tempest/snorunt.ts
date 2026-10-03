@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Snorunt extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -41,7 +41,7 @@ export class Snorunt extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_ATTACK);
       }
 
-      player.deck.moveTo(player.hand, 1);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       return state;
     }
 

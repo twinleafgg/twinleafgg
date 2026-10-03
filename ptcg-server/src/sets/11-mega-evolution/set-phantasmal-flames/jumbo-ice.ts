@@ -7,16 +7,18 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { Player } from '../../../game/store/state/player';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class JumboIce extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'I';
   public set: string = 'PFL';
   public name: string = 'Jumbo Ice Cream';
   public fullName: string = 'Jumbo Ice M2';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '91';
-  public text: string = 'Heal 80 damage from your Active Pokémon that has 3 or more Energy attached.';
+  public text: string =
+    'Heal 80 damage from your Active Pokémon that has 3 or more Energy attached.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     const activePokemon = player.active.getPokemonCard();
@@ -41,7 +43,6 @@ export class JumboIce extends TrainerCard {
   }
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
       const activePokemon = player.active.getPokemonCard();
@@ -56,7 +57,7 @@ export class JumboIce extends TrainerCard {
           store.reduceEffect(state, healEffect);
         }
       }
-      player.supporter.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
     }
 
     return state;

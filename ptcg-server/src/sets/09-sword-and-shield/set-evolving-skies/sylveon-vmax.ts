@@ -13,7 +13,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 
 export class SylveonVMAX extends PokemonCard {
@@ -91,7 +91,7 @@ export class SylveonVMAX extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
 
             const healEffect = new HealEffect(player, target, 120);
             store.reduceEffect(state, healEffect);

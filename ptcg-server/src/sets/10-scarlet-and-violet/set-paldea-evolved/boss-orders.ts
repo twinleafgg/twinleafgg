@@ -8,12 +8,10 @@ import { SWITCH_IN_OPPONENT_BENCHED_POKEMON } from '../../../game/store/prefabs/
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameError, GameMessage, Player } from '../../../game';
 
-
 export class BossOrders extends TrainerCard {
-
   public regulationMark = 'G';
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'PAL';
 
@@ -21,13 +19,12 @@ export class BossOrders extends TrainerCard {
 
   public setNumber: string = '172';
 
-  public name: string = 'Boss\'s Orders';
+  public name: string = "Boss's Orders";
 
-  public fullName: string = 'Boss\'s Orders PAL';
+  public fullName: string = "Boss's Orders PAL";
 
   public text: string =
-    'Switch 1 of your opponent\'s Benched Pokemon with his or her ' +
-    'Active Pokemon.';
+    "Switch 1 of your opponent's Benched Pokemon with his or her " + 'Active Pokemon.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {
@@ -35,7 +32,7 @@ export class BossOrders extends TrainerCard {
     }
 
     const opponent = StateUtils.getOpponent(state, player);
-    const hasBench = opponent.bench.some(b => b.cards.length > 0);
+    const hasBench = opponent.bench.some((b) => b.cards.length > 0);
     return hasBench;
   }
 
@@ -54,5 +51,4 @@ export class BossOrders extends TrainerCard {
     }
     return state;
   }
-
 }

@@ -4,7 +4,7 @@ import { StoreLike, State, ChoosePokemonPrompt, PlayerType, SlotType, PowerType,
 import { Effect } from '../../../game/store/effects/effect';
 import { EffectOfAbilityEffect } from '../../../game/store/effects/game-effects';
 import { GameMessage } from '../../../game/game-message';
-import { MOVE_CARDS, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { MOVE_POKEMON_OFF_BOARD, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 
 export class Flapple extends PokemonCard {
@@ -58,22 +58,10 @@ export class Flapple extends PokemonCard {
             damageEffect.target.damage += 20;
 
             const thisCardList = StateUtils.findCardList(state, this) as PokemonCardList;
-
-            // Shuffle this Pokémon and all attached cards into your deck
-            // Separate Pokemon card from attached cards
-            const pokemons = thisCardList.getPokemons();
-            const otherCards = thisCardList.cards.filter(card => !(card instanceof PokemonCard));
-
-            // Move other cards to deck first
-            if (otherCards.length > 0) {
-              MOVE_CARDS(store, state, thisCardList, player.deck, { cards: otherCards });
-            }
-
-            // Move Pokemon to deck
-            if (pokemons.length > 0) {
-              MOVE_CARDS(store, state, thisCardList, player.deck, { cards: pokemons });
-            }
-
+            MOVE_POKEMON_OFF_BOARD(store, state, thisCardList, {
+              pokemonDestination: player.deck,
+              sourceCard: this,
+            });
             SHUFFLE_DECK(store, state, player);
           }
         }

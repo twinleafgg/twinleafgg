@@ -52,8 +52,8 @@ export class Thievul extends PokemonCard {
           MOVE_CARDS(store, state, player.hand, deckBottom, { sourceCard: this, sourceEffect: this.powers[0] });
           MOVE_CARDS(store, state, opponent.hand, opponentDeckBottom, { sourceCard: this, sourceEffect: this.powers[0] });
 
-          deckBottom.moveTo(player.deck);
-          opponentDeckBottom.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
+          MOVE_CARDS(store, state, opponentDeckBottom, opponent.deck, { sourceCard: this });
 
           DRAW_CARDS(store, state, player, 4);
           DRAW_CARDS(store, state, opponent, 4);

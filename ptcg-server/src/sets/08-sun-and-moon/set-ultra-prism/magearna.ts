@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, GameError, GameMessage, PlayerType, ChoosePokemonPrompt, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magearna extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -72,7 +72,7 @@ export class Magearna extends PokemonCard {
         const target = selected[0];
         if (target.tools.length > 0) {
           const tool = target.tools[0];
-          target.moveCardTo(tool, player.hand);
+          MOVE_CARDS(store, state, target, player.hand, { cards: [tool], sourceCard: this });
         }
       });
     }

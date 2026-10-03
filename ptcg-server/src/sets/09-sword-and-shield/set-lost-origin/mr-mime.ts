@@ -1,4 +1,4 @@
-import { CardType, GameLog, GameMessage, PokemonCard, SelectPrompt, Stage, State, StoreLike } from '../../../game';
+import { CardType, GameMessage, PokemonCard, SelectPrompt, Stage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
@@ -55,8 +55,6 @@ export class MrMime extends PokemonCard {
       ], results => {
         const playerChosenValue = results[0];
         const opponentChosenValue = results[1];
-        store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: player.name, string: options[playerChosenValue].message });
-        store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: opponent.name, string: options[opponentChosenValue].message });
         if (playerChosenValue === opponentChosenValue) {
           return this.reduceEffect(store, state, effect);
         }

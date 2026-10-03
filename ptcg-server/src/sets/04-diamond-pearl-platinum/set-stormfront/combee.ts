@@ -2,8 +2,8 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { PowerType, StoreLike, State, PokemonCardList, Card, ChooseCardsPrompt, SuperType } from '../../../game';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { PlayPokemonEffect, PlayPokemonFromDiscardEffect } from '../../../game/store/effects/play-card-effects';
+import { GameMessage } from '../../../game/game-message';
 import { DRAW_CARDS, WAS_ATTACK_USED, CONFIRMATION_PROMPT, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
 
 export class Combee extends PokemonCard {
@@ -62,9 +62,7 @@ export class Combee extends PokemonCard {
       ), selected => {
         cards = selected || [];
         cards.forEach((card, index) => {
-          player.discard.moveCardTo(card, slots[index]);
-          slots[index].pokemonPlayedTurn = state.turn;
-          store.log(state, GameLog.LOG_PLAYER_PLAYS_BASIC_POKEMON, { name: player.name, card: card.name });
+          store.reduceEffect(state, new PlayPokemonFromDiscardEffect(player, card as PokemonCard, slots[index]));
         });
       });
 

@@ -9,8 +9,7 @@ import { SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND } from '../../../game/store/prefa
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class VsSeeker extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'PHF';
 
@@ -22,14 +21,13 @@ export class VsSeeker extends TrainerCard {
 
   public setNumber: string = '109';
 
-  public text: string =
-    'Put a Supporter card from your discard pile into your hand.';
+  public text: string = 'Put a Supporter card from your discard pile into your hand.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
 
-      const hasSupporter = player.discard.cards.some(c => {
+      const hasSupporter = player.discard.cards.some((c) => {
         return c instanceof TrainerCard && c.trainerType === TrainerType.SUPPORTER;
       });
 
@@ -44,18 +42,17 @@ export class VsSeeker extends TrainerCard {
         }
       });
 
-      SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND(store,
+      SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND(
+        store,
         state,
         player,
         this,
         {},
-        { min: 1, max: 1, allowCancel: false, blocked }
+        { min: 1, max: 1, allowCancel: false, blocked },
       );
-
 
       return state;
     }
     return state;
   }
-
 }

@@ -10,10 +10,18 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { CardList, ChooseCardsPrompt, Player } from '../../../game';
-import { REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {
+  REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Hassel, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Hassel,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   const supporterTurn = player.supporterTurn;
@@ -22,7 +30,10 @@ function* playCard(next: Function, store: StoreLike, state: State,
     throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -40,30 +51,31 @@ function* playCard(next: Function, store: StoreLike, state: State,
   }
 
   const deckTop = new CardList();
-  player.deck.moveTo(deckTop, 8);
+  MOVE_CARDS(store, state, player.deck, deckTop, { count: 8, sourceCard: self });
 
-  return store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    deckTop,
-    {},
-    { min: 0, max: 3, allowCancel: false }
-  ), selected => {
-    deckTop.moveCardsTo(selected, player.hand);
-    deckTop.moveTo(player.deck);
+  return store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      deckTop,
+      {},
+      { min: 0, max: 3, allowCancel: false },
+    ),
+    (selected) => {
+      MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: self });
+      MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: self });
 
-
-
-    return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-      player.deck.applyOrder(order);
-      return state;
-    });
-  });
+      return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+        player.deck.applyOrder(order);
+        return state;
+      });
+    },
+  );
 }
 
 export class Hassel extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'TWM';
 
@@ -78,7 +90,7 @@ export class Hassel extends TrainerCard {
   public fullName: string = 'Hassel TWM';
 
   public text: string =
-    'You can play this card only if any of your Pokémon were Knocked Out during your opponent\'s last turn. Look at the top 8 cards of your deck. Put up to 3 of them into your hand, and shuffle the rest into your deck.';
+    "You can play this card only if any of your Pokémon were Knocked Out during your opponent's last turn. Look at the top 8 cards of your deck. Put up to 3 of them into your hand, and shuffle the rest into your deck.";
 
   public readonly HASSEL_MARKER = 'HASSEL_MARKER';
 
@@ -92,9 +104,7 @@ export class Hassel extends TrainerCard {
     return true;
   }
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, this, effect);
       return generator.next().value;
@@ -122,5 +132,4 @@ export class Hassel extends TrainerCard {
 
     return state;
   }
-
 }

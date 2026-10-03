@@ -8,11 +8,10 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { GameError } from '../../../game';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AcerolasPremonition extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'E';
 
@@ -22,15 +21,14 @@ export class AcerolasPremonition extends TrainerCard {
 
   public setNumber: string = '129';
 
-  public name: string = 'Acerola\'s Premonition';
+  public name: string = "Acerola's Premonition";
 
-  public fullName: string = 'Acerola\'s Premonition BRS';
+  public fullName: string = "Acerola's Premonition BRS";
 
   public text: string =
     'Your opponent reveals their hand, and you draw a card for each Trainer card you find there.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
@@ -41,24 +39,25 @@ export class AcerolasPremonition extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
-      const cardsInOpponentHand = opponent.hand.cards.filter(card => card instanceof TrainerCard);
+      const cardsInOpponentHand = opponent.hand.cards.filter((card) => card instanceof TrainerCard);
 
-      state = store.prompt(state, new ShowCardsPrompt(
-        player.id,
-        GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-        opponent.hand.cards
-      ), () => {
-
-        const cardsToMove = cardsInOpponentHand.length;
-        DRAW_CARDS(store, state, player, cardsToMove);
-
-      });
+      state = store.prompt(
+        state,
+        new ShowCardsPrompt(
+          player.id,
+          GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
+          opponent.hand.cards,
+        ),
+        () => {
+          const cardsToMove = cardsInOpponentHand.length;
+          DRAW_CARDS(store, state, player, cardsToMove);
+        },
+      );
     }
     return state;
   }
-
 }

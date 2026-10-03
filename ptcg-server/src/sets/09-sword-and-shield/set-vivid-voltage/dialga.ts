@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { AttachEnergyPrompt, GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 
@@ -73,7 +73,7 @@ export class Dialga extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

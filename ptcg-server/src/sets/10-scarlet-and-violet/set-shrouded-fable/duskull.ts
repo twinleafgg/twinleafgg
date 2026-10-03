@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, PokemonCardList, Card, ChooseCardsPrompt, GameMessage, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useKingsOrder(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -35,7 +35,7 @@ function* useKingsOrder(next: Function, store: StoreLike, state: State,
   }
 
   cards.forEach((card, index) => {
-    player.discard.moveCardTo(card, slots[index]);
+    MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: effect.source.getPokemonCard()! });
     slots[index].pokemonPlayedTurn = state.turn;
   });
 }

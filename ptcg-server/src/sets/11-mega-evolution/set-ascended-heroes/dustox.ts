@@ -8,7 +8,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { COIN_FLIP_PROMPT, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Dustox extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -88,7 +88,7 @@ export class Dustox extends PokemonCard {
           ), selected => {
             if (selected && selected.length > 0) {
               const energyCard = selected[0];
-              opponent.active.moveCardTo(energyCard, opponent.hand);
+              MOVE_CARDS(store, state, opponent.active, opponent.hand, { cards: [energyCard], sourceCard: this });
             }
           });
         }

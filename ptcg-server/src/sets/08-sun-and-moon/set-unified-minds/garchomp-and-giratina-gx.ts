@@ -14,11 +14,9 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   DAMAGE_OPPONENT_POKEMON,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GarchompGiratinaGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX, CardTag.TAG_TEAM];
@@ -140,7 +138,7 @@ export class GarchompGiratinaGX extends PokemonCard {
         ),
         (selection) => {
           selection.forEach((r) => {
-            r.moveTo(opponent.discard);
+            MOVE_CARDS(store, state, r, opponent.discard, { sourceCard: this });
             r.clearEffects();
           });
         },

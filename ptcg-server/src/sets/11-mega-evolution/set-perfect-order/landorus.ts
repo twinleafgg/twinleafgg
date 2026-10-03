@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, GameLog, ChooseCardsPrompt, GameMessage, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Landorus extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -61,7 +61,7 @@ export class Landorus extends PokemonCard {
             name: player.name,
             card: energyToReturn.name
           });
-          player.active.moveCardTo(energyToReturn, player.hand);
+          MOVE_CARDS(store, state, player.active, player.hand, { cards: [energyToReturn], sourceCard: this });
         }
       });
     }

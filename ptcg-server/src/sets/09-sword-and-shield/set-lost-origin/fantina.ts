@@ -9,9 +9,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Fantina extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'F';
   public set: string = 'LOR';
   public setNumber: string = '157';
@@ -40,7 +41,7 @@ export class Fantina extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       // Mark the player's side to take 120 less damage from V Pokemon during opponent's next turn
       player.marker.addMarker(this.FANTINA_MARKER, this);

@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { StoreLike, State, StateUtils, PlayerType, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { BeginTurnEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { IS_ABILITY_BLOCKED, MOVE_CARDS, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { IS_ABILITY_BLOCKED, MOVE_POKEMON_OFF_BOARD, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
 
 export class Wishiwashi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -55,27 +55,10 @@ export class Wishiwashi extends PokemonCard {
           if (cardList.damage > 0) {
             return COIN_FLIP_PROMPT(store, state, opponent, result => {
               if (result === false) {
-                const pokemons = cardList.getPokemons();
-                const otherCards = cardList.cards.filter(card =>
-                  !(card instanceof PokemonCard) &&
-                  !pokemons.includes(card as PokemonCard) &&
-                  (!cardList.tools || !cardList.tools.includes(card))
-                );
-                const tools = [...cardList.tools];
-
-                if (tools.length > 0) {
-                  for (const tool of tools) {
-                    cardList.moveCardTo(tool, opponent.deck);
-                  }
-                }
-
-                if (otherCards.length > 0) {
-                  MOVE_CARDS(store, state, cardList, opponent.deck, { cards: otherCards });
-                }
-
-                if (pokemons.length > 0) {
-                  MOVE_CARDS(store, state, cardList, opponent.deck, { cards: pokemons });
-                }
+                MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+                  pokemonDestination: opponent.deck,
+                  sourceCard: this,
+                });
 
                 return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
                   opponent.deck.applyOrder(order);

@@ -13,14 +13,13 @@ import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class ClemontsQuickWit extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'SSP';
   public setNumber = '167';
   public cardImage = 'assets/cardback.png';
   public regulationMark: string = 'H';
-  public name: string = 'Clemont\'s Quick Wit';
-  public fullName: string = 'Clemont\'s Quick Wit SSP';
+  public name: string = "Clemont's Quick Wit";
+  public fullName: string = "Clemont's Quick Wit SSP";
   public text: string = 'Heal 60 damage from each of your [L] Pokémon.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
@@ -39,7 +38,6 @@ export class ClemontsQuickWit extends TrainerCard {
     return true;
   }
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
@@ -47,13 +45,17 @@ export class ClemontsQuickWit extends TrainerCard {
       // Populate targets; Lightning Pokemon with damage counters
       const targets: PokemonCardList[] = [];
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
-        if (pokemonHasCardType(card, CardType.LIGHTNING) && cardList.damage > 0) { targets.push(cardList); }
+        if (pokemonHasCardType(card, CardType.LIGHTNING) && cardList.damage > 0) {
+          targets.push(cardList);
+        }
       });
 
       // Can't play this card if there's no valid targets
-      if (targets.length === 0) { throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD); }
+      if (targets.length === 0) {
+        throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
+      }
 
-      targets.forEach(target => {
+      targets.forEach((target) => {
         // Heal all our targets
         const healEffect = new HealEffect(player, target, 60);
         store.reduceEffect(state, healEffect);
@@ -62,5 +64,4 @@ export class ClemontsQuickWit extends TrainerCard {
 
     return state;
   }
-
 }

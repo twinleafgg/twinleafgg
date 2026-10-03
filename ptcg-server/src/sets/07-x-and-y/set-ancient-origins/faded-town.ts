@@ -11,13 +11,14 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 
 export class FadedTown extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'AOR';
   public setNumber = '73';
   public cardImage = 'assets/cardback.png';
   public name: string = 'Faded Town';
   public fullName: string = 'Faded Town AOR';
-  public text: string = 'At any time between turns, put 2 damage counters on each Mega Evolution Pokémon.';
+  public text: string =
+    'At any time between turns, put 2 damage counters on each Mega Evolution Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof BetweenTurnsEffect && StateUtils.getStadiumCard(state) === this) {

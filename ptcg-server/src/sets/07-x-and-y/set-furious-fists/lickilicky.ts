@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_UNTIL_YOU_GET_TAILS_DO_X_MORE_DAMAGE_PER_HEADS } from '../../../game/store/prefabs/attack-effects';
 
 export class Lickilicky extends PokemonCard {
@@ -48,7 +48,7 @@ export class Lickilicky extends PokemonCard {
       if (opponent.hand.cards.length > 0) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const cardToDiscard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(cardToDiscard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [cardToDiscard], sourceCard: this });
       }
     }
 

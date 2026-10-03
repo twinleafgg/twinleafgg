@@ -3,8 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Roggenrola2 extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -34,22 +33,9 @@ export class Roggenrola2 extends PokemonCard {
   public name: string = 'Roggenrola';
   public fullName: string = 'Roggenrola EPO 49';
 
-  public readonly HARDEN_MARKER = 'HARDEN_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      player.active.marker.addMarker(this.HARDEN_MARKER, this);
-    }
-
-    if (effect instanceof DealDamageEffect && effect.target.marker.hasMarker(this.HARDEN_MARKER, this)) {
-      if (effect.damage <= 40) {
-        effect.damage = 0;
-      }
-    }
-
-    if (effect instanceof EndTurnEffect) {
-      effect.player.active.marker.removeMarker(this.HARDEN_MARKER, this);
+      PREVENT_DAMAGE(store, state, effect, this, { maxDamage: 40 });
     }
 
     return state;

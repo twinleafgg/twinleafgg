@@ -10,7 +10,7 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cresselia extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -71,7 +71,7 @@ export class Cresselia extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.deck.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           const energyCard = transfer.card as EnergyCard;
           const attachEnergyEffect = new AttachEnergyEffect(player, energyCard, target);
           store.reduceEffect(state, attachEnergyEffect);

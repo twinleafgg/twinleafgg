@@ -18,16 +18,14 @@ import {
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
   ABILITY_USED,
   REMOVE_MARKER_AT_END_OF_TURN,
   BLOCK_IF_GX_ATTACK_USED,
-  DRAW_CARDS,
-} from '../../../game/store/prefabs/prefabs';
+  DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class NaganadelGx extends PokemonCard {
@@ -113,7 +111,7 @@ export class NaganadelGx extends PokemonCard {
         (selected) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            player.hand.moveCardTo(cards[0], player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: [cards[0]], sourceCard: this });
             DRAW_CARDS(store, state, player, 3);
           }
         },
@@ -178,7 +176,7 @@ export class NaganadelGx extends PokemonCard {
         (selected) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            opponent.discard.moveCardTo(cards[0], emptyPrize);
+            MOVE_CARDS(store, state, opponent.discard, emptyPrize, { cards: [cards[0]], sourceCard: this });
             emptyPrize.isSecret = true;
             emptyPrize.isPublic = false;
           }

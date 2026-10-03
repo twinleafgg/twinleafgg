@@ -8,6 +8,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
+import { MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -47,18 +48,17 @@ function* playCard(
     ),
     (targets) => {
       if (targets && targets.length > 0) {
-        // Discard trainer only when user selected a Pokemon
-
-        targets[0].moveTo(player.hand);
-        targets[0].damage = 0;
-        targets[0].clearEffects();
+        MOVE_POKEMON_OFF_BOARD(store, state, targets[0], {
+          pokemonDestination: player.hand,
+          sourceCard: effect.trainerCard,
+        });
       }
     },
   );
 }
 
 export class PokeTurn extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'PL';
 

@@ -9,12 +9,11 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class Clay extends TrainerCard {
-
   public cardImage: string = 'assets/cardback.png';
 
   public setNumber: string = '188';
 
-  public trainerType = TrainerType.SUPPORTER;
+  protected _trainerType = TrainerType.SUPPORTER;
 
   public set = 'CEC';
 
@@ -22,10 +21,10 @@ export class Clay extends TrainerCard {
 
   public fullName = 'Clay CEC';
 
-  public text = 'Discard the top 7 cards of your deck. If any of those cards are Item cards, put them into your hand.';
+  public text =
+    'Discard the top 7 cards of your deck. If any of those cards are Item cards, put them into your hand.';
 
   reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
 
@@ -34,13 +33,15 @@ export class Clay extends TrainerCard {
       }
 
       effect.preventDefault = true;
-      player.hand.moveCardTo(this, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [this], sourceCard: this });
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 7);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 7, sourceCard: this });
 
       // Filter for item cards
-      const itemCards = deckTop.cards.filter(c => c instanceof TrainerCard && c.trainerType === TrainerType.ITEM);
+      const itemCards = deckTop.cards.filter(
+        (c) => c instanceof TrainerCard && c.trainerType === TrainerType.ITEM,
+      );
 
       // Check if DiscardToHandEffect is prevented
       const discardEffect = new DiscardToHandEffect(player, this);
@@ -52,10 +53,13 @@ export class Clay extends TrainerCard {
       }
 
       // Move all cards to discard
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
 
       itemCards.forEach((card, index) => {
-        store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
+        store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
+          name: player.name,
+          card: card.name,
+        });
       });
 
       // Move item cards to hand

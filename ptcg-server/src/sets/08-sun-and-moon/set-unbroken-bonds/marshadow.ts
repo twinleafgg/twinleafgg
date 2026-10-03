@@ -78,7 +78,7 @@ export class Marshadow extends PokemonCard {
 
       // Discard Stadium
       MOVE_CARDS(store, state, cardList, owner.discard);
-      player.bench[benchIndex].moveTo(player.discard);
+      MOVE_CARDS(store, state, player.bench[benchIndex], player.discard, { sourceCard: this });
       return state;
     }
 

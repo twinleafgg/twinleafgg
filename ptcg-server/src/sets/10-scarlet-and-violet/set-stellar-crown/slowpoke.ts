@@ -1,4 +1,4 @@
-import { PokemonCard, Stage, CardType, State, StoreLike, GameError, GameMessage, ChooseCardsPrompt, Card, SuperType, CardList, GameLog } from '../../../game';
+import { PokemonCard, Stage, CardType, State, StoreLike, GameError, GameMessage, ChooseCardsPrompt, Card, SuperType, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
@@ -57,9 +57,6 @@ export class Slowpoke extends PokemonCard {
           if (selected) {
             cards.cards = selected;
           }
-          selected.forEach(card => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-          });
           MOVE_CARDS(store, state, cards, player.hand);
         });
     }

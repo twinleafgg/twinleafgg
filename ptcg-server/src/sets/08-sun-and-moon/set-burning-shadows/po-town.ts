@@ -10,13 +10,14 @@ import { EvolveEffect, UseStadiumEffect } from '../../../game/store/effects/game
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class PoTown extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'BUS';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '121';
   public name: string = 'Po Town';
   public fullName: string = 'Po Town BUS';
-  public text: string = 'Whenever any player plays a Pokémon from their hand to evolve 1 of their Pokémon, put 3 damage counters on that Pokémon.';
+  public text: string =
+    'Whenever any player plays a Pokémon from their hand to evolve 1 of their Pokémon, put 3 damage counters on that Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

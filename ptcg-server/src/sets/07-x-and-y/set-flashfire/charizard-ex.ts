@@ -12,12 +12,10 @@ import {
 } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   COIN_FLIP_PROMPT,
   SHUFFLE_DECK,
-  SHOW_CARDS_TO_PLAYER,
-} from '../../../game/store/prefabs/prefabs';
+  SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class CharizardEx extends PokemonCard {
@@ -80,7 +78,7 @@ export class CharizardEx extends PokemonCard {
               if (cards.length > 0) {
                 SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
                 cards.forEach((card) => {
-                  player.deck.moveCardTo(card, player.active);
+                  MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
                 });
               }
 

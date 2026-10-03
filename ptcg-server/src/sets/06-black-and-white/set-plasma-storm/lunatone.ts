@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameMessage, PowerType, StoreLike, State, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED, ABILITY_USED, SHOW_CARDS_TO_PLAYER, BLOCK_IF_DECK_EMPTY, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, ABILITY_USED, SHOW_CARDS_TO_PLAYER, BLOCK_IF_DECK_EMPTY, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
 
 export class Lunatone extends PokemonCard {
@@ -53,7 +53,7 @@ export class Lunatone extends PokemonCard {
 
       // Move top cards to temp list
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, count);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: count, sourceCard: this });
 
       // Show the top cards to the player
       SHOW_CARDS_TO_PLAYER(store, state, player, deckTop.cards);

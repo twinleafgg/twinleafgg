@@ -11,14 +11,15 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 
 export class GravityMountain extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'H';
   public set: string = 'SSP';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '177';
   public name: string = 'Gravity Mountain';
   public fullName: string = 'Gravity Mountain SSP';
-  public text: string = 'Each Stage 2 Pokémon in play (both yours and your opponent\'s) gets -30 HP. ';
+  public text: string =
+    "Each Stage 2 Pokémon in play (both yours and your opponent's) gets -30 HP. ";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckHpEffect && StateUtils.getStadiumCard(state) === this) {

@@ -13,7 +13,7 @@ import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useWhirlpool(
   next: Function,
@@ -126,7 +126,7 @@ export class DrampaGX extends PokemonCard {
       player.usedGX = true;
 
       if (player.hand.cards.length > 0) {
-        player.hand.moveCardsTo(player.hand.cards, player.deck);
+        MOVE_CARDS(store, state, player.hand, player.deck, { cards: player.hand.cards, sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
           player.deck.applyOrder(order);
@@ -134,7 +134,7 @@ export class DrampaGX extends PokemonCard {
             if (player.deck.cards.length === 0) {
               break;
             }
-            player.deck.moveTo(player.hand, 1);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
           }
         });
       }

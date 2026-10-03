@@ -8,7 +8,7 @@ import { Card } from '../../game/store/card/card';
 import { GameMessage } from '../../game/game-message';
 import { ShuffleDeckPrompt } from '../../game/store/prompts/shuffle-prompt';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 function* useAscension(
   next: Function,
@@ -44,7 +44,7 @@ function* useAscension(
 
   if (cards.length > 0) {
     // Evolve Pokemon
-    player.deck.moveCardsTo(cards, player.active);
+    MOVE_CARDS(store, state, player.deck, player.active, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
     player.active.clearEffects();
     player.active.pokemonPlayedTurn = state.turn;
   }

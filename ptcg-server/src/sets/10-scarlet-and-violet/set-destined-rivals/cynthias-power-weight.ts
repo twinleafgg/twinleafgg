@@ -7,7 +7,7 @@ import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class CynthiasPowerWeight extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.CYNTHIAS];
   public regulationMark = 'I';
   public set: string = 'DRI';

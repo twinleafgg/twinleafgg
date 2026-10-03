@@ -4,11 +4,9 @@ import { StoreLike } from '../../game/store/store-like';
 import { State } from '../../game/store/state/state';
 import { Effect } from '../../game/store/effects/effect';
 
-import { PutDamageEffect, HealTargetEffect } from '../../game/store/effects/attack-effects';
-import { StateUtils } from '../../game/store/state-utils';
-import { PlayerType } from '../../game/store/actions/play-card-action';
-import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import { HealTargetEffect } from '../../game/store/effects/attack-effects';
+import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import { FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN } from '../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Gabite extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -39,42 +37,14 @@ export class Gabite extends PokemonCard {
   public name: string = 'Gabite';
   public fullName: string = 'Gabite OP9';
 
-  public readonly CLEAR_BURROW_MARKER = 'CLEAR_DEFENSE_CURL_MARKER';
-  public readonly BURROW_MARKER = 'DEFENSE_CURL_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      return COIN_FLIP_PROMPT(store, state, player, flipResult => {
-        if (flipResult) {
-          player.active.marker.addMarker(this.BURROW_MARKER, this);
-          opponent.marker.addMarker(this.CLEAR_BURROW_MARKER, this);
-        }
-      });
+      return FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const healTarget = new HealTargetEffect(effect, 20);
       return store.reduceEffect(state, healTarget);
-    }
-
-    if (effect instanceof PutDamageEffect
-      && effect.target.marker.hasMarker(this.BURROW_MARKER)) {
-      effect.preventDefault = true;
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect
-      && effect.player.marker.hasMarker(this.CLEAR_BURROW_MARKER, this)) {
-
-      effect.player.marker.removeMarker(this.CLEAR_BURROW_MARKER, this);
-
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.BURROW_MARKER, this);
-      });
     }
 
     return state;

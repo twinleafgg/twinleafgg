@@ -1,7 +1,7 @@
 import { PlayerType, PokemonCard, Stage, CardType, PowerType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sigilyph extends PokemonCard {
 
@@ -44,7 +44,7 @@ export class Sigilyph extends PokemonCard {
 
           while (cardList.tools.length > this.maxTools) {
             const tool = cardList.tools[cardList.tools.length - 1];
-            cardList.moveCardTo(tool, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [tool], sourceCard: this });
           }
         });
       });

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, PlayerType, SlotType, ChoosePokemonPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_COIN_FOR_FLY } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Pelipper extends PokemonCard {
@@ -54,12 +54,12 @@ export class Pelipper extends PokemonCard {
 
         const tools = target.tools.slice();
         tools.forEach(tool => {
-          target.moveCardTo(tool, player.hand);
+          MOVE_CARDS(store, state, target, player.hand, { cards: [tool], sourceCard: this });
         });
 
         const cards = target.cards.slice();
         cards.forEach(card => {
-          target.moveCardTo(card, player.hand);
+          MOVE_CARDS(store, state, target, player.hand, { cards: [card], sourceCard: this });
         });
 
         target.clearEffects();

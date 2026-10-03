@@ -92,7 +92,7 @@ export class MegaRayquazaex extends PokemonCard {
 
           const topCards = new CardList();
           const count = Math.min(4, player.deck.cards.length);
-          player.deck.moveTo(topCards, count);
+          MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
           SHOW_CARDS_TO_PLAYER(store, state, player, topCards.cards);
 
@@ -118,7 +118,7 @@ export class MegaRayquazaex extends PokemonCard {
               cards = cards || [];
               if (cards.length > 0) {
                 const energyCard = cards[0] as EnergyCard;
-                topCards.moveCardTo(energyCard, effect.target);
+                MOVE_CARDS(store, state, topCards, effect.target, { cards: [energyCard], sourceCard: this });
                 store.reduceEffect(
                   state,
                   new AttachEnergyEffect(player, energyCard, effect.target),

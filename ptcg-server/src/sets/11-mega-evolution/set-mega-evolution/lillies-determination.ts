@@ -9,14 +9,15 @@ import { Player } from '../../../game/store/state/player';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class LilliesDetermination extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'MEG';
   public regulationMark = 'I';
   public setNumber: string = '119';
-  public name: string = 'Lillie\'s Determination';
+  public name: string = "Lillie's Determination";
   public cardImage: string = 'assets/cardback.png';
-  public fullName: string = 'Lillie\'s Determination M1L';
-  public text: string = 'Shuffle your hand into your deck. Then, draw 6 cards. If you have exactly 6 Prize cards remaining, draw 8 cards instead.';
+  public fullName: string = "Lillie's Determination M1L";
+  public text: string =
+    'Shuffle your hand into your deck. Then, draw 6 cards. If you have exactly 6 Prize cards remaining, draw 8 cards instead.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {

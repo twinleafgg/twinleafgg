@@ -10,16 +10,16 @@ import { StoreLike } from '../../../game/store/store-like';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class FullFlame extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'LM';
   public name: string = 'Full Flame';
   public fullName: string = 'Full Flame LM';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '74';
-  public text: string = 'Put 4 damage counters instead of 2 on each Burned Pokémon between turns. The Special Condition Burned can\'t be removed by evolving or devolving the Burned Pokémon.';
+  public text: string =
+    "Put 4 damage counters instead of 2 on each Burned Pokémon between turns. The Special Condition Burned can't be removed by evolving or devolving the Burned Pokémon.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof BetweenTurnsEffect && StateUtils.getStadiumCard(state) === this) {
       if (IS_STADIUM_EFFECT_BLOCKED(store, state, effect.player, effect.player.active)) {
         return state;
@@ -32,7 +32,10 @@ export class FullFlame extends TrainerCard {
     }
 
     // Preserve BURNED condition during evolution
-    if (effect instanceof CheckSpecialConditionRemovalEffect && StateUtils.getStadiumCard(state) === this) {
+    if (
+      effect instanceof CheckSpecialConditionRemovalEffect &&
+      StateUtils.getStadiumCard(state) === this
+    ) {
       const owner = StateUtils.findOwner(state, effect.target);
       if (IS_STADIUM_EFFECT_BLOCKED(store, state, owner, effect.target)) {
         return state;

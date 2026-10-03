@@ -8,7 +8,7 @@ import { Card, ShuffleDeckPrompt, StoreLike, State, StateUtils } from '../../../
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Talonflame extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -46,11 +46,11 @@ export class Talonflame extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, effect.player);
 
       const cardsInHand = [...opponent.hand.cards];
-      opponent.hand.moveCardsTo(cardsInHand, opponent.deck);
+      MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cardsInHand, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
         opponent.deck.applyOrder(order);
-        opponent.deck.moveTo(opponent.hand, 4);
+        MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
       });
     }
 

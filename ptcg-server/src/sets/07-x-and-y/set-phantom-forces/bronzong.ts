@@ -13,7 +13,7 @@ import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-pr
 import { StateUtils } from '../../../game/store/state-utils';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Bronzong extends PokemonCard {
 
@@ -93,7 +93,7 @@ export class Bronzong extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
 
         player.marker.addMarker(this.METAL_LINKS_MARKER, this);

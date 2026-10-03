@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { HealTargetEffect } from '../../../game/store/effects/attack-effects';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Zarude extends PokemonCard {
 
@@ -72,7 +72,7 @@ export class Zarude extends PokemonCard {
             cards.push(em.card);
           });
 
-          player.active.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
 
           effect.damage += 80;
         }

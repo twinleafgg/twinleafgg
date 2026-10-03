@@ -4,15 +4,25 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 import {
-  PlayerType, StateUtils, GameError, GameMessage,
+  PlayerType,
+  StateUtils,
+  GameError,
+  GameMessage,
   PokemonCardList,
   CardTarget,
   ChoosePokemonPrompt,
-  SlotType
+  SlotType,
 } from '../../../game';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -42,16 +52,20 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   const max = Math.min(2, pokemonsWithTool);
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-    PlayerType.ANY,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { min: 1, max: max, allowCancel: true, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+      PlayerType.ANY,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { min: 1, max: max, allowCancel: true, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length === 0) {
     return state;
@@ -59,11 +73,13 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Discard trainer only when user selected a Pokemon
 
-
-  targets.forEach(target => {
+  targets.forEach((target) => {
     const owner = StateUtils.findOwner(state, target);
     if (target.tools.length > 0) {
-      target.moveCardTo(target.tools[0], owner.discard);
+      MOVE_CARDS(store, state, target, owner.discard, {
+        cards: [target.tools[0]],
+        sourceCard: effect.trainerCard,
+      });
     }
   });
 
@@ -71,8 +87,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 }
 
 export class ToolScrapper extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'DRX';
 
@@ -86,7 +101,7 @@ export class ToolScrapper extends TrainerCard {
 
   public text: string =
     'Choose up to 2 Pokemon Tool cards attached to Pokemon in play (yours or ' +
-    'your opponent\'s) and discard them.';
+    "your opponent's) and discard them.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -95,5 +110,4 @@ export class ToolScrapper extends TrainerCard {
     }
     return state;
   }
-
 }

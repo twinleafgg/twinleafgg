@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { GameMessage } from '../../../game/game-message';
@@ -58,7 +58,7 @@ export class Poliwrath extends PokemonCard {
         { min: 2, max: 2, allowCancel: false },
       ), selected => {
         const cards = selected || [];
-        player.active.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
       });
     }
 

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, StoreLike, State, pokemonHasCardType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class Gourgeist extends PokemonCard {
@@ -46,7 +46,7 @@ export class Gourgeist extends PokemonCard {
       // Reveal top 6 cards of deck
       const topCards = new CardList();
       const count = Math.min(6, player.deck.cards.length);
-      player.deck.moveTo(topCards, count);
+      MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
       // Find Psychic Pokemon in top 6
       const psychicPokemon = topCards.cards.filter(c =>
@@ -66,11 +66,11 @@ export class Gourgeist extends PokemonCard {
 
       // Move non-Psychic cards to discard
       nonPsychicCards.forEach(card => {
-        topCards.moveCardTo(card, player.discard);
+        MOVE_CARDS(store, state, topCards, player.discard, { cards: [card], sourceCard: this });
       });
 
       // Shuffle Psychic Pokemon back into deck
-      topCards.moveTo(player.deck);
+      MOVE_CARDS(store, state, topCards, player.deck, { sourceCard: this });
       SHUFFLE_DECK(store, state, player);
     }
 

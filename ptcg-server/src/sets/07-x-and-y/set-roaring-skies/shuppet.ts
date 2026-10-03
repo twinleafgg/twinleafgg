@@ -11,6 +11,7 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { Effect } from '../../../game/store/effects/effect';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(next: Function, store: StoreLike, state: State, effect: AttackEffect): IterableIterator<State> {
   const player = effect.player;
@@ -61,7 +62,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Attac
 
   if (cards.length > 0) {
     // Discard selected special energy card
-    target.moveCardsTo(cards, opponent.discard);
+    MOVE_CARDS(store, state, target, opponent.discard, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
   }
 
   return state;

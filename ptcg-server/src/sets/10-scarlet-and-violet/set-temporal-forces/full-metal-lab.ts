@@ -12,14 +12,15 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class FullMetalLab extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark: string = 'H';
   public set: string = 'TEF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '148';
   public name: string = 'Full Metal Lab';
   public fullName: string = 'Full Metal Lab TEF';
-  public text: string = '[M] Pokémon (both yours and your opponent\'s) take 30 less damage from attacks from the opponent\'s Pokémon (after applying Weakness and Resistance).';
+  public text: string =
+    "[M] Pokémon (both yours and your opponent's) take 30 less damage from attacks from the opponent's Pokémon (after applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof PutDamageEffect && StateUtils.getStadiumCard(state) === this) {

@@ -59,6 +59,26 @@ function isDeckCustomizePath(pathname: string): boolean {
   return /^\/deck\/[^/]+\/customize\/?$/.test(pathname);
 }
 
+function isDeckStatsPath(pathname: string): boolean {
+  return /^\/deck\/[^/]+\/stats\/?$/.test(pathname);
+}
+
+function isDeckListPath(pathname: string): boolean {
+  return pathname === '/deck';
+}
+
+function isRankingPath(pathname: string): boolean {
+  return pathname === '/ranking' || pathname.startsWith('/ranking/');
+}
+
+function isFriendsPath(pathname: string): boolean {
+  return pathname === '/friends' || pathname.startsWith('/friends/');
+}
+
+function isSettingsPath(pathname: string): boolean {
+  return pathname === '/settings' || pathname.startsWith('/settings/');
+}
+
 export function AppLayout() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -75,6 +95,11 @@ export function AppLayout() {
   const battlePassBleed = isBattlePassPath(pathname);
   const messagesBleed = isMessagesPath(pathname);
   const profileBleed = isProfilePath(pathname);
+  const rankingBleed = isRankingPath(pathname);
+  const deckListBleed = isDeckListPath(pathname);
+  const deckStatsBleed = isDeckStatsPath(pathname);
+  const friendsBleed = isFriendsPath(pathname);
+  const settingsBleed = isSettingsPath(pathname);
   const mainBleed =
     deckEditorFullBleed ||
     deckCustomizeFullBleed ||
@@ -83,7 +108,12 @@ export function AppLayout() {
     gamesBleed ||
     battlePassBleed ||
     messagesBleed ||
-    profileBleed;
+    profileBleed ||
+    rankingBleed ||
+    deckListBleed ||
+    deckStatsBleed ||
+    friendsBleed ||
+    settingsBleed;
 
   const incomingInviteCount = useMemo(() => {
     const { incoming } = partitionMyGames(games, clientId, user?.userId ?? 0);

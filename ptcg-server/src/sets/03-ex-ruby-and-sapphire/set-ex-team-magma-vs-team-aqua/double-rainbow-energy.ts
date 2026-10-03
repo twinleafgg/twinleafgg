@@ -6,7 +6,7 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class DoubleRainbowEnergy extends EnergyCard {
 
@@ -55,7 +55,7 @@ export class DoubleRainbowEnergy extends EnergyCard {
           const attachedTo = cardList.getPokemonCard();
 
           if (!!attachedTo && cardList.getPokemons().length <= 1) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

@@ -18,7 +18,7 @@ import {
 } from '../../../game/store/effects/check-effects';
 import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class DangerousEnergy extends EnergyCard {
   public provides: CardType[] = [C];
@@ -92,7 +92,7 @@ export class DangerousEnergy extends EnergyCard {
 
           const pokemonCard = cardList.getPokemonCard();
           if (!pokemonCard || !pokemonHasCardType(pokemonCard, CardType.DARK)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

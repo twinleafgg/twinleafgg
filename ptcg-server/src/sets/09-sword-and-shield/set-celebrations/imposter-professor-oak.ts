@@ -10,13 +10,14 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { DRAW_CARDS, MOVE_CARDS, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
 
 export class ImposterProfessorOak extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'CEL';
   public setNumber: string = '73A';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Imposter Professor Oak';
   public fullName: string = 'Imposter Professor Oak CEL';
-  public text: string = 'Your opponent shuffles his or her hand into his or her deck, then draws 7 cards.';
+  public text: string =
+    'Your opponent shuffles his or her hand into his or her deck, then draws 7 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-base-set/impostor-professor-oak.ts (shuffle opponent hand into deck + draw 7)

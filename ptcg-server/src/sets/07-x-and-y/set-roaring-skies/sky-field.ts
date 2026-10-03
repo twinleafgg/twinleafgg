@@ -10,8 +10,7 @@ import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 
 export class SkyField extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
 
   public set: string = 'ROS';
 
@@ -41,5 +40,4 @@ export class SkyField extends TrainerCard {
 
     return state;
   }
-
 }

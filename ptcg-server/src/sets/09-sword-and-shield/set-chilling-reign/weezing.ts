@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, EnergyCard, ChooseCardsPrompt, GameMessage, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_CONFUSED } from '../../../game/store/prefabs/attack-effects';
 
 export class Weezing extends PokemonCard {
@@ -68,7 +68,7 @@ export class Weezing extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.discard.moveCardTo(selected[0], player.active);
+          MOVE_CARDS(store, state, player.discard, player.active, { cards: [selected[0]], sourceCard: this });
         }
       });
     }

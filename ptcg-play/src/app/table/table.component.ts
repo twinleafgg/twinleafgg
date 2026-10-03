@@ -1,6 +1,11 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Player, GamePhase, Format, selfPlayFocusPlayerId, State } from 'ptcg-server';
+import {
+  isSelfPlayBackgroundWait,
+  promptRequiresSelfPlayFocus,
+  selfPlayBackgroundWaitDelayMs,
+} from './self-play-background-waits';
 import { Observable, from, EMPTY } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -44,6 +49,7 @@ export class TableComponent implements OnInit, OnDestroy {
   public gameOverPrompt: GameOverPrompt;
   public showSandboxPanel = false;
   public sandboxSidebarCollapsed: boolean = false;
+  private backgroundWaitTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
   public formats = {
     [Format.STANDARD]: 'LABEL_STANDARD',
@@ -115,6 +121,7 @@ export class TableComponent implements OnInit, OnDestroy {
         // Game ID should only be set when actively joining as a player, not when spectating
 
         this.updatePlayers(this.gameState, clientId);
+        this.syncSelfPlayBackgroundWaits(this.gameState);
       });
 
     this.gameStates$
@@ -131,10 +138,12 @@ export class TableComponent implements OnInit, OnDestroy {
           this.showSandboxPanel = false;
         }
         this.updatePlayers(this.gameState, clientId);
+        this.syncSelfPlayBackgroundWaits(this.gameState);
       });
   }
 
   ngOnDestroy() {
+    this.clearBackgroundWaitTimers();
     // Make sure selection state is cleared when leaving the table view
     this.boardInteractionService.endBoardSelection();
 
@@ -185,6 +194,51 @@ export class TableComponent implements OnInit, OnDestroy {
         },
         error: (error: ApiError) => { }
       });
+  }
+
+  private syncSelfPlayBackgroundWaits(gameState: LocalGameState | undefined) {
+    if (
+      !gameState?.state
+      || gameState.replay
+      || gameState.state.gameSettings?.selfPlay !== true
+    ) {
+      this.clearBackgroundWaitTimers();
+      return;
+    }
+
+    const pending = gameState.state.prompts.filter(prompt =>
+      prompt.result === undefined
+      && prompt.playerId !== this.clientId
+      && isSelfPlayBackgroundWait(prompt)
+    );
+    const pendingIds = new Set(pending.map(prompt => prompt.id));
+    for (const [id, timer] of this.backgroundWaitTimers) {
+      if (!pendingIds.has(id)) {
+        clearTimeout(timer);
+        this.backgroundWaitTimers.delete(id);
+      }
+    }
+
+    for (const prompt of pending) {
+      if (this.backgroundWaitTimers.has(prompt.id)) {
+        continue;
+      }
+      const delay = selfPlayBackgroundWaitDelayMs(prompt);
+      const timer = setTimeout(() => {
+        this.backgroundWaitTimers.delete(prompt.id);
+        if (this.gameState?.gameId === gameState.gameId) {
+          this.gameService.resolvePrompt(gameState.gameId, prompt.id, null);
+        }
+      }, delay);
+      this.backgroundWaitTimers.set(prompt.id, timer);
+    }
+  }
+
+  private clearBackgroundWaitTimers() {
+    for (const timer of this.backgroundWaitTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.backgroundWaitTimers.clear();
   }
 
   private seatClientId(state: State | undefined, sessionClientId: number): number {
@@ -238,7 +292,9 @@ export class TableComponent implements OnInit, OnDestroy {
       const isReplay = !!this.gameState.replay;
       const isObserver = isReplay || !isPlaying;
       const gameFinished = state.phase === GamePhase.FINISHED || gameState.deleted;
-      const waitingForOthers = prompts.some(p => p.playerId !== this.clientId);
+      const waitingForOthers = prompts.some(p =>
+        p.playerId !== this.clientId && (!isSelfPlay || promptRequiresSelfPlayFocus(p))
+      );
       const waitingForMe = prompts.some(p => p.playerId === this.clientId);
       const notMyTurn = state.players[state.activePlayer].id !== this.clientId
         && state.phase === GamePhase.PLAYER_TURN;

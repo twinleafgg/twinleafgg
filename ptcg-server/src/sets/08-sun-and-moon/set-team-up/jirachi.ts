@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Jirachi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -66,7 +66,7 @@ export class Jirachi extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
       const opponent = StateUtils.getOpponent(state, player);
 
       return store.prompt(state, new ChooseCardsPrompt(
@@ -77,8 +77,8 @@ export class Jirachi extends PokemonCard {
         { min: 0, max: 1, allowCancel: false }
       ), selected => {
         player.marker.addMarker(this.STELLAR_WISH_MARKER, this);
-        deckTop.moveCardsTo(selected, player.hand);
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
 
         player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
           if (cardList.getPokemonCard() === this) {

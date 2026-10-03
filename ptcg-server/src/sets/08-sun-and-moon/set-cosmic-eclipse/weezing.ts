@@ -1,7 +1,7 @@
 import { CardType, PokemonCard, PowerType, Stage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { MOVE_POKEMON_OFF_BOARD, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { reduceBlowAwayBombEffect } from './blow-away-bomb';
 
 export class Weezing extends PokemonCard {
@@ -43,21 +43,10 @@ export class Weezing extends PokemonCard {
 
     if (effect instanceof AfterAttackEffect && this.usedBalloonBurst === true) {
       const player = effect.player;
-      const target = player.active;
-
-      // Separate Pokemon card from attached cards
-      const pokemons = target.getPokemons();
-      const otherCards = target.cards.filter(card => !(card instanceof PokemonCard));
-
-      // Move other cards to discard first
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, target, player.discard, { cards: otherCards });
-      }
-
-      // Move Pokemon to discard
-      if (pokemons.length > 0) {
-        MOVE_CARDS(store, state, target, player.discard, { cards: pokemons });
-      }
+      MOVE_POKEMON_OFF_BOARD(store, state, player.active, {
+        pokemonDestination: player.discard,
+        sourceCard: this,
+      });
     }
 
     if (effect instanceof EndTurnEffect && this.usedBalloonBurst) {

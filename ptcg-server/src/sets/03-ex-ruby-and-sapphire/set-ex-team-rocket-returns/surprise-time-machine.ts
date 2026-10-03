@@ -16,11 +16,11 @@ import {
   ChooseCardsPrompt,
 } from '../../../game';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DEVOLVE_POKEMON, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {DEVOLVE_POKEMON, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 
 export class SurpriseTimeMachine extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ROCKETS_SECRET_MACHINE];
   public set: string = 'TRR';
   public name: string = 'Surprise! Time Machine';
@@ -97,7 +97,7 @@ export class SurpriseTimeMachine extends TrainerCard {
                 cards = selected || [];
                 if (cards.length !== 0) {
                   const evolution = cards[0] as PokemonCard;
-                  player.deck.moveCardTo(evolution, targetPokemon);
+                  MOVE_CARDS(store, state, player.deck, targetPokemon, { cards: [evolution], sourceCard: this });
                 }
                 SHUFFLE_DECK(store, state, player);
               },

@@ -1,14 +1,12 @@
 import { CardTag, CardType, PokemonCard, Stage, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  ADD_BURN_TO_PLAYER_ACTIVE,
+import {ADD_BURN_TO_PLAYER_ACTIVE,
   ADD_CONFUSION_TO_PLAYER_ACTIVE,
   ADD_POISON_TO_PLAYER_ACTIVE,
   BLOCK_IF_GX_ATTACK_USED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 
 export class CelebiVenusaurGX extends PokemonCard {
@@ -75,7 +73,7 @@ export class CelebiVenusaurGX extends PokemonCard {
       );
 
       if (meetsExtraEffectCost) {
-        player.discard.moveTo(player.deck);
+        MOVE_CARDS(store, state, player.discard, player.deck, { sourceCard: this });
         SHUFFLE_DECK(store, state, player);
       }
     }

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChoosePokemonPrompt, GameMessage, PlayerType, PokemonCardList, SlotType, StoreLike, State, StateUtils, CardTarget } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SELECT_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SELECT_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class MrMime extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -106,7 +106,7 @@ export class MrMime extends PokemonCard {
             const dest = destTargets[0];
             const toolIdx = source.tools.indexOf(tool);
             if (toolIdx !== -1) { source.tools.splice(toolIdx, 1); }
-            source.moveCardTo(tool, dest);
+            MOVE_CARDS(store, state, source, dest, { cards: [tool], sourceCard: this });
             const cardIdx = dest.cards.indexOf(tool);
             if (cardIdx !== -1) { dest.cards.splice(cardIdx, 1); }
             dest.tools.push(tool);

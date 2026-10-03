@@ -7,7 +7,7 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCardList, GameError, GameMessage, Card, ChooseCardsPrompt, ChoosePokemonPrompt, PlayerType, SlotType } from '../../../game';
 
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Manaphy extends PokemonCard {
 
@@ -82,7 +82,7 @@ export class Manaphy extends PokemonCard {
         }
 
         cards.forEach((card, index) => {
-          opponent.hand.moveCardTo(card, slots[index]);
+          MOVE_CARDS(store, state, opponent.hand, slots[index], { cards: [card], sourceCard: this });
           slots[index].pokemonPlayedTurn = state.turn;
         });
       });

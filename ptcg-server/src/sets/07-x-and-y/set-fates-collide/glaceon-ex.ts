@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
+import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class GlaceonEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -40,8 +39,6 @@ export class GlaceonEx extends PokemonCard {
   public name: string = 'Glaceon-EX';
   public fullName: string = 'Glaceon-EX FCO';
 
-  public readonly CRYSTAL_RAY_MARKER = 'CRYSTAL_RAY_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Attack 1: Second Bite
     // Ref: set-breakthrough/m-mewtwo-ex-2.ts (damage counter based damage)
@@ -51,28 +48,8 @@ export class GlaceonEx extends PokemonCard {
       effect.damage += 10 * damageCounters;
     }
 
-    // Attack 2: Crystal Ray
-    // Ref: set-plasma-storm/klinklang.ts (Plasma Steel - prevent damage from specific Pokemon)
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      effect.player.active.marker.addMarker(this.CRYSTAL_RAY_MARKER, this);
-    }
-
-    // Intercept damage from Evolution Pokemon
-    if (effect instanceof DealDamageEffect) {
-      if (effect.target.marker.hasMarker(this.CRYSTAL_RAY_MARKER, this)) {
-        const sourceCard = effect.source.getPokemonCard();
-        if (sourceCard && sourceCard.stage !== Stage.BASIC) {
-          effect.damage = 0;
-        }
-      }
-    }
-
-    // Cleanup marker at end of opponent's turn
-    if (effect instanceof EndTurnEffect) {
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.CRYSTAL_RAY_MARKER, this);
-      });
+      PREVENT_DAMAGE(store, state, effect, this, { sourceIsEvolution: true });
     }
 
     return state;

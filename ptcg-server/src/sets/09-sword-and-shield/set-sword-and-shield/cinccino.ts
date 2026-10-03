@@ -10,16 +10,14 @@ import {
   SlotType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ATTACH_X_TYPE_ENERGY_FROM_DISCARD_TO_1_OF_YOUR_POKEMON,
   DRAW_CARDS,
   IS_ABILITY_BLOCKED,
   REMOVE_MARKER_AT_END_OF_TURN,
   USE_ABILITY_ONCE_PER_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cinccino extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -87,7 +85,7 @@ export class Cinccino extends PokemonCard {
         (selected) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
             DRAW_CARDS(store, state, player, 2);
           }
         },

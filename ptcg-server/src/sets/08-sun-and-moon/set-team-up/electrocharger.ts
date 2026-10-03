@@ -7,16 +7,21 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { Card, ChooseCardsPrompt, GameMessage, StoreLike, State, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {
+  MULTIPLE_COIN_FLIPS_PROMPT,
+  SHUFFLE_DECK,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 
 export class Electrocharger extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'TEU';
   public setNumber: string = '139';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Electrocharger';
   public fullName: string = 'Electrocharger TEU';
-  public text: string = 'Flip 2 coins. For each heads, shuffle an Electropower card from your discard pile into your deck.';
+  public text: string =
+    'Flip 2 coins. For each heads, shuffle an Electropower card from your discard pile into your deck.';
 
   // Ref: set-unified-minds/beheeyem.ts (trainer effect pattern), AGENTS-patterns.md (coin flips)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -24,22 +29,22 @@ export class Electrocharger extends TrainerCard {
       const player = effect.player;
 
       // Check if there are any Electropower cards in the discard pile
-      const electropowerCards = player.discard.cards.filter(c =>
-        c instanceof TrainerCard && c.name === 'Electropower'
+      const electropowerCards = player.discard.cards.filter(
+        (c) => c instanceof TrainerCard && c.name === 'Electropower',
       );
 
       if (electropowerCards.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 2, results => {
-        const heads = results.filter(r => r).length;
+      MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 2, (results) => {
+        const heads = results.filter((r) => r).length;
         if (heads === 0) {
           return;
         }
 
-        const availableCards = player.discard.cards.filter(c =>
-          c instanceof TrainerCard && c.name === 'Electropower'
+        const availableCards = player.discard.cards.filter(
+          (c) => c instanceof TrainerCard && c.name === 'Electropower',
         );
 
         const maxToShuffle = Math.min(heads, availableCards.length);
@@ -47,21 +52,28 @@ export class Electrocharger extends TrainerCard {
           return;
         }
 
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DECK,
-          player.discard,
-          { name: 'Electropower' },
-          { min: maxToShuffle, max: maxToShuffle, allowCancel: false }
-        ), (selected: Card[] | null) => {
-          const cards = selected || [];
-          cards.forEach(c => {
-            player.discard.moveCardTo(c, player.deck);
-          });
-          if (cards.length > 0) {
-            SHUFFLE_DECK(store, state, player);
-          }
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_DECK,
+            player.discard,
+            { name: 'Electropower' },
+            { min: maxToShuffle, max: maxToShuffle, allowCancel: false },
+          ),
+          (selected: Card[] | null) => {
+            const cards = selected || [];
+            cards.forEach((c) => {
+              MOVE_CARDS(store, state, player.discard, player.deck, {
+                cards: [c],
+                sourceCard: this,
+              });
+            });
+            if (cards.length > 0) {
+              SHUFFLE_DECK(store, state, player);
+            }
+          },
+        );
       });
     }
 

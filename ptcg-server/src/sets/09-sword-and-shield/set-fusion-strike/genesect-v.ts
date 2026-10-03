@@ -2,7 +2,7 @@ import { PokemonCard, CardTag, Stage, CardType, PowerType, StoreLike, State, Gam
 import { Effect } from "../../../game/store/effects/effect";
 import { EndTurnEffect } from "../../../game/store/effects/game-phase-effects";
 import { PlayPokemonEffect } from "../../../game/store/effects/play-card-effects";
-import { WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, WAS_POWER_USED } from "../../../game/store/prefabs/prefabs";
+import {WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, WAS_POWER_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class GenesectV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V, CardTag.FUSION_STRIKE];
@@ -42,7 +42,7 @@ export class GenesectV extends PokemonCard {
 
   public readonly FUSION_STRIKE_SYSTEM_MARKER = 'FUSION_STRIKE_SYSTEM_MARKER';
 
-  public reduceEffect(_store: StoreLike, state: State, effect: Effect): State {
+  public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Techno Blast
     if (WAS_ATTACK_USED(effect, 0, this)) {
       THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN(effect.player);
@@ -84,7 +84,7 @@ export class GenesectV extends PokemonCard {
         if (player.deck.cards.length === 0) {
           break;
         }
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
 
         player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
           if (cardList.getPokemonCard() === this) {

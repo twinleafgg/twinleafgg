@@ -8,7 +8,7 @@ import { GameMessage } from '../../../game/game-message';
 import { PokemonCard, StateUtils } from '../../../game';
 
 import { ApplyWeaknessEffect, AfterDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GiratinaV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -56,7 +56,7 @@ export class GiratinaV extends PokemonCard {
       const player = effect.player;
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 4);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 4, sourceCard: this });
 
       return store.prompt(
         state,
@@ -68,8 +68,8 @@ export class GiratinaV extends PokemonCard {
           { min: 2, max: 2, allowCancel: true },
         ),
         (selected) => {
-          deckTop.moveCardsTo(selected, player.hand);
-          deckTop.moveTo(player.lostzone);
+          MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+          MOVE_CARDS(store, state, deckTop, player.lostzone, { sourceCard: this });
           return state;
         },
       );

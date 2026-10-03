@@ -12,8 +12,7 @@ import { CardType, Stage, SuperType, TrainerType } from '../../../game/store/car
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
-
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Farfetchd extends PokemonCard {
 
@@ -82,7 +81,7 @@ export class Farfetchd extends PokemonCard {
         });
 
         if (cards[0] instanceof TrainerCard) {
-          player.deck.moveCardTo(cards[0], player.bench[benchSlot]);
+          MOVE_CARDS(store, state, player.deck, player.bench[benchSlot], { cards: [cards[0]], sourceCard: this });
           player.bench[benchSlot].tools.push(cards[0]);
           // state = store.reduceEffect(state, new AttachPokemonToolEffect(player, cards[0] as TrainerCard, player.bench[benchSlot]));
         }

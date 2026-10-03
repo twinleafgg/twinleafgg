@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { SpecialCondition } from '../../../game/store/card/card-types';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 
-import { BLOCK_IF_DISCARD_EMPTY, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_DISCARD_EMPTY, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Oranguru extends PokemonCard {
 
@@ -60,7 +60,7 @@ export class Oranguru extends PokemonCard {
         { min: 0, max: 3, allowCancel: false }
       ), selected => {
         cards = selected || [];
-        player.discard.moveCardsTo(cards, player.deck);
+        MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
       });
     }
 

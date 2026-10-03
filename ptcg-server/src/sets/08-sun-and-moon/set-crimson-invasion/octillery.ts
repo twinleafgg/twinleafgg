@@ -4,7 +4,7 @@ import { StoreLike, State, GameMessage, ConfirmPrompt } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DEFENDING_POKEMON_FLIPS_COIN_TO_ATTACK } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Octillery extends PokemonCard {
@@ -70,7 +70,7 @@ export class Octillery extends PokemonCard {
               { min: 1, max: 1, allowCancel: false, blocked }
             ), selected => {
               if (selected && selected.length > 0) {
-                player.active.moveCardTo(selected[0], player.discard);
+                MOVE_CARDS(store, state, player.active, player.discard, { cards: [selected[0]], sourceCard: this });
                 effect.damage += 80;
               }
             });

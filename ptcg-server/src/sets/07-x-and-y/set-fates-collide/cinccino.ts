@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils, GameMessage, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cinccino extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -60,7 +60,7 @@ export class Cinccino extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), (selected: Card[]) => {
           if (selected && selected.length > 0) {
-            opponent.hand.moveCardsTo(selected, opponent.deck);
+            MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: selected, sourceCard: this });
             const card = selected[0];
             const index = opponent.deck.cards.indexOf(card);
             if (index > -1) {

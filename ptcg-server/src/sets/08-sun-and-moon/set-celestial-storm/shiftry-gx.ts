@@ -7,6 +7,7 @@ import {
   AFTER_ATTACK,
   BLOCK_IF_GX_ATTACK_USED,
   WAS_ATTACK_USED,
+  MOVE_POKEMON_OFF_BOARD,
 } from '../../../game/store/prefabs/prefabs';
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
@@ -91,13 +92,10 @@ export class ShiftryGx extends PokemonCard {
         ),
         (selection) => {
           selection.forEach((r) => {
-            // Move tools to deck first (moveTo doesn't handle tools)
-            const tools = r.tools.slice();
-            tools.forEach((tool) => {
-              r.moveCardTo(tool, opponent.deck);
+            MOVE_POKEMON_OFF_BOARD(store, state, r, {
+              pokemonDestination: opponent.deck,
+              sourceCard: this,
             });
-            r.moveTo(opponent.deck);
-            r.clearEffects();
           });
 
           store.prompt(state, new ShuffleDeckPrompt(opponent.id), (order) => {

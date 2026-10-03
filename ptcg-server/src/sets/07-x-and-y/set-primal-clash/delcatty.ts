@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { GameMessage, MoveEnergyPrompt, StoreLike, State, StateUtils, PlayerType, SlotType } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 
 export class Delcatty extends PokemonCard {
@@ -72,7 +72,7 @@ export class Delcatty extends PokemonCard {
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, SuperType, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mawile extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -52,7 +52,7 @@ export class Mawile extends PokemonCard {
           const discardEffect = new DiscardCardsEffect(effect, cards);
           discardEffect.target = player.active;
           store.reduceEffect(state, discardEffect);
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
         }
         effect.damage = cards.length * 60;
       });

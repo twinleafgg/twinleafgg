@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gardevoir extends PokemonCard {
 
@@ -93,7 +93,7 @@ export class Gardevoir extends PokemonCard {
         throw new GameError(GameMessage.POWER_ALREADY_USED);
       }
 
-      player.deck.moveTo(temp, 2);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 2, sourceCard: this });
 
       // Check if any cards drawn are basic energy
       const energyCardsDrawn = temp.cards.filter(card => {
@@ -104,7 +104,7 @@ export class Gardevoir extends PokemonCard {
       if (energyCardsDrawn.length == 0) {
         player.marker.addMarker(this.SHINING_ARCANA_MARKER, this);
         temp.cards.slice(0, 2).forEach(card => {
-          temp.moveCardTo(card, player.hand);
+          MOVE_CARDS(store, state, temp, player.hand, { cards: [card], sourceCard: this });
         });
       }
 
@@ -125,7 +125,7 @@ export class Gardevoir extends PokemonCard {
 
           if (transfers.length === 0) {
             temp.cards.slice(0, 2).forEach(card => {
-              temp.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, temp, player.hand, { cards: [card], sourceCard: this });
               player.marker.addMarker(this.SHINING_ARCANA_MARKER, this);
             });
           }
@@ -134,10 +134,10 @@ export class Gardevoir extends PokemonCard {
           if (transfers) {
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              temp.moveCardTo(transfer.card, target); // Move card to target
+              MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this }); // Move card to target
             }
             temp.cards.forEach(card => {
-              temp.moveCardTo(card, player.hand); // Move card to hand
+              MOVE_CARDS(store, state, temp, player.hand, { cards: [card], sourceCard: this }); // Move card to hand
               player.marker.addMarker(this.SHINING_ARCANA_MARKER, this);
             });
           }

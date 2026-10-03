@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class Tentacool extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -43,10 +43,11 @@ export class Tentacool extends PokemonCard {
     if (effect instanceof AfterAttackEffect && this.usedLostInTheWaves) {
       this.usedLostInTheWaves = false;
       const player = effect.player;
-      const activePokemon = player.active;
 
-      activePokemon.moveTo(player.hand);
-      activePokemon.clearEffects();
+      MOVE_POKEMON_OFF_BOARD(store, state, player.active, {
+        pokemonDestination: player.hand,
+        sourceCard: this,
+      });
     }
 
     if (effect instanceof EndTurnEffect) {

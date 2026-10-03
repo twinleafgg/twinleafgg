@@ -5,7 +5,7 @@ import { PowerType, ShuffleDeckPrompt, State, StateUtils, StoreLike } from '../.
 import { CardTag } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PidgeotV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -61,7 +61,7 @@ export class PidgeotV extends PokemonCard {
         const cardList = player.bench.find((c) => c.cards.includes(this));
 
         if (cardList) {
-          cardList.moveTo(player.deck);
+          MOVE_CARDS(store, state, cardList, player.deck, { sourceCard: this });
           cardList.clearEffects();
         }
 

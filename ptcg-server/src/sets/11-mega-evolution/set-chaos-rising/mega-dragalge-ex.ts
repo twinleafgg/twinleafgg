@@ -2,7 +2,7 @@ import { CardTag, CardType, EnergyType, Stage } from '../../../game/store/card/c
 import { Effect } from '../../../game/store/effects/effect';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { PokemonCard, PlayerType, StateUtils, StoreLike, State } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED } from '../../../game/store/prefabs/attack-effects';
 
 export class MegaDragalgeex extends PokemonCard {
@@ -39,11 +39,11 @@ export class MegaDragalgeex extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const opponent = StateUtils.getOpponent(state, effect.player);
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        [...cardList.tools].forEach((t) => cardList.moveCardTo(t, opponent.discard));
+        [...cardList.tools].forEach((t) => MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [t], sourceCard: this }));
         const specialEnergy = cardList.cards.filter(
           (c) => c instanceof EnergyCard && c.energyType === EnergyType.SPECIAL,
         );
-        specialEnergy.forEach((e) => cardList.moveCardTo(e, opponent.discard));
+        specialEnergy.forEach((e) => MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [e], sourceCard: this }));
       });
     }
     if (WAS_ATTACK_USED(effect, 1, this)) {

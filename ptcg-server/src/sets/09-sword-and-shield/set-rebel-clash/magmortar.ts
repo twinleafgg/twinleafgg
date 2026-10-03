@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -56,7 +56,7 @@ export class Magmortar extends PokemonCard {
       // Each player discards the top card of their deck
       if (player.deck.cards.length > 0) {
         const playerTop = player.deck.cards[0];
-        player.deck.moveCardTo(playerTop, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [playerTop], sourceCard: this });
         if (playerTop.superType === SuperType.ENERGY) {
           energyCount++;
         }
@@ -64,7 +64,7 @@ export class Magmortar extends PokemonCard {
 
       if (opponent.deck.cards.length > 0) {
         const opponentTop = opponent.deck.cards[0];
-        opponent.deck.moveCardTo(opponentTop, opponent.discard);
+        MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [opponentTop], sourceCard: this });
         if (opponentTop.superType === SuperType.ENERGY) {
           energyCount++;
         }

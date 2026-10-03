@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/car
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Teddiursa extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -64,7 +64,7 @@ export class Teddiursa extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), selected => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         });
       });
     }

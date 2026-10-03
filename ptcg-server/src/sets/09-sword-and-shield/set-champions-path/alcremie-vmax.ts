@@ -16,7 +16,7 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { DiscardEnergyPrompt } from '../../../game/store/prompts/discard-energy-prompt';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AlcremieVmax extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VMAX];
@@ -107,7 +107,7 @@ export class AlcremieVmax extends PokemonCard {
           const cards = selected || [];
           // Attach one energy to each bench Pokemon, in order
           for (let i = 0; i < cards.length && i < benchTargets.length; i++) {
-            player.deck.moveCardTo(cards[i], benchTargets[i]);
+            MOVE_CARDS(store, state, player.deck, benchTargets[i], { cards: [cards[i]], sourceCard: this });
           }
           return SHUFFLE_DECK(store, state, player);
         },

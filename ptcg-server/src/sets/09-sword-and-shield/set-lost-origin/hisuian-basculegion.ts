@@ -4,7 +4,7 @@ import { StoreLike, State, EnergyCard, Card, ShuffleDeckPrompt } from '../../../
 import { Effect } from '../../../game/store/effects/effect';
 
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HisuianBasculegion extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -57,7 +57,7 @@ export class HisuianBasculegion extends PokemonCard {
 
       player.discard.cards.forEach(cards => {
         if (cards instanceof EnergyCard && cards.energyType === EnergyType.BASIC) {
-          player.discard.moveCardsTo(basicEnergyCards, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: basicEnergyCards, sourceCard: this });
         }
 
       });

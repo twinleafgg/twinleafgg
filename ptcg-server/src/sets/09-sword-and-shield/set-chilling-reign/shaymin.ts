@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ConfirmPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PUT_THIS_POKEMON_AND_ALL_ATTACHED_CARDS_INTO_YOUR_HAND } from '../../../game/store/prefabs/attack-effects';
 
 export class Shaymin extends PokemonCard {
@@ -56,7 +56,7 @@ export class Shaymin extends PokemonCard {
         GameMessage.WANT_TO_DRAW_CARDS
       ), wantToDraw => {
         if (wantToDraw) {
-          player.deck.moveTo(player.hand, cardsToDraw);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: cardsToDraw, sourceCard: this });
         }
       });
     }

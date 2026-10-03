@@ -7,12 +7,12 @@ import {
 } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachPokemonToolEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class TeamGalacticsInventionG101EnergyGain extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'PL';
   public name: string = "Team Galactic's Invention G-101 Energy Gain";
   public fullName: string = "Team Galactic's Invention G-101 Energy Gain PL";
@@ -38,7 +38,7 @@ export class TeamGalacticsInventionG101EnergyGain extends TrainerCard {
           const attachedTo = cardList.getPokemonCard();
 
           if (!!attachedTo && !attachedTo.hasTag(CardTag.POKEMON_SP)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
             attachedTo.tools === undefined;
           }
         });

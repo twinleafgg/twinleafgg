@@ -16,8 +16,7 @@ import {
 } from '../../../game/store/prefabs/deck-shuffle-animation';
 
 export class Roxanne extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'ASR';
 
@@ -31,8 +30,7 @@ export class Roxanne extends TrainerCard {
 
   public fullName: string = 'Roxanne ASR';
 
-  public text: string =
-    `You can use this card only if your opponent has 3 or fewer Prize cards remaining.
+  public text: string = `You can use this card only if your opponent has 3 or fewer Prize cards remaining.
 
 Each player shuffles their hand into their deck. Then, you draw 6 cards, and your opponent draws 2 cards.`;
 
@@ -49,7 +47,7 @@ Each player shuffles their hand into their deck. Then, you draw 6 cards, and you
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const playerCards = player.hand.cards.filter(c => c !== this);
+      const playerCards = player.hand.cards.filter((c) => c !== this);
       const opponentCards = [...opponent.hand.cards];
 
       if (playerCards.length > 0) {
@@ -77,22 +75,32 @@ Each player shuffles their hand into their deck. Then, you draw 6 cards, and you
       };
 
       const shufflePlayer = (then: () => void): void => {
-        store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+        store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
           player.deck.applyOrder(order);
           store.prompt(
             state,
-            new WaitPrompt(player.id, DECK_SHUFFLE_ANIMATION_WAIT_MS, 'Deck shuffle animation', false),
+            new WaitPrompt(
+              player.id,
+              DECK_SHUFFLE_ANIMATION_WAIT_MS,
+              'Deck shuffle animation',
+              false,
+            ),
             () => then(),
           );
         });
       };
 
       const shuffleOpponent = (then: () => void): void => {
-        store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
+        store.prompt(state, new ShuffleDeckPrompt(opponent.id), (order) => {
           opponent.deck.applyOrder(order);
           store.prompt(
             state,
-            new WaitPrompt(opponent.id, DECK_SHUFFLE_ANIMATION_WAIT_MS, 'Deck shuffle animation', false),
+            new WaitPrompt(
+              opponent.id,
+              DECK_SHUFFLE_ANIMATION_WAIT_MS,
+              'Deck shuffle animation',
+              false,
+            ),
             () => then(),
           );
         });
@@ -127,5 +135,4 @@ Each player shuffles their hand into their deck. Then, you draw 6 cards, and you
 
     return state;
   }
-
 }

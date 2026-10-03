@@ -14,9 +14,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { CardTag } from '../../../game/store/card/card-types';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AntheaAndConcordia extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'I';
   public set: string = 'ASC';
   public cardImage: string = 'assets/cardback.png';
@@ -85,7 +86,7 @@ During this turn, if your opponent's Active Pokémon is Knocked Out by damage fr
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -122,7 +123,7 @@ During this turn, if your opponent's Active Pokémon is Knocked Out by damage fr
           }
         }
         this.extraPrizes = false;
-        attacker.supporter.moveCardTo(this, attacker.discard);
+        MOVE_CARDS(store, state, attacker.supporter, attacker.discard, { cards: [this], sourceCard: this });
       }
       return state;
     }

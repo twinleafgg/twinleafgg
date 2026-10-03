@@ -7,7 +7,7 @@ import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { CardList } from '../../../game/store/state/card-list';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lanturn extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -82,7 +82,7 @@ export class Lanturn extends PokemonCard {
           return;
         }
         for (const card of cards) {
-          effect.target.moveCardTo(card, foundLanturn);
+          MOVE_CARDS(store, state, effect.target, foundLanturn, { cards: [card], sourceCard: this });
         }
       });
       return state;
@@ -108,7 +108,7 @@ export class Lanturn extends PokemonCard {
           if (cards && cards.length === lightningEnergies.length && cards.length > 0) {
             // Discard all Lightning Energy and do 70 more damage
             for (const card of cards) {
-              active.moveCardTo(card, player.discard);
+              MOVE_CARDS(store, state, active, player.discard, { cards: [card], sourceCard: this });
             }
             effect.damage += 70;
           }

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { StoreLike, State, PlayerType, SlotType, GameMessage, StateUtils, AttachEnergyPrompt, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Swoobat extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -70,7 +70,7 @@ export class Swoobat extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.deck.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
             }
             SHUFFLE_DECK(store, state, player);
           });

@@ -23,13 +23,11 @@ import {
   ApplyWeaknessEffect,
   PutDamageEffect,
 } from '../../../game/store/effects/attack-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   HAS_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Skeledirgeex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -99,7 +97,7 @@ export class Skeledirgeex extends PokemonCard {
           }
 
           const card = selected[0];
-          player.hand.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
           player.marker.addMarker(this.INCENDIARY_SONG_MARKER, this);
           ABILITY_USED(player, this);
         },

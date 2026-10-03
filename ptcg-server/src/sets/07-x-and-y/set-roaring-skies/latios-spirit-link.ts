@@ -9,13 +9,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN } from '../../../game/store/prefabs/tool-prefabs';
 
 export class LatiosSpiritLink extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'ROS';
   public setNumber: string = '85';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Latios Spirit Link';
   public fullName: string = 'Latios Spirit Link ROS';
-  public text: string = 'Your turn does not end if the Pokémon this card is attached to becomes M Latios-EX.';
+  public text: string =
+    'Your turn does not end if the Pokémon this card is attached to becomes M Latios-EX.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN(store, state, effect, this, 'M Latios-EX');

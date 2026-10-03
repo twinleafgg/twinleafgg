@@ -5,7 +5,7 @@ import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Effect } from '../../game/store/effects/effect';
 
 import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
-import { ABILITY_USED, BLOCK_IF_DECK_EMPTY, IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {ABILITY_USED, BLOCK_IF_DECK_EMPTY, IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class MrMime extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -68,10 +68,10 @@ export class MrMime extends PokemonCard {
 
               // Move prize card to temp list
               const tempList = new CardList();
-              selectedPrize.moveTo(tempList);
+              MOVE_CARDS(store, state, selectedPrize, tempList, { sourceCard: this });
 
               // Move card from deck to prizes face down at the original index
-              player.deck.moveTo(player.prizes[prizeIndex], 1);
+              MOVE_CARDS(store, state, player.deck, player.prizes[prizeIndex], { count: 1, sourceCard: this });
               player.prizes[prizeIndex].isSecret = true;
 
               // Move prize card to top of deck

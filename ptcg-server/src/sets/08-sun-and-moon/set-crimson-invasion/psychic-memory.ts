@@ -10,7 +10,7 @@ import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effect
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class PsychicMemory extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CIN';
   public setNumber: string = '98';
   public cardImage: string = 'assets/cardback.png';

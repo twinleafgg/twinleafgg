@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
 export class Noctowl extends PokemonCard {
@@ -73,11 +73,11 @@ export class Noctowl extends PokemonCard {
           // Ref: AGENTS.md (tools are in tools[] array, not cards[])
           const toolsToMove = benchSlot.tools.slice();
           toolsToMove.forEach(card => {
-            benchSlot.moveCardTo(card, opponent.deck);
+            MOVE_CARDS(store, state, benchSlot, opponent.deck, { cards: [card], sourceCard: this });
           });
           const cardsToMove = benchSlot.cards.slice();
           cardsToMove.forEach(card => {
-            benchSlot.moveCardTo(card, opponent.deck);
+            MOVE_CARDS(store, state, benchSlot, opponent.deck, { cards: [card], sourceCard: this });
           });
           benchSlot.clearEffects();
           SHUFFLE_DECK(store, state, opponent);
@@ -87,11 +87,11 @@ export class Noctowl extends PokemonCard {
         // Ref: AGENTS.md (tools are in tools[] array, not cards[])
         const selfTools = player.active.tools.slice();
         selfTools.forEach(card => {
-          player.active.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.active, player.deck, { cards: [card], sourceCard: this });
         });
         const selfCards = player.active.cards.slice();
         selfCards.forEach(card => {
-          player.active.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.active, player.deck, { cards: [card], sourceCard: this });
         });
         player.active.clearEffects();
         SHUFFLE_DECK(store, state, player);

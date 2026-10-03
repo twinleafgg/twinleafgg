@@ -6,17 +6,15 @@ import { State } from '../../../game/store/state/state';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import {
-  BLOCK_IF_DECK_EMPTY,
+import { BLOCK_IF_DECK_EMPTY,
   BLOCK_IF_NO_SLOTS,
   GET_PLAYER_BENCH_SLOTS,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK,  MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt, PokemonCard } from '../../../game';
 import { PlayPokemonFromDeckEffect } from '../../../game/store/effects/play-card-effects';
 
 export class Archie extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'MA';
   public name: string = 'Archie';
   public fullName: string = 'Archie MA';
@@ -31,7 +29,7 @@ export class Archie extends TrainerCard {
       const player = effect.player;
 
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       if (player.deck.cards.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);

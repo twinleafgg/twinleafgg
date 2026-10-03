@@ -11,7 +11,7 @@ import { HANDLE_ABILITY_LOCK } from '../../../game/store/prefabs/ability-lock';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class PowerPlant extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'UNB';
   public name: string = 'Power Plant';
   public fullName: string = 'Power Plant UNB';

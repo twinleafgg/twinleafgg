@@ -4,21 +4,38 @@
 
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { SuperType, TrainerType } from '../../game/store/card/card-types';
-import { GameMessage, MoveEnergyPrompt, PlayerType, SlotType, StoreLike, State, StateUtils, CardTarget } from '../../game';
+import {
+  GameMessage,
+  MoveEnergyPrompt,
+  PlayerType,
+  SlotType,
+  StoreLike,
+  State,
+  StateUtils,
+  CardTarget,
+} from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class MistysWaterCommand extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'HIF';
   public setNumber: string = '63';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Misty\'s Water Command';
-  public fullName: string = 'Misty\'s Water Command HIF';
-  public text: string = 'Move any number of [W] Energy from your Pokémon to your Psyduck, Horsea, Staryu, Starmie-GX, Magikarp, Gyarados, or Lapras in any way you like. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Misty's Water Command";
+  public fullName: string = "Misty's Water Command HIF";
+  public text: string =
+    'Move any number of [W] Energy from your Pokémon to your Psyduck, Horsea, Staryu, Starmie-GX, Magikarp, Gyarados, or Lapras in any way you like. You may play only 1 Supporter card during your turn (before your attack).';
 
   private readonly VALID_POKEMON_NAMES = [
-    'Psyduck', 'Horsea', 'Staryu', 'Starmie-GX', 'Magikarp', 'Gyarados', 'Lapras'
+    'Psyduck',
+    'Horsea',
+    'Staryu',
+    'Starmie-GX',
+    'Magikarp',
+    'Gyarados',
+    'Lapras',
   ];
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -29,7 +46,9 @@ export class MistysWaterCommand extends TrainerCard {
       // Check if player has any Water energy on their Pokemon
       let hasWaterEnergy = false;
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
-        if (cardList.cards.some(c => c.superType === SuperType.ENERGY && c.name === 'Water Energy')) {
+        if (
+          cardList.cards.some((c) => c.superType === SuperType.ENERGY && c.name === 'Water Energy')
+        ) {
           hasWaterEnergy = true;
         }
       });
@@ -64,24 +83,28 @@ export class MistysWaterCommand extends TrainerCard {
         }
       });
 
-      store.prompt(state, new MoveEnergyPrompt(
-        player.id,
-        GameMessage.MOVE_ENERGY_CARDS,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { superType: SuperType.ENERGY, name: 'Water Energy' },
-        { allowCancel: true, blockedTo }
-      ), transfers => {
-        if (!transfers) {
-          return;
-        }
+      store.prompt(
+        state,
+        new MoveEnergyPrompt(
+          player.id,
+          GameMessage.MOVE_ENERGY_CARDS,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { superType: SuperType.ENERGY, name: 'Water Energy' },
+          { allowCancel: true, blockedTo },
+        ),
+        (transfers) => {
+          if (!transfers) {
+            return;
+          }
 
-        for (const transfer of transfers) {
-          const source = StateUtils.getTarget(state, player, transfer.from);
-          const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
-        }
-      });
+          for (const transfer of transfers) {
+            const source = StateUtils.getTarget(state, player, transfer.from);
+            const target = StateUtils.getTarget(state, player, transfer.to);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
+          }
+        },
+      );
     }
 
     return state;

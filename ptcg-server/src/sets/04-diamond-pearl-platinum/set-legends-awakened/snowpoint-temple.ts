@@ -11,13 +11,14 @@ import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class SnowpointTemple extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'LA';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '134';
   public name: string = 'Snowpoint Temple';
   public fullName: string = 'Snowpoint Temple LA';
-  public text: string = 'Each Pokémon that isn\'t an Evolved Pokémon in play (both yours and your opponent\'s) gets +20 HP.';
+  public text: string =
+    "Each Pokémon that isn't an Evolved Pokémon in play (both yours and your opponent's) gets +20 HP.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckHpEffect && StateUtils.getStadiumCard(state) === this) {

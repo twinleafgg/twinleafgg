@@ -7,7 +7,7 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { Effect } from '../../../game/store/effects/effect';
 import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { ADD_MARKER, REMOVE_MARKER } from '../../../game/store/prefabs/prefabs';
+import {ADD_MARKER, REMOVE_MARKER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
@@ -54,7 +54,7 @@ export class REnergy extends EnergyCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
         if (cardList.cards.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           REMOVE_MARKER(this.R_MARKER, effect.player, this);
         }
       });

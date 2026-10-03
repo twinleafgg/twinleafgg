@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ambipom extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -46,7 +46,7 @@ export class Ambipom extends PokemonCard {
 
       if (opponent.deck.cards.length > 0) {
         const topCard = opponent.deck.cards[0];
-        opponent.deck.moveCardTo(topCard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [topCard], sourceCard: this });
         if (topCard instanceof EnergyCard) {
           effect.damage += 60;
         }

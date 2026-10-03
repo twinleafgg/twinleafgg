@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Togetic extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -41,8 +41,8 @@ export class Togetic extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      player.deck.moveTo(player.hand, 3);
-      opponent.deck.moveTo(opponent.hand, 3);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
+      MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 3, sourceCard: this });
     }
 
     return state;

@@ -38,7 +38,7 @@ export class Venonat extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 7);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 7, sourceCard: this });
 
       store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -48,7 +48,7 @@ export class Venonat extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected });
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
 
         SHUFFLE_DECK(store, state, player);
       });

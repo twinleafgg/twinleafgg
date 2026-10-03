@@ -15,15 +15,18 @@ import {
 import { CardType, EnergyType, TrainerType } from '../../../game/store/card/card-types';
 import { ColorlessCostReducer } from '../../../game/store/card/pokemon-interface';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { CheckAttackCostEffect, CheckPokemonAttacksEffect } from '../../../game/store/effects/check-effects';
+import {
+  CheckAttackCostEffect,
+  CheckPokemonAttacksEffect,
+} from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import { IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function buildCapHolderBlockedTo(player: State['players'][number], capName: string): CardTarget[] {
   const blocked: CardTarget[] = [];
   player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, _card, target) => {
-    if (!cardList.tools.some(tool => tool.name === capName)) {
+    if (!cardList.tools.some((tool) => tool.name === capName)) {
       blocked.push(target);
     }
   });
@@ -33,7 +36,7 @@ function buildCapHolderBlockedTo(player: State['players'][number], capName: stri
 function countCapHolders(player: State['players'][number], capName: string): number {
   let count = 0;
   player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
-    if (cardList.tools.some(tool => tool.name === capName)) {
+    if (cardList.tools.some((tool) => tool.name === capName)) {
       count += 1;
     }
   });
@@ -41,7 +44,7 @@ function countCapHolders(player: State['players'][number], capName: string): num
 }
 
 export class MegaRayquazaCap extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'J';
   public set: string = 'M6';
   public setNumber: string = '66';
@@ -49,12 +52,14 @@ export class MegaRayquazaCap extends TrainerCard {
   public name: string = 'Mega Rayquaza Cap';
   public fullName: string = 'Mega Rayquaza Cap M6';
 
-  public attacks: Attack[] = [{
-    name: 'Delta Gift',
-    cost: [CardType.COLORLESS],
-    damage: 0,
-    text: 'For each of your Pokémon in play that has a Mega Rayquaza Cap attached to it, search your deck for a Basic Energy and attach it to that Pokémon. Then, shuffle your deck.',
-  }];
+  public attacks: Attack[] = [
+    {
+      name: 'Delta Gift',
+      cost: [CardType.COLORLESS],
+      damage: 0,
+      text: 'For each of your Pokémon in play that has a Mega Rayquaza Cap attached to it, search your deck for a Basic Energy and attach it to that Pokémon. Then, shuffle your deck.',
+    },
+  ];
 
   public text: string = 'The Pokémon this card is attached to can use the attack on this card.';
 
@@ -73,9 +78,11 @@ export class MegaRayquazaCap extends TrainerCard {
       }
     }
 
-    if (effect instanceof CheckPokemonAttacksEffect
-      && effect.player.active.tools.includes(this)
-      && !effect.attacks.includes(this.attacks[0])) {
+    if (
+      effect instanceof CheckPokemonAttacksEffect &&
+      effect.player.active.tools.includes(this) &&
+      !effect.attacks.includes(this.attacks[0])
+    ) {
       effect.attacks.push(this.attacks[0]);
     }
 
@@ -93,7 +100,7 @@ export class MegaRayquazaCap extends TrainerCard {
       }
 
       if (player.deck.cards.length === 0) {
-        return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+        return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
           player.deck.applyOrder(order);
         });
       }
@@ -101,24 +108,31 @@ export class MegaRayquazaCap extends TrainerCard {
       const blockedTo = buildCapHolderBlockedTo(player, this.name);
 
       // Ref: set-paradox-rift/professor-sadas-vitality.ts (one prompt, differentTargets)
-      return store.prompt(state, new AttachEnergyPrompt(
-        player.id,
-        GameMessage.CHOOSE_CARD_TO_ATTACH,
-        player.deck,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.BENCH, SlotType.ACTIVE],
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-        { allowCancel: false, min: 0, max: capHolderCount, blockedTo, differentTargets: true },
-      ), transfers => {
-        transfers = transfers || [];
-        for (const transfer of transfers) {
-          const attachTarget = StateUtils.getTarget(state, player, transfer.to);
-          player.deck.moveCardTo(transfer.card, attachTarget);
-        }
-        store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-          player.deck.applyOrder(order);
-        });
-      });
+      return store.prompt(
+        state,
+        new AttachEnergyPrompt(
+          player.id,
+          GameMessage.CHOOSE_CARD_TO_ATTACH,
+          player.deck,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.BENCH, SlotType.ACTIVE],
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+          { allowCancel: false, min: 0, max: capHolderCount, blockedTo, differentTargets: true },
+        ),
+        (transfers) => {
+          transfers = transfers || [];
+          for (const transfer of transfers) {
+            const attachTarget = StateUtils.getTarget(state, player, transfer.to);
+            MOVE_CARDS(store, state, player.deck, attachTarget, {
+              cards: [transfer.card],
+              sourceCard: this,
+            });
+          }
+          store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+            player.deck.applyOrder(order);
+          });
+        },
+      );
     }
 
     return state;

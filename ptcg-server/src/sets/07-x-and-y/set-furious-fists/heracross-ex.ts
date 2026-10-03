@@ -25,14 +25,14 @@ export class HeracrossEx extends PokemonCard {
       name: 'Guard Press',
       cost: [G, C],
       damage: 40,
-      text: "During your opponent's next turn, any damage done to this Pok\u00e9mon by attacks is reduced by 20 (after applying Weakness and Resistance).",
+      text: "During your opponent's next turn, any damage done to this Pokémon by attacks is reduced by 20 (after applying Weakness and Resistance).",
     },
     {
       name: 'Giga Power',
       cost: [G, G, C],
       damage: 80,
       damageCalculation: '+',
-      text: 'You may do 40 more damage. If you do, this Pok\u00e9mon does 20 damage to itself. | When a Pok\u00e9mon-EX has been Knocked Out, your opponent takes 2 Prize cards.',
+      text: 'You may do 40 more damage. If you do, this Pokémon does 20 damage to itself.',
     },
   ];
 

@@ -9,7 +9,7 @@ import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { PlayerType } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Zebstrika extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -73,8 +73,8 @@ export class Zebstrika extends PokemonCard {
       });
 
       const cards = player.hand.cards.filter(c => c !== this);
-      player.hand.moveCardsTo(cards, player.discard);
-      player.deck.moveTo(player.hand, 4);
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 4, sourceCard: this });
 
     }
 

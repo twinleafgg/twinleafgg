@@ -10,8 +10,7 @@ import { GameError } from '../../../game';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Judge extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'FST';
 
@@ -25,8 +24,7 @@ export class Judge extends TrainerCard {
 
   public fullName: string = 'Judge FST';
 
-  public text: string =
-    'Each player shuffles their hand into their deck and draws 4 cards.';
+  public text: string = 'Each player shuffles their hand into their deck and draws 4 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
@@ -37,7 +35,10 @@ export class Judge extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      if (player.hand.cards.filter(c => c !== this).length === 0 && player.deck.cards.length === 0) {
+      if (
+        player.hand.cards.filter((c) => c !== this).length === 0 &&
+        player.deck.cards.length === 0
+      ) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
@@ -56,5 +57,4 @@ export class Judge extends TrainerCard {
 
     return state;
   }
-
 }

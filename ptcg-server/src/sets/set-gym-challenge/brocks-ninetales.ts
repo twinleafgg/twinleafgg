@@ -4,7 +4,7 @@ import { AddSpecialConditionsPowerEffect } from "../../game/store/effects/check-
 import { Effect } from "../../game/store/effects/effect";
 import { PowerEffect } from "../../game/store/effects/game-effects";
 import { PlayPokemonEffect } from "../../game/store/effects/play-card-effects";
-import { IS_POKEMON_POWER_BLOCKED, HAS_MARKER, ADD_MARKER, ABILITY_USED, CONFIRMATION_PROMPT, REMOVE_MARKER_AT_END_OF_TURN } from "../../game/store/prefabs/prefabs";
+import {IS_POKEMON_POWER_BLOCKED, HAS_MARKER, ADD_MARKER, ABILITY_USED, CONFIRMATION_PROMPT, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from "../../game/store/prefabs/prefabs";
 
 interface NinetalesPrintedSnapshot {
   name: string;
@@ -214,7 +214,7 @@ export class BrocksNinetales extends PokemonCard {
     const toDiscard = this.shapeshiftAttached.filter(c => cardList.cards.includes(c));
     this.shapeshiftAttached = [];
     for (const card of toDiscard) {
-      cardList.moveCardTo(card, owner.discard);
+      MOVE_CARDS(store, state, cardList, owner.discard, { cards: [card], sourceCard: this });
       store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD, {
         name: owner.name,
         card: card.name,
@@ -304,8 +304,8 @@ export class BrocksNinetales extends PokemonCard {
         return;
       }
 
-      player.hand.moveCardTo(evolution, cardList);
-      cardList.moveCardTo(this, cardList);
+      MOVE_CARDS(store, state, player.hand, cardList, { cards: [evolution], sourceCard: this });
+      MOVE_CARDS(store, state, cardList, cardList, { cards: [this], sourceCard: this });
       this.shapeshiftAttached.push(evolution);
 
       ADD_MARKER(this.SHAPESHIFT_MARKER, player, this);

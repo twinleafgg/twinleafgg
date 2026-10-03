@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AlolanRaticate extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -47,7 +47,7 @@ export class AlolanRaticate extends PokemonCard {
         {},
         { min: 0, max: 1, allowCancel: false }
       ), cards => {
-        player.deck.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);

@@ -4,18 +4,26 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { GameError, GameMessage, StoreLike, State, StateUtils, ChooseCardsPrompt } from '../../../game';
+import {
+  GameError,
+  GameMessage,
+  StoreLike,
+  State,
+  StateUtils,
+  ChooseCardsPrompt,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ReturnLabel extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'TEU';
   public setNumber: string = '153';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Return Label';
   public fullName: string = 'Return Label TEU';
-  public text: string = 'Put a card from your opponent\'s discard pile on the bottom of their deck.';
+  public text: string = "Put a card from your opponent's discard pile on the bottom of their deck.";
 
   // Ref: set-lost-thunder/morty.ts (choose from opponent's zone pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -27,24 +35,31 @@ export class ReturnLabel extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DECK,
-        opponent.discard,
-        {},
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        const cards = selected || [];
-        if (cards.length > 0) {
-          // Move to deck (moveCardTo puts at top by default, we need bottom)
-          opponent.discard.moveCardTo(cards[0], opponent.deck);
-          // Move from top to bottom: card was placed at beginning, move to end
-          const card = opponent.deck.cards.shift();
-          if (card) {
-            opponent.deck.cards.push(card);
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DECK,
+          opponent.discard,
+          {},
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          if (cards.length > 0) {
+            // Move to deck (moveCardTo puts at top by default, we need bottom)
+            MOVE_CARDS(store, state, opponent.discard, opponent.deck, {
+              cards: [cards[0]],
+              sourceCard: this,
+            });
+            // Move from top to bottom: card was placed at beginning, move to end
+            const card = opponent.deck.cards.shift();
+            if (card) {
+              opponent.deck.cards.push(card);
+            }
           }
-        }
-      });
+        },
+      );
     }
 
     return state;

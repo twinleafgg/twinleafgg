@@ -8,12 +8,12 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class BillsMaintenance extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'RG';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '87';
-  public name: string = 'Bill\'s Maintenance';
-  public fullName: string = 'Bill\'s Maintenance RG';
+  public name: string = "Bill's Maintenance";
+  public fullName: string = "Bill's Maintenance RG";
 
   public text: string =
     'If you have any cards in your hand, shuffle 1 of them into your deck, then draw 3 cards.';
@@ -31,24 +31,28 @@ export class BillsMaintenance extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
-      state = store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_SHUFFLE,
-        player.hand,
-        {},
-        { allowCancel: false, min: 1, max: 1 }
-      ), cards => {
-        cards = cards || [];
-        if (cards.length === 0) {
-          return;
-        }
-        MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: this });
-        SHUFFLE_DECK(store, state, player);
-        DRAW_CARDS(store, state, player, 3);
-      });
+      state = store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_SHUFFLE,
+          player.hand,
+          {},
+          { allowCancel: false, min: 1, max: 1 },
+        ),
+        (cards) => {
+          cards = cards || [];
+          if (cards.length === 0) {
+            return;
+          }
+          MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: this });
+          SHUFFLE_DECK(store, state, player);
+          DRAW_CARDS(store, state, player, 3);
+        },
+      );
       return state;
     }
 

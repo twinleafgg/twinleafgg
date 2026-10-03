@@ -16,7 +16,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class SandacondaVmax extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VMAX];
@@ -86,7 +86,7 @@ export class SandacondaVmax extends PokemonCard {
           transfers.forEach((transfer) => {
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           });
         },
       );

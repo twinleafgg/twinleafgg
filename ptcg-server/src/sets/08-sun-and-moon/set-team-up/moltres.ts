@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class Moltres extends PokemonCard {
@@ -67,7 +67,7 @@ export class Moltres extends PokemonCard {
       totalDiscarded += totalFirenergy;
       store.reduceEffect(state, discardEnergy);
 
-      opponent.deck.moveTo(opponent.discard, totalDiscarded);
+      MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: totalDiscarded, sourceCard: this });
 
     }
 

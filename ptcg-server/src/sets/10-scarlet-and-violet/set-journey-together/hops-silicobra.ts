@@ -16,7 +16,7 @@ import {
   StateUtils,
   StoreLike,
 } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HopsSilicobra extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -73,7 +73,7 @@ export class HopsSilicobra extends PokemonCard {
           { min: 0, max: 1, allowCancel: false },
         ),
         (cards) => {
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
           if (cards.length > 0) {
             return store.prompt(

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, Card, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardList } from '../../../game/store/state/card-list';
 
 export class Furret extends PokemonCard {
@@ -47,7 +47,7 @@ export class Furret extends PokemonCard {
 
       const topCards = new CardList();
       const count = Math.min(4, player.deck.cards.length);
-      player.deck.moveTo(topCards, count);
+      MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
       const pickCount = Math.min(2, topCards.cards.length);
 
@@ -59,8 +59,8 @@ export class Furret extends PokemonCard {
         { min: pickCount, max: pickCount, allowCancel: false }
       ), (selected: Card[]) => {
         const cards = selected || [];
-        topCards.moveCardsTo(cards, player.hand);
-        topCards.moveTo(player.discard);
+        MOVE_CARDS(store, state, topCards, player.hand, { cards: cards, sourceCard: this });
+        MOVE_CARDS(store, state, topCards, player.discard, { sourceCard: this });
       });
     }
 

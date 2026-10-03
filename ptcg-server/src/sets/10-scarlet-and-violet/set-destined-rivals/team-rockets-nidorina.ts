@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/card-types';
 import { Card, CardManager, CardTarget, ChooseCardsPrompt, ChoosePokemonPrompt, GameLog, GameMessage, PlayerType, PokemonCardList, SlotType, State, StoreLike, pokemonHasCardType, pokemonHasCardTypeOptional } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 function* useDarkAwakening(
@@ -112,7 +112,7 @@ function* useDarkAwakening(
     const evolution = cards[0] as PokemonCard;
 
     // Evolve Pokemon
-    player.deck.moveCardTo(evolution, target);
+    MOVE_CARDS(store, state, player.deck, target, { cards: [evolution], sourceCard: effect.source.getPokemonCard()! });
     target.clearEffects();
     target.pokemonPlayedTurn = state.turn;
   }

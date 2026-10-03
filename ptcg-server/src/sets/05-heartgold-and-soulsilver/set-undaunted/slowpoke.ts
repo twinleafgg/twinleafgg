@@ -2,7 +2,7 @@ import { Card, CardList, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, Stat
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Slowpoke extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -46,7 +46,7 @@ export class Slowpoke extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       // Set maxPokemons to number of open slots
       const maxPokemons = Math.min(openSlots.length, deckTop.cards.filter(c => c instanceof PokemonCard && c.stage === Stage.BASIC).length);
@@ -62,10 +62,10 @@ export class Slowpoke extends PokemonCard {
         cards = selectedCards || [];
 
         cards.forEach((card, index) => {
-          deckTop.moveCardTo(card, openSlots[index]);
+          MOVE_CARDS(store, state, deckTop, openSlots[index], { cards: [card], sourceCard: this });
           openSlots[index].pokemonPlayedTurn = state.turn;
         });
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);

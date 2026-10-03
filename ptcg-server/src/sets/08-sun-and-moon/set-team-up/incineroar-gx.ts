@@ -24,16 +24,14 @@ import {
 } from '../../../game';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   ABILITY_USED,
   USE_ABILITY_ONCE_PER_TURN,
   REMOVE_MARKER_AT_END_OF_TURN,
   BLOCK_IF_GX_ATTACK_USED,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class IncineroarGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -116,7 +114,7 @@ export class IncineroarGx extends PokemonCard {
           (selected: Card[] | null) => {
             const cards = selected || [];
             cards.forEach((c) => {
-              player.deck.moveCardTo(c, cardList);
+              MOVE_CARDS(store, state, player.deck, cardList, { cards: [c], sourceCard: this });
             });
             SHUFFLE_DECK(store, state, player);
           },

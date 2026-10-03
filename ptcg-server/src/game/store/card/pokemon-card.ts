@@ -54,6 +54,15 @@ export abstract class PokemonCard extends Card {
 
   public canAttackTwice?: boolean;
 
+  /** This attack can't be used again until this card is played from hand again. */
+  public cannotUseAttackUntilLeavesPlay?: string;
+
+  /**
+   * While this card is in play, each of the opponent's Pokémon has this Weakness.
+   * An Ability — ability locks suppress it.
+   */
+  public whileInPlayOpponentWeakness?: CardType;
+
   public damageTakenLastTurn?: number = 0;
 
   public wasMovedToActiveThisTurn?(player: any): boolean {

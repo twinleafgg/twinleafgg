@@ -1,6 +1,6 @@
 import { Attack, CardType, ChooseCardsPrompt, GameError, GameLog, GameMessage, PokemonCard, PokemonCardList, Power, PowerType, Stage, State, StateUtils, StoreLike, SuperType, Weakness } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ditto extends PokemonCard {
 
@@ -56,7 +56,7 @@ export class Ditto extends PokemonCard {
           card: pokemonCard.name,
           effect: effect.power.name,
         });
-        player.hand.moveCardTo(pokemonCard, targetCardList);
+        MOVE_CARDS(store, state, player.hand, targetCardList, { cards: [pokemonCard], sourceCard: this });
       });
     }
 

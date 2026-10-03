@@ -11,9 +11,14 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
-  const slots: PokemonCardList[] = player.bench.filter(b => b.cards.length === 0);
+  const slots: PokemonCardList[] = player.bench.filter((b) => b.cards.length === 0);
 
   // Player has no empty bench slot
   if (slots.length === 0) {
@@ -21,32 +26,38 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   }
 
   // Player has no basic Pokemons in the discard pile
-  if (!player.discard.cards.some(c => c instanceof PokemonCard && c.stage === Stage.BASIC)) {
+  if (!player.discard.cards.some((c) => c instanceof PokemonCard && c.stage === Stage.BASIC)) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
 
-  return store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-    player.discard,
-    { superType: SuperType.POKEMON, stage: Stage.BASIC },
-    { min: 1, max: 1, allowCancel: true }
-  ), selected => {
-    if (selected && selected.length > 0) {
-      // Discard trainer only when user selected a Pokemon
-      // Recover discarded Pokemon
-      state = MOVE_CARDS(store, state, player.discard, slots[0], { cards: selected, sourceCard: effect.trainerCard });
-    }
-  });
+  return store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+      player.discard,
+      { superType: SuperType.POKEMON, stage: Stage.BASIC },
+      { min: 1, max: 1, allowCancel: true },
+    ),
+    (selected) => {
+      if (selected && selected.length > 0) {
+        // Discard trainer only when user selected a Pokemon
+        // Recover discarded Pokemon
+        state = MOVE_CARDS(store, state, player.discard, slots[0], {
+          cards: selected,
+          sourceCard: effect.trainerCard,
+        });
+      }
+    },
+  );
 }
 
 export class Revive extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BLW';
 
@@ -58,8 +69,7 @@ export class Revive extends TrainerCard {
 
   public setNumber: string = '102';
 
-  public text: string =
-    'Put a Basic Pokemon from your discard pile onto your Bench.';
+  public text: string = 'Put a Basic Pokemon from your discard pile onto your Bench.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -69,5 +79,4 @@ export class Revive extends TrainerCard {
 
     return state;
   }
-
 }

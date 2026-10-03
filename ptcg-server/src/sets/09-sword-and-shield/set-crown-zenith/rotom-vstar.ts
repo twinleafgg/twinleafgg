@@ -23,12 +23,10 @@ import {
 } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
-  DRAW_CARDS,
-} from '../../../game/store/prefabs/prefabs';
+  DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RotomVstar extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VSTAR];
@@ -105,7 +103,7 @@ export class RotomVstar extends PokemonCard {
           const cards: Card[] = selected || [];
           const numDiscarded = cards.length;
           if (numDiscarded > 0) {
-            cards.forEach((card) => player.hand.moveCardTo(card, player.discard));
+            cards.forEach((card) => MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this }));
           }
           DRAW_CARDS(store, state, player, numDiscarded);
         },
@@ -139,7 +137,7 @@ export class RotomVstar extends PokemonCard {
           if (cards.length === 0) {
             return;
           }
-          player.discard.moveCardsTo(cards, player.lostzone);
+          MOVE_CARDS(store, state, player.discard, player.lostzone, { cards: cards, sourceCard: this });
           effect.damage += cards.length * 40;
         },
       );

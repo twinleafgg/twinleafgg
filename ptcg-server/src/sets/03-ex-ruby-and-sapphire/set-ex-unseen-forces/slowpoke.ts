@@ -1,4 +1,4 @@
-import { Card, ChooseCardsPrompt, GameLog, PokemonCard, Stage, CardType, GameMessage } from '../../../game';
+import { Card, ChooseCardsPrompt, PokemonCard, Stage, CardType, GameMessage } from '../../../game';
 import { EnergyType } from '../../../game/store/card/card-types';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { StateUtils } from '../../../game/store/state-utils';
@@ -70,9 +70,6 @@ export class Slowpoke extends PokemonCard {
         cards = selected || [];
 
         if (cards.length > 0) {
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-          });
 
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards });

@@ -8,7 +8,7 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Nidoqueen extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -60,7 +60,7 @@ export class Nidoqueen extends PokemonCard {
       ), selected => {
         chosen = selected || [];
         if (chosen.length > 0) {
-          player.deck.moveCardsTo(chosen, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: chosen, sourceCard: this });
           store.prompt(state, new ShowCardsPrompt(
             StateUtils.getOpponent(state, player).id,
             GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,

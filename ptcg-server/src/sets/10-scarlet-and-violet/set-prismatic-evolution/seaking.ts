@@ -2,7 +2,7 @@ import { CardType, Stage } from '../../../game/store/card/card-types';
 import { Attack, PokemonCard, Power, PowerType, State, StateUtils, StoreLike } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Seaking extends PokemonCard {
 
@@ -49,7 +49,7 @@ export class Seaking extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
 
-      player.deck.moveTo(player.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
 
       if (!IS_ABILITY_BLOCKED(store, state, effect.player, this)) {
         // Dynamically set barrage if Festival Grounds is in play

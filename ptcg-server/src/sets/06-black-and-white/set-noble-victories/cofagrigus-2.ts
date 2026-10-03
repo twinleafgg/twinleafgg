@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, StateUtils, PlayerType, SlotType, GameMessage, GameError, GamePhase } from '../../../game';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
 export class Cofagrigus2 extends PokemonCard {
@@ -93,7 +93,7 @@ export class Cofagrigus2 extends PokemonCard {
         // Actually, we need to place the pokemon on TOP of prize cards
         // Move all cards from bench to a prize pile
         cardsToMove.forEach(card => {
-          benchSlot.moveCardTo(card, targetPrize);
+          MOVE_CARDS(store, state, benchSlot, targetPrize, { cards: [card], sourceCard: this });
         });
         benchSlot.clearEffects();
         targetPrize.isSecret = true;
@@ -113,11 +113,11 @@ export class Cofagrigus2 extends PokemonCard {
         if (emptyBench && chosenPrize.cards.length > 0) {
           const prizeCard = chosenPrize.cards[0];
           if (prizeCard.superType === SuperType.POKEMON) {
-            chosenPrize.moveCardTo(prizeCard, emptyBench);
+            MOVE_CARDS(store, state, chosenPrize, emptyBench, { cards: [prizeCard], sourceCard: this });
             emptyBench.pokemonPlayedTurn = state.turn;
           } else {
             // If it's not a Pokémon, put it in hand instead
-            chosenPrize.moveTo(player.hand);
+            MOVE_CARDS(store, state, chosenPrize, player.hand, { sourceCard: this });
           }
         }
 

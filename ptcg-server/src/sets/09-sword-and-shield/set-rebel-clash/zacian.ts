@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, EnergyCard, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class Zacian extends PokemonCard {
@@ -59,7 +59,7 @@ export class Zacian extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.discard.moveCardTo(selected[0], player.active);
+          MOVE_CARDS(store, state, player.discard, player.active, { cards: [selected[0]], sourceCard: this });
         }
       });
     }

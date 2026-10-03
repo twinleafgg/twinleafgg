@@ -1,13 +1,29 @@
-import { GameError, GameLog, GameMessage, PokemonCard, Power, PowerType, State, StateUtils, StoreLike, TrainerCard } from '../../..';
-import { CardType, PokemonType, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import {
+  GameError,
+  GameLog,
+  GameMessage,
+  PokemonCard,
+  Power,
+  PowerType,
+  State,
+  StateUtils,
+  StoreLike,
+  TrainerCard,
+} from '../../..';
+import {
+  CardType,
+  PokemonType,
+  Stage,
+  SuperType,
+  TrainerType,
+} from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect, RetreatEffect } from '../../../game/store/effects/game-effects';
 import { PlayItemEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { MOVE_CARDS, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 
 export class LilliesPokeDoll extends TrainerCard {
-
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
   public superType = SuperType.TRAINER;
 
   public stage: Stage = Stage.BASIC;
@@ -37,19 +53,19 @@ export class LilliesPokeDoll extends TrainerCard {
   public set: string = 'CEC';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '197';
-  public name: string = 'Lillie\'s Poké Doll';
-  public fullName: string = 'Lillie\'s Poké Doll CEC';
+  public name: string = "Lillie's Poké Doll";
+  public fullName: string = "Lillie's Poké Doll CEC";
 
   public powers: Power[] = [
     {
-      name: 'Lillie\'s Poké Doll',
+      name: "Lillie's Poké Doll",
       text: `Play this card as if it were a 30-HP [C] Basic Pokémon. At any time during your turn (before your attack), if this Pokémon is your Active Pokémon, you may discard all cards from it and put it on the bottom of your deck.
 
 This card can't retreat. If this card is Knocked Out, your opponent can't take any Prize cards for it.`,
       useWhenInPlay: true,
       exemptFromAbilityLock: true,
-      powerType: PowerType.TRAINER_ABILITY
-    }
+      powerType: PowerType.TRAINER_ABILITY,
+    },
   ];
 
   // public text =
@@ -58,7 +74,6 @@ This card can't retreat. If this card is Knocked Out, your opponent can't take a
   //   'This card can\'t retreat. If this card is Knocked Out, your opponent can\'t take any Prize cards for it.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_POWER_USED(effect, 0, this)) {
       const player = effect.player;
       const pokeDollCardList = StateUtils.findCardList(state, this);
@@ -67,24 +82,27 @@ This card can't retreat. If this card is Knocked Out, your opponent can't take a
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_ON_BOTTOM_OF_DECK, { name: player.name, card: this.name });
+      store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_ON_BOTTOM_OF_DECK, {
+        name: player.name,
+        card: this.name,
+      });
 
       // Move Lillie's Poke Doll to bottom of deck
       state = MOVE_CARDS(store, state, pokeDollCardList, player.deck, {
         cards: [this],
-        toBottom: true
+        toBottom: true,
       });
 
       // Move any attached cards to discard
       state = MOVE_CARDS(store, state, pokeDollCardList, player.discard, {
-        cards: pokeDollCardList.cards.filter(c => c !== this)
+        cards: pokeDollCardList.cards.filter((c) => c !== this),
       });
     }
 
     if (effect instanceof PlayItemEffect && effect.trainerCard === this) {
       const player = effect.player;
 
-      const emptySlots = player.bench.filter(b => b.cards.length === 0);
+      const emptySlots = player.bench.filter((b) => b.cards.length === 0);
       if (emptySlots.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
@@ -108,5 +126,4 @@ This card can't retreat. If this card is Knocked Out, your opponent can't take a
 
     return state;
   }
-
 }

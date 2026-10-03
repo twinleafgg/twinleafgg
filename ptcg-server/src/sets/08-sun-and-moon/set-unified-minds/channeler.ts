@@ -9,23 +9,20 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class Channeler extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNM';
   public setNumber: string = '190';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Channeler';
   public fullName: string = 'Channeler UNM';
-  public text: string = 'Remove all effects of attacks on you and each of your Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Remove all effects of attacks on you and each of your Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Ref: set-steam-siege/pokemon-ranger.ts (Remove all effects of attacks)
+    // Ref: set-steam-siege/pokemon-ranger.ts — same removal, but only you.
+    // Does not clear the opponent, damage counters, or Special Conditions.
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
-      const player = effect.player;
-
-      player.active.clearEffects();
-      player.bench.forEach(b => b.clearEffects());
-      player.removePokemonEffects(player.active);
-      player.bench.forEach(b => player.removePokemonEffects(b));
+      effect.player.removeAttackEffectsFromPlayerAndPokemon();
     }
 
     return state;

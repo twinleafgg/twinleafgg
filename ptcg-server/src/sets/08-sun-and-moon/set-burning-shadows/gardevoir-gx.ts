@@ -188,7 +188,7 @@ export class GardevoirGX extends PokemonCard {
         },
       );
 
-      player.discard.moveCardsTo(cards, player.deck);
+      MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
         player.deck.applyOrder(order);

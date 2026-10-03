@@ -9,10 +9,10 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Levincia extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
 
   public set: string = 'JTG';
 
@@ -26,7 +26,8 @@ export class Levincia extends TrainerCard {
 
   public setNumber = '150';
 
-  public text: string = 'Once during each player\'s turn, that player may put up to 2 Basic [L] Energy cards from their discard pile into their hand.';
+  public text: string =
+    "Once during each player's turn, that player may put up to 2 Basic [L] Energy cards from their discard pile into their hand.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -34,7 +35,11 @@ export class Levincia extends TrainerCard {
 
       let hasCardsInDiscard = false;
       player.discard.cards.forEach((c) => {
-        if (c instanceof EnergyCard && c.energyType === EnergyType.BASIC && c.provides.includes(CardType.LIGHTNING)) {
+        if (
+          c instanceof EnergyCard &&
+          c.energyType === EnergyType.BASIC &&
+          c.provides.includes(CardType.LIGHTNING)
+        ) {
           hasCardsInDiscard = true;
         }
       });
@@ -43,16 +48,23 @@ export class Levincia extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        player.discard,
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC, name: 'Lightning Energy' },
-        { allowCancel: false, min: 0, max: 2 }
-      ), selected => {
-        selected = selected || [];
-        player.discard.moveCardsTo(selected, player.hand);
-      });
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          player.discard,
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC, name: 'Lightning Energy' },
+          { allowCancel: false, min: 0, max: 2 },
+        ),
+        (selected) => {
+          selected = selected || [];
+          MOVE_CARDS(store, state, player.discard, player.hand, {
+            cards: selected,
+            sourceCard: this,
+          });
+        },
+      );
     }
 
     return state;

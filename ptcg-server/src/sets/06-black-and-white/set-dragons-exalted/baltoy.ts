@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ShuffleDeckPrompt, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Baltoy extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -42,11 +42,11 @@ export class Baltoy extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, effect.player);
 
       const cardsInHand = [...opponent.hand.cards];
-      opponent.hand.moveCardsTo(cardsInHand, opponent.deck);
+      MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cardsInHand, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
         opponent.deck.applyOrder(order);
-        opponent.deck.moveTo(opponent.hand, 4);
+        MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
       });
     }
 

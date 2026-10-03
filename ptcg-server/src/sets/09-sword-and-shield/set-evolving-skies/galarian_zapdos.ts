@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { AddSpecialConditionsEffect, DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianZapdos extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -14,7 +14,6 @@ export class GalarianZapdos extends PokemonCard {
   public hp: number = 110;
   public weakness = [{ type: CardType.PSYCHIC }];
   public retreat = [];
-
 
   public powers = [{
     name: 'Strong Legs Charge',
@@ -39,7 +38,6 @@ export class GalarianZapdos extends PokemonCard {
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
     if ((effect instanceof PlayPokemonEffect) && effect.pokemonCard === this) {
-
 
       const player = effect.player;
 
@@ -67,7 +65,6 @@ export class GalarianZapdos extends PokemonCard {
             return state;
           }
 
-
           return store.prompt(state, new ChooseCardsPrompt(
             player,
             GameMessage.CHOOSE_CARD_TO_ATTACH,
@@ -77,7 +74,7 @@ export class GalarianZapdos extends PokemonCard {
           ), cards => {
             cards = cards || [];
             if (cards.length > 0) {
-              player.hand.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
             }
           });
         }

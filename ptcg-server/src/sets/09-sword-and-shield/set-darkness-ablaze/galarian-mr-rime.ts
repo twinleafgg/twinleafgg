@@ -1,7 +1,7 @@
 import { CardList, CardType, ChooseCardsPrompt, GameError, GameMessage, PokemonCard, Power, PowerType, Stage, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianMrRime extends PokemonCard {
 
@@ -82,16 +82,16 @@ export class GalarianMrRime extends PokemonCard {
         const deck = opponent.deck;
 
         const temp = new CardList();
-        deck.moveTo(temp, 1);
+        MOVE_CARDS(store, state, deck, temp, { count: 1, sourceCard: this });
 
         // Find the prize list containing the chosen card
         const chosenPrizeList = opponent.prizes.find(prizeList => prizeList.cards.includes(prizeCard));
 
         if (chosenPrizeList) {
           const temp2 = new CardList();
-          chosenPrizeList.moveCardTo(prizeCard, temp2);
+          MOVE_CARDS(store, state, chosenPrizeList, temp2, { cards: [prizeCard], sourceCard: this });
           temp2.moveToTopOfDestination(deck);
-          temp.moveTo(chosenPrizeList, 1);
+          MOVE_CARDS(store, state, temp, chosenPrizeList, { count: 1, sourceCard: this });
         }
 
         // At the end, when resetting prize cards:

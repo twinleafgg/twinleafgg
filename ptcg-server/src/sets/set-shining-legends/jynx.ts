@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../game/store/card/card-types';
 import { StateUtils } from '../../game/store/state-utils';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
@@ -65,7 +65,7 @@ export class Jynx extends PokemonCard {
           cards
         ), () => { });
 
-        opponent.hand.moveCardsTo(cards, opponent.deck);
+        MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cards, sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
           opponent.deck.applyOrder(order);

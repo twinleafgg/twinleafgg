@@ -3,17 +3,15 @@ import { CardTag, TrainerType } from '../../../game/store/card/card-types';
 import { DrawPrizesEffect } from '../../../game/store/effects/game-effects';
 import { StoreLike, State, PokemonCard, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH,
+import {SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH,
   CONFIRMATION_PROMPT,
   GET_PLAYER_BENCH_SLOTS,
-  TAKE_SPECIFIC_PRIZES,
-} from '../../../game/store/prefabs/prefabs';
+  TAKE_SPECIFIC_PRIZES, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { GameMessage } from '../../../game/game-message';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class DreamBall extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark = 'E';
 
@@ -99,7 +97,7 @@ export class DreamBall extends TrainerCard {
     // played another card to the bench)
     for (const [index, prize] of player.prizes.entries()) {
       if (prize.cards.includes(this)) {
-        player.prizes[index].moveTo(player.discard);
+        MOVE_CARDS(store, state, player.prizes[index], player.discard, { sourceCard: this });
         break;
       }
     }
@@ -125,7 +123,7 @@ export class DreamBall extends TrainerCard {
       }
     });
 
-    player.supporter.moveCardTo(this, player.discard);
+    MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
 
     yield SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH(
       store,

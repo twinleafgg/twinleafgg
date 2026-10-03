@@ -48,7 +48,7 @@ export class DialgaEx extends PokemonCard {
               ),
               (selected) => {
                 if (selected && selected.length > 0) {
-                  player.discard.moveCardTo(selected[0], player.hand);
+                  MOVE_CARDS(store, state, player.discard, player.hand, { cards: [selected[0]], sourceCard: this });
                 }
               },
             );

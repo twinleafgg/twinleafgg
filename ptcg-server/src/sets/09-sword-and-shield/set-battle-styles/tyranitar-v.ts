@@ -62,7 +62,7 @@ export class TyranitarV extends PokemonCard {
       const player = effect.player;
 
       // Discard 4 cards from your deck
-      player.deck.moveTo(player.discard, 4);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 4, sourceCard: this });
       return state;
     }
 

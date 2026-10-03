@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, PlayerType, Power, PowerType, Attack, StateUtils, SlotType, AttachEnergyPrompt, ConfirmPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
 
 export class Lycanroc extends PokemonCard {
@@ -71,7 +71,7 @@ export class Lycanroc extends PokemonCard {
             }
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.discard.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             }
           });
         }

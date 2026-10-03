@@ -9,13 +9,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN } from '../../../game/store/prefabs/tool-prefabs';
 
 export class SteelixSpiritLink extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'STS';
   public setNumber: string = '106';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Steelix Spirit Link';
   public fullName: string = 'Steelix Spirit Link STS';
-  public text: string = 'Your turn does not end if the Pok\u00e9mon this card is attached to becomes M Steelix-EX.';
+  public text: string =
+    'Your turn does not end if the Pok\u00e9mon this card is attached to becomes M Steelix-EX.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN(store, state, effect, this, 'M Steelix-EX');

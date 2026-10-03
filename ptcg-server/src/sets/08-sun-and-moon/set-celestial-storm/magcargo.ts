@@ -12,7 +12,7 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { CardList } from '../../../game/store/state/card-list';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useSmoothOver(next: Function, store: StoreLike, state: State,
   self: Magcargo, effect: PowerEffect): IterableIterator<State> {
@@ -36,7 +36,7 @@ function* useSmoothOver(next: Function, store: StoreLike, state: State,
     next();
   });
 
-  player.deck.moveCardsTo(cards, deckTop);
+  MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: self });
 
   player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
     if (cardList.getPokemonCard() === self) {

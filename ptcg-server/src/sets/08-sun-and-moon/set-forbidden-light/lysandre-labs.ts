@@ -4,10 +4,8 @@ import { StoreLike } from '../../../game/store/store-like';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
 
-
 export class LysandreLabs extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
 
   public set: string = 'FLI';
 
@@ -20,10 +18,9 @@ export class LysandreLabs extends TrainerCard {
   public fullName: string = 'Lysandre Labs FLI';
 
   public text: string =
-    'Pokémon Tool cards in play (both yours and your opponent\'s) have no effect.';
+    "Pokémon Tool cards in play (both yours and your opponent's) have no effect.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     return state;
   }
 }

@@ -3,7 +3,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, Card, GameMessage, ChooseCardsPrompt } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class NsPurrloin extends PokemonCard {
   protected _tags = [CardTag.NS];
@@ -51,7 +51,7 @@ export class NsPurrloin extends PokemonCard {
         ),
         (selected) => {
           cards = selected || [];
-          opponent.hand.moveCardsTo(cards, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cards, sourceCard: this });
         },
       );
     }

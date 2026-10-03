@@ -3,8 +3,8 @@ import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types
 import { PowerType, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { ADD_MARKER, HAS_MARKER, IS_ABILITY_BLOCKED, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { AttachEnergyEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class Goodra extends PokemonCard {
@@ -34,8 +34,6 @@ export class Goodra extends PokemonCard {
   public fullName: string = 'Goodra FLI';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '94';
-
-  public readonly HYDRATION_MARKER = 'HYDRATION_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
@@ -68,17 +66,9 @@ export class Goodra extends PokemonCard {
       }
     }
 
-    // Healed this turn tracker
-    if (effect instanceof HealEffect && effect.target.getPokemonCard() === this) {
-      ADD_MARKER(this.HYDRATION_MARKER, effect.player, this);
-    }
-    if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this && HAS_MARKER(this.HYDRATION_MARKER, effect.player, this)) {
-      REMOVE_MARKER(this.HYDRATION_MARKER, effect.player, this);
-    }
-    REMOVE_MARKER_AT_END_OF_TURN(effect, this.HYDRATION_MARKER, this);
-
     // Soaking Horn
-    if (WAS_ATTACK_USED(effect, 0, this) && HAS_MARKER(this.HYDRATION_MARKER, effect.player, this)) {
+    // Ref: set-fates-collide/altaria-ex.ts (Powerful Gain — healedThisTurn)
+    if (WAS_ATTACK_USED(effect, 0, this) && effect.player.active.healedThisTurn) {
       effect.damage += 80;
     }
 

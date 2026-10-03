@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, CardList, SelectPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Baltoy2 extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -47,7 +47,7 @@ export class Baltoy2 extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, Math.min(3, player.deck.cards.length));
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(3, player.deck.cards.length), sourceCard: this });
 
             store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -71,7 +71,7 @@ export class Baltoy2 extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, Math.min(3, opponent.deck.cards.length));
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: Math.min(3, opponent.deck.cards.length), sourceCard: this });
 
             store.prompt(state, new OrderCardsPrompt(
               player.id,

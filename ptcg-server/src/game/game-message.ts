@@ -286,6 +286,15 @@ export enum GameLog {
   LOG_PLAYER_CHOOSES = 'LOG_PLAYER_CHOOSES', // { name, string }
   LOG_CARD_MOVED = 'LOG_CARD_MOVED', // { name, string }
   LOG_SHUFFLE_POKEMON_INTO_DECK = 'SHUFFLE_POKEMON_INTO_DECK', // { name, card, effectName }
+  LOG_TRAINER_TARGET_BLOCKED_BENCH = 'LOG_TRAINER_TARGET_BLOCKED_BENCH', // { blocker, card, name, pokemon }
+  LOG_TRAINER_TARGET_BLOCKED_ACTIVE = 'LOG_TRAINER_TARGET_BLOCKED_ACTIVE', // { blocker, card, name, pokemon }
+  LOG_CARD_PREVENTS_BENCH = 'LOG_CARD_PREVENTS_BENCH', // { blocker, effect, name, pokemon }
+  LOG_CARD_PREVENTS_ACTIVE = 'LOG_CARD_PREVENTS_ACTIVE', // { blocker, effect, name, pokemon }
+  LOG_CARD_PREVENTS = 'LOG_CARD_PREVENTS', // { blocker, effect }
+  LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE_FROM_PLAY = 'LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE_FROM_PLAY', // { name, card }
+  LOG_PLAYER_MOVES_CARD = 'LOG_PLAYER_MOVES_CARD', // { name, card, from, to }
+  LOG_PLAYER_POKEMON_SPECIAL_CONDITION = 'LOG_PLAYER_POKEMON_SPECIAL_CONDITION', // { name, pokemon, condition }
+  LOG_PLAYER_POKEMON_RECOVERS_SPECIAL_CONDITION = 'LOG_PLAYER_POKEMON_RECOVERS_SPECIAL_CONDITION', // { name, pokemon, condition }
 
 }
 

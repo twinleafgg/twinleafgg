@@ -6,14 +6,23 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { PlayerType, SlotType, PokemonCard } from '../../../game';
-import { MOVE_CARDS, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { PlayerType, SlotType } from '../../../game';
+import {
+  MOVE_CARDS,
+  COIN_FLIP_PROMPT,
+  MOVE_POKEMON_OFF_BOARD,
+} from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   let coinResult: boolean = false;
-  yield COIN_FLIP_PROMPT(store, state, player, result => {
+  yield COIN_FLIP_PROMPT(store, state, player, (result) => {
     coinResult = result;
     next();
   });
@@ -23,44 +32,30 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
     return state;
   }
 
-  return store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_PICK_UP,
-    PlayerType.BOTTOM_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { allowCancel: false }
-  ), result => {
-    const cardList = result.length > 0 ? result[0] : null;
-    if (cardList !== null) {
-      const pokemons = cardList.getPokemons();
-      const otherCards = cardList.cards.filter(card =>
-        !(card instanceof PokemonCard) &&
-        !pokemons.includes(card as PokemonCard) &&
-        (!cardList.tools || !cardList.tools.includes(card))
-      );
-      const tools = [...cardList.tools];
-
-      // Move other cards to hand
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.hand, { cards: otherCards });
-      }
-
-      // Move tools to hand explicitly
-      for (const tool of tools) {
-        cardList.moveCardTo(tool, player.hand);
-      }
-
-      // Move Pokémon to hand
-      if (pokemons.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons });
+  return store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_PICK_UP,
+      PlayerType.BOTTOM_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { allowCancel: false },
+    ),
+    (result) => {
+      const cardList = result.length > 0 ? result[0] : null;
+      if (cardList !== null) {
+        MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+          pokemonDestination: player.hand,
+          sourceCard: effect.trainerCard,
+        });
         MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [effect.trainerCard] });
       }
-    }
-  });
+    },
+  );
 }
 
 export class SuperScoopUp extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'DP';
   public name: string = 'Super Scoop Up';
@@ -79,5 +74,4 @@ export class SuperScoopUp extends TrainerCard {
     }
     return state;
   }
-
 }

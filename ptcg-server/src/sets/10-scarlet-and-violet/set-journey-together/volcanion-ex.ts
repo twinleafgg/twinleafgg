@@ -22,7 +22,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { AddSpecialConditionsPowerEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Volcanionex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex];
@@ -113,7 +113,7 @@ export class Volcanionex extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.active.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage, ShowCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, BLOCK_IF_DECK_EMPTY, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_DECK_EMPTY, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Dratini extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -85,7 +85,7 @@ export class Dratini extends PokemonCard {
               ), () => { });
 
               allCards.forEach(card => {
-                player.deck.moveCardTo(card, player.hand);
+                MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
               });
             }
 

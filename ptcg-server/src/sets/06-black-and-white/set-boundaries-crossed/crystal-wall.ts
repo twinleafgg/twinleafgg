@@ -9,19 +9,20 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TOOL_SET_HP_IF } from '../../../game/store/prefabs/tool-prefabs';
 
 export class CrystalWall extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'BCR';
   public setNumber: string = '139';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Crystal Wall';
   public fullName: string = 'Crystal Wall BCR';
-  public text: string = 'If this card is attached to Black Kyurem-EX, its maximum HP is 300. You can\'t have more than 1 ACE SPEC card in your deck.';
+  public text: string =
+    "If this card is attached to Black Kyurem-EX, its maximum HP is 300. You can't have more than 1 ACE SPEC card in your deck.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Refs: set-darkness-ablaze/cape-of-toughness.ts (tool HP modifier), prefabs/prefabs.ts (TOOL_SET_HP_IF)
     TOOL_SET_HP_IF(store, state, effect, this, {
       hp: 300,
-      sourcePokemonName: 'Black Kyurem-EX'
+      sourcePokemonName: 'Black Kyurem-EX',
     });
 
     return state;

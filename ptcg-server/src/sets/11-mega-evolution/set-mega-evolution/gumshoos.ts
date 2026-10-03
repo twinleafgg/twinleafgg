@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { ABILITY_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gumshoos extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -64,7 +64,7 @@ export class Gumshoos extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.deck.moveTo(player.hand, 1);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
           const index = player.hand.cards.indexOf(cards[0]);
           if (index !== -1) {
             player.hand.cards.splice(index, 1);

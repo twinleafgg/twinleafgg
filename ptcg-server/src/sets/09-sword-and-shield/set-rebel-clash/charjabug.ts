@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 
 export class Charjabug extends PokemonCard {
@@ -66,7 +66,7 @@ export class Charjabug extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.deck.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

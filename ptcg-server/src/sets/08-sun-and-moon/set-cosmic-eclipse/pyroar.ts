@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types';
 import { PlayerType, StoreLike, State, StateUtils, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pyroar extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -48,7 +48,7 @@ export class Pyroar extends PokemonCard {
         // Discard tools
         const tools = cardList.tools.slice();
         tools.forEach(tool => {
-          cardList.moveCardTo(tool, opponent.discard);
+          MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [tool], sourceCard: this });
         });
 
         // Discard special energy
@@ -56,7 +56,7 @@ export class Pyroar extends PokemonCard {
           c instanceof EnergyCard && c.energyType === EnergyType.SPECIAL
         );
         specialEnergy.forEach(energy => {
-          cardList.moveCardTo(energy, opponent.discard);
+          MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [energy], sourceCard: this });
         });
       });
     }

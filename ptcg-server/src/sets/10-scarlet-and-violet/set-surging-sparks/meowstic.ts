@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { StateUtils } from '../../../game/store/state-utils';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Meowstic extends PokemonCard {
 
@@ -95,7 +95,7 @@ export class Meowstic extends PokemonCard {
         { name: 'Chill Teaser Toy', superType: SuperType.TRAINER },
         { allowCancel: false, min: 1, max: 1 }
       ), cards => {
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
         return store.prompt(state, new ChoosePokemonPrompt(
           player.id,
           GameMessage.CHOOSE_POKEMON_TO_SWITCH,

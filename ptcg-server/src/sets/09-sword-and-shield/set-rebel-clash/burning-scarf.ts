@@ -8,8 +8,7 @@ import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class BurningScarf extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark = 'D';
   public set: string = 'RCL';
   public cardImage: string = 'assets/cardback.png';
@@ -18,10 +17,9 @@ export class BurningScarf extends TrainerCard {
   public fullName: string = 'Burning Scarf RCL';
 
   public text: string =
-    'If the [R] Pokémon this card is attached to is in the Active Spot and is damaged by an opponent\'s attack (even if it is Knocked Out), the Attacking Pokémon is now Burned.';
+    "If the [R] Pokémon this card is attached to is in the Active Spot and is damaged by an opponent's attack (even if it is Knocked Out), the Attacking Pokémon is now Burned.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof AfterDamageEffect && effect.target.tools.includes(this)) {
       const player = effect.player;
       const targetPlayer = StateUtils.findOwner(state, effect.target);

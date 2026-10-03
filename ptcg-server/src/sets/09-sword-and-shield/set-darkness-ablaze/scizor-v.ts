@@ -7,7 +7,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { EnergyCard, StoreLike, State, StateUtils } from '../../../game';
 import { EnergyType } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ScizorV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -50,7 +50,7 @@ export class ScizorV extends PokemonCard {
 
       // Discard 1 Pokémon Tool from opponent's active
       if (activeTarget.tools.length > 0) {
-        activeTarget.moveCardTo(activeTarget.tools[0], opponent.discard);
+        MOVE_CARDS(store, state, activeTarget, opponent.discard, { cards: [activeTarget.tools[0]], sourceCard: this });
       }
 
       // Discard 1 Special Energy from opponent's active
@@ -58,7 +58,7 @@ export class ScizorV extends PokemonCard {
         (c) => c instanceof EnergyCard && c.energyType === EnergyType.SPECIAL,
       );
       if (specialEnergy !== undefined) {
-        activeTarget.moveCardTo(specialEnergy, opponent.discard);
+        MOVE_CARDS(store, state, activeTarget, opponent.discard, { cards: [specialEnergy], sourceCard: this });
       }
     }
 

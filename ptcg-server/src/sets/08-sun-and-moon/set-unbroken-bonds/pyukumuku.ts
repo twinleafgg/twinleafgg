@@ -81,11 +81,6 @@ function* useSurpriseFist(next: Function, store: StoreLike, state: State,
     next();
   });
 
-  // Log both choices
-  const choiceNames = ['Rock', 'Paper', 'Scissors'];
-  store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: player.name, string: choiceNames[playerChoice] });
-  store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: opponent.name, string: choiceNames[opponentChoice] });
-
   // Determine winner
   // 0 = Rock, 1 = Paper, 2 = Scissors
   // Rock beats Scissors, Scissors beats Paper, Paper beats Rock

@@ -23,7 +23,7 @@ import {
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class LifeForestPrismStar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.PRISM_STAR];
   public set: string = 'LOT';
   public setNumber: string = '180';

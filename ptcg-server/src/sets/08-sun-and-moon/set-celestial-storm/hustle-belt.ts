@@ -9,8 +9,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class HustleBelt extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'CES';
 
@@ -23,22 +22,28 @@ export class HustleBelt extends TrainerCard {
   public setNumber: string = '134';
 
   public text: string =
-    'If the Pokémon this card is attached to has 30 HP or less remaining and has any damage counters on it, its attacks do 60 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance).';
+    "If the Pokémon this card is attached to has 30 HP or less remaining and has any damage counters on it, its attacks do 60 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof DealDamageEffect && effect.source.tools.includes(this)) {
       const opponent = StateUtils.getOpponent(state, effect.player);
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       const attack = effect.attack;
-      if (attack && attack.damage > 0 && effect.target === opponent.active && effect.source.damage !== 0 && effect.source.hp - effect.source.damage <= 30) {
+      if (
+        attack &&
+        attack.damage > 0 &&
+        effect.target === opponent.active &&
+        effect.source.damage !== 0 &&
+        effect.source.hp - effect.source.damage <= 30
+      ) {
         effect.damage += 60;
       }
     }
 
     return state;
   }
-
 }

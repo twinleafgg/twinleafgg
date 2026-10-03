@@ -7,8 +7,8 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, PlayerType, SlotType } from '../../../game';
 import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, ADD_MARKER, REMOVE_MARKER, HAS_MARKER } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { NEXT_TURN_ATTACK_BASE_DAMAGE_EFFECT } from '../../../game/store/prefabs/attack-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
 export class Clawitzer extends PokemonCard {
@@ -18,9 +18,6 @@ export class Clawitzer extends PokemonCard {
   public hp: number = 100;
   public weakness = [{ type: G }];
   public retreat = [C, C];
-
-  public readonly STANDING_BY_MARKER = 'CLAWITZER_FLI_STANDING_BY_MARKER';
-  public readonly CLEAR_STANDING_BY_MARKER = 'CLAWITZER_FLI_CLEAR_STANDING_BY_MARKER';
 
   public attacks = [
     {
@@ -44,22 +41,16 @@ export class Clawitzer extends PokemonCard {
   public fullName: string = 'Clawitzer FLI';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Standing By
-    // Ref: set-steam-siege/magearna-ex.ts (Soul Blaster - 2-phase marker pattern)
-    if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      REMOVE_MARKER(this.CLEAR_STANDING_BY_MARKER, player, this);
-      ADD_MARKER(this.STANDING_BY_MARKER, player, this);
-    }
+    NEXT_TURN_ATTACK_BASE_DAMAGE_EFFECT(effect, {
+      setupAttack: this.attacks[0],
+      boostedAttack: this.attacks[1],
+      source: this,
+      baseDamage: 120,
+    });
 
-    // Attack 2: Sharpshooting
-    // Ref: attack-effects.ts (THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON)
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
-
-      // Check if Standing By was used last turn
-      const boosted = HAS_MARKER(this.STANDING_BY_MARKER, player, this);
-      const damage = boosted ? 120 : 40;
+      const damage = effect.damage || 40;
 
       return store.prompt(state, new ChoosePokemonPrompt(
         player.id,
@@ -78,16 +69,6 @@ export class Clawitzer extends PokemonCard {
         damageEffect.target = target;
         store.reduceEffect(state, damageEffect);
       });
-    }
-
-    // 2-phase marker lifecycle for Standing By
-    if (effect instanceof EndTurnEffect && HAS_MARKER(this.STANDING_BY_MARKER, effect.player, this)) {
-      if (HAS_MARKER(this.CLEAR_STANDING_BY_MARKER, effect.player, this)) {
-        REMOVE_MARKER(this.STANDING_BY_MARKER, effect.player, this);
-        REMOVE_MARKER(this.CLEAR_STANDING_BY_MARKER, effect.player, this);
-      } else {
-        ADD_MARKER(this.CLEAR_STANDING_BY_MARKER, effect.player, this);
-      }
     }
 
     return state;

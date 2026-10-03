@@ -2,11 +2,9 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import {
-  ADD_SLEEP_TO_PLAYER_ACTIVE,
+import {ADD_SLEEP_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import {
   CardTag,
   CardType,
@@ -95,7 +93,7 @@ export class KyogreEx extends PokemonCard {
           (selected: Card[]) => {
             const cards = selected || [];
             cards.forEach((card) => {
-              player.active.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, player.active, player.hand, { cards: [card], sourceCard: this });
             });
           },
         );

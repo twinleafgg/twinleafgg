@@ -12,7 +12,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class RapidStrikeScrollOfSwirls extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   protected _tags = [CardTag.RAPID_STRIKE];
 

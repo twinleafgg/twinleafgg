@@ -10,7 +10,7 @@ import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class FutureBoosterEnergyCapsule extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public regulationMark = 'G';
 

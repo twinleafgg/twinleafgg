@@ -11,13 +11,14 @@ import { DRAW_CARDS_UNTIL_CARDS_IN_HAND } from '../../../game/store/prefabs/pref
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class BluesTactics extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNM';
   public setNumber: string = '188';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Blue\'s Tactics';
-  public fullName: string = 'Blue\'s Tactics UNM';
-  public text: string = 'At the end of this turn, draw cards until you have 8 cards in your hand. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Blue's Tactics";
+  public fullName: string = "Blue's Tactics UNM";
+  public text: string =
+    'At the end of this turn, draw cards until you have 8 cards in your hand. You may play only 1 Supporter card during your turn (before your attack).';
 
   public readonly BLUES_TACTICS_MARKER = 'BLUES_TACTICS_MARKER';
 
@@ -28,7 +29,10 @@ export class BluesTactics extends TrainerCard {
       player.marker.addMarker(this.BLUES_TACTICS_MARKER, this);
     }
 
-    if (effect instanceof EndTurnEffect && effect.player.marker.hasMarker(this.BLUES_TACTICS_MARKER, this)) {
+    if (
+      effect instanceof EndTurnEffect &&
+      effect.player.marker.hasMarker(this.BLUES_TACTICS_MARKER, this)
+    ) {
       effect.player.marker.removeMarker(this.BLUES_TACTICS_MARKER, this);
       DRAW_CARDS_UNTIL_CARDS_IN_HAND(effect.player, 8);
     }

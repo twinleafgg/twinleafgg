@@ -12,7 +12,6 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { GameMessage } from '../../../game/game-message';
 import { MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
-
 function* useAstonish(next: Function, store: StoreLike, state: State,
   effect: AttackEffect, sourceCard: Card): IterableIterator<State> {
 

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, COIN_FLIP_PROMPT, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, COIN_FLIP_PROMPT, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Wynaut extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -46,7 +46,7 @@ export class Wynaut extends PokemonCard {
           // Choose a random card from opponent's hand and shuffle into deck
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const randomCard = opponent.hand.cards[randomIndex];
-          opponent.hand.moveCardTo(randomCard, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [randomCard], sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
         }
         // Turn ends regardless

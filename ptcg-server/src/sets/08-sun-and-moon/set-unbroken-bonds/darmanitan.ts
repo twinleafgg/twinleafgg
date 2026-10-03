@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SEARCH_DECK_FOR_CARDS_TO_HAND, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Darmanitan extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -56,7 +56,7 @@ export class Darmanitan extends PokemonCard {
       const cards = player.active.cards.filter(c =>
         c instanceof EnergyCard && c.provides.includes(CardType.FIRE) && c.energyType === EnergyType.BASIC
       );
-      cards.forEach(c => { player.active.moveCardTo(c, player.discard); });
+      cards.forEach(c => { MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this }); });
     }
 
     return state;

@@ -9,6 +9,7 @@ import { GameMessage } from '../../../game/game-message';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CardList } from '../../../game/store/state/card-list';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -35,7 +36,7 @@ function* playCard(
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -85,15 +86,15 @@ function* playCard(
     return state;
   }
 
-  player.hand.moveCardTo(self, player.discard);
-  player.hand.moveCardsTo(cards, player.discard);
-  player.discard.moveCardsTo(recovered, player.hand);
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: [self], sourceCard: self });
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: self });
+  MOVE_CARDS(store, state, player.discard, player.hand, { cards: recovered, sourceCard: self });
 
   return state;
 }
 
 export class DowsingMachine extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   protected _tags = [CardTag.ACE_SPEC];
 

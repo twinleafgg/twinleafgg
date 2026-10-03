@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS, COUNT_MATCHING_CARDS_IN_ZONE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, COUNT_MATCHING_CARDS_IN_ZONE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Whimsicott extends PokemonCard {
@@ -60,7 +60,7 @@ export class Whimsicott extends PokemonCard {
         const cards = selected || [];
         if (cards.length > 0) {
           cards.forEach(card => {
-            player.hand.moveCardTo(card, player.lostzone);
+            MOVE_CARDS(store, state, player.hand, player.lostzone, { cards: [card], sourceCard: this });
           });
           DRAW_CARDS(store, state, player, 3);
         }

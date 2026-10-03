@@ -1,9 +1,8 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayerType, PowerType, State, StoreLike } from '../../../game';
+import { PowerType, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PowerEffect } from '../../../game/store/effects/game-effects';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { EVOLUTIONARY_ADVANTAGE } from '../../../game/store/prefabs/prefabs';
 
 export class Flabebe extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -33,30 +32,6 @@ export class Flabebe extends PokemonCard {
   public setNumber: string = '83';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
-    if (effect instanceof PlayPokemonEffect) {
-      const player = effect.player;
-      if (state.turn === 2) {
-        try {
-          const stub = new PowerEffect(player, {
-            name: 'test',
-            powerType: PowerType.ABILITY,
-            text: ''
-          }, this);
-          store.reduceEffect(state, stub);
-        } catch {
-          return state;
-        }
-        player.canEvolve = true;
-        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
-          if (cardList.getPokemonCard() === this) {
-            cardList.pokemonPlayedTurn = state.turn - 1;
-          }
-        });
-      }
-      return state;
-    }
-
-    return state;
+    return EVOLUTIONARY_ADVANTAGE(store, state, effect, this);
   }
 }

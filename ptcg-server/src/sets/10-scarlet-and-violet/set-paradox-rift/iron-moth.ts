@@ -18,7 +18,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MovedToActiveEffect, PowerEffect } from '../../../game/store/effects/game-effects';
-import { MOVED_TO_ACTIVE_THIS_TURN, REMOVE_MARKER_AT_END_OF_TURN, THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {MOVED_TO_ACTIVE_THIS_TURN, REMOVE_MARKER_AT_END_OF_TURN, THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class IronMoth extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -121,7 +121,7 @@ export class IronMoth extends PokemonCard {
           for (const transfer of transfers) {
             const target = player.active;
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
 
           player.marker.addMarker(this.ABILITY_USED_MARKER, this);

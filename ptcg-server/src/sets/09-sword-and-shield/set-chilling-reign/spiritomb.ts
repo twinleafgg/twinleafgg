@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { DamageMap, GameMessage, PlayerType, PutDamagePrompt, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Spiritomb extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -71,7 +71,7 @@ export class Spiritomb extends PokemonCard {
           }
           // After placing damage counters, shuffle all Pokemon from opponent's discard pile into their deck
           const pokemonCards = opponent.discard.cards.filter(c => c instanceof PokemonCard).slice();
-          pokemonCards.forEach(c => { opponent.discard.moveCardTo(c, opponent.deck); });
+          pokemonCards.forEach(c => { MOVE_CARDS(store, state, opponent.discard, opponent.deck, { cards: [c], sourceCard: this }); });
           SHUFFLE_DECK(store, state, opponent);
         });
       }

@@ -11,7 +11,7 @@ import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class VictoryPiece extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.ACE_SPEC];
   public set: string = 'PLS';
   public setNumber: string = '130';

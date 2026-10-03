@@ -9,7 +9,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Infernape extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -79,7 +79,7 @@ export class Infernape extends PokemonCard {
 
       // Remove 10 Fire Energy from discard, then shuffle into deck
       const toShuffle = fireEnergiesInDiscard.slice(0, 10);
-      toShuffle.forEach(c => { player.discard.moveCardTo(c, player.deck); });
+      toShuffle.forEach(c => { MOVE_CARDS(store, state, player.discard, player.deck, { cards: [c], sourceCard: this }); });
       return SHUFFLE_DECK(store, state, player);
     }
 

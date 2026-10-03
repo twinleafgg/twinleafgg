@@ -5,7 +5,7 @@ import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { MULTIPLE_COIN_FLIPS_PROMPT, IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {MULTIPLE_COIN_FLIPS_PROMPT, IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Giratina extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -55,8 +55,8 @@ export class Giratina extends PokemonCard {
 
           const cards = player.hand.cards.filter(c => c !== this);
 
-          player.hand.moveCardsTo(cards, player.deck);
-          opponent.hand.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
 
           store.prompt(state, [
             new ShuffleDeckPrompt(player.id),
@@ -65,8 +65,8 @@ export class Giratina extends PokemonCard {
             player.deck.applyOrder(deckOrder[0]);
             opponent.deck.applyOrder(deckOrder[1]);
 
-            player.deck.moveTo(player.hand, 4);
-            opponent.deck.moveTo(opponent.hand, 4);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 4, sourceCard: this });
+            MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
           });
         }
 

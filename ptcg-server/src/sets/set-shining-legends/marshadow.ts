@@ -3,7 +3,7 @@ import { CardType, Stage } from '../../game/store/card/card-types';
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Effect } from '../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Marshadow extends PokemonCard {
 
@@ -60,8 +60,8 @@ export class Marshadow extends PokemonCard {
         if (wantToUse) {
           const cards = player.hand.cards.filter(c => c !== this);
 
-          player.hand.moveCardsTo(cards, player.deck);
-          opponent.hand.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
 
           store.prompt(state, [
             new ShuffleDeckPrompt(player.id),
@@ -70,8 +70,8 @@ export class Marshadow extends PokemonCard {
             player.deck.applyOrder(deckOrder[0]);
             opponent.deck.applyOrder(deckOrder[1]);
 
-            player.deck.moveTo(player.hand, 4);
-            opponent.deck.moveTo(opponent.hand, 4);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 4, sourceCard: this });
+            MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
           });
         }
 

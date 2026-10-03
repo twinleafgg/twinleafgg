@@ -7,7 +7,7 @@ import { GameMessage } from '../../../game/game-message';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { SelectPrompt } from '../../../game/store/prompts/select-prompt';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RayquazaEx extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -43,10 +43,10 @@ export class RayquazaEx extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const temp = new CardList();
-      player.deck.moveTo(temp, 3);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 3, sourceCard: this });
       const energyCards = temp.cards.filter((c) => c instanceof EnergyCard);
-      temp.moveCardsTo(energyCards, player.active);
-      temp.moveTo(player.discard);
+      MOVE_CARDS(store, state, temp, player.active, { cards: energyCards, sourceCard: this });
+      MOVE_CARDS(store, state, temp, player.discard, { sourceCard: this });
       return state;
     }
 

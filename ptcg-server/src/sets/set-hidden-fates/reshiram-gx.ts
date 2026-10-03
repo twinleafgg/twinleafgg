@@ -2,13 +2,11 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import {
-  ADD_BURN_TO_PLAYER_ACTIVE,
+import {ADD_BURN_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   BLOCK_IF_GX_ATTACK_USED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { CardTag, CardType, EnergyType, Stage, SuperType } from '../../game/store/card/card-types';
 import { StateUtils } from '../../game/store/state-utils';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
@@ -82,7 +80,7 @@ export class ReshiramGx extends PokemonCard {
         (cards: Card[]) => {
           cards = cards || [];
           if (cards.length > 0) {
-            player.deck.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
           }
           return SHUFFLE_DECK(store, state, player);
         },
@@ -128,7 +126,7 @@ export class ReshiramGx extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

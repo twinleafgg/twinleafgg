@@ -7,7 +7,7 @@ import { CheckRetreatCostEffect } from '../../../game/store/effects/check-effect
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class GalarMine extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'D';
   public set: string = 'RCL';
   public cardImage: string = 'assets/cardback.png';

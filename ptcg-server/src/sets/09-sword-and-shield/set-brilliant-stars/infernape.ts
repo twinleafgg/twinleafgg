@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, CardList, ShowCardsPrompt, GameMessage, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { DISCARD_ALL_ENERGY_FROM_POKEMON, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DISCARD_ALL_ENERGY_FROM_POKEMON, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Infernape extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -40,7 +40,7 @@ export class Infernape extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       // Filter for item cards
       const energyCards = deckTop.cards.filter(c =>
@@ -62,10 +62,10 @@ export class Infernape extends PokemonCard {
       }
 
       // Move energy cards to discard
-      deckTop.moveCardsTo(energyCards, player.discard);
+      MOVE_CARDS(store, state, deckTop, player.discard, { cards: energyCards, sourceCard: this });
 
       // Move all cards to discard
-      deckTop.moveTo(player.deck, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.deck, { count: deckTop.cards.length, sourceCard: this });
 
       effect.damage = 80 * energyCards.length;
 

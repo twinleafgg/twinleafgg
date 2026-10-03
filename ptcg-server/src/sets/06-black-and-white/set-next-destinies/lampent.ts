@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lampent extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -41,7 +41,7 @@ export class Lampent extends PokemonCard {
               { min: 1, max: 1, allowCancel: false }
             ), selected => {
               selected.forEach(card => {
-                player.active.moveCardTo(card, player.discard);
+                MOVE_CARDS(store, state, player.active, player.discard, { cards: [card], sourceCard: this });
               });
             });
           }

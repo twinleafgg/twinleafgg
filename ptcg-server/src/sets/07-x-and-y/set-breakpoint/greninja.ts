@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, ConfirmPrompt, GameMessage, ChooseEnergyPrompt, Card } from "../../../game";
 import { CheckProvidedEnergyEffect } from "../../../game/store/effects/check-effects";
 import { Effect } from "../../../game/store/effects/effect";
-import { WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import {WAS_ATTACK_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 import { OPPONENT_POKEMON_HAVE_NO_ABILITIES } from "../../../game/store/prefabs/effect-of-attack-prefabs";
 
 export class Greninja extends PokemonCard {
@@ -49,7 +49,6 @@ export class Greninja extends PokemonCard {
           const checkProvidedEnergy = new CheckProvidedEnergyEffect(player);
           state = store.reduceEffect(state, checkProvidedEnergy);
 
-
           state = store.prompt(state, new ChooseEnergyPrompt(
             player.id,
             GameMessage.CHOOSE_ENERGIES_TO_DISCARD,
@@ -58,7 +57,7 @@ export class Greninja extends PokemonCard {
             { allowCancel: false }
           ), energy => {
             const cards: Card[] = (energy || []).map(e => e.card);
-            player.active.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
             effect.damage += 20;
           });
 

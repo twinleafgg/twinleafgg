@@ -8,7 +8,7 @@ import { PowerType, GameMessage, ChooseCardsPrompt, StoreLike, State, StateUtils
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { GamePhase } from '../../../game/store/state/state';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Samurott extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -71,7 +71,7 @@ export class Samurott extends PokemonCard {
         { min: 0, max: 2, allowCancel: false },
       ), selected => {
         cards = selected || [];
-        opponent.active.moveCardsTo(cards, opponent.hand);
+        MOVE_CARDS(store, state, opponent.active, opponent.hand, { cards: cards, sourceCard: this });
       });
     }
 

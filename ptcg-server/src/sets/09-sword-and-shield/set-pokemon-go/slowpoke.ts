@@ -1,9 +1,9 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, TrainerCard, Card, ChooseCardsPrompt, GameMessage, GameLog } from '../../../game';
+import { StoreLike, State, TrainerCard, Card, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { HEAL_X_DAMAGE_FROM_THIS_POKEMON, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {HEAL_X_DAMAGE_FROM_THIS_POKEMON, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Slowpoke extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -66,11 +66,7 @@ export class Slowpoke extends PokemonCard {
       ), selected => {
         cards = selected || [];
 
-        cards.forEach((card, index) => {
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-        });
-
-        player.discard.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
 
         return state;
       });

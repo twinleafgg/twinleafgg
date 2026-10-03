@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Electrode extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -60,7 +60,7 @@ export class Electrode extends PokemonCard {
         if (player.deck.cards.length === 0) {
           break;
         }
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
       player.marker.addMarker(this.MAGNETIC_DRAW_MARKER, this);
 

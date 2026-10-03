@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/card-types';
 import { CardList, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class FlareonVmax extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VMAX, CardTag.SINGLE_STRIKE];
@@ -44,14 +44,14 @@ export class FlareonVmax extends PokemonCard {
       // Move top 5 cards to a temp list
       const topCards = new CardList();
       const count = Math.min(5, player.deck.cards.length);
-      player.deck.moveTo(topCards, count);
+      MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
       // Count Energy cards
       const energyCount = topCards.cards.filter((c) => c.superType === SuperType.ENERGY).length;
       effect.damage = 100 * energyCount;
 
       // Discard all top 5 cards
-      topCards.moveTo(player.discard);
+      MOVE_CARDS(store, state, topCards, player.discard, { sourceCard: this });
     }
 
     return state;

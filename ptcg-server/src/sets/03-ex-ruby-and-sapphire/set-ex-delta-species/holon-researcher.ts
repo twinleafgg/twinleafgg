@@ -10,17 +10,15 @@ import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-t
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  MOVE_CARDS_TO_HAND,
+import {MOVE_CARDS_TO_HAND,
   SHOW_CARDS_TO_PLAYER,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_CARDS_FROM_YOUR_HAND } from '../../../game/store/prefabs/trainer-prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class HolonResearcher extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.DELTA_SPECIES];
   public set: string = 'DS';
   public cardImage: string = 'assets/cardback.png';
@@ -44,7 +42,7 @@ Search your deck for a [M] Energy card or a Basic Pokémon (or Evolution card) t
 
       DISCARD_X_CARDS_FROM_YOUR_HAND(effect, store, state, 1, 1);
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       const blocked: number[] = [];

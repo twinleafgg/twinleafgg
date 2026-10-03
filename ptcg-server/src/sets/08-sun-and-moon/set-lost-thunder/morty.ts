@@ -10,16 +10,17 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import { SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Morty extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'LOT';
   public setNumber: string = '186';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Morty';
   public fullName: string = 'Morty LOT';
-  public text: string = 'You can play this card only if 1 of your Psychic Pok\u00e9mon was Knocked Out during your opponent\'s last turn. Your opponent reveals their hand. Choose 2 cards you find there. Your opponent shuffles those cards into their deck. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    "You can play this card only if 1 of your Psychic Pok\u00e9mon was Knocked Out during your opponent's last turn. Your opponent reveals their hand. Choose 2 cards you find there. Your opponent shuffles those cards into their deck. You may play only 1 Supporter card during your turn (before your attack).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-paradox-rift/tulip.ts (generator pattern for multi-step supporters)
@@ -34,30 +35,41 @@ export class Morty extends TrainerCard {
       }
 
       // Show opponent's hand to player
-      store.prompt(state, new ShowCardsPrompt(
-        player.id,
-        GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-        opponent.hand.cards
-      ), () => {
-        const maxCards = Math.min(2, opponent.hand.cards.length);
+      store.prompt(
+        state,
+        new ShowCardsPrompt(
+          player.id,
+          GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
+          opponent.hand.cards,
+        ),
+        () => {
+          const maxCards = Math.min(2, opponent.hand.cards.length);
 
-        // Choose up to 2 cards from opponent's hand
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DECK,
-          opponent.hand,
-          {},
-          { min: 1, max: maxCards, allowCancel: false }
-        ), (selected: Card[]) => {
-          const cards = selected || [];
-          cards.forEach(c => {
-            opponent.hand.moveCardTo(c, opponent.deck);
-          });
-          if (cards.length > 0) {
-            SHUFFLE_DECK(store, state, opponent);
-          }
-        });
-      });
+          // Choose up to 2 cards from opponent's hand
+          store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              player,
+              GameMessage.CHOOSE_CARD_TO_DECK,
+              opponent.hand,
+              {},
+              { min: 1, max: maxCards, allowCancel: false },
+            ),
+            (selected: Card[]) => {
+              const cards = selected || [];
+              cards.forEach((c) => {
+                MOVE_CARDS(store, state, opponent.hand, opponent.deck, {
+                  cards: [c],
+                  sourceCard: this,
+                });
+              });
+              if (cards.length > 0) {
+                SHUFFLE_DECK(store, state, opponent);
+              }
+            },
+          );
+        },
+      );
     }
 
     return state;

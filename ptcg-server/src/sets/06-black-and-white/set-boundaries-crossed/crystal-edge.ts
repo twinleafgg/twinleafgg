@@ -9,19 +9,20 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TOOL_ACTIVE_DAMAGE_BONUS } from '../../../game/store/prefabs/tool-prefabs';
 
 export class CrystalEdge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'BCR';
   public setNumber: string = '138';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Crystal Edge';
   public fullName: string = 'Crystal Edge BCR';
-  public text: string = 'If this card is attached to White Kyurem-EX, each of its attacks does 50 more damage to the Active Pokémon (before applying Weakness and Resistance). You can\'t have more than 1 ACE SPEC card in your deck.';
+  public text: string =
+    "If this card is attached to White Kyurem-EX, each of its attacks does 50 more damage to the Active Pokémon (before applying Weakness and Resistance). You can't have more than 1 ACE SPEC card in your deck.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Refs: set-dark-explorers/dark-claw.ts (tool active-damage bonus), prefabs/prefabs.ts (TOOL_ACTIVE_DAMAGE_BONUS)
     TOOL_ACTIVE_DAMAGE_BONUS(store, state, effect, this, {
       damageBonus: 50,
-      sourcePokemonName: 'White Kyurem-EX'
+      sourcePokemonName: 'White Kyurem-EX',
     });
 
     return state;

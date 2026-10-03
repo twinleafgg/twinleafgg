@@ -24,7 +24,7 @@ import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 export class EarthenSealStone extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'F';
   public set: string = 'SIT';
   public setNumber: string = '154';

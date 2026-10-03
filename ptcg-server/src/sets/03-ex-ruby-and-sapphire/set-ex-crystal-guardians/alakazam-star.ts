@@ -3,7 +3,7 @@ import { CheckProvidedEnergyEffect, CheckAttackCostEffect } from "../../../game/
 import { Effect } from "../../../game/store/effects/effect";
 import { AttackEffect } from "../../../game/store/effects/game-effects";
 import { COPY_ATTACK_FROM_POKEMON_LIST } from "../../../game/store/prefabs/copy-attack-prefabs";
-import { AFTER_ATTACK, SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND, WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import { AFTER_ATTACK, SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND, WAS_ATTACK_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class AlakazamStar extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -72,7 +72,7 @@ export class AlakazamStar extends PokemonCard {
             return state;
           }
 
-          player.hand.moveCardTo(cardToCopy, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: [cardToCopy], sourceCard: this });
 
           const { blocked } = this.buildEnergyBlockedAttacks(state, store, player, cardToCopy);
 

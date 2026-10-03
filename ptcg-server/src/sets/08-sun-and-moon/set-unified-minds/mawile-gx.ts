@@ -126,7 +126,7 @@ export class MawileGX extends PokemonCard {
                 }
 
                 cards.forEach((card, index) => {
-                  opponent.hand.moveCardTo(card, slots[index]);
+                  MOVE_CARDS(store, state, opponent.hand, slots[index], { cards: [card], sourceCard: this });
                   slots[index].pokemonPlayedTurn = state.turn;
                 });
               },

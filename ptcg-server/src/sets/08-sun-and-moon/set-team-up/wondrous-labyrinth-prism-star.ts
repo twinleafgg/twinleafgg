@@ -12,7 +12,7 @@ import {
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class WondrousLabyrinthPrismStar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.PRISM_STAR];
   public set: string = 'TEU';
   public setNumber: string = '158';

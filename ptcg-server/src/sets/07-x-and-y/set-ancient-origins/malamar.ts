@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, ChooseCardsPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, GUST_OPPONENT_BENCHED_POKEMON, ADD_CONFUSION_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, GUST_OPPONENT_BENCHED_POKEMON, ADD_CONFUSION_TO_PLAYER_ACTIVE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Malamar extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -86,7 +86,7 @@ export class Malamar extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         }
       });
     }

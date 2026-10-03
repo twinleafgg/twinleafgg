@@ -8,8 +8,7 @@ import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class BillowingSmoke extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public regulationMark = 'D';
 
@@ -24,11 +23,12 @@ export class BillowingSmoke extends TrainerCard {
   public fullName: string = 'Billowing Smoke DAA';
 
   public text: string =
-    'If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent\'s Pokémon, ' +
+    "If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, " +
     'that player discards any Prize cards they would take for that Knock Out instead of putting those cards into their hand.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    if (effect instanceof KnockOutEffect &&
+    if (
+      effect instanceof KnockOutEffect &&
       effect.target.tools.includes(this) &&
       effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
     ) {

@@ -24,7 +24,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class WishiwashiGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -91,7 +91,7 @@ export class WishiwashiGx extends PokemonCard {
           (selected: Card[]) => {
             const cards = selected || [];
             if (cards.length > 0) {
-              opponentActive.moveCardsTo(cards, opponent.discard);
+              MOVE_CARDS(store, state, opponentActive, opponent.discard, { cards: cards, sourceCard: this });
             }
             return state;
           },
@@ -139,7 +139,7 @@ export class WishiwashiGx extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.active.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

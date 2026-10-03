@@ -14,7 +14,7 @@ import {
 } from '../../../game/store/prefabs/prefabs';
 
 export class FarewellBell extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark: string = 'E';
   public set: string = 'FST';
   public setNumber: string = '234';

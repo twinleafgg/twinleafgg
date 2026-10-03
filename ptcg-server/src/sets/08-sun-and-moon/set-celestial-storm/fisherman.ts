@@ -10,9 +10,13 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
-
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Fisherman, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Fisherman,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   if (player.supporterTurn > 0) {
@@ -20,7 +24,7 @@ function* playCard(next: Function, store: StoreLike, state: State,
   }
 
   let basicEnergies = 0;
-  player.discard.cards.forEach(c => {
+  player.discard.cards.forEach((c) => {
     if (c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC) {
       basicEnergies += 1;
     }
@@ -41,34 +45,44 @@ function* playCard(next: Function, store: StoreLike, state: State,
     max = 4;
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
   let recovered: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.discard,
-    { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-    { min, max, allowCancel: false }
-  ), selected => {
-    recovered = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.discard,
+      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+      { min, max, allowCancel: false },
+    ),
+    (selected) => {
+      recovered = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (recovered.length === 0) {
     return state;
   }
 
-  MOVE_CARDS(store, state, player.discard, player.hand, { cards: recovered, sourceCard: self, sourceEffect: self.attacks[0] });
+  MOVE_CARDS(store, state, player.discard, player.hand, {
+    cards: recovered,
+    sourceCard: self,
+    sourceEffect: self.attacks[0],
+  });
   return state;
 }
 
 export class Fisherman extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CES';
 
@@ -84,7 +98,6 @@ export class Fisherman extends TrainerCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
-
       const player = effect.player;
 
       // Check if DiscardToHandEffect is prevented
@@ -102,5 +115,4 @@ export class Fisherman extends TrainerCard {
     }
     return state;
   }
-
 }

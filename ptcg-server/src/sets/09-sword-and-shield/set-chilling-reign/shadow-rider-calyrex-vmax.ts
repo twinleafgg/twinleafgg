@@ -21,7 +21,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ShadowRiderCalyrexVMAX extends PokemonCard {
   public stage: Stage = Stage.VMAX;
@@ -113,9 +113,9 @@ export class ShadowRiderCalyrexVMAX extends PokemonCard {
           for (const transfer of transfers) {
             player.marker.addMarker(this.UNDERWORLD_DOOR_MARKER, this);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
           }
-          player.deck.moveTo(player.hand, 2);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
         },
       );
     }

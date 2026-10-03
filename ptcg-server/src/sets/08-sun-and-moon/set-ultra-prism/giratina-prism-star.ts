@@ -22,7 +22,7 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class GiratinaPrismStar extends PokemonCard {
@@ -115,7 +115,7 @@ export class GiratinaPrismStar extends PokemonCard {
                 const cards = selected || [];
                 const pokemonList = StateUtils.findCardList(state, this);
                 cards.forEach((card) => {
-                  player.hand.moveCardTo(card, pokemonList);
+                  MOVE_CARDS(store, state, player.hand, pokemonList, { cards: [card], sourceCard: this });
                 });
               },
             );

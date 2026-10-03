@@ -2,7 +2,7 @@ import { AttachEnergyPrompt, GameError, GameMessage, PlayerType, PokemonCard, Po
 import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { Effect, PowerEffect } from '../../../game/store/effects/game-effects';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
-import { ABILITY_USED, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useStrongCharge(next: Function, store: StoreLike, state: State, effect: PowerEffect): IterableIterator<State> {
   const player = effect.player;
@@ -34,7 +34,7 @@ function* useStrongCharge(next: Function, store: StoreLike, state: State, effect
       }
 
       const target = StateUtils.getTarget(state, player, transfer.to);
-      player.deck.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: effect.card });
       next();
     }
   });

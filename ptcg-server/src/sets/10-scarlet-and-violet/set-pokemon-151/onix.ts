@@ -1,6 +1,6 @@
 import { Attack, CardList, CardType, PokemonCard, Stage, State, StoreLike, Weakness } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Onix extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -34,12 +34,12 @@ export class Onix extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       const mistysPokemon = deckTop.cards.filter(c => c.retreat.length === 4);
 
       effect.damage = 80 * mistysPokemon.length;
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
     }
 
     return state;

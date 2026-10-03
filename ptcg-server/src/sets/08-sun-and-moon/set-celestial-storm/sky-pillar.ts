@@ -7,14 +7,15 @@ import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class SkyPillar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'D';
   public set: string = 'CES';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '144';
   public name: string = 'Sky Pillar';
   public fullName: string = 'Sky Pillar CES';
-  public text: string = 'Prevent all effects of the opponent\'s attacks, including damage, done to Benched Pokémon (both yours and your opponent\'s).';
+  public text: string =
+    "Prevent all effects of the opponent's attacks, including damage, done to Benched Pokémon (both yours and your opponent's).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

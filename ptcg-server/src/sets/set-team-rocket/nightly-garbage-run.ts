@@ -1,6 +1,6 @@
 import { Card } from '../../game/store/card/card';
 import { GameError } from '../../game/game-error';
-import { GameLog, GameMessage } from '../../game/game-message';
+import { GameMessage } from '../../game/game-message';
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { TrainerType, EnergyType, CardTag } from '../../game/store/card/card-types';
 import { StoreLike } from '../../game/store/store-like';
@@ -11,6 +11,7 @@ import { TrainerEffect } from '../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard } from '../../game/store/card/energy-card';
 import { ShuffleDeckPrompt } from '../../game/store/prompts/shuffle-prompt';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -57,14 +58,7 @@ function* playCard(
     },
   );
 
-  cards.forEach((card, index) => {
-    store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, {
-      name: player.name,
-      card: card.name,
-    });
-  });
-
-  player.discard.moveCardsTo(cards, player.deck);
+  MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: self });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
@@ -72,7 +66,7 @@ function* playCard(
 }
 
 export class NightlyGarbageRun extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   protected _tags = [CardTag.ROCKETS_SECRET_MACHINE];
 

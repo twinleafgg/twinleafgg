@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, GameMessage, OrderCardsPrompt, StoreLike, State, StateUtils, ConfirmPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Munna extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -49,7 +49,7 @@ export class Munna extends PokemonCard {
         }
 
         const deckTop = new CardList();
-        targetDeck.moveTo(deckTop, Math.min(4, targetDeck.cards.length));
+        MOVE_CARDS(store, state, targetDeck, deckTop, { count: Math.min(4, targetDeck.cards.length), sourceCard: this });
 
         return store.prompt(state, new OrderCardsPrompt(
           player.id,

@@ -1,7 +1,7 @@
 import { AttachEnergyPrompt, Attack, CardTag, CardTarget, CardType, GameMessage, PlayerType, PokemonCard, SlotType, Stage, State, StateUtils, StoreLike, SuperType, Weakness } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class ThundurusEX extends PokemonCard {
@@ -74,7 +74,7 @@ export class ThundurusEX extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

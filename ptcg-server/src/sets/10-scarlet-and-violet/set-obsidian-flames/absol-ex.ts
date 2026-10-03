@@ -11,7 +11,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Absolex extends PokemonCard {
   public regulationMark = 'G';
@@ -64,7 +64,7 @@ export class Absolex extends PokemonCard {
           message: GameMessage.ORDER_OPPONENT_DECK,
           action: () => {
             const opponentDeckTop = new CardList();
-            opponent.deck.moveTo(opponentDeckTop, 3);
+            MOVE_CARDS(store, state, opponent.deck, opponentDeckTop, { count: 3, sourceCard: this });
 
             return store.prompt(
               state,
@@ -88,7 +88,7 @@ export class Absolex extends PokemonCard {
             const player = effect.player;
 
             const playerDeckTop = new CardList();
-            player.deck.moveTo(playerDeckTop, 3);
+            MOVE_CARDS(store, state, player.deck, playerDeckTop, { count: 3, sourceCard: this });
 
             return store.prompt(
               state,

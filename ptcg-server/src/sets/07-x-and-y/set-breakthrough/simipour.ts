@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Simipour extends PokemonCard {
@@ -63,7 +63,7 @@ export class Simipour extends PokemonCard {
           { min: count, max: count, allowCancel: false, blocked }
         ), selected => {
           if (selected && selected.length > 0) {
-            player.discard.moveCardsTo(selected, player.hand);
+            MOVE_CARDS(store, state, player.discard, player.hand, { cards: selected, sourceCard: this });
           }
         });
       }

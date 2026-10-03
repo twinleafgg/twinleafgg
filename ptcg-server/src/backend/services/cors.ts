@@ -6,6 +6,7 @@ export function cors(): RequestHandler {
     const allowedOrigins = [
       'https://play.twinleaf.gg',
       'http://play.twinleaf.gg',
+      'https://beta.twinleaf.gg',
       'http://localhost:4200',
       'http://localhost:5173',
       'http://127.0.0.1:5173',

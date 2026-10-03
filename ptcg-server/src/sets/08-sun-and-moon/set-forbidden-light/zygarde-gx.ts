@@ -10,12 +10,11 @@ import {
   SuperType,
   EnergyType,
 } from '../../../game/store/card/card-types';
-import { StoreLike, State, GameMessage, StateUtils, PlayerType, EnergyCard } from '../../../game';
+import { StoreLike, State, GameMessage, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class ZygardeGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -53,9 +52,6 @@ export class ZygardeGx extends PokemonCard {
   public name: string = 'Zygarde-GX';
   public fullName: string = 'Zygarde-GX FLI';
 
-  public readonly VERDICT_MARKER = 'ZYGARDE_GX_FLI_VERDICT_MARKER';
-  public readonly CLEAR_VERDICT_MARKER = 'ZYGARDE_GX_FLI_CLEAR_VERDICT_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Attack 1: Cell Connector
     // Ref: set-breakpoint/seismitoad.ts (Siphon Off)
@@ -84,7 +80,7 @@ export class ZygardeGx extends PokemonCard {
           (cards) => {
             cards = cards || [];
             cards.forEach((card) => {
-              player.discard.moveCardTo(card, player.active);
+              MOVE_CARDS(store, state, player.discard, player.active, { cards: [card], sourceCard: this });
             });
           },
         );
@@ -95,42 +91,11 @@ export class ZygardeGx extends PokemonCard {
     // Refs: set-burning-shadows/darkrai-gx.ts (GX attack pattern), set-x-and-y/aegislash-2.ts (prevent damage marker)
     if (WAS_ATTACK_USED(effect, 2, this)) {
       const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
 
       BLOCK_IF_GX_ATTACK_USED(player);
       player.usedGX = true;
 
-      player.active.marker.addMarker(this.VERDICT_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_VERDICT_MARKER, this);
-    }
-
-    // Prevent damage from GX and EX Pokemon
-    if (
-      (effect instanceof DealDamageEffect || effect instanceof PutDamageEffect) &&
-      effect.target.marker.hasMarker(this.VERDICT_MARKER, this) &&
-      effect.target.cards.includes(this) &&
-      effect.target.getPokemonCard() === this
-    ) {
-      const sourceCard = effect.source.getPokemonCard();
-      if (
-        sourceCard &&
-        (sourceCard.hasTag(CardTag.POKEMON_GX) || sourceCard.hasTag(CardTag.POKEMON_EX))
-      ) {
-        effect.preventDefault = true;
-        return state;
-      }
-    }
-
-    // Cleanup at end of opponent's turn
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_VERDICT_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_VERDICT_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.VERDICT_MARKER, this);
-      });
+      PREVENT_DAMAGE(store, state, effect, this, { sourceTags: [CardTag.POKEMON_GX, CardTag.POKEMON_EX] });
     }
 
     return state;

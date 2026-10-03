@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, ConfirmPrompt, GameMessage } f
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Krookodile extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -65,7 +65,7 @@ export class Krookodile extends PokemonCard {
           const handCards = opponent.hand.cards.slice();
           if (handCards.length > 0) {
             const randomIndex = Math.floor(Math.random() * handCards.length);
-            opponent.hand.moveCardTo(handCards[randomIndex], opponent.discard);
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [handCards[randomIndex]], sourceCard: this });
           }
         }
       });
@@ -99,7 +99,7 @@ export class Krookodile extends PokemonCard {
           const handCards = attacker.hand.cards.slice();
           if (handCards.length > 0) {
             const randomIndex = Math.floor(Math.random() * handCards.length);
-            attacker.hand.moveCardTo(handCards[randomIndex], attacker.discard);
+            MOVE_CARDS(store, state, attacker.hand, attacker.discard, { cards: [handCards[randomIndex]], sourceCard: this });
           }
         }
       });

@@ -17,13 +17,11 @@ import {
 import { EnergyType } from '../../../game/store/card/card-types';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   IS_ABILITY_BLOCKED,
   REMOVE_MARKER_AT_END_OF_TURN,
   USE_ABILITY_ONCE_PER_TURN,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magmortar extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -128,7 +126,7 @@ export class Magmortar extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

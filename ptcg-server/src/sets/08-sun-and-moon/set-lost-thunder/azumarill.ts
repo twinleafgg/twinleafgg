@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, PlayerType, SlotType, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
@@ -49,7 +49,7 @@ export class Azumarill extends PokemonCard {
       const player = effect.player;
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(8, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(8, player.deck.cards.length), sourceCard: this });
 
       const energyCards = deckTop.cards.filter(c => c instanceof EnergyCard);
 
@@ -66,15 +66,15 @@ export class Azumarill extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            deckTop.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, deckTop, target, { cards: [transfer.card], sourceCard: this });
           }
           // Shuffle remaining cards back into deck
-          deckTop.moveTo(player.deck);
+          MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         });
       } else {
         // No energy found, shuffle all back
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
         SHUFFLE_DECK(store, state, player);
       }
     }

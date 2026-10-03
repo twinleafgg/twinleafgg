@@ -14,11 +14,9 @@ import { EnergyCard, GameMessage, StateUtils, StoreLike, State } from '../../../
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import {
-  DRAW_CARDS,
+import {DRAW_CARDS,
   SHOW_CARDS_TO_PLAYER,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Rotom extends PokemonCard {
   protected _tags = [CardTag.TEAM_PLASMA];
@@ -88,7 +86,7 @@ export class Rotom extends PokemonCard {
         (cards) => {
           cards = cards || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
             DRAW_CARDS(store, state, player, 3);
           }
         },

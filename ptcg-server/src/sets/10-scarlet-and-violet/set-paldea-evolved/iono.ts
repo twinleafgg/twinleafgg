@@ -10,7 +10,7 @@ import { DRAW_CARDS, MOVE_HAND_TO_DECK_THEN_DRAW } from '../../../game/store/pre
 
 export class Iono extends TrainerCard {
   public regulationMark = 'G';
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'PAL';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '185';
@@ -28,7 +28,7 @@ export class Iono extends TrainerCard {
     }
 
     const opponent = StateUtils.getOpponent(state, player);
-    const otherCardsInHand = player.hand.cards.filter(c => c !== this).length;
+    const otherCardsInHand = player.hand.cards.filter((c) => c !== this).length;
 
     if (otherCardsInHand === 0 && player.deck.cards.length === 0) {
       return false;
@@ -50,7 +50,7 @@ export class Iono extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      const playerCards = player.hand.cards.filter(c => c !== this);
+      const playerCards = player.hand.cards.filter((c) => c !== this);
       const opponentCards = [...opponent.hand.cards];
 
       if (playerCards.length === 0 && player.deck.cards.length === 0) {

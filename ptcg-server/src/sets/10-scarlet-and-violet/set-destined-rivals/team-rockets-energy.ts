@@ -9,7 +9,7 @@ import { AttachEnergyEffect, EnergyEffect } from '../../../game/store/effects/pl
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 import { GameError, GameMessage, PlayerType } from '../../../game';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TeamRocketsEnergy extends EnergyCard {
   public provides: CardType[] = [CardType.COLORLESS];
@@ -50,7 +50,7 @@ As long as this card is attached to a Pokémon, it provides 2 in any combination
 
           const pokemonCard = cardList.getPokemonCard();
           if (pokemonCard && !pokemonCard.hasTag(CardTag.TEAM_ROCKET)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

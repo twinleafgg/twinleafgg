@@ -14,7 +14,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { ZacianVUNIONTopLeft } from './zacian-v-union-tl';
 import { ZacianVUNIONTopRight } from './zacian-v-union-tr';
 import { ZacianVUNIONBottomLeft } from './zacian-v-union-bl';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ZacianVUNIONBottomRight extends PokemonCard {
   public stage: Stage = Stage.VUNION;
@@ -87,23 +87,23 @@ export class ZacianVUNIONBottomRight extends PokemonCard {
         if (slots.length > 0) {
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONTopRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONBottomLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONBottomRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           // gotta make sure the actual mon ends up on top
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONTopLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.assembledVUNIONs.push(this.name);

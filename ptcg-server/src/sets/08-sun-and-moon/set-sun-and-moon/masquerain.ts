@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, StateUtils, PlayerType, SlotType, AttachEnergyPrompt, GameMessage } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Masquerain extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -57,7 +57,7 @@ export class Masquerain extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          opponent.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, opponent.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

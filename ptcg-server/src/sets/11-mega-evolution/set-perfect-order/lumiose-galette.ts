@@ -1,10 +1,18 @@
-import { TrainerCard, TrainerType, StoreLike, State, GameError, GameMessage, Player } from '../../../game';
+import {
+  TrainerCard,
+  TrainerType,
+  StoreLike,
+  State,
+  GameError,
+  GameMessage,
+  Player,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class LumioseGalette extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'J';
   public set: string = 'POR';
   public cardImage: string = 'assets/cardback.png';
@@ -45,8 +53,6 @@ export class LumioseGalette extends TrainerCard {
       if (player.active.specialConditions.length > 0) {
         player.active.removeSpecialCondition(player.active.specialConditions[0]);
       }
-
-
     }
 
     return state;

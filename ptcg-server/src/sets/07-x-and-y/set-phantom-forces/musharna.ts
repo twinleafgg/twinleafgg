@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, ADD_SLEEP_TO_PLAYER_ACTIVE, SHUFFLE_DECK, BLOCK_IF_DISCARD_EMPTY, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ADD_SLEEP_TO_PLAYER_ACTIVE, SHUFFLE_DECK, BLOCK_IF_DISCARD_EMPTY, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_ASLEEP } from '../../../game/store/prefabs/attack-effects';
 
 export class Musharna extends PokemonCard {
@@ -59,7 +59,7 @@ export class Musharna extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         cards.forEach(card => {
-          player.discard.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [card], sourceCard: this });
         });
         SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
         SHUFFLE_DECK(store, state, player);

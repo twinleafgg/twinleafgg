@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, GameError, GameMessage, OrderCardsPrompt, PowerType, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gallade extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -52,7 +52,7 @@ export class Gallade extends PokemonCard {
       ABILITY_USED(player, this);
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       return store.prompt(state, new OrderCardsPrompt(
         player.id,

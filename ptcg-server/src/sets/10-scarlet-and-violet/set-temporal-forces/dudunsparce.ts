@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ShuffleDeckPrompt, PowerType, PlayerType, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { MOVE_CARDS, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { MOVE_CARDS, MOVE_POKEMON_OFF_BOARD, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Dudunsparce extends PokemonCard {
 
@@ -56,37 +56,14 @@ export class Dudunsparce extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.deck.moveTo(player.hand, 3);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
         if (card === this) {
-          const pokemons = cardList.getPokemons();
-          const otherCards = cardList.cards.filter(card =>
-            !(card instanceof PokemonCard) &&
-            !pokemons.includes(card as PokemonCard) &&
-            (!cardList.tools || !cardList.tools.includes(card))
-          );
-          const tools = [...cardList.tools];
-          cardList.clearEffects();
-
-          // Move tools to the deck first
-          if (tools.length > 0) {
-            for (const tool of tools) {
-              cardList.moveCardTo(tool, player.deck);
-            }
-          }
-
-          // Move other cards (energies, etc.) to the deck second
-          if (otherCards.length > 0) {
-            MOVE_CARDS(store, state, cardList, player.deck, { cards: otherCards });
-          }
-
-          // Move Pokémon cards to the deck last
-          if (pokemons.length > 0) {
-            MOVE_CARDS(store, state, cardList, player.deck, { cards: pokemons });
-          }
-
-          cardList.clearEffects();
+          MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+            pokemonDestination: player.deck,
+            sourceCard: this,
+          });
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
             player.deck.applyOrder(order);

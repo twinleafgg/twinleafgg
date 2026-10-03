@@ -1,4 +1,4 @@
-import { ChooseCardsPrompt, GameError, GameLog, GameMessage, PokemonCard, StateUtils } from '../../../game';
+import { ChooseCardsPrompt, GameError, GameMessage, PokemonCard, StateUtils } from '../../../game';
 import { SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -8,8 +8,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class BuddyBuddyRescue extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BKT';
 
@@ -60,95 +59,120 @@ export class BuddyBuddyRescue extends TrainerCard {
       store.reduceEffect(state, discardEffect);
 
       if (discardEffect.preventDefault) {
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          player.supporter,
-          { superType: SuperType.TRAINER },
-          { min: 1, max: 1, allowCancel: false }
-        ), selected => {
-          if (selected && selected.length > 0) {
-            player.supporter.moveCardsTo(selected, player.discard);
-          }
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            player.supporter,
+            { superType: SuperType.TRAINER },
+            { min: 1, max: 1, allowCancel: false },
+          ),
+          (selected) => {
+            if (selected && selected.length > 0) {
+              MOVE_CARDS(store, state, player.supporter, player.discard, {
+                cards: selected,
+                sourceCard: this,
+              });
+            }
+          },
+        );
         return state;
       }
 
       // Handle opponent's selection first
       if (pokemonInOpponentsDiscard > 0) {
-        store.prompt(state, new ChooseCardsPrompt(
-          opponent,
-          GameMessage.CHOOSE_CARD_TO_HAND,
-          opponent.discard,
-          { superType: SuperType.POKEMON },
-          { min: 1, max: 1, allowCancel: false, blocked: blockedOpponent }
-        ), selected => {
-          if (selected && selected.length > 0) {
-            const card = selected[0];
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-              name: opponent.name,
-              card: card.name
-            });
-            store.prompt(state, new ChooseCardsPrompt(
-              opponent,
-              GameMessage.CHOOSE_CARD_TO_HAND,
-              opponent.discard,
-              { superType: SuperType.POKEMON },
-              { min: 1, max: 1, allowCancel: false }
-            ), selected => {
-              if (selected && selected.length > 0) {
-                MOVE_CARDS(store, state, opponent.discard, opponent.hand, { cards: selected, sourceCard: this });
-              }
-            });
-          }
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            opponent,
+            GameMessage.CHOOSE_CARD_TO_HAND,
+            opponent.discard,
+            { superType: SuperType.POKEMON },
+            { min: 1, max: 1, allowCancel: false, blocked: blockedOpponent },
+          ),
+          (selected) => {
+            if (selected && selected.length > 0) {
+              store.prompt(
+                state,
+                new ChooseCardsPrompt(
+                  opponent,
+                  GameMessage.CHOOSE_CARD_TO_HAND,
+                  opponent.discard,
+                  { superType: SuperType.POKEMON },
+                  { min: 1, max: 1, allowCancel: false },
+                ),
+                (selected) => {
+                  if (selected && selected.length > 0) {
+                    MOVE_CARDS(store, state, opponent.discard, opponent.hand, {
+                      cards: selected,
+                      sourceCard: this,
+                    });
+                  }
+                },
+              );
+            }
+          },
+        );
       }
 
       // Handle player's selection
       if (pokemonInPlayersDiscard > 0) {
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_HAND,
-          player.discard,
-          { superType: SuperType.POKEMON },
-          { min: 1, max: 1, allowCancel: false, blocked }
-        ), selected => {
-          if (selected && selected.length > 0) {
-            const card = selected[0];
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-              name: player.name,
-              card: card.name
-            });
-            store.prompt(state, new ChooseCardsPrompt(
-              player,
-              GameMessage.CHOOSE_CARD_TO_HAND,
-              player.discard,
-              { superType: SuperType.POKEMON },
-              { min: 1, max: 1, allowCancel: false }
-            ), selected => {
-              if (selected && selected.length > 0) {
-                MOVE_CARDS(store, state, player.discard, player.hand, { cards: selected, sourceCard: this });
-              }
-            });
-          }
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_HAND,
+            player.discard,
+            { superType: SuperType.POKEMON },
+            { min: 1, max: 1, allowCancel: false, blocked },
+          ),
+          (selected) => {
+            if (selected && selected.length > 0) {
+              store.prompt(
+                state,
+                new ChooseCardsPrompt(
+                  player,
+                  GameMessage.CHOOSE_CARD_TO_HAND,
+                  player.discard,
+                  { superType: SuperType.POKEMON },
+                  { min: 1, max: 1, allowCancel: false },
+                ),
+                (selected) => {
+                  if (selected && selected.length > 0) {
+                    MOVE_CARDS(store, state, player.discard, player.hand, {
+                      cards: selected,
+                      sourceCard: this,
+                    });
+                  }
+                },
+              );
+            }
+          },
+        );
       }
 
       // Move the trainer card to discard after both selections
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DISCARD,
-        player.supporter,
-        { superType: SuperType.TRAINER },
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        if (selected && selected.length > 0) {
-          player.supporter.moveCardsTo(selected, player.discard);
-        }
-      });
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DISCARD,
+          player.supporter,
+          { superType: SuperType.TRAINER },
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          if (selected && selected.length > 0) {
+            MOVE_CARDS(store, state, player.supporter, player.discard, {
+              cards: selected,
+              sourceCard: this,
+            });
+          }
+        },
+      );
       return state;
     }
     return state;
   }
-
 }

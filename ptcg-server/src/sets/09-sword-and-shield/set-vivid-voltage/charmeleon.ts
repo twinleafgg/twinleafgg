@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Charmeleon extends PokemonCard {
 
@@ -48,7 +48,7 @@ export class Charmeleon extends PokemonCard {
 
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
-      player.deck.moveTo(player.discard, 3);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 3, sourceCard: this });
       return state;
     }
 

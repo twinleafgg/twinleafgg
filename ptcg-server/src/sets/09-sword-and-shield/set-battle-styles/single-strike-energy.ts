@@ -10,7 +10,7 @@ import {
 } from '../../../game/store/effects/check-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PlayerType } from '../../../game';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EnergyEffect } from '../../../game/store/effects/play-card-effects';
 
 export class SingleStrikeEnergy extends EnergyCard {
@@ -55,7 +55,7 @@ As long as this card is attached to a Pokémon, it provides [F] and [D] Energy b
           }
 
           if (!cardList.getPokemonCard()?.hasTag(CardTag.SINGLE_STRIKE)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

@@ -1,6 +1,12 @@
-import { EnergyCard, PokemonCard, ShowCardsPrompt, StateUtils, pokemonHasCardType } from '../../../game';
+import {
+  EnergyCard,
+  PokemonCard,
+  ShowCardsPrompt,
+  StateUtils,
+  pokemonHasCardType,
+} from '../../../game';
 import { GameError } from '../../../game/game-error';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { Card } from '../../../game/store/card/card';
 import { CardType, EnergyType, Stage, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
@@ -10,8 +16,14 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -21,9 +33,15 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   const blocked: number[] = [];
   player.deck.cards.forEach((card, index) => {
-    // eslint-disable-next-line no-empty    
-    if ((card instanceof PokemonCard && card.stage === Stage.BASIC && pokemonHasCardType(card, CardType.GRASS)) ||
-      (card instanceof EnergyCard && card.energyType === EnergyType.BASIC && card.name === 'Grass Energy')) {
+    // eslint-disable-next-line no-empty
+    if (
+      (card instanceof PokemonCard &&
+        card.stage === Stage.BASIC &&
+        pokemonHasCardType(card, CardType.GRASS)) ||
+      (card instanceof EnergyCard &&
+        card.energyType === EnergyType.BASIC &&
+        card.name === 'Grass Energy')
+    ) {
       /**/
     } else {
       blocked.push(index);
@@ -31,16 +49,20 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   });
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.deck,
-    {},
-    { min: 0, max: 1, allowCancel: true, blocked }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.deck,
+      {},
+      { min: 0, max: 1, allowCancel: true, blocked },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (cards.length === 0) {
@@ -48,29 +70,23 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   }
 
   cards.forEach((card, index) => {
-    player.deck.moveCardTo(card, player.hand);
-  });
-
-  cards.forEach((card, index) => {
-    store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
+    MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: effect.trainerCard });
   });
 
   if (cards.length > 0) {
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => next(),
+    );
   }
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
-
 }
 export class NetBall extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'LOT';
 
@@ -86,7 +102,6 @@ export class NetBall extends TrainerCard {
     'Search your deck for a Basic [G] Pokémon or a [G] Energy card, reveal it, and put it into your hand. Then, shuffle your deck.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, effect);
       return generator.next().value;
@@ -94,5 +109,4 @@ export class NetBall extends TrainerCard {
 
     return state;
   }
-
 }

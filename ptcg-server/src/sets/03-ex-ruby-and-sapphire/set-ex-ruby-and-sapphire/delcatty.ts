@@ -1,6 +1,6 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
-import { ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PowerType, StoreLike, State, GameError, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
@@ -77,8 +77,8 @@ export class Delcatty extends PokemonCard {
           return;
         }
 
-        player.hand.moveCardsTo(cards, player.discard);
-        player.deck.moveTo(player.hand, 3);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
       });
 
       ADD_MARKER(this.ENERGY_DRAW_MARKER, player, this);

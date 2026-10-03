@@ -17,9 +17,10 @@ import {
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { SelectOptionPrompt } from '../../../game/store/prompts/select-option-prompt';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PowHandExtension extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ROCKETS_SECRET_MACHINE];
   public set: string = 'TRR';
   public name: string = 'Pow! Hand Extension';
@@ -98,7 +99,7 @@ Move 1 Energy card attached to the Defending Pokémon to another of your opponen
                   const source = StateUtils.getTarget(state, player, transfer.from);
                   const target = StateUtils.getTarget(state, player, transfer.to);
 
-                  source.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
                 }
               },
             );
@@ -107,7 +108,7 @@ Move 1 Energy card attached to the Defending Pokémon to another of your opponen
         {
           message: GameMessage.CHOOSE_POKEMON_TO_SWITCH,
           action: () => {
-            player.hand.moveCardTo(effect.trainerCard, player.supporter);
+            MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
             // We will discard this card after prompt confirmation
             effect.preventDefault = true;
 

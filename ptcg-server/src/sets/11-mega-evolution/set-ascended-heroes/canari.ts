@@ -1,11 +1,33 @@
-import { StoreLike, State, StateUtils, GameError, GameMessage, CardList, ChooseCardsPrompt, PokemonCard, CardType, ShowCardsPrompt, ShuffleDeckPrompt, TrainerCard, TrainerType, Player, Card, pokemonHasCardType } from '../../../game';
-import { Effect } from "../../../game/store/effects/effect";
-import { EndTurnEffect } from "../../../game/store/effects/game-phase-effects";
-import { TrainerEffect } from "../../../game/store/effects/play-card-effects";
-import { MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameError,
+  GameMessage,
+  CardList,
+  ChooseCardsPrompt,
+  PokemonCard,
+  CardType,
+  ShowCardsPrompt,
+  ShuffleDeckPrompt,
+  TrainerCard,
+  TrainerType,
+  Player,
+  Card,
+  pokemonHasCardType,
+} from '../../../game';
+import { Effect } from '../../../game/store/effects/effect';
+import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Canari, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Canari,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
   const supporterTurn = player.supporterTurn;
@@ -15,30 +37,34 @@ function* playCard(next: Function, store: StoreLike, state: State,
   }
 
   // Check if player has at least 1 other card in hand (excluding Canari)
-  const otherCards = player.hand.cards.filter(c => c !== self);
+  const otherCards = player.hand.cards.filter((c) => c !== self);
   if (otherCards.length < 1) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
 
   // Prepare card list without Canari for discard prompt
   const handTemp = new CardList();
-  handTemp.cards = player.hand.cards.filter(c => c !== self);
+  handTemp.cards = player.hand.cards.filter((c) => c !== self);
 
   let discardCards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    handTemp,
-    {},
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    discardCards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      handTemp,
+      {},
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      discardCards = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (discardCards.length === 0) {
@@ -62,34 +88,38 @@ function* playCard(next: Function, store: StoreLike, state: State,
   let cards: Card[] = [];
   const maxCards = Math.min(lightningPokemonCount, 4);
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.deck,
-    {},
-    { min: 0, max: maxCards, allowCancel: false, blocked }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.deck,
+      {},
+      { min: 0, max: maxCards, allowCancel: false, blocked },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
-  player.deck.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: self });
 
   if (cards.length > 0) {
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => next(),
+    );
   }
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class Canari extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'I';
   public set: string = 'ASC';
   public cardImage: string = 'assets/cardback.png';
@@ -104,7 +134,7 @@ export class Canari extends TrainerCard {
     if (player.supporterTurn > 0) {
       return false;
     }
-    const otherCards = player.hand.cards.filter(c => c !== this);
+    const otherCards = player.hand.cards.filter((c) => c !== this);
     if (otherCards.length < 1) {
       return false;
     }

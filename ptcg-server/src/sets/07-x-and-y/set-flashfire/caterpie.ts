@@ -4,10 +4,9 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PokemonCardList, PowerType, StoreLike, State, StateUtils } from '../../../game';
+import { PowerType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import { ADAPTIVE_EVOLUTION } from '../../../game/store/prefabs/prefabs';
 
 export class Caterpie extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -39,19 +38,6 @@ export class Caterpie extends PokemonCard {
   public fullName: string = 'Caterpie FLF';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Ref: set-cosmic-eclipse/clamperl.ts (Evolutionary Advantage)
-    // Adaptive Evolution allows evolution during first turn or turn played
-    if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
-      const player = effect.player;
-      const cardList = StateUtils.findCardList(state, this) as PokemonCardList;
-      if (IS_ABILITY_BLOCKED(store, state, player, this)) {
-        return state;
-      }
-      // Allow evolution on the turn this Pokemon is played and on the first turn
-      player.canEvolve = true;
-      cardList.pokemonPlayedTurn = state.turn - 1;
-    }
-
-    return state;
+    return ADAPTIVE_EVOLUTION(store, state, effect, this);
   }
 }

@@ -10,7 +10,7 @@ import { CheckAttackCostEffect } from '../../../game/store/effects/check-effects
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class HopsChoiceBand extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   protected _tags = [CardTag.HOPS];
 

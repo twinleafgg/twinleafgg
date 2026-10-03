@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, AttachEnergyPrompt, GameMessage, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK, HEAL_X_DAMAGE_FROM_THIS_POKEMON, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, HEAL_X_DAMAGE_FROM_THIS_POKEMON, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tropius extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -62,7 +62,7 @@ export class Tropius extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

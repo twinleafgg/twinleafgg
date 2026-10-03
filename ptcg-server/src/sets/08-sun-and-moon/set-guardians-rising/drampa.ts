@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, PlayerType, SlotType, AttachEnergyPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Drampa extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -84,7 +84,7 @@ export class Drampa extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

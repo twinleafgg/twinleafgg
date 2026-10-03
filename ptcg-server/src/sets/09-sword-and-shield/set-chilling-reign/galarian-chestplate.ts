@@ -10,14 +10,15 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianChestplate extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'CRE';
   public setNumber: string = '141';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Galarian Chestplate';
   public fullName: string = 'Galarian Chestplate CRE';
-  public text: string = 'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. If the Pokémon this card is attached to has "Galarian" in its name, it takes 30 less damage from attacks from your opponent\'s Pokémon (after applying Weakness and Resistance). You may play any number of Item cards during your turn.';
+  public text: string =
+    'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. If the Pokémon this card is attached to has "Galarian" in its name, it takes 30 less damage from attacks from your opponent\'s Pokémon (after applying Weakness and Resistance). You may play any number of Item cards during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-unbroken-bonds/fairy-charm-lightning.ts (DealDamageEffect + target.tools check + damage reduction)

@@ -4,7 +4,7 @@ import { PowerType, StoreLike, State, ShuffleDeckPrompt, GameError, GameMessage 
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useExcitableDraw(next: Function, store: StoreLike, state: State,
   effect: PowerEffect): IterableIterator<State> {
@@ -21,10 +21,10 @@ function* useExcitableDraw(next: Function, store: StoreLike, state: State,
   });
 
   if (flipResult) {
-    player.hand.moveTo(player.deck);
+    MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: effect.card });
     yield store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
       player.deck.applyOrder(order);
-      player.deck.moveTo(player.hand, 6);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 6, sourceCard: effect.card });
       next();
     });
   }

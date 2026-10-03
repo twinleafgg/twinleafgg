@@ -13,7 +13,7 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { ADD_MARKER, HAS_MARKER, REMOVE_MARKER } from '../../../game/store/prefabs/prefabs';
 
 export class Phoebe extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'E';
   public set: string = 'BST';
   public setNumber: string = '130';

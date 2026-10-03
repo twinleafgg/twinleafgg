@@ -11,13 +11,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class EarRingingBell extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'UNM';
   public setNumber: string = '194';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Ear-Ringing Bell';
   public fullName: string = 'Ear-Ringing Bell UNM';
-  public text: string = 'If the Pokemon this card is attached to is your Active Pokemon and is damaged by an opponent\'s attack (even if that Pokemon is Knocked Out), the Attacking Pokemon is now Confused.';
+  public text: string =
+    "If the Pokemon this card is attached to is your Active Pokemon and is damaged by an opponent's attack (even if that Pokemon is Knocked Out), the Attacking Pokemon is now Confused.";
 
   // Ref: set-sun-and-moon/poison-barb.ts (Poison Barb - tool AfterDamageEffect + special condition on attacker)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -40,7 +41,9 @@ export class EarRingingBell extends TrainerCard {
 
       if (state.phase === GamePhase.ATTACK) {
         // Apply Confused to the attacking Pokemon
-        const confuseEffect = new AddSpecialConditionsPowerEffect(player, this, effect.source, [SpecialCondition.CONFUSED]);
+        const confuseEffect = new AddSpecialConditionsPowerEffect(player, this, effect.source, [
+          SpecialCondition.CONFUSED,
+        ]);
         store.reduceEffect(state, confuseEffect);
       }
     }

@@ -5,7 +5,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { PokemonCardList, StateUtils } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import {
   CAN_APPLY_LOCKER_ABILITY,
   HANDLE_ABILITY_LOCK,
@@ -100,9 +100,7 @@ export class Spiritomb extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       player.active.clearEffects();
-      player.active.moveTo(player.hand);
-      const pokemon = player.active.getPokemonCard();
-      pokemon?.cards.moveCardsTo(pokemon.cards.cards, player.hand);
+      MOVE_CARDS(store, state, player.active, player.hand, { sourceCard: this });
     }
     return state;
   }

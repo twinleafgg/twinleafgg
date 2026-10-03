@@ -20,7 +20,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TeamAquasWalrein extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -126,7 +126,7 @@ export class TeamAquasWalrein extends PokemonCard {
 
           transfers.forEach((transfer) => {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.hand);
+            MOVE_CARDS(store, state, source, player.hand, { cards: [transfer.card], sourceCard: this });
           });
 
           effect.damage += 10 * transfers.length;

@@ -7,7 +7,7 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { Card } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Blaziken extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -84,7 +84,7 @@ export class Blaziken extends PokemonCard {
         player.marker.addMarker(this.FIRESTARTER_MARKER, this);
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           target.damage += 10;
         }
       });

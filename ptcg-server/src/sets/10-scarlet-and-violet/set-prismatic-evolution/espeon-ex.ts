@@ -4,7 +4,7 @@ import { StoreLike, State, StateUtils, PlayerType, ShuffleDeckPrompt } from '../
 import { Effect } from '../../../game/store/effects/effect';
 
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { DEVOLVE_POKEMON, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DEVOLVE_POKEMON, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Espeonex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex, CardTag.POKEMON_TERA];
@@ -54,7 +54,7 @@ export class Espeonex extends PokemonCard {
       if (opponent.hand.cards.length > 0) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const randomCard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(randomCard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
       }
     }
 

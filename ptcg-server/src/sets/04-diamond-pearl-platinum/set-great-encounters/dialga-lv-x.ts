@@ -19,13 +19,12 @@ import { BeginTurnEffect, EndTurnEffect } from '../../../game/store/effects/game
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import {
   ADD_MARKER,
-  BLOCK_EFFECT_IF_MARKER,
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   HAS_MARKER,
   MULTIPLE_COIN_FLIPS_PROMPT,
   REMOVE_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
-  REPLACE_MARKER_AT_END_OF_TURN,
+  THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN,
   WAS_ATTACK_USED,
   WAS_POWER_USED,
 } from '../../../game/store/prefabs/prefabs';
@@ -62,8 +61,6 @@ export class DialgaLVX extends PokemonCard {
 
   public readonly TIME_SKIP_EFFECT_MARKER = 'TIME_SKIP_EFFECT_MARKER';
   public readonly TIME_SKIP_USED_MARKER = 'TIME_SKIP_USED_MARKER';
-  public readonly METAL_FLASH_USED_MARKER = 'METAL_FLASH_USED_MARKER';
-  public readonly METAL_FLASH_USED_2_MARKER = 'METAL_FLASH_USED_2_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     REMOVE_MARKER_AT_END_OF_TURN(effect, this.TIME_SKIP_USED_MARKER, this);
@@ -100,18 +97,8 @@ export class DialgaLVX extends PokemonCard {
       ADD_MARKER(this.TIME_SKIP_USED_MARKER, player, this);
     }
 
-    REMOVE_MARKER_AT_END_OF_TURN(effect, this.METAL_FLASH_USED_2_MARKER, this);
-    REPLACE_MARKER_AT_END_OF_TURN(
-      effect,
-      this.METAL_FLASH_USED_MARKER,
-      this.METAL_FLASH_USED_2_MARKER,
-      this,
-    );
-
-    // Metal Flash
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      BLOCK_EFFECT_IF_MARKER(this.METAL_FLASH_USED_2_MARKER, effect.player, this);
-      ADD_MARKER(this.METAL_FLASH_USED_MARKER, effect.player, this);
+      THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN(effect.player, effect.attack);
     }
 
     // making sure it gets put on the active pokemon

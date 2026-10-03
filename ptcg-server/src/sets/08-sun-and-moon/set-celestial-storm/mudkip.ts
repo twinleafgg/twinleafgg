@@ -1,4 +1,4 @@
-import { CardType, ChooseCardsPrompt, EnergyType, GameLog, GameMessage, PokemonCard, ShowCardsPrompt, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
+import { CardType, ChooseCardsPrompt, EnergyType, GameMessage, PokemonCard, ShowCardsPrompt, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
@@ -51,10 +51,6 @@ export class Mudkip extends PokemonCard {
 
         if (cards.length > 0) {
           MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: this, sourceEffect: this.attacks[0] });
-
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-          });
 
           if (cards.length > 0) {
             state = store.prompt(state, new ShowCardsPrompt(

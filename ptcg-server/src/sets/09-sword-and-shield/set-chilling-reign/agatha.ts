@@ -8,7 +8,12 @@ import { GameMessage } from '../../../game/game-message';
 import { TrainerCard, TrainerType } from '../../../game';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -21,39 +26,41 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
       maxAllowedDamage.push({ target, damage: checkHpEffect.hp });
     });
 
-
     // We will discard this card after prompt confirmation
     effect.preventDefault = true;
 
-    return store.prompt(state, new MoveDamagePrompt(
-      effect.player.id,
-      GameMessage.MOVE_DAMAGE,
-      PlayerType.BOTTOM_PLAYER,
-      [SlotType.ACTIVE],
-      maxAllowedDamage,
-      { min: 1, max: 3, allowCancel: false }
-    ), transfers => {
-      if (transfers === null) {
-        return;
-      }
-
-      for (const transfer of transfers) {
-        const source = StateUtils.getTarget(state, player, transfer.from);
-        const target = StateUtils.getTarget(state, player, transfer.to);
-        if (source.damage >= 20) {
-          source.damage -= 20;
-          target.damage += 20;
+    return store.prompt(
+      state,
+      new MoveDamagePrompt(
+        effect.player.id,
+        GameMessage.MOVE_DAMAGE,
+        PlayerType.BOTTOM_PLAYER,
+        [SlotType.ACTIVE],
+        maxAllowedDamage,
+        { min: 1, max: 3, allowCancel: false },
+      ),
+      (transfers) => {
+        if (transfers === null) {
+          return;
         }
-      }
-    });
+
+        for (const transfer of transfers) {
+          const source = StateUtils.getTarget(state, player, transfer.from);
+          const target = StateUtils.getTarget(state, player, transfer.to);
+          if (source.damage >= 20) {
+            source.damage -= 20;
+            target.damage += 20;
+          }
+        }
+      },
+    );
   });
 }
 
 export class Agatha extends TrainerCard {
-
   public regulationMark = 'E';
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CRE';
 
@@ -73,5 +80,4 @@ export class Agatha extends TrainerCard {
 
     return state;
   }
-
 }

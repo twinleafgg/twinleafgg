@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, ChooseEnergyPrompt, ConfirmPrompt, GameMessage, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { JUST_EVOLVED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {JUST_EVOLVED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Crawdaunt extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -73,7 +73,7 @@ export class Crawdaunt extends PokemonCard {
           ), energy => {
             const cards: Card[] = (energy || []).map(e => e.card);
             if (cards.length > 0) {
-              opponent.active.moveCardsTo(cards, opponent.discard);
+              MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
             }
           });
         }

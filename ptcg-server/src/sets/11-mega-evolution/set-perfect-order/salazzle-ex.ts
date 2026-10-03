@@ -16,7 +16,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED, ADD_BURN_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ADD_BURN_TO_PLAYER_ACTIVE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Salazzleex extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -72,7 +72,7 @@ export class Salazzleex extends PokemonCard {
         ),
         (selected) => {
           cards = selected || [];
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
           return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);
           });

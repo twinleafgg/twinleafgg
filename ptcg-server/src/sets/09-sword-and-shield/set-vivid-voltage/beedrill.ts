@@ -1,6 +1,6 @@
 import { CardType, GameError, GameMessage, Player, PokemonCard, PowerType, Stage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PLAY_POKEMON_FROM_HAND_TO_BENCH, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {PLAY_POKEMON_FROM_HAND_TO_BENCH, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Beedrill extends PokemonCard {
 
@@ -54,7 +54,7 @@ export class Beedrill extends PokemonCard {
       }
 
       PLAY_POKEMON_FROM_HAND_TO_BENCH(state, player, this, effect.target);
-      player.deck.moveTo(player.hand, 3);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
     }
 
     return state;

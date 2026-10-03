@@ -1,6 +1,6 @@
 import { PokemonCard, Stage, CardType, State, StoreLike, ChooseCardsPrompt, EnergyCard, EnergyType, GameMessage, StateUtils, SuperType, TrainerCard, TrainerType } from '../../../game';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cobalion extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -52,7 +52,7 @@ export class Cobalion extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          active.moveCardsTo(selected, opponent.discard);
+          MOVE_CARDS(store, state, active, opponent.discard, { cards: selected, sourceCard: this });
         }
         return state;
       });

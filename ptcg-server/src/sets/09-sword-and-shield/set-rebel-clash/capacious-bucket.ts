@@ -11,10 +11,10 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CapaciousBucket extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark: string = 'D';
 
@@ -32,9 +32,7 @@ export class CapaciousBucket extends TrainerCard {
     'Search your deck for up to 2 [W] Energy cards, reveal them, and put them into your hand. Then, shuffle your deck.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
-
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
@@ -43,38 +41,45 @@ export class CapaciousBucket extends TrainerCard {
       }
 
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
-
-      let cards: Card[] = [];
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        player.deck,
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC, name: 'Water Energy' },
-        { min: 0, max: 2, allowCancel: false }
-      ), selected => {
-        cards = selected || [];
-
-        if (cards.length > 0) {
-          store.prompt(state, new ShowCardsPrompt(
-            opponent.id,
-            GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-            cards
-          ), () => { });
-        }
-
-        player.deck.moveCardsTo(cards, player.hand);
-        player.supporter.moveCardTo(this, player.discard);
-
-        store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-          player.deck.applyOrder(order);
-        });
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
       });
 
+      let cards: Card[] = [];
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          player.deck,
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC, name: 'Water Energy' },
+          { min: 0, max: 2, allowCancel: false },
+        ),
+        (selected) => {
+          cards = selected || [];
+
+          if (cards.length > 0) {
+            store.prompt(
+              state,
+              new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+              () => {},
+            );
+          }
+
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, player.supporter, player.discard, {
+            cards: [this],
+            sourceCard: this,
+          });
+
+          store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+            player.deck.applyOrder(order);
+          });
+        },
+      );
     }
 
     return state;
-
   }
-
 }

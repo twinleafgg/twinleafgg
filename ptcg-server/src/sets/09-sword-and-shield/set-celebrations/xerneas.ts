@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { EnergyCard, GameMessage, PlayerType, SlotType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
@@ -106,7 +106,7 @@ export class Xerneas extends PokemonCard {
             { min: 1, max: 1, allowCancel: false }
           ), targets => {
             if (targets && targets.length > 0) {
-              player.deck.moveCardTo(card, targets[0]);
+              MOVE_CARDS(store, state, player.deck, targets[0], { cards: [card], sourceCard: this });
             }
             attachNext(index + 1);
           });

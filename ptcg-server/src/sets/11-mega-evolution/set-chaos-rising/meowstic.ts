@@ -1,7 +1,7 @@
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { PokemonCard, StoreLike, State, StateUtils } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { SuperType } from '../../../game/store/card/card-types';
 import { GameMessage } from '../../../game/game-message';
@@ -55,7 +55,7 @@ export class Meowstic extends PokemonCard {
             const list = transfers || [];
             for (const t of list) {
               const target = StateUtils.getTarget(state, player, t.to);
-              opponent.active.moveCardTo(t.card, target);
+              MOVE_CARDS(store, state, opponent.active, target, { cards: [t.card], sourceCard: this });
             }
           },
         );

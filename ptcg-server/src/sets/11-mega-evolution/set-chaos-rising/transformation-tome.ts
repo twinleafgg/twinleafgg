@@ -2,11 +2,23 @@ import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-typ
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { CardTarget, GameError, GameMessage, ChooseCardsPrompt, ChoosePokemonPrompt, PlayerType, SlotType, StoreLike, State, Player } from '../../../game';
+import {
+  CardTarget,
+  GameError,
+  GameMessage,
+  ChooseCardsPrompt,
+  ChoosePokemonPrompt,
+  PlayerType,
+  SlotType,
+  StoreLike,
+  State,
+  Player,
+} from '../../../game';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TransformationTome extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'J';
   public set: string = 'CRI';
   public cardImage: string = 'assets/cardback.png';
@@ -18,24 +30,23 @@ export class TransformationTome extends TrainerCard {
     'Choose a Basic Pokémon in your discard pile and switch it with 1 of your Basic Pokémon in play. Any attached cards, damage counters, Special Conditions, turns in play, and any other effects remain on the new Pokémon.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
-    const second = player.hand.cards.find(c => c.name === this.name && c !== this);
+    const second = player.hand.cards.find((c) => c.name === this.name && c !== this);
     if (second === undefined) {
       return false;
     }
     const hasBasicInPlay =
-      player.active.cards.some(c => c instanceof PokemonCard && c.stage === Stage.BASIC) ||
-      player.bench.some(b =>
-        b.cards.some(c => c instanceof PokemonCard && c.stage === Stage.BASIC)
+      player.active.cards.some((c) => c instanceof PokemonCard && c.stage === Stage.BASIC) ||
+      player.bench.some((b) =>
+        b.cards.some((c) => c instanceof PokemonCard && c.stage === Stage.BASIC),
       );
     const hasBasicInDiscard = player.discard.cards.some(
-      c => c instanceof PokemonCard && c.stage === Stage.BASIC
+      (c) => c instanceof PokemonCard && c.stage === Stage.BASIC,
     );
     if (!hasBasicInPlay || !hasBasicInDiscard) {
       return false;
     }
     return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -92,10 +103,10 @@ export class TransformationTome extends TrainerCard {
               if (fromDiscard.length === 0) return state;
               const inPlayCard = inPlayList.getPokemonCard();
               if (inPlayCard && inPlayList.cards.length > 0) {
-                inPlayList.moveCardTo(inPlayList.cards[0], player.discard);
+                MOVE_CARDS(store, state, inPlayList, player.discard, { cards: [inPlayList.cards[0]], sourceCard: this });
               }
-              player.discard.moveCardTo(fromDiscard[0], inPlayList);
-              player.hand.moveCardTo(second, player.discard);
+              MOVE_CARDS(store, state, player.discard, inPlayList, { cards: [fromDiscard[0]], sourceCard: this });
+              MOVE_CARDS(store, state, player.hand, player.discard, { cards: [second], sourceCard: this });
             },
           );
         },

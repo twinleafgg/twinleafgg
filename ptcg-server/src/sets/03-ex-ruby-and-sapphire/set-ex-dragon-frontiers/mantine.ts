@@ -2,7 +2,6 @@ import {
   ChooseCardsPrompt,
   ConfirmPrompt,
   GameError,
-  GameLog,
   GameMessage,
   PlayerType,
   ShowCardsPrompt,
@@ -113,12 +112,6 @@ export class Mantine extends PokemonCard {
                 { min: 1, max: 1, allowCancel: false },
               ),
               (selected) => {
-                selected.forEach((card, index) => {
-                  store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, {
-                    name: player.name,
-                    card: card.name,
-                  });
-                });
 
                 MOVE_CARDS(store, state, player.discard, player.deck, {
                   cards: selected,

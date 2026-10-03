@@ -9,6 +9,7 @@ import { GameMessage } from '../../../game/game-message';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard, ShuffleDeckPrompt } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -51,7 +52,7 @@ function* playCard(
   );
 
   if (cards.length > 0) {
-    player.discard.moveCardsTo(cards, player.deck);
+    MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: self });
   }
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
@@ -64,7 +65,7 @@ export class UrnOfVitality extends TrainerCard {
 
   protected _tags = [CardTag.SINGLE_STRIKE];
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BST';
 

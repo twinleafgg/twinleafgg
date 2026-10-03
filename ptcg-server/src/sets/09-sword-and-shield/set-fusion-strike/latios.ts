@@ -24,14 +24,12 @@ import {
   CardTarget,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
   ABILITY_USED,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
+  REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class Latios extends PokemonCard {
@@ -131,7 +129,7 @@ export class Latios extends PokemonCard {
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

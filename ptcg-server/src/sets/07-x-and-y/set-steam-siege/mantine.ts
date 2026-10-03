@@ -8,7 +8,7 @@ import { Card, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mantine extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -56,7 +56,7 @@ export class Mantine extends PokemonCard {
         ), (selected: Card[]) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
             const healEffect = new HealEffect(player, player.active, 10 * cards.length);
             store.reduceEffect(state, healEffect);
           }

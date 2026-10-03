@@ -12,7 +12,7 @@ import { HealEffect } from '../../../game/store/effects/game-effects';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Leavanny extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -103,7 +103,7 @@ export class Leavanny extends PokemonCard {
             cards = selected || [];
             if (cards.length > 0) {
               const tool = cards[0] as TrainerCard;
-              player.deck.moveCardTo(tool, target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [tool], sourceCard: this });
               // moveCardTo puts the card in target.cards; move it to tools instead
               const idx = target.cards.indexOf(tool);
               if (idx !== -1) {

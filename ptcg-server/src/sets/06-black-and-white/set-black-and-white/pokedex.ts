@@ -5,8 +5,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 export class Pokedex extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BLW'; // Replace with the appropriate set abbreviation
 
@@ -18,7 +20,8 @@ export class Pokedex extends TrainerCard {
 
   public setNumber: string = '98'; // Replace with the appropriate set number
 
-  public text: string = 'Look at the top 5 cards of your deck and put them back on top of your deck in any order.';
+  public text: string =
+    'Look at the top 5 cards of your deck and put them back on top of your deck in any order.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -29,22 +32,22 @@ export class Pokedex extends TrainerCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
-      return store.prompt(state, new OrderCardsPrompt(
-        player.id,
-        GameMessage.CHOOSE_CARDS_ORDER,
-        deckTop,
-        { allowCancel: false },
-      ), order => {
-        if (order === null) {
-          return state;
-        }
+      return store.prompt(
+        state,
+        new OrderCardsPrompt(player.id, GameMessage.CHOOSE_CARDS_ORDER, deckTop, {
+          allowCancel: false,
+        }),
+        (order) => {
+          if (order === null) {
+            return state;
+          }
 
-        deckTop.applyOrder(order);
-        deckTop.moveToTopOfDestination(player.deck);
-
-      });
+          deckTop.applyOrder(order);
+          deckTop.moveToTopOfDestination(player.deck);
+        },
+      );
     }
     return state;
   }

@@ -7,10 +7,10 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TimeSpaceDistortion extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'MT';
   public name: string = 'Time-Space Distortion';
@@ -22,12 +22,11 @@ export class TimeSpaceDistortion extends TrainerCard {
     'Flip 3 coins. For each heads, search your discard pile for a Pokémon, show it to your opponent, and put it into your hand.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
 
       // Player has no Pokemons in the discard pile
-      if (!player.discard.cards.some(c => c.superType === SuperType.POKEMON)) {
+      if (!player.discard.cards.some((c) => c.superType === SuperType.POKEMON)) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
@@ -36,7 +35,7 @@ export class TimeSpaceDistortion extends TrainerCard {
 
       let headsCount = 0;
       MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 3, (results) => {
-        results.forEach(result => {
+        results.forEach((result) => {
           if (result) {
             headsCount++;
           }
@@ -46,26 +45,34 @@ export class TimeSpaceDistortion extends TrainerCard {
           return state;
         }
 
-        const minDiscard = Math.min(player.discard.cards.filter(c => c.superType === SuperType.POKEMON).length, headsCount);
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_HAND,
-          player.discard,
-          { superType: SuperType.POKEMON },
-          { min: minDiscard, max: headsCount, allowCancel: false }
-        ), selected => {
-          if (selected && selected.length > 0) {
-            // Discard trainer only when user selected a Pokemon
+        const minDiscard = Math.min(
+          player.discard.cards.filter((c) => c.superType === SuperType.POKEMON).length,
+          headsCount,
+        );
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_HAND,
+            player.discard,
+            { superType: SuperType.POKEMON },
+            { min: minDiscard, max: headsCount, allowCancel: false },
+          ),
+          (selected) => {
+            if (selected && selected.length > 0) {
+              // Discard trainer only when user selected a Pokemon
 
-            // Recover discarded Pokemon
-            player.discard.moveCardsTo(selected, player.hand);
-          }
-
-        });
+              // Recover discarded Pokemon
+              MOVE_CARDS(store, state, player.discard, player.hand, {
+                cards: selected,
+                sourceCard: this,
+              });
+            }
+          },
+        );
       });
     }
 
     return state;
   }
-
 }

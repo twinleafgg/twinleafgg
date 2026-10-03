@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, ADD_CONFUSION_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, ADD_CONFUSION_TO_PLAYER_ACTIVE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Granbull extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -57,7 +57,7 @@ export class Granbull extends PokemonCard {
           SHOW_CARDS_TO_PLAYER(store, state, player, cardsToShuffle);
 
           cardsToShuffle.forEach(card => {
-            opponent.hand.moveCardTo(card, opponent.deck);
+            MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [card], sourceCard: this });
           });
           SHUFFLE_DECK(store, state, opponent);
         }

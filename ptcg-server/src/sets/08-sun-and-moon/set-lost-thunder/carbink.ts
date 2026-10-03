@@ -9,7 +9,7 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Carbink extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -82,7 +82,7 @@ export class Carbink extends PokemonCard {
           const allCards = [...cards1, ...cards2];
 
           allCards.forEach(c => {
-            player.deck.moveCardTo(c, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [c], sourceCard: this });
           });
 
           if (allCards.length > 0) {

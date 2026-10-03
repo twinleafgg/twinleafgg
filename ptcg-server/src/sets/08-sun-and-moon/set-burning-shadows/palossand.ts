@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class Palossand extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -63,26 +63,26 @@ export class Palossand extends PokemonCard {
       const playerPokemons = player.active.getPokemons();
       const playerCards = player.active.cards.filter(c => !playerPokemons.includes(c as PokemonCard));
       playerCards.forEach(c => {
-        player.active.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Discard tools from player's active
       const playerTools = player.active.tools.slice();
       playerTools.forEach(c => {
-        player.active.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Discard all cards (non-Pokemon) from opponent's active
       const opponentPokemons = opponent.active.getPokemons();
       const opponentCards = opponent.active.cards.filter(c => !opponentPokemons.includes(c as PokemonCard));
       opponentCards.forEach(c => {
-        opponent.active.moveCardTo(c, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [c], sourceCard: this });
       });
 
       // Discard tools from opponent's active
       const opponentTools = opponent.active.tools.slice();
       opponentTools.forEach(c => {
-        opponent.active.moveCardTo(c, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [c], sourceCard: this });
       });
     }
 

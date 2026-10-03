@@ -3,11 +3,12 @@ import {
   CardList,
   CardTarget,
   ChooseCardsPrompt,
-  GameError, GameMessage,
+  GameError,
+  GameMessage,
   PlayerType,
   PokemonCardList,
   SlotType,
-  StateUtils
+  StateUtils,
 } from '../../../game';
 import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
@@ -18,7 +19,13 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
-function* playCard(next: Function, store: StoreLike, state: State, self: Plumeria, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Plumeria,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -28,7 +35,7 @@ function* playCard(next: Function, store: StoreLike, state: State, self: Plumeri
 
   let cardsInHand: Card[] = [];
 
-  cardsInHand = player.hand.cards.filter(c => c !== effect.trainerCard);
+  cardsInHand = player.hand.cards.filter((c) => c !== effect.trainerCard);
   if (cardsInHand.length < 2) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
@@ -36,7 +43,7 @@ function* playCard(next: Function, store: StoreLike, state: State, self: Plumeri
   let hasPokemonWithEnergy = false;
   const blocked: CardTarget[] = [];
   opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList, card, target) => {
-    if (cardList.cards.some(c => c.superType === SuperType.ENERGY)) {
+    if (cardList.cards.some((c) => c.superType === SuperType.ENERGY)) {
       hasPokemonWithEnergy = true;
     } else {
       blocked.push(target);
@@ -48,40 +55,48 @@ function* playCard(next: Function, store: StoreLike, state: State, self: Plumeri
   }
 
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
 
   const handTemp = new CardList();
-  handTemp.cards = player.hand.cards.filter(c => c !== self);
+  handTemp.cards = player.hand.cards.filter((c) => c !== self);
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    handTemp,
-    {},
-    { min: 2, max: 2, allowCancel: false }
-  ), selected => {
-    cardsInHand = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      handTemp,
+      {},
+      { min: 2, max: 2, allowCancel: false },
+    ),
+    (selected) => {
+      cardsInHand = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (cardsInHand.length === 0) {
     return state;
   }
 
-  player.hand.moveCardsTo(cardsInHand, player.discard);
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: cardsInHand, sourceCard: self });
 
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-    PlayerType.TOP_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { allowCancel: false, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+      PlayerType.TOP_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { allowCancel: false, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length === 0) {
     return state;
@@ -100,23 +115,26 @@ function* playCard(next: Function, store: StoreLike, state: State, self: Plumeri
 
   const target = targets[0];
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    target,
-    { superType: SuperType.ENERGY },
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    cards = selected;
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      target,
+      { superType: SuperType.ENERGY },
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected;
+      next();
+    },
+  );
   MOVE_CARDS(store, state, target, opponent.discard, { cards, sourceCard: self });
   return state;
 }
 
 export class Plumeria extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BUS';
 
@@ -128,7 +146,8 @@ export class Plumeria extends TrainerCard {
 
   public setNumber: string = '120';
 
-  public text: string = 'Discard 2 cards from your hand. If you do, discard an Energy from 1 of your opponent\'s Pokémon.';
+  public text: string =
+    "Discard 2 cards from your hand. If you do, discard an Energy from 1 of your opponent's Pokémon.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -137,5 +156,4 @@ export class Plumeria extends TrainerCard {
     }
     return state;
   }
-
 }

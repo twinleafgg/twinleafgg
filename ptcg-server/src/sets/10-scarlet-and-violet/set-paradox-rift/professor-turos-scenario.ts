@@ -7,12 +7,11 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { GameError, Player, TrainerType } from '../../../game';
-import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
+import { MOVE_CARDS, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 import { CardTag } from '../../../game/store/card/card-types';
 
 export class ProfessorTurosScenario extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.FUTURE];
   public regulationMark = 'G';
   public set: string = 'PAR';
@@ -57,31 +56,11 @@ export class ProfessorTurosScenario extends TrainerCard {
         (result) => {
           const cardList = result.length > 0 ? result[0] : null;
           if (cardList !== null) {
-            const pokemons = cardList.getPokemons();
-            const otherCards = cardList.cards.filter(
-              (card) =>
-                !(card instanceof PokemonCard) &&
-                !pokemons.includes(card as PokemonCard) &&
-                (!cardList.tools || !cardList.tools.includes(card)),
-            );
-            const tools = [...cardList.tools];
-
-            // Move other cards to discard
-            if (otherCards.length > 0) {
-              MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-            }
-
-            // Move tools to discard
-            if (tools.length > 0) {
-              for (const tool of tools) {
-                cardList.moveCardTo(tool, player.discard);
-              }
-            }
-
-            // Move Pokémon to hand
-            if (pokemons.length > 0) {
-              MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons });
-            }
+            MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+              pokemonDestination: player.hand,
+              attachedDestination: player.discard,
+              sourceCard: this,
+            });
           }
         },
       );

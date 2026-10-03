@@ -9,8 +9,7 @@ import { HealEffect } from '../../../game/store/effects/game-effects';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cheryl extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BST';
 
@@ -24,7 +23,8 @@ export class Cheryl extends TrainerCard {
 
   public fullName: string = 'Cheryl BST';
 
-  public text: string = 'Heal all damage from each of your Evolution Pokémon. If you do, discard all Energy from the Pokémon that were healed in this way.';
+  public text: string =
+    'Heal all damage from each of your Evolution Pokémon. If you do, discard all Energy from the Pokémon that were healed in this way.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -48,8 +48,11 @@ export class Cheryl extends TrainerCard {
         player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
           const pokemon = cardList.getPokemonCard();
           if (pokemon && pokemon.stage !== Stage.BASIC) {
-            const energyCards = cardList.cards.filter(c => c.superType === SuperType.ENERGY);
-            MOVE_CARDS(store, state, cardList, player.discard, { cards: energyCards, sourceCard: this });
+            const energyCards = cardList.cards.filter((c) => c.superType === SuperType.ENERGY);
+            MOVE_CARDS(store, state, cardList, player.discard, {
+              cards: energyCards,
+              sourceCard: this,
+            });
           }
         });
       }
@@ -58,5 +61,4 @@ export class Cheryl extends TrainerCard {
     }
     return state;
   }
-
 }

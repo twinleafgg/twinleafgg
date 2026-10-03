@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils, SpecialCondition, GameMessage, ChooseCardsPrompt, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, ADD_CONFUSION_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, ADD_CONFUSION_TO_PLAYER_ACTIVE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_CONFUSED } from '../../../game/store/prefabs/attack-effects';
 
 export class Inkay extends PokemonCard {
@@ -80,7 +80,7 @@ export class Inkay extends PokemonCard {
       ), cards => {
         if (cards && cards.length > 0) {
           const evolutionCard = cards[0] as PokemonCard;
-          player.deck.moveCardTo(evolutionCard, cardList);
+          MOVE_CARDS(store, state, player.deck, cardList, { cards: [evolutionCard], sourceCard: this });
           cardList.clearEffects();
           cardList.pokemonPlayedTurn = state.turn;
         }

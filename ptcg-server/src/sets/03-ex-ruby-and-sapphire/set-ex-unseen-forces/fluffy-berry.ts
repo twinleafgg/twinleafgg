@@ -7,12 +7,12 @@ import {
   CheckRetreatCostEffect,
   CheckTableStateEffect,
 } from '../../../game/store/effects/check-effects';
-import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { GameError, GameMessage, PlayerType } from '../../../game';
 import { AttachPokemonToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class FluffyBerry extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'UF';
   public name: string = 'Fluffy Berry';
   public fullName: string = 'Fluffy Berry UF';
@@ -55,7 +55,7 @@ export class FluffyBerry extends TrainerCard {
             !!attachedTo &&
             (attachedTo.hasTag(CardTag.POKEMON_ex) || attachedTo.hasTag(CardTag.DARK))
           ) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

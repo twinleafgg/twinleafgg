@@ -60,7 +60,7 @@ function* useStadium(
 }
 
 export class FossilQuarry extends TrainerCard {
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public regulationMark = 'J';
   public set: string = 'PBL';
   public setNumber: string = '76';

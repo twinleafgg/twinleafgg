@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 
@@ -72,7 +72,7 @@ export class GalarianMrRime extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
           effect.damage += 40 * cards.length;
         }
       });

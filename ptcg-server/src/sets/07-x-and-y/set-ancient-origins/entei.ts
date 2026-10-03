@@ -10,7 +10,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Entei extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -59,9 +59,9 @@ export class Entei extends PokemonCard {
       cardsToDiscard.forEach(card => {
         if (card instanceof EnergyCard && card.energyType === EnergyType.BASIC && card.provides.includes(CardType.FIRE)) {
           fireEnergies.push(card);
-          player.deck.moveCardTo(card, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
         } else {
-          player.deck.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
         }
       });
 
@@ -86,7 +86,7 @@ export class Entei extends PokemonCard {
           // Any fire energy that wasn't attached (shouldn't happen) goes to discard
           fireEnergies.forEach(card => {
             if (player.hand.cards.includes(card)) {
-              player.hand.moveCardTo(card, player.discard);
+              MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
             }
           });
         });

@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class WhiteKyurem extends PokemonCard {
 
@@ -58,7 +58,7 @@ export class WhiteKyurem extends PokemonCard {
       if (stadiumCard !== undefined && owner !== effect.player) {
         const cardList = StateUtils.findCardList(state, stadiumCard);
         const player = StateUtils.findOwner(state, cardList);
-        cardList.moveTo(player.discard);
+        MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
         return state;
       }
 

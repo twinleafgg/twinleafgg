@@ -1,6 +1,6 @@
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, CardTag } from '../../game/store/card/card-types';
-import { COIN_FLIP_PROMPT, WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../game/store/effects/check-effects';
@@ -57,7 +57,7 @@ export class MistysPoliwhirl extends PokemonCard {
               if (!card) {
                 return;
               }
-              opponent.active.moveCardTo(card, opponent.discard);
+              MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [card], sourceCard: this });
             },
           );
         }

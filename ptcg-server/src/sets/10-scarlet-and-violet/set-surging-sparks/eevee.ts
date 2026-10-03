@@ -1,11 +1,7 @@
-import { State, PowerType, PlayerType, CardType, PokemonCard, Stage, StoreLike } from '../../../game';
+import { State, PowerType, CardType, PokemonCard, Stage, StoreLike } from '../../../game';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
-import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { PowerEffect } from '../../../game/store/effects/game-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { ADAPTIVE_EVOLUTION, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Eevee extends PokemonCard {
 
@@ -44,50 +40,16 @@ export class Eevee extends PokemonCard {
 
   public setNumber: string = '143';
 
-  public readonly EVOLUTIONARY_ADVANTAGE_MARKER = 'EVOLUTIONARY_ADVANTAGE_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
+    state = ADAPTIVE_EVOLUTION(store, state, effect, this, { requireActive: true });
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
-
       const dealDamage = new DealDamageEffect(effect, 10);
       dealDamage.target = player.active;
       return store.reduceEffect(state, dealDamage);
     }
 
-    if (effect instanceof EndTurnEffect) {
-      const player = effect.player;
-      player.marker.removeMarker(this.EVOLUTIONARY_ADVANTAGE_MARKER, this);
-    }
-
-    if (effect instanceof PlayPokemonEffect) {
-      const player = effect.player;
-      player.marker.addMarker(this.EVOLUTIONARY_ADVANTAGE_MARKER, this);
-    }
-
-    if (effect instanceof CheckTableStateEffect) {
-      const player = state.players[state.activePlayer];
-      if (player.active.cards[0] == this) {
-        try {
-          const stub = new PowerEffect(player, {
-            name: 'test',
-            powerType: PowerType.ABILITY,
-            text: ''
-          }, this);
-          store.reduceEffect(state, stub);
-        } catch {
-          return state;
-        }
-        player.canEvolve = true;
-        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
-          if (cardList.getPokemonCard() === this) {
-            cardList.pokemonPlayedTurn = state.turn - 1;
-          }
-        });
-      }
-      return state;
-    }
     return state;
   }
 }

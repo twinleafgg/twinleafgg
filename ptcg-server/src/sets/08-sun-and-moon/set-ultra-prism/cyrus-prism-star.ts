@@ -18,7 +18,7 @@ import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effect
 //Avery is not done yet!! have to add the "remove from bench" logic
 
 export class CyrusPrismStar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.PRISM_STAR];
   public set: string = 'UPR';
   public cardImage: string = 'assets/cardback.png';
@@ -40,7 +40,7 @@ export class CyrusPrismStar extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 

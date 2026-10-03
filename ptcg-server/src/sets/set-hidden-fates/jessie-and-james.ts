@@ -4,20 +4,30 @@
 
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { TrainerType } from '../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, Card, ConfirmPrompt } from '../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameMessage,
+  ChooseCardsPrompt,
+  Card,
+  ConfirmPrompt,
+} from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { TrainerEffect } from '../../game/store/effects/play-card-effects';
 import { PowerEffect } from '../../game/store/effects/game-effects';
 import { Weezing } from './weezing';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class JessieAndJames extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'HIF';
   public setNumber: string = '58';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Jessie & James';
   public fullName: string = 'Jessie & James HIF';
-  public text: string = 'Each player discards 2 cards from their hand. Your opponent discards first. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Each player discards 2 cards from their hand. Your opponent discards first. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-unbroken-bonds/honchkrow-gx.ts (Unfair-GX - opponent discard from hand)
@@ -30,29 +40,44 @@ export class JessieAndJames extends TrainerCard {
   }
 }
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: JessieAndJames, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: JessieAndJames,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
   // Move to supporter zone, prevent default discard
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   effect.preventDefault = true;
 
   // Opponent discards first (up to 2 from their hand)
   if (opponent.hand.cards.length > 0) {
     const opponentMax = Math.min(2, opponent.hand.cards.length);
-    yield store.prompt(state, new ChooseCardsPrompt(
-      opponent,
-      GameMessage.CHOOSE_CARD_TO_DISCARD,
-      opponent.hand,
-      {},
-      { min: opponentMax, max: opponentMax, allowCancel: false }
-    ), (selected: Card[] | null) => {
-      const cards = selected || [];
-      opponent.hand.moveCardsTo(cards, opponent.discard);
-      next();
-    });
+    yield store.prompt(
+      state,
+      new ChooseCardsPrompt(
+        opponent,
+        GameMessage.CHOOSE_CARD_TO_DISCARD,
+        opponent.hand,
+        {},
+        { min: opponentMax, max: opponentMax, allowCancel: false },
+      ),
+      (selected: Card[] | null) => {
+        const cards = selected || [];
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, {
+          cards: cards,
+          sourceCard: self,
+        });
+        next();
+      },
+    );
   }
 
   // Player discards 2 cards
@@ -60,22 +85,29 @@ function* playCard(next: Function, store: StoreLike, state: State,
   const playerCardsInHand = player.hand.cards.length;
   if (playerCardsInHand > 0) {
     const playerMax = Math.min(2, playerCardsInHand);
-    yield store.prompt(state, new ChooseCardsPrompt(
-      player,
-      GameMessage.CHOOSE_CARD_TO_DISCARD,
-      player.hand,
-      {},
-      { min: playerMax, max: playerMax, allowCancel: false }
-    ), (selected: Card[] | null) => {
-      playerDiscarded = selected || [];
-      player.hand.moveCardsTo(playerDiscarded, player.discard);
-      next();
-    });
+    yield store.prompt(
+      state,
+      new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_DISCARD,
+        player.hand,
+        {},
+        { min: playerMax, max: playerMax, allowCancel: false },
+      ),
+      (selected: Card[] | null) => {
+        playerDiscarded = selected || [];
+        MOVE_CARDS(store, state, player.hand, player.discard, {
+          cards: playerDiscarded,
+          sourceCard: self,
+        });
+        next();
+      },
+    );
   }
 
   // Check for Weezing's "Surrender Now" ability in player's discarded cards
   // Ref: Weezing HIF (Surrender Now) - triggers when discarded by Jessie & James
-  const weezingCards = playerDiscarded.filter(c => c instanceof Weezing);
+  const weezingCards = playerDiscarded.filter((c) => c instanceof Weezing);
   for (const weezingCard of weezingCards) {
     const weezing = weezingCard as Weezing;
     // Check if ability is blocked
@@ -88,33 +120,40 @@ function* playCard(next: Function, store: StoreLike, state: State,
 
     if (opponent.hand.cards.length > 0) {
       let useAbility = false;
-      yield store.prompt(state, new ConfirmPrompt(
-        player.id,
-        GameMessage.WANT_TO_USE_ABILITY,
-      ), result => {
-        useAbility = result;
-        next();
-      });
+      yield store.prompt(
+        state,
+        new ConfirmPrompt(player.id, GameMessage.WANT_TO_USE_ABILITY),
+        (result) => {
+          useAbility = result;
+          next();
+        },
+      );
 
       if (useAbility) {
         const discardCount = Math.min(1, opponent.hand.cards.length);
-        yield store.prompt(state, new ChooseCardsPrompt(
-          opponent,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          opponent.hand,
-          {},
-          { min: discardCount, max: discardCount, allowCancel: false }
-        ), (selected: Card[] | null) => {
-          const cards = selected || [];
-          opponent.hand.moveCardsTo(cards, opponent.discard);
-          next();
-        });
+        yield store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            opponent,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            opponent.hand,
+            {},
+            { min: discardCount, max: discardCount, allowCancel: false },
+          ),
+          (selected: Card[] | null) => {
+            const cards = selected || [];
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, {
+              cards: cards,
+              sourceCard: self,
+            });
+            next();
+          },
+        );
       }
     }
   }
 
   // Clean up supporter
-
 
   return state;
 }

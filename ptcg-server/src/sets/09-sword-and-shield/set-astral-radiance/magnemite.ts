@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, Card, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magnemite extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -65,7 +65,7 @@ export class Magnemite extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         cards.forEach(card => {
-          player.discard.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [card], sourceCard: this });
         });
         SHUFFLE_DECK(store, state, player);
       });

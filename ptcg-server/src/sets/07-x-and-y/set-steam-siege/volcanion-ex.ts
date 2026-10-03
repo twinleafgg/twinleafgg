@@ -17,7 +17,7 @@ import {
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class VolcanionEX extends PokemonCard {
   public cardType: CardType[] = [R, W];
@@ -85,7 +85,7 @@ export class VolcanionEX extends PokemonCard {
         (selected) => {
           if (selected && selected.length > 0) {
             const energy = selected[0] as EnergyCard;
-            player.hand.moveCardTo(energy, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: [energy], sourceCard: this });
             player.marker.addMarker(this.STEAM_UP_MARKER, this);
           }
         },

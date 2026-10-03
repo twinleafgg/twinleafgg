@@ -5,7 +5,7 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { GameMessage } from '../../../game/game-message';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { Card, GameLog, State, StoreLike, TrainerCard, TrainerType } from '../../../game';
+import { Card, State, StoreLike, TrainerCard, TrainerType } from '../../../game';
 export class Haunter extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
   public evolvesFrom: string = 'Gastly';
@@ -80,9 +80,6 @@ export class Haunter extends PokemonCard {
         cards = selected || [];
 
         if (cards.length > 0) {
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: opponent.name, card: card.name });
-          });
 
           MOVE_CARDS(store, state, opponent.discard, opponent.hand, { cards: cards });
         }

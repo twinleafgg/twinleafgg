@@ -1,12 +1,11 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PowerType, StoreLike, State, StateUtils, PlayerType } from '../../../game';
+import { PowerType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEBODY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Shuckle extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -36,10 +35,6 @@ export class Shuckle extends PokemonCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '15';
 
-  public readonly SHELL_STUNNER_MAREKER = 'SHELL_STUNNER_MAREKER';
-
-  public readonly CLEAR_SHELL_STUNNER_MAREKER = 'CLEAR_SHELL_STUNNER_MAREKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
     if (effect instanceof AttachEnergyEffect && effect.target.cards.includes(this)) {
@@ -55,39 +50,12 @@ export class Shuckle extends PokemonCard {
         return state;
       }
 
-      player.deck.moveTo(player.hand, 1);
-      return state;
-    }
-
-    if (effect instanceof PutDamageEffect
-      && effect.target.marker.hasMarker(this.SHELL_STUNNER_MAREKER)) {
-      effect.preventDefault = true;
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       return state;
     }
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      state = COIN_FLIP_PROMPT(store, state, player, flipResult => {
-        if (flipResult) {
-          player.active.marker.addMarker(this.SHELL_STUNNER_MAREKER, this);
-          opponent.marker.addMarker(this.CLEAR_SHELL_STUNNER_MAREKER, this);
-        }
-      });
-
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect
-      && effect.player.marker.hasMarker(this.CLEAR_SHELL_STUNNER_MAREKER, this)) {
-
-      effect.player.marker.removeMarker(this.CLEAR_SHELL_STUNNER_MAREKER, this);
-
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.SHELL_STUNNER_MAREKER, this);
-      });
+      return FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     return state;

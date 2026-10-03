@@ -51,13 +51,15 @@ function flatMap<T, U>(array: T[], fn: (item: T) => U[]): U[] {
 }
 
 function promptBenchAndRetreat(store: StoreLike, state: State, player: Player): State {
-  return store.prompt(state, new ChoosePokemonPrompt(
+  const prompt = new ChoosePokemonPrompt(
     player.id,
     GameMessage.CHOOSE_POKEMON_TO_SWITCH,
     PlayerType.BOTTOM_PLAYER,
     [SlotType.BENCH],
     { min: 1, max: 1, allowCancel: true, blocked: [] }
-  ), (benchResult: PokemonCardList[] | null) => {
+  );
+  prompt.skipSwitchLog = true;
+  return store.prompt(state, prompt, (benchResult: PokemonCardList[] | null) => {
     if (benchResult === null) {
       return;
     }

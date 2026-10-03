@@ -7,15 +7,17 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Looker extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UPR';
   public setNumber: string = '126';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Looker';
   public fullName: string = 'Looker UPR';
-  public text: string = 'Draw 3 cards from the bottom of your deck. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Draw 3 cards from the bottom of your deck. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-team-up/ingo-and-emmet.ts (draw from bottom of deck)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -26,7 +28,7 @@ export class Looker extends TrainerCard {
       const cardsToDraw = Math.min(3, player.deck.cards.length);
       if (cardsToDraw > 0) {
         const bottomCards = player.deck.cards.slice(-cardsToDraw);
-        player.deck.moveCardsTo(bottomCards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: bottomCards, sourceCard: this });
       }
     }
 

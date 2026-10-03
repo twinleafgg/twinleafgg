@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, PowerType, StoreLike, State, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lapras extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,7 +58,7 @@ export class Lapras extends PokemonCard {
       USE_ABILITY_ONCE_PER_TURN(player, this.MERMAIDS_CALL_MARKER, this);
       ABILITY_USED(player, this);
 
-      player.discard.moveCardTo(mistysFavor, player.hand);
+      MOVE_CARDS(store, state, player.discard, player.hand, { cards: [mistysFavor], sourceCard: this });
     }
 
     REMOVE_MARKER_AT_END_OF_TURN(effect, this.MERMAIDS_CALL_MARKER, this);

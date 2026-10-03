@@ -17,7 +17,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class StonjournerVMAX extends PokemonCard {
   public stage: Stage = Stage.VMAX;
@@ -74,7 +74,7 @@ export class StonjournerVMAX extends PokemonCard {
           for (const transfer of transfers) {
             //Attaching energy
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
 
             //Heal 30 from target
             const healEffect = new HealEffect(player, target, 120);

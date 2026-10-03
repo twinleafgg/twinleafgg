@@ -6,7 +6,7 @@ import { PokemonCard } from "../card/pokemon-card";
 import { TrainerCard } from "../card/trainer-card";
 import { AbstractAttackEffect, PutDamageEffect, PutCountersEffect, DealDamageEffect, ApplyWeaknessEffect, AfterDamageEffect } from "../effects/attack-effects";
 import { Effect } from "../effects/effect";
-import { PreventDamageOptions, PlayLockOptions, KnockOutIfDamagedOptions, preventRetreatEffect, selfPreventRetreatEffect, preventRetreatWhileActiveEffect, preventDamageEffect, preventEffectsOfAttacksEffect, preventDamageAndEffectsToAllYourPokemonEffect, shouldPreventAttackEffects, preventAttackEffect, preventHealOnDefendingDuringOpponentsNextTurnEffect, coinFlipCancelAttackEffect, opponentPokemonCannotUseAttackEffect, opponentPokemonCanOnlyUseAttackEffect, preventAttackUntilLeavesActiveEffect, reduceDamageEffect, reduceDamageAfterWeaknessEffect, playLockEffect, stadiumAndToolHaveNoEffectEffect, coinFlipCancelTrainerPlayEffect, increaseDefendingPokemonAttackCostNextTurnEffect, increaseDefendingPokemonAttackCostWhileActiveEffect, increaseDefendingPokemonRetreatCostNextTurnEffect, defendingPokemonTakesMoreDamageDuringAttackerNextTurnEffect, defendingPokemonTakesDamageOnEnergyAttachFromHandNextTurnEffect, cannotAttachEnergyFromHandToDefendingNextTurnEffect, energyAttachFromHandConsequenceNextTurnEffect, defendingPokemonWeaknessIsNowEffect, thisPokemonHasNoWeaknessDuringOpponentsNextTurnEffect, thisPokemonHasNoRetreatCostDuringYourNextTurnEffect, knockOutIfDamagedDuringAttackerNextTurnEffect, surviveOnTenHpDuringOpponentsNextTurnEffect, retaliateOnDamageDuringOpponentsNextTurnEffect, extraPrizesIfKnockedOutDuringAttackerNextTurnEffect, denyPrizesIfKnockedOutDuringOpponentsNextTurnEffect, discardAttackerEnergyIfKnockedOutDuringOpponentsNextTurnEffect, opponentCannotDrawAtStartOfNextTurnEffect, yourPokemonCannotAttackDuringYourNextTurnEffect, ignoreAttackCostsForTypesDuringYourNextTurnEffect, cannotEvolveDefendingNextTurnEffect, defendingPokemonHasNoAbilitiesUntilEndOfAttackerNextTurnEffect, opponentPokemonHaveNoAbilitiesEffect } from "../effects/effect-of-attack-effects";
+import { PreventDamageOptions, PlayLockOptions, KnockOutIfDamagedOptions, preventRetreatEffect, selfPreventRetreatEffect, preventRetreatWhileActiveEffect, preventDamageEffect, preventEffectsOfAttacksEffect, preventDamageAndEffectsToAllYourPokemonEffect, coinFlipPreventAttackDamageDuringOpponentsNextTurnEffect, cannotBeSpecialConditionedDuringOpponentsNextTurnEffect, shouldPreventAttackEffects, preventAttackEffect, preventHealOnDefendingDuringOpponentsNextTurnEffect, coinFlipCancelAttackEffect, opponentPokemonCannotUseAttackEffect, opponentPokemonCanOnlyUseAttackEffect, preventAttackUntilLeavesActiveEffect, reduceDamageEffect, reduceDamageAfterWeaknessEffect, playLockEffect, stadiumAndToolHaveNoEffectEffect, coinFlipCancelTrainerPlayEffect, increaseDefendingPokemonAttackCostNextTurnEffect, increaseDefendingPokemonAttackCostWhileActiveEffect, increaseDefendingPokemonRetreatCostNextTurnEffect, defendingPokemonTakesMoreDamageDuringAttackerNextTurnEffect, defendingPokemonTakesDamageOnEnergyAttachFromHandNextTurnEffect, cannotAttachEnergyFromHandToDefendingNextTurnEffect, energyAttachFromHandConsequenceNextTurnEffect, defendingPokemonWeaknessIsNowEffect, thisPokemonHasNoWeaknessDuringOpponentsNextTurnEffect, thisPokemonHasNoRetreatCostDuringYourNextTurnEffect, knockOutIfDamagedDuringAttackerNextTurnEffect, surviveOnTenHpDuringOpponentsNextTurnEffect, retaliateOnDamageDuringOpponentsNextTurnEffect, extraPrizesIfKnockedOutDuringAttackerNextTurnEffect, denyPrizesIfKnockedOutDuringOpponentsNextTurnEffect, discardAttackerEnergyIfKnockedOutDuringOpponentsNextTurnEffect, opponentCannotDrawAtStartOfNextTurnEffect, yourPokemonCannotAttackDuringYourNextTurnEffect, opponentPokemonCannotAttackDuringTheirNextTurnEffect, ignoreAttackCostsForTypesDuringYourNextTurnEffect, cannotEvolveDefendingNextTurnEffect, defendingPokemonHasNoAbilitiesUntilEndOfAttackerNextTurnEffect, opponentPokemonHaveNoAbilitiesEffect, OpponentPowerSuppressionOptions } from "../effects/effect-of-attack-effects";
 import { AttackEffect } from "../effects/game-effects";
 import { ChooseAttackPrompt } from "../prompts/choose-attack-prompt";
 import { StateUtils } from "../state-utils";
@@ -16,7 +16,7 @@ import { State } from "../state/state";
 import { StoreLike } from "../store-like";
 import { COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, IS_TOOL_BLOCKED, DAMAGED_FROM_FULL_HP } from "./prefabs";
 
-export type { PreventDamageOptions, PlayLockOptions, KnockOutIfDamagedOptions };
+export type { PreventDamageOptions, PlayLockOptions, KnockOutIfDamagedOptions, OpponentPowerSuppressionOptions };
 
 // =============================================================================
 // Effect-of-attack wrappers — Retreat locks
@@ -110,9 +110,129 @@ export function PREVENT_EFFECTS_OF_ATTACKS(
 }
 
 /**
- * Prevent all effects of attacks, including damage, done to each of your Pokémon
- * during your opponent's next turn.
+ * If any damage is done to this Pokémon by attacks during your opponent's next turn,
+ * flip a coin. If heads, prevent that damage.
  */
+export function FLIP_COIN_TO_PREVENT_DAMAGE_WHEN_DAMAGED_DURING_OPPONENTS_NEXT_TURN(
+  store: StoreLike,
+  state: State,
+  effect: AttackEffect,
+  source: Card,
+): State {
+  return store.reduceEffect(state, coinFlipPreventAttackDamageDuringOpponentsNextTurnEffect(effect, source));
+}
+
+/**
+ * As long as this Pokémon is Active, its attacks do `bonus` more damage.
+ * `cap` limits the total added this way (Haxorus Dragon Dance).
+ * Cleared when this Pokémon leaves the Active slot.
+ */
+export function THIS_POKEMON_ATTACKS_DO_MORE_DAMAGE_WHILE_ACTIVE(
+  effect: AttackEffect,
+  bonus: number,
+  cap?: number,
+): void {
+  const slot = effect.player.active;
+  const next = slot.whileActiveAttackDamageBonus + bonus;
+  slot.whileActiveAttackDamageBonus = cap === undefined ? next : Math.min(cap, next);
+}
+
+/**
+ * During the chosen Pokémon's next turn, its attacks do `bonus` more damage
+ * to the opponent's Active (before Weakness and Resistance).
+ */
+export function ARM_OUTGOING_ATTACK_DAMAGE_BONUS_NEXT_TURN(
+  target: PokemonCardList,
+  bonus: number,
+): void {
+  target.outgoingAttackDamageBonusNextTurnPending = bonus;
+}
+
+/**
+ * During this Pokémon's next turn, a named attack flips `flips` coins instead of its usual count.
+ */
+export function ARM_NEXT_TURN_COIN_FLIP_COUNT(
+  source: PokemonCardList,
+  attackName: string,
+  flips: number,
+  sourceCardName: string,
+): void {
+  source.nextTurnCoinFlipCountPending = { attackName, flips, sourceCardName };
+}
+
+/**
+ * During your next turn, you may attach any number of Energy cards from your hand.
+ * Armed this turn; active only on the following turn.
+ */
+export function DURING_YOUR_NEXT_TURN_ATTACH_ANY_NUMBER_OF_ENERGY(
+  effect: AttackEffect,
+): void {
+  effect.player.unlimitedEnergyAttachTurnsRemaining = 2;
+  effect.player.usedDragonsWish = false;
+}
+
+/**
+ * For the rest of this game, the opponent can't use GX attacks.
+ */
+export function OPPONENT_CANNOT_USE_GX_ATTACKS_FOR_REST_OF_GAME(
+  effect: AttackEffect,
+): void {
+  effect.opponent.cannotUseGXAttacks = true;
+}
+
+/**
+ * This attack can't be used again as long as this Pokémon stays in play,
+ * including while it is on the Bench. Cleared when the card is played again.
+ */
+export function THIS_ATTACK_CANNOT_BE_USED_AGAIN_WHILE_IN_PLAY(
+  effect: AttackEffect,
+  attackName: string,
+): void {
+  const card = effect.source.getPokemonCard();
+  if (card) {
+    card.cannotUseAttackUntilLeavesPlay = attackName;
+  }
+}
+
+/**
+ * Until this Pokémon leaves play, it gains an Ability that changes each of the
+ * opponent's Pokémon's Weakness to `type`.
+ */
+export function THIS_POKEMON_GAINS_OPPONENT_WEAKNESS_ABILITY_WHILE_IN_PLAY(
+  effect: AttackEffect,
+  type: CardType,
+): void {
+  const card = effect.source.getPokemonCard();
+  if (card) {
+    card.whileInPlayOpponentWeakness = type;
+  }
+}
+
+export function COIN_FLIPS_FOR_ATTACK(
+  source: PokemonCardList,
+  attackName: string,
+  defaultFlips: number,
+): number {
+  const override = source.nextTurnCoinFlipCount;
+  const card = source.getPokemonCard();
+  if (!override || !card || override.attackName !== attackName || override.sourceCardName !== card.fullName) {
+    return defaultFlips;
+  }
+  return override.flips;
+}
+
+/**
+ * During your opponent's next turn, this Pokémon can't be affected by any Special Conditions.
+ */
+export function THIS_POKEMON_CANNOT_BE_SPECIAL_CONDITIONED_DURING_OPPONENTS_NEXT_TURN(
+  store: StoreLike,
+  state: State,
+  effect: AttackEffect,
+  source: Card,
+): State {
+  return store.reduceEffect(state, cannotBeSpecialConditionedDuringOpponentsNextTurnEffect(effect, source));
+}
+
 export function PREVENT_DAMAGE_AND_EFFECTS_TO_ALL_YOUR_POKEMON(
   store: StoreLike,
   state: State,
@@ -993,6 +1113,33 @@ export function YOUR_POKEMON_CANNOT_ATTACK_DURING_YOUR_NEXT_TURN(
 }
 
 /**
+ * During your opponent's next turn, their Pokémon can't attack (including ones
+ * that come into play). Player-level — not Mist-blockable.
+ */
+export function OPPONENT_POKEMON_CANNOT_ATTACK_DURING_THEIR_NEXT_TURN(
+  store: StoreLike,
+  state: State,
+  effect: AttackEffect,
+  source: Card,
+): State {
+  return store.reduceEffect(state, opponentPokemonCannotAttackDuringTheirNextTurnEffect(effect, source));
+}
+
+/**
+ * During your opponent's next turn, their Pokémon with `maxEnergy` or fewer
+ * Energy attached can't attack (including ones that come into play).
+ */
+export function OPPONENT_POKEMON_WITH_X_OR_LESS_ENERGY_CANNOT_ATTACK(
+  store: StoreLike,
+  state: State,
+  effect: AttackEffect,
+  source: Card,
+  maxEnergy: number,
+): State {
+  return store.reduceEffect(state, opponentPokemonCannotAttackDuringTheirNextTurnEffect(effect, source, maxEnergy));
+}
+
+/**
  * During your next turn, ignore all Energy in the attack costs of Pokémon of the given types.
  */
 export function IGNORE_ATTACK_COSTS_FOR_TYPES_DURING_YOUR_NEXT_TURN(
@@ -1060,6 +1207,7 @@ export function OPPONENT_POKEMON_HAVE_NO_ABILITIES(
   state: State,
   effect: AttackEffect,
   source: Card,
+  options?: OpponentPowerSuppressionOptions,
 ): State {
-  return store.reduceEffect(state, opponentPokemonHaveNoAbilitiesEffect(effect, source));
+  return store.reduceEffect(state, opponentPokemonHaveNoAbilitiesEffect(effect, source, options));
 }

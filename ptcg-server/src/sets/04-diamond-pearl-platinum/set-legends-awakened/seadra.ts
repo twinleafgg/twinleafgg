@@ -3,7 +3,7 @@ import { CardType, Stage, SuperType } from '../../../game/store/card/card-types'
 import { ChooseCardsPrompt, GameMessage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Seadra extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -58,7 +58,7 @@ export class Seadra extends PokemonCard {
           const discardEnergy = new DiscardCardsEffect(effect, cards);
           discardEnergy.target = player.active;
           store.reduceEffect(state, discardEnergy);
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
           effect.damage += cards.length * 10;
           return state;
         },

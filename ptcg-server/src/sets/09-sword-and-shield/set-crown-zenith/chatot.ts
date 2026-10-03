@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Chatot extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -56,7 +56,7 @@ export class Chatot extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         const cards = selected || [];
-        cards.forEach(card => player.hand.moveCardTo(card, player.discard));
+        cards.forEach(card => MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this }));
 
         if (cards.length > 0) {
           DRAW_CARDS(store, state, player, 2);

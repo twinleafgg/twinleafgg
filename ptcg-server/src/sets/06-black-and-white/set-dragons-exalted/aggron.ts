@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils, GameMessage, ConfirmPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
-import { IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Aggron extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -59,7 +59,7 @@ export class Aggron extends PokemonCard {
         GameMessage.WANT_TO_USE_ABILITY,
       ), wantToUse => {
         if (wantToUse) {
-          opponent.deck.moveTo(opponent.discard, 3);
+          MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: 3, sourceCard: this });
         }
       });
     }

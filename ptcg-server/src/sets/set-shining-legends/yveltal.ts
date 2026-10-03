@@ -6,7 +6,7 @@ import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ConfirmPrompt, GameMessage, AttachEnergyPrompt, EnergyCard, PlayerType, SlotType } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, AFTER_ATTACK } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, AFTER_ATTACK, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Yveltal extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -81,7 +81,7 @@ export class Yveltal extends PokemonCard {
 
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

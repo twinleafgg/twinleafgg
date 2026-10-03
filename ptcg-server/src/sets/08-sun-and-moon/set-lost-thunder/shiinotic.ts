@@ -7,7 +7,7 @@ import { Stage, CardType, SpecialCondition } from '../../../game/store/card/card
 import { PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, ON_DAMAGED_BY_OPPONENT_ATTACK_EVEN_IF_KNOCKED_OUT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, ON_DAMAGED_BY_OPPONENT_ATTACK_EVEN_IF_KNOCKED_OUT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shiinotic extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -62,7 +62,7 @@ export class Shiinotic extends PokemonCard {
       if (opponent.active.specialConditions.includes(SpecialCondition.ASLEEP)) {
         const energyCards = opponent.active.cards.filter(c => c instanceof EnergyCard);
         energyCards.forEach(c => {
-          opponent.active.moveCardTo(c, opponent.deck);
+          MOVE_CARDS(store, state, opponent.active, opponent.deck, { cards: [c], sourceCard: this });
         });
         if (energyCards.length > 0) {
           SHUFFLE_DECK(store, state, opponent);

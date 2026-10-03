@@ -10,7 +10,7 @@ import {
   Weakness,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MistysGyarados extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -48,14 +48,14 @@ export class MistysGyarados extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 7);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 7, sourceCard: this });
 
       const mistysPokemon = deckTop.cards.filter(
         (c) => c.hasTag(CardTag.MISTYS) && c instanceof PokemonCard,
       );
 
       effect.damage = 70 * mistysPokemon.length;
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
     }
 
     return state;

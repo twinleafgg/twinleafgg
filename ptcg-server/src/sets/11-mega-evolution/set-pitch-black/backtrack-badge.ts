@@ -8,7 +8,7 @@ import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { ATTACK_COIN_REFLIP_REDUCE_EFFECT } from '../../../game/store/prefabs/attack-coin-reflip';
 
 export class BacktrackBadge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'PBL';
   public setNumber: string = '74';
   public regulationMark: string = 'J';

@@ -1,6 +1,6 @@
 import { PokemonCard, Stage, CardTag, CardType, StoreLike, State, PokemonCardList, pokemonHasCardType, ChooseCardsPrompt, GameMessage, SuperType } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
-import { WAS_ATTACK_USED, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK } from "../../../game/store/prefabs/prefabs";
+import {WAS_ATTACK_USED, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class Salamenceex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -70,7 +70,7 @@ export class Salamenceex extends PokemonCard {
           const cards = selected || [];
           cards.forEach((card, index) => {
             if (index < slots.length) {
-              player.discard.moveCardTo(card, slots[index]);
+              MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
               slots[index].pokemonPlayedTurn = state.turn;
             }
           });

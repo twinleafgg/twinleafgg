@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 
 export class AreaZeroUnderdepths extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'SCR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '131';

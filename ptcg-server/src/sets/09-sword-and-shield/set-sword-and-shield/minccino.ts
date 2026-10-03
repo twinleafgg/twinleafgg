@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameMessage, StoreLike, State, StateUtils, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 
 export class Minccino extends PokemonCard {
@@ -49,7 +49,7 @@ export class Minccino extends PokemonCard {
       }
 
       const topCard = new CardList();
-      opponent.deck.moveTo(topCard, 1);
+      MOVE_CARDS(store, state, opponent.deck, topCard, { count: 1, sourceCard: this });
 
       store.prompt(state, new ShowCardsPrompt(
         player.id,

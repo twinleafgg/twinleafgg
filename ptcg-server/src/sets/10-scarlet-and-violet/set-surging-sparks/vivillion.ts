@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { GameMessage } from '../../../game/game-message';
 import { Card, CardManager, CardTarget, ChooseCardsPrompt, ChoosePokemonPrompt, GameError, PlayerType, PokemonCardList, ShuffleDeckPrompt, SlotType } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useEvolutionPowder(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -92,7 +92,7 @@ function* useEvolutionPowder(next: Function, store: StoreLike, state: State,
     const evolution = cards[0] as PokemonCard;
 
     // Evolve Pokemon
-    player.deck.moveCardTo(evolution, target);
+    MOVE_CARDS(store, state, player.deck, target, { cards: [evolution], sourceCard: effect.source.getPokemonCard()! });
     target.clearEffects();
     target.pokemonPlayedTurn = state.turn;
   }
@@ -101,7 +101,6 @@ function* useEvolutionPowder(next: Function, store: StoreLike, state: State,
     player.deck.applyOrder(order);
   });
 }
-
 
 export class Vivillion extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;

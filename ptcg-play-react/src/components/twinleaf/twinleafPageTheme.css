@@ -1,0 +1,297 @@
+/* Global Twinleaf page chrome — shared by redesigned screens.
+   Import once in main.tsx. Page CSS modules add layout specifics on top. */
+
+:root {
+  --tl-cyan: #3ec7c9;
+  --tl-green: #548c5c;
+  --tl-green-border: #6db578;
+  --tl-gold: #fbbf24;
+  --tl-text: #fafafa;
+  --tl-text-soft: #c8d0dc;
+  --tl-text-dim: #a0a1a5;
+  --tl-line: rgba(62, 199, 201, 0.18);
+  --tl-line-strong: rgba(62, 199, 201, 0.4);
+  --tl-panel-gradient: radial-gradient(ellipse 80% 70% at 50% 45%, #1a3a5c 0%, #0c1a2e 42%, #06101f 100%);
+  --tl-input-bg: #0a1424;
+  --tl-glass: rgba(8, 14, 24, 0.48);
+  --tl-glass-strong: rgba(6, 12, 20, 0.72);
+  --tl-frame-gradient: linear-gradient(145deg, #e8d5a3, #8a6a2e 40%, #3ec7c9 70%, #a8843a);
+  --tl-frame-gradient-idle: linear-gradient(
+    145deg,
+    rgba(232, 213, 163, 0.42),
+    rgba(138, 106, 46, 0.38) 40%,
+    rgba(62, 199, 201, 0.4) 70%,
+    rgba(168, 132, 58, 0.36)
+  );
+  --tl-radius: 4px 22px 4px 22px;
+  --tl-radius-sm: 3px 14px 3px 14px;
+  --tl-danger-soft: rgba(220, 38, 38, 0.15);
+  --tl-danger-border: rgba(220, 38, 38, 0.4);
+  --tl-danger-text: #fca5a5;
+  --tl-font-ui: 'Urbanist', system-ui, sans-serif;
+  --tl-font-display: 'Orbitron', system-ui, sans-serif;
+  --tl-play-shadow:
+    0 0 0 1px rgba(15, 26, 12, 0.35),
+    0 8px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+  --tl-halftone:
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.04) 1.2px, transparent 1.2px),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.03) 1.2px, transparent 1.2px);
+}
+
+/* Full-page night backdrop for themed screens. Position: relative + overflow: hidden
+   keeps the decorative layers pinned while inner .tl-scroll areas do the scrolling. */
+.tl-page {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--tl-text);
+  font-family: var(--tl-font-ui);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 40%, #163556 0%, transparent 60%),
+    linear-gradient(160deg, #050b14 0%, #0a1628 45%, #061018 100%);
+}
+
+.tl-scroll {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(62, 199, 201, 0.4) transparent;
+}
+
+.tl-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.tl-scroll::-webkit-scrollbar-thumb {
+  background: rgba(62, 199, 201, 0.35);
+  border-radius: 999px;
+}
+
+.tl-corner-tl,
+.tl-corner-br {
+  position: absolute;
+  width: min(280px, 40vw);
+  height: min(280px, 40vw);
+  pointer-events: none;
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.tl-corner-tl {
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, rgba(212, 168, 75, 0.55) 0%, rgba(62, 199, 201, 0.35) 42%, transparent 70%);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.tl-corner-br {
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(315deg, rgba(212, 168, 75, 0.55) 0%, rgba(62, 199, 201, 0.35) 42%, transparent 70%);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.tl-dots {
+  position: absolute;
+  inset: 0;
+  background-image: var(--tl-halftone);
+  background-size: 10px 10px, 10px 10px;
+  background-position:
+    0 0,
+    5px 5px;
+  opacity: 0.7;
+  filter: blur(1.5px);
+  transform: scale(1.03);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Orbitron display heading */
+.tl-title {
+  margin: 0;
+  font-family: var(--tl-font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(62, 199, 201, 0.25);
+}
+
+/* Gold-framed glass panel (matchmaking / auth surface language) */
+.tl-panel {
+  position: relative;
+  isolation: isolate;
+  border-radius: 14px;
+  background: var(--tl-panel-gradient);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.tl-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 2px;
+  background: var(--tl-frame-gradient-idle);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Dark form fields (autofill-safe) */
+.tl-input,
+.tl-select {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(62, 199, 201, 0.22);
+  background-color: var(--tl-input-bg);
+  color: #fff;
+  caret-color: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tl-input::placeholder {
+  color: rgba(160, 161, 165, 0.8);
+}
+
+.tl-input:focus,
+.tl-select:focus {
+  outline: none;
+  border-color: var(--tl-green);
+  box-shadow: 0 0 0 2px rgba(69, 144, 88, 0.35);
+}
+
+.tl-input:-webkit-autofill,
+.tl-input:-webkit-autofill:hover,
+.tl-input:-webkit-autofill:focus,
+.tl-select:-webkit-autofill {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  border: 1px solid rgba(62, 199, 201, 0.22);
+  box-shadow: 0 0 0 1000px var(--tl-input-bg) inset;
+  transition: background-color 99999s ease-out;
+}
+
+.tl-select {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%233ec7c9' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+.tl-select option {
+  background: #0a1424;
+  color: #fafafa;
+}
+
+/* Dark table */
+.tl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.tl-table th,
+.tl-table td {
+  padding: 11px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(62, 199, 201, 0.12);
+  vertical-align: middle;
+}
+
+.tl-table th {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--tl-text-dim);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tl-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.tl-table tbody tr:hover {
+  background: rgba(62, 199, 201, 0.05);
+}
+
+/* Error alert */
+.tl-alert {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--tl-danger-soft);
+  border: 1px solid var(--tl-danger-border);
+  color: var(--tl-danger-text);
+  font-size: 0.85rem;
+}
+
+/* Dashed dark empty state */
+.tl-empty {
+  padding: 28px 20px;
+  border-radius: 12px;
+  border: 1px dashed rgba(62, 199, 201, 0.28);
+  background: rgba(6, 16, 32, 0.45);
+  color: var(--tl-text-dim);
+  text-align: center;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* Link defaults inside themed pages (overrides the light-shell blue) */
+.tl-page a {
+  color: var(--tl-cyan);
+  text-decoration-color: rgba(62, 199, 201, 0.4);
+}
+
+.tl-page a:hover {
+  color: #7fdfe1;
+}
+
+.tl-page :focus-visible {
+  outline: 2px solid var(--tl-cyan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-page *,
+  .tl-scroll,
+  .tl-scroll * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

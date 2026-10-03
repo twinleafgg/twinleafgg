@@ -1,6 +1,6 @@
 import { Card, CardType, ChooseCardsPrompt, GameMessage, PokemonCard, PokemonCardList, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sandshrew extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -60,7 +60,7 @@ export class Sandshrew extends PokemonCard {
         if (cards.length > 0) {
           const evolutionCard = cards[0] as PokemonCard;
           const pokemonCardList = StateUtils.findCardList(state, this) as PokemonCardList;
-          player.deck.moveCardTo(evolutionCard, pokemonCardList);
+          MOVE_CARDS(store, state, player.deck, pokemonCardList, { cards: [evolutionCard], sourceCard: this });
           pokemonCardList.clearEffects();
           pokemonCardList.pokemonPlayedTurn = state.turn;
         }

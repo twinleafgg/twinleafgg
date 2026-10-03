@@ -24,7 +24,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TealMaskOgerponex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex, CardTag.POKEMON_TERA];
@@ -121,13 +121,13 @@ export class TealMaskOgerponex extends PokemonCard {
               }
             });
 
-            player.hand.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
 
             // cards.forEach((card, index) => {
             //   store.log(state, GameLog.LOG_PLAYER_ATTACHES_CARD, { name: player.name, card: card.name, cardList: cardList });
             // });
 
-            player.deck.moveTo(player.hand, 1);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
           }
         },
       );

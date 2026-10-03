@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
@@ -57,7 +57,7 @@ export class Hoopa extends PokemonCard {
         if (cards.length > 0) {
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           cards.forEach(card => {
-            player.deck.moveCardTo(card, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
           });
         }
         SHUFFLE_DECK(store, state, player);

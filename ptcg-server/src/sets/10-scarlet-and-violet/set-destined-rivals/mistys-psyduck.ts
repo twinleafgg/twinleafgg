@@ -62,7 +62,7 @@ export class MistysPsyduck extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.deck.moveCardsTo(GET_CARDS_ON_BOTTOM_OF_DECK(player, 1), player.discard);
+      MOVE_CARDS(store, state, player.deck, player.discard, { cards: GET_CARDS_ON_BOTTOM_OF_DECK(player, 1), sourceCard: this });
 
       const psyduckCard = cardList.getPokemonCard();
       if (!psyduckCard) {
@@ -81,7 +81,7 @@ export class MistysPsyduck extends PokemonCard {
       // Move tools to discard
       if (tools.length > 0) {
         for (const tool of tools) {
-          cardList.moveCardTo(tool, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [tool], sourceCard: this });
         }
       }
 

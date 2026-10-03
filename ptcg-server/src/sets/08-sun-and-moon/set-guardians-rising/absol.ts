@@ -10,7 +10,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import {
   KNOCK_OUT_DEFENDING_POKEMON_AT_END_OF_OPPONENTS_NEXT_TURN,
 } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Absol extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -51,7 +51,7 @@ export class Absol extends PokemonCard {
           message: GameMessage.ORDER_YOUR_DECK,
           action: () => {
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, Math.min(4, player.deck.cards.length));
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(4, player.deck.cards.length), sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -69,7 +69,7 @@ export class Absol extends PokemonCard {
           message: GameMessage.ORDER_OPPONENT_DECK,
           action: () => {
             const opponentDeckTop = new CardList();
-            opponent.deck.moveTo(opponentDeckTop, Math.min(4, opponent.deck.cards.length));
+            MOVE_CARDS(store, state, opponent.deck, opponentDeckTop, { count: Math.min(4, opponent.deck.cards.length), sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -101,7 +101,7 @@ export class Absol extends PokemonCard {
 
       const energyCards = player.active.cards.filter(c => c instanceof EnergyCard);
       energyCards.forEach(c => {
-        player.active.moveCardTo(c, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: [c], sourceCard: this });
       });
 
       KNOCK_OUT_DEFENDING_POKEMON_AT_END_OF_OPPONENTS_NEXT_TURN(store, state, effect, this);

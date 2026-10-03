@@ -73,7 +73,6 @@ export class Pachirisu extends PokemonCard {
             return state;
           }
 
-
           return store.prompt(state, new ChooseCardsPrompt(
             player,
             GameMessage.CHOOSE_CARD_TO_ATTACH,

@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Garchomp extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -38,7 +38,7 @@ export class Garchomp extends PokemonCard {
     // Dragonblade
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
-      player.deck.moveTo(player.discard, 2);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 2, sourceCard: this });
       return state;
     }
 

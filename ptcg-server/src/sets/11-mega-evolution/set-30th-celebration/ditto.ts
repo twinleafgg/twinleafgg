@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, PokemonCardList, GameLog } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ditto extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -62,8 +62,8 @@ export class Ditto extends PokemonCard {
             effect: this.attacks[0].name,
           });
 
-          player.deck.moveCardTo(pokemonCard, targetCardList);
-          targetCardList.moveCardTo(this, player.deck);
+          MOVE_CARDS(store, state, player.deck, targetCardList, { cards: [pokemonCard], sourceCard: this });
+          MOVE_CARDS(store, state, targetCardList, player.deck, { cards: [this], sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         });
       });

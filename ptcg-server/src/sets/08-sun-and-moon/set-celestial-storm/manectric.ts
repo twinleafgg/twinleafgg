@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { PowerType, StoreLike, State, StateUtils, EnergyCard, PlayerType, SlotType, GameMessage } from '../../../game';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Manectric extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -70,7 +70,7 @@ export class Manectric extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

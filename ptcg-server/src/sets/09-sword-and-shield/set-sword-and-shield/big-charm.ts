@@ -8,7 +8,7 @@ import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class BigCharm extends TrainerCard {
   public regulationMark = 'D';
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'SSH';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '158';
@@ -17,7 +17,6 @@ export class BigCharm extends TrainerCard {
   public text: string = 'The Pokémon this card is attached to gets +30 HP.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckHpEffect && effect.target.tools.includes(this)) {
       const player = effect.player;
 

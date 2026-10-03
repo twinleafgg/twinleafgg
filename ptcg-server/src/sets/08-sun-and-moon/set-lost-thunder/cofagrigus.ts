@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChoosePokemonPrompt, GameMessage, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class Cofagrigus extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -55,11 +55,10 @@ export class Cofagrigus extends PokemonCard {
           const discardCount = selected.length;
 
           selected.forEach(target => {
-            // Discard all cards from the bench slot (tools + cards)
-            const tools = target.tools.slice();
-            tools.forEach(t => { target.moveCardTo(t, player.discard); });
-            target.moveTo(player.discard);
-            target.clearEffects();
+            MOVE_POKEMON_OFF_BOARD(store, state, target, {
+              pokemonDestination: player.discard,
+              sourceCard: this,
+            });
           });
 
           effect.damage += 30 * discardCount;

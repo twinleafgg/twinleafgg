@@ -16,7 +16,7 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Brigette extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BKT';
 
@@ -65,7 +65,7 @@ export class Brigette extends TrainerCard {
           }
         });
 
-        player.hand.moveCardTo(effect.trainerCard, player.supporter);
+        MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
         // We will discard this card after prompt confirmation
         effect.preventDefault = true;
 

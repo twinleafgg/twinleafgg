@@ -1,7 +1,7 @@
-import { AttachEnergyPrompt, Card, CardType, ChooseCardsPrompt, ConfirmPrompt, EnergyCard, EnergyType, GameLog, GameMessage, PlayerType, PokemonCard, PowerType, ShowCardsPrompt, ShuffleDeckPrompt, SlotType, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
+import { AttachEnergyPrompt, Card, CardType, ChooseCardsPrompt, ConfirmPrompt, EnergyCard, EnergyType, GameMessage, PlayerType, PokemonCard, PowerType, ShowCardsPrompt, ShuffleDeckPrompt, SlotType, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shuckle extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -57,9 +57,6 @@ export class Shuckle extends PokemonCard {
             { min: 0, max: 3, allowCancel: false }
           ), selected => {
             cards = selected || [];
-            cards.forEach((card, index) => {
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-            });
 
             if (cards.length > 0) {
               store.prompt(state, new ShowCardsPrompt(
@@ -69,7 +66,7 @@ export class Shuckle extends PokemonCard {
               ), () => state);
             }
 
-            player.deck.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.deck, player.discard, { cards: cards, sourceCard: this });
 
             return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
               player.deck.applyOrder(order);
@@ -112,7 +109,7 @@ export class Shuckle extends PokemonCard {
 
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
 

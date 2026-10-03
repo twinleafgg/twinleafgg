@@ -2,7 +2,7 @@ import { State, StateUtils, StoreLike } from '../../../game';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lombre extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -38,11 +38,11 @@ export class Lombre extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
       const activePokemon = opponent.active;
       if (activePokemon.tools.length > 0) {
-        activePokemon.moveCardsTo([...activePokemon.tools], opponent.discard);
+        MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: [...activePokemon.tools], sourceCard: this });
       }
       opponent.active.cards.forEach(card => {
         if (card.superType === SuperType.TRAINER) {
-          opponent.active.moveCardTo(card, opponent.discard);
+          MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [card], sourceCard: this });
         }
       });
       return state;

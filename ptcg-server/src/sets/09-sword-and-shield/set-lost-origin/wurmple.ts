@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { GameMessage } from '../../../game/game-message';
 import { ShuffleDeckPrompt } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Wurmple extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,7 +58,7 @@ export class Wurmple extends PokemonCard {
         { min: 0, max: 59, blocked }
       ), cards => {
         cards = cards || [];
-        cards.forEach(card => player.deck.moveCardTo(card, player.hand));
+        cards.forEach(card => MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this }));
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           return player.deck.applyOrder(order);

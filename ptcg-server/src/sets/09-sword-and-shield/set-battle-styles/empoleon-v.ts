@@ -19,7 +19,7 @@ import {
   HANDLE_ABILITY_LOCK,
   LOCKER_ABILITY_APPLIES,
 } from '../../../game/store/prefabs/ability-lock';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EmpoleonV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V, CardTag.RAPID_STRIKE];
@@ -78,7 +78,7 @@ export class EmpoleonV extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.active.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

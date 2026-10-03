@@ -3,7 +3,7 @@
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import {
   CardType,
   EnergyType,
@@ -80,7 +80,7 @@ export class Giratina extends PokemonCard {
           ), selected => {
             const cards: Card[] = selected || [];
             if (cards.length > 0) {
-              cards.forEach(c => { opponent.active.moveCardTo(c, opponent.discard); });
+              cards.forEach(c => { MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [c], sourceCard: this }); });
             }
           });
         }

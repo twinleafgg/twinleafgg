@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Plusle extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -47,7 +47,7 @@ export class Plusle extends PokemonCard {
       // Shuffle entire hand into deck
       const cards = player.hand.cards.slice();
       cards.forEach(c => {
-        player.hand.moveCardTo(c, player.deck);
+        MOVE_CARDS(store, state, player.hand, player.deck, { cards: [c], sourceCard: this });
       });
       SHUFFLE_DECK(store, state, player);
 

@@ -27,7 +27,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class DragoniteEx extends PokemonCard {
@@ -140,7 +140,7 @@ export class DragoniteEx extends PokemonCard {
                   if (transfers && transfers.length > 0) {
                     for (const transfer of transfers) {
                       const source = StateUtils.getTarget(state, player, transfer.from);
-                      source.moveCardTo(transfer.card, player.bench[benchIndex]);
+                      MOVE_CARDS(store, state, source, player.bench[benchIndex], { cards: [transfer.card], sourceCard: this });
                     }
                     // Switch this Pokemon with Active
                     player.switchPokemon(player.bench[benchIndex]);

@@ -12,14 +12,12 @@ import {
   GameLog,
 } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import {
-  ADD_MARKER,
+import {ADD_MARKER,
   HAS_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   SHUFFLE_DECK,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { THIS_ATTACKS_DAMAGE_ISNT_AFFECTED_BY_EFFECTS } from '../../game/store/prefabs/attack-effects';
 
 export class Deoxysex extends PokemonCard {
@@ -104,8 +102,8 @@ export class Deoxysex extends PokemonCard {
             card: pokemonCard.name,
             effect: effect.power.name,
           });
-          player.deck.moveCardTo(pokemonCard, targetCardList);
-          targetCardList.moveCardTo(this, player.deck);
+          MOVE_CARDS(store, state, player.deck, targetCardList, { cards: [pokemonCard], sourceCard: this });
+          MOVE_CARDS(store, state, targetCardList, player.deck, { cards: [this], sourceCard: this });
 
           SHUFFLE_DECK(store, state, player);
           ADD_MARKER(this.FORME_CHANGE_MARKER, player, this);

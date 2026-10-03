@@ -1,6 +1,6 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
-import { ABILITY_USED, CONFIRMATION_PROMPT, IS_POKEPOWER_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, CONFIRMATION_PROMPT, IS_POKEPOWER_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StoreLike, State, PlayerType, ChoosePokemonPrompt, GameMessage, SlotType, CardTarget, PowerType, EnergyCard, AttachEnergyPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
@@ -97,7 +97,7 @@ export class Jirachi extends PokemonCard {
 
                 for (const transfer of transfers) {
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  player.discard.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
                 }
               });
             }
@@ -144,7 +144,7 @@ export class Jirachi extends PokemonCard {
 
               if (pokemons.length > 1) {
                 const highestStagePokemon = pokemons[pokemons.length - 1];
-                targetPokemon.moveCardsTo([highestStagePokemon], effect.opponent.hand);
+                MOVE_CARDS(store, state, targetPokemon, effect.opponent.hand, { cards: [highestStagePokemon], sourceCard: this });
                 targetPokemon.clearEffects();
                 targetPokemon.pokemonPlayedTurn = state.turn;
               }

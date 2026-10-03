@@ -10,10 +10,9 @@ import { Player } from '../../../game';
 import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ProfessorsResearch extends TrainerCard {
-
   public regulationMark = 'G';
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'SVI';
 
@@ -21,12 +20,11 @@ export class ProfessorsResearch extends TrainerCard {
 
   public setNumber: string = '189';
 
-  public name: string = 'Professor\'s Research';
+  public name: string = "Professor's Research";
 
-  public fullName: string = 'Professor\'s Research SVI';
+  public fullName: string = "Professor's Research SVI";
 
-  public text: string =
-    'Discard your hand and draw 7 cards.';
+  public text: string = 'Discard your hand and draw 7 cards.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     const supporterTurn = player.supporterTurn;
@@ -51,7 +49,7 @@ export class ProfessorsResearch extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const cards = player.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
       if (cards.length > 0) {
         state = MOVE_CARDS(store, state, player.hand, player.discard, { cards });
       }
@@ -60,5 +58,4 @@ export class ProfessorsResearch extends TrainerCard {
 
     return state;
   }
-
 }

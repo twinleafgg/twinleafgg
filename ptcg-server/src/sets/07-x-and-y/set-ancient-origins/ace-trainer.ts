@@ -10,14 +10,14 @@ import { DRAW_CARDS, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
 import { MoveCardsEffect } from '../../../game/store/effects/game-effects';
 
 export class AceTrainer extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'AOR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '69';
   public name: string = 'Ace Trainer';
   public fullName: string = 'Ace Trainer AOR';
-  public text: string = 'You can play this card only if you have more Prize cards left than your opponent.\n\nEach player shuffles his or her hand into his or her deck. Then, draw 6 cards. Your opponent draws 3 cards.';
+  public text: string =
+    'You can play this card only if you have more Prize cards left than your opponent.\n\nEach player shuffles his or her hand into his or her deck. Then, draw 6 cards. Your opponent draws 3 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -32,12 +32,17 @@ export class AceTrainer extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const cards = player.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
 
-      const playerMoveEffect = new MoveCardsEffect(player.hand, player.deck, { cards, sourceCard: this });
+      const playerMoveEffect = new MoveCardsEffect(player.hand, player.deck, {
+        cards,
+        sourceCard: this,
+      });
       state = store.reduceEffect(state, playerMoveEffect);
 
-      const opponentMoveEffect = new MoveCardsEffect(opponent.hand, opponent.deck, { sourceCard: this });
+      const opponentMoveEffect = new MoveCardsEffect(opponent.hand, opponent.deck, {
+        sourceCard: this,
+      });
       state = store.reduceEffect(state, opponentMoveEffect);
 
       // opponent shuffle and draw
@@ -53,5 +58,4 @@ export class AceTrainer extends TrainerCard {
 
     return state;
   }
-
 }

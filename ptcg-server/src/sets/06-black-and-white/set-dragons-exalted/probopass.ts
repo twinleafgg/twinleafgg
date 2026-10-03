@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { GameMessage, PlayerType, SlotType, StateUtils, StoreLike, State, CardTarget } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { MoveEnergyPrompt } from '../../../game/store/prompts/move-energy-prompt';
 
 export class Probopass extends PokemonCard {
@@ -72,7 +72,7 @@ export class Probopass extends PokemonCard {
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, opponent, transfer.from);
           const target = StateUtils.getTarget(state, opponent, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

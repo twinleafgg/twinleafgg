@@ -4,7 +4,7 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Meowth extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -37,7 +37,7 @@ export class Meowth extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
 
-      player.deck.moveTo(player.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
 
       const specialConditionEffect = new AddSpecialConditionsEffect(effect, [SpecialCondition.ASLEEP]);
       specialConditionEffect.target = player.active;

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, CardList, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Simipour extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -57,7 +57,7 @@ export class Simipour extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, deckTop);
+          MOVE_CARDS(store, state, player.discard, deckTop, { cards: cards, sourceCard: this });
           deckTop.moveToTopOfDestination(player.deck);
         }
       });

@@ -4,7 +4,7 @@ import { PowerType, StoreLike, State, AttachEnergyPrompt, PlayerType, SlotType, 
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useLeParfum(next: Function, store: StoreLike, state: State,
   self: Froslass, effect: PlayPokemonEffect): IterableIterator<State> {
@@ -42,7 +42,7 @@ function* useLeParfum(next: Function, store: StoreLike, state: State,
     }
     for (const transfer of transfers) {
       const target = StateUtils.getTarget(state, player, transfer.to);
-      player.discard.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: self });
     }
   });
 }

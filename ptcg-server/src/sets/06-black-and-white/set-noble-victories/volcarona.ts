@@ -1,4 +1,4 @@
-import { ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { GameMessage } from '../../../game/game-message';
 import { StateUtils } from '../../../game/store/state-utils';
@@ -59,7 +59,7 @@ export class Volcarona extends PokemonCard {
         if (transfers.length > 0) {
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         }
       });

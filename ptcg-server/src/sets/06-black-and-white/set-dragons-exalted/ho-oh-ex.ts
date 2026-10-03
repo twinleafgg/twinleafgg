@@ -19,11 +19,9 @@ import {
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
-  COIN_FLIP_PROMPT,
-} from '../../../game/store/prefabs/prefabs';
+  COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useRebirth(
   next: Function,
@@ -61,7 +59,7 @@ function* useRebirth(
     return state;
   }
 
-  player.discard.moveCardTo(self, slots[0]);
+  MOVE_CARDS(store, state, player.discard, slots[0], { cards: [self], sourceCard: self });
 
   let basicEnergies = 0;
   const typeMap: { [key: number]: boolean } = {};
@@ -91,7 +89,7 @@ function* useRebirth(
     ),
     (selected) => {
       const cards = selected || [];
-      player.discard.moveCardsTo(cards, slots[0]);
+      MOVE_CARDS(store, state, player.discard, slots[0], { cards: cards, sourceCard: self });
     },
   );
 }

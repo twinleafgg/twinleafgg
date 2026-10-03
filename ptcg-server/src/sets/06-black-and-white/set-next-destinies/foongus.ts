@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 export class Foongus extends PokemonCard {
@@ -51,7 +51,7 @@ export class Foongus extends PokemonCard {
             { min: 0, max: 1, allowCancel: false }
           ), selected => {
             selected.forEach(card => {
-              player.deck.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
             });
 
             store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

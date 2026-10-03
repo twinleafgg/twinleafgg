@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Fearow extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -46,7 +46,7 @@ export class Fearow extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       const cardsInHand = opponent.hand.cards.slice();
-      opponent.hand.moveCardsTo(cardsInHand, opponent.deck);
+      MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cardsInHand, sourceCard: this });
 
       SHUFFLE_DECK(store, state, opponent);
       DRAW_CARDS(store, state, opponent, 3);

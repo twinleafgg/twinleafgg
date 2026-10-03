@@ -4,21 +4,38 @@
 
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { SuperType, TrainerType } from '../../game/store/card/card-types';
-import { AttachEnergyPrompt, GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../game';
+import {
+  AttachEnergyPrompt,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  StoreLike,
+  State,
+  StateUtils,
+} from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class BrocksTraining extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'HIF';
   public setNumber: string = '55';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Brock\'s Training';
-  public fullName: string = 'Brock\'s Training HIF';
-  public text: string = 'Attach an Energy card from your hand to 1 of your Geodude, Graveler, Golem, Onix-GX, Cubone, Rhyhorn, Rhydon, or Sudowoodo. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Brock's Training";
+  public fullName: string = "Brock's Training HIF";
+  public text: string =
+    'Attach an Energy card from your hand to 1 of your Geodude, Graveler, Golem, Onix-GX, Cubone, Rhyhorn, Rhydon, or Sudowoodo. You may play only 1 Supporter card during your turn (before your attack).';
 
   private readonly VALID_POKEMON_NAMES = [
-    'Geodude', 'Graveler', 'Golem', 'Onix-GX', 'Cubone', 'Rhyhorn', 'Rhydon', 'Sudowoodo'
+    'Geodude',
+    'Graveler',
+    'Golem',
+    'Onix-GX',
+    'Cubone',
+    'Rhyhorn',
+    'Rhydon',
+    'Sudowoodo',
   ];
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -27,7 +44,7 @@ export class BrocksTraining extends TrainerCard {
       const player = effect.player;
 
       // Check if player has energy in hand (excluding this card which is being played)
-      const hasEnergy = player.hand.cards.some(c => c.superType === SuperType.ENERGY);
+      const hasEnergy = player.hand.cards.some((c) => c.superType === SuperType.ENERGY);
       if (!hasEnergy) {
         return state;
       }
@@ -58,21 +75,28 @@ export class BrocksTraining extends TrainerCard {
         }
       });
 
-      store.prompt(state, new AttachEnergyPrompt(
-        player.id,
-        GameMessage.ATTACH_ENERGY_CARDS,
-        player.hand,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { superType: SuperType.ENERGY },
-        { allowCancel: false, min: 1, max: 1, blockedTo }
-      ), transfers => {
-        transfers = transfers || [];
-        for (const transfer of transfers) {
-          const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
-        }
-      });
+      store.prompt(
+        state,
+        new AttachEnergyPrompt(
+          player.id,
+          GameMessage.ATTACH_ENERGY_CARDS,
+          player.hand,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { superType: SuperType.ENERGY },
+          { allowCancel: false, min: 1, max: 1, blockedTo },
+        ),
+        (transfers) => {
+          transfers = transfers || [];
+          for (const transfer of transfers) {
+            const target = StateUtils.getTarget(state, player, transfer.to);
+            MOVE_CARDS(store, state, player.hand, target, {
+              cards: [transfer.card],
+              sourceCard: this,
+            });
+          }
+        },
+      );
     }
 
     return state;

@@ -3,13 +3,25 @@ import { TrainerType, SuperType, Stage } from '../../../game/store/card/card-typ
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
-import { ChooseCardsPrompt, Card, StateUtils, ShowCardsPrompt, ShuffleDeckPrompt, GameError } from '../../../game';
+import {
+  ChooseCardsPrompt,
+  Card,
+  StateUtils,
+  ShowCardsPrompt,
+  ShuffleDeckPrompt,
+  GameError,
+} from '../../../game';
 import { GameMessage } from '../../../game/game-message';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
-import { MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -18,8 +30,10 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   }
 
   let heads: number = 0;
-  yield MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 2, results => {
-    results.forEach(r => { heads += r ? 1 : 0; });
+  yield MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 2, (results) => {
+    results.forEach((r) => {
+      heads += r ? 1 : 0;
+    });
     next();
   });
 
@@ -28,34 +42,38 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   }
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.deck,
-    { superType: SuperType.POKEMON, stage: Stage.BASIC },
-    { allowCancel: true, min: 0, max: heads }
-  ), results => {
-    cards = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.deck,
+      { superType: SuperType.POKEMON, stage: Stage.BASIC },
+      { allowCancel: true, min: 0, max: heads },
+    ),
+    (results) => {
+      cards = results || [];
+      next();
+    },
+  );
 
-  player.deck.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: effect.trainerCard });
 
   if (cards.length > 0) {
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => next(),
+    );
   }
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class DualBall extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'UL';
   public name: string = 'Dual Ball';
@@ -75,5 +93,4 @@ export class DualBall extends TrainerCard {
     }
     return state;
   }
-
 }

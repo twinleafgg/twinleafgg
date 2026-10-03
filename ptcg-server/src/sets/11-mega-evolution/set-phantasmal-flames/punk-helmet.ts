@@ -10,7 +10,7 @@ import { GamePhase, State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class PunkHelmet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'PFL';
   public name: string = 'Punk Helmet';
   public fullName: string = 'Punk Helmet PFL';
@@ -19,12 +19,11 @@ export class PunkHelmet extends TrainerCard {
   public regulationMark: string = 'I';
 
   public text: string =
-    'If the [D] Pokémon this card is attached to is in the Active Spot and is damaged by an attack from your opponent\'s Pokémon (even if this Pokémon is Knocked Out), place 4 damage counters on the Attacking Pokémon.';
+    "If the [D] Pokémon this card is attached to is in the Active Spot and is damaged by an attack from your opponent's Pokémon (even if this Pokémon is Knocked Out), place 4 damage counters on the Attacking Pokémon.";
 
   public damageDealt = false;
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof AfterDamageEffect && effect.target.tools.includes(this)) {
       const player = effect.player;
       const targetPlayer = StateUtils.findOwner(state, effect.target);
@@ -51,5 +50,4 @@ export class PunkHelmet extends TrainerCard {
 
     return state;
   }
-
 }

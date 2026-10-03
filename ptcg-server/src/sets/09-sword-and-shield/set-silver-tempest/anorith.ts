@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 
 export class Anorith extends PokemonCard {
@@ -64,7 +64,7 @@ export class Anorith extends PokemonCard {
           { min: 0, max: 1, allowCancel: true, blocked }
         ), selected => {
           if (selected && selected.length > 0) {
-            player.hand.moveCardTo(selected[0], player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: [selected[0]], sourceCard: this });
             effect.damage += 120;
           }
         });

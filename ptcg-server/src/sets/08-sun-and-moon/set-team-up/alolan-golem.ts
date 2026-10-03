@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, PlayerType, SlotType, MoveEnergyPrompt, CardTarget } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class AlolanGolem extends PokemonCard {
@@ -68,7 +68,7 @@ export class AlolanGolem extends PokemonCard {
 
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, player, transfer.from);
-          source.moveCardTo(transfer.card, player.active);
+          MOVE_CARDS(store, state, source, player.active, { cards: [transfer.card], sourceCard: this });
         }
 
         effect.damage = 20 * transfers.length;

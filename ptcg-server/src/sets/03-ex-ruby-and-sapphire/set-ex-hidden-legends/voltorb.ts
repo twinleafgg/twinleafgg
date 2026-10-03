@@ -2,7 +2,7 @@ import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card
 import { Effect } from '../../../game/store/effects/effect';
 import { PokemonCard, StoreLike, State, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Voltorb extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -52,7 +52,7 @@ export class Voltorb extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.deck.moveCardTo(cards[0], player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: [cards[0]], sourceCard: this });
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
             player.deck.applyOrder(order);
           });

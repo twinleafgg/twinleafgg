@@ -12,7 +12,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class CarracostaGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -105,7 +105,7 @@ export class CarracostaGX extends PokemonCard {
           cards = selectedCards || [];
 
           cards.forEach((card, index) => {
-            player.discard.moveCardTo(card, slots[index]);
+            MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
             slots[index].pokemonPlayedTurn = state.turn;
           });
         },

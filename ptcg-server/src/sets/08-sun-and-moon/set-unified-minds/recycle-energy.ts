@@ -4,7 +4,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
@@ -55,7 +55,7 @@ If this card is discarded from play, put it into your hand instead of the discar
           .filter(m => m.name === this.RECYCLE_ENERGY_MARKER && m.source !== undefined)
           .map(m => m.source!);
 
-        player.discard.moveCardsTo(rescued, player.hand);
+        MOVE_CARDS(store, state, player.discard, player.hand, { cards: rescued, sourceCard: this });
         player.marker.removeMarker(this.RECYCLE_ENERGY_MARKER, this);
         this.attachedTo = undefined;
       });

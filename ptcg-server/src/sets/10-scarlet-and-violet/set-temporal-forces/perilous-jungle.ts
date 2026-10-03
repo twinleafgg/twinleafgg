@@ -12,14 +12,15 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class PerilousJungle extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark: string = 'H';
   public set: string = 'TEF';
   public name: string = 'Perilous Jungle';
   public fullName: string = 'Perilous Jungle TEF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '156';
-  public text: string = 'During Pokémon Checkup, put 2 more damage counters on each Poisoned non-[D] Pokémon (both yours and your opponent\'s).';
+  public text: string =
+    "During Pokémon Checkup, put 2 more damage counters on each Poisoned non-[D] Pokémon (both yours and your opponent's).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof BetweenTurnsEffect && StateUtils.getStadiumCard(state) === this) {
@@ -31,7 +32,7 @@ export class PerilousJungle extends TrainerCard {
 
       store.reduceEffect(state, checkPokemonType);
 
-      if ((checkPokemonType.cardTypes.includes(CardType.DARK))) {
+      if (checkPokemonType.cardTypes.includes(CardType.DARK)) {
         return state;
       }
 

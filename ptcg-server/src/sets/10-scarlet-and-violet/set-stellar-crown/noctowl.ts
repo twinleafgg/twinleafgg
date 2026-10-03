@@ -19,6 +19,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Noctowl extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -143,7 +144,7 @@ export class Noctowl extends PokemonCard {
                       ),
                     ],
                     () => {
-                      player.deck.moveCardsTo(cards, player.hand);
+                      MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
                       player.marker.addMarker(this.JEWEL_HUNT_MARKER, this);
                     },
                   );

@@ -10,14 +10,15 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Dancer extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'E';
   public set: string = 'FST';
   public setNumber: string = '232';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Dancer';
   public fullName: string = 'Dancer FST 232';
-  public text: string = 'Draw 2 cards. If you go second and it\'s your first turn, draw 3 more cards. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    "Draw 2 cards. If you go second and it's your first turn, draw 3 more cards. You may play only 1 Supporter card during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-unbroken-bonds/energy-spinner.ts (going second first turn pattern)

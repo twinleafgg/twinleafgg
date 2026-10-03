@@ -8,7 +8,7 @@ import { EnergyCard, GameMessage, GamePhase, PlayerType, PowerType, SlotType, St
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Manaphy extends PokemonCard {
@@ -69,7 +69,7 @@ export class Manaphy extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.deck.moveCardsTo(selected, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: selected, sourceCard: this });
         }
         SHUFFLE_DECK(store, state, player);
       });
@@ -111,7 +111,7 @@ export class Manaphy extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         });
       });

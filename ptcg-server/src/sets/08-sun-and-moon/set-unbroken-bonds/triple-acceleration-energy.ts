@@ -6,7 +6,7 @@ import { CheckProvidedEnergyEffect, CheckTableStateEffect } from '../../../game/
 import { Effect } from '../../../game/store/effects/effect';
 import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
@@ -64,7 +64,7 @@ export class TripleAccelerationEnergy extends EnergyCard {
           return;
         }
 
-        cardList.moveCardTo(this, player.discard);
+        MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         effect.player.marker.removeMarker(this.TRIPLE_ACCELERATION_MARKER, this);
       });
     }
@@ -79,7 +79,7 @@ export class TripleAccelerationEnergy extends EnergyCard {
 
           const attachedTo = cardList.getPokemonCard();
           if (!!attachedTo && (attachedTo.stage === Stage.BASIC || attachedTo.stage === Stage.RESTORED)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

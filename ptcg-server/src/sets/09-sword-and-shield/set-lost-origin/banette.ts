@@ -2,7 +2,7 @@ import { PokemonCard, Stage, CardType, PowerType, State, StoreLike, PlayerType, 
 import { Effect } from '../../../game/store/effects/effect';
 
 import { DiscardToHandEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { WAS_POWER_USED, MOVE_CARDS, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class Banette extends PokemonCard {
 
@@ -78,18 +78,17 @@ export class Banette extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         cards = selected || [];
-        player.discard.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
 
       });
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
         if (cardList.getPokemonCard() === this) {
-
-          const pokemons = cardList.getPokemons();
-          cardList.moveCardsTo(pokemons, player.lostzone);
-          cardList.moveTo(player.discard);
-          cardList.clearEffects();
-
+          MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+            pokemonDestination: player.lostzone,
+            attachedDestination: player.discard,
+            sourceCard: this,
+          });
         }
       });
     }

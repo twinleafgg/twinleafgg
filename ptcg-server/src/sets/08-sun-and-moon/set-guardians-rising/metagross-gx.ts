@@ -25,12 +25,10 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MetagrossGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -131,7 +129,7 @@ export class MetagrossGX extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );
@@ -169,7 +167,7 @@ export class MetagrossGX extends PokemonCard {
         },
       );
 
-      player.deck.moveCardsTo(cards, player.hand);
+      MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
         player.deck.applyOrder(order);

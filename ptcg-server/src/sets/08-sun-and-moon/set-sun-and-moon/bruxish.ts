@@ -8,7 +8,7 @@ import { StoreLike, State, GameMessage, Card, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { THIS_ATTACKS_DAMAGE_ISNT_AFFECTED_BY_EFFECTS } from '../../../game/store/prefabs/attack-effects';
 
 export class Bruxish extends PokemonCard {
@@ -63,7 +63,7 @@ export class Bruxish extends PokemonCard {
             cards
           ), () => {
             cards.forEach(card => {
-              player.deck.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
             });
           });
         }

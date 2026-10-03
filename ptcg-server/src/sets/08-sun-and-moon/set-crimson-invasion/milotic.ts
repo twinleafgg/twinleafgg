@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils, GameMessage, PlayerType, SlotType, CardTa
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Milotic extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -75,13 +75,13 @@ export class Milotic extends PokemonCard {
           // Move tools first
           const tools = target.tools.slice();
           tools.forEach(tool => {
-            target.moveCardTo(tool, opponent.deck);
+            MOVE_CARDS(store, state, target, opponent.deck, { cards: [tool], sourceCard: this });
           });
 
           // Move all cards (Pokemon + energy)
           const cards = target.cards.slice();
           cards.forEach(card => {
-            target.moveCardTo(card, opponent.deck);
+            MOVE_CARDS(store, state, target, opponent.deck, { cards: [card], sourceCard: this });
           });
 
           // Clear any effects/damage/conditions on the slot

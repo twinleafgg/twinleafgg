@@ -8,10 +8,8 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
-
 export class JustifiedGloves extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark = 'F';
   public set: string = 'CRE';
   public cardImage: string = 'assets/cardback.png';
@@ -20,14 +18,16 @@ export class JustifiedGloves extends TrainerCard {
   public fullName: string = 'Justified Gloves CRE 143';
 
   public text: string =
-    'The attacks of the Pokémon this card is attached to do 30 more damage to your opponent\'s Active [D] Pokémon (before applying Weakness and Resistance).';
+    "The attacks of the Pokémon this card is attached to do 30 more damage to your opponent's Active [D] Pokémon (before applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof DealDamageEffect && effect.source.tools.includes(this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, effect.player);
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       if (effect.target !== player.active && effect.target !== opponent.active) {
         return state;
@@ -41,5 +41,4 @@ export class JustifiedGloves extends TrainerCard {
 
     return state;
   }
-
 }

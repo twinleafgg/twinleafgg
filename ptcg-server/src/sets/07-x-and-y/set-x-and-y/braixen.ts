@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Braixen extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -44,7 +44,7 @@ export class Braixen extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 3);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 3, sourceCard: this });
 
       return store.prompt(state, new OrderCardsPrompt(
         player.id,

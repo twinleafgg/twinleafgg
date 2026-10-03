@@ -24,12 +24,10 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   IS_ABILITY_BLOCKED,
   BLOCK_IF_GX_ATTACK_USED,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 
 export class BlastoiseGx extends PokemonCard {
@@ -127,7 +125,7 @@ export class BlastoiseGx extends PokemonCard {
 
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.deck);
+            MOVE_CARDS(store, state, source, player.deck, { cards: [transfer.card], sourceCard: this });
           }
           effect.damage = 60 * transfers.length;
           SHUFFLE_DECK(store, state, player);

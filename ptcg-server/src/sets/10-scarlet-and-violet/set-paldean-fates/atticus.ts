@@ -8,8 +8,7 @@ import { GameError, GameMessage, Player, StateUtils } from '../../../game';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Atticus extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'G';
 
@@ -24,7 +23,7 @@ export class Atticus extends TrainerCard {
   public fullName = 'Atticus PAF';
 
   public text: string =
-    'You can use this card only if your opponent\'s Active Pokémon is Poisoned.' +
+    "You can use this card only if your opponent's Active Pokémon is Poisoned." +
     '' +
     'Shuffle your hand into your deck, then draw 7 cards.';
 

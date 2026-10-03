@@ -17,13 +17,11 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON } from '../../../game/store/prefabs/attack-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   CONFIRMATION_PROMPT,
   IS_POKEPOWER_BLOCKED,
   JUST_EVOLVED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Espeonex extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -119,7 +117,7 @@ export class Espeonex extends PokemonCard {
               );
               if (evolutions.length > 0) {
                 const highestStage = evolutions[evolutions.length - 1];
-                target.moveCardTo(highestStage, opponent.hand);
+                MOVE_CARDS(store, state, target, opponent.hand, { cards: [highestStage], sourceCard: this });
               }
               return state;
             },

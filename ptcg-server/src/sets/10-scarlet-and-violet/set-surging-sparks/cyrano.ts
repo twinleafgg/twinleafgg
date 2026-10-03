@@ -12,6 +12,7 @@ import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -53,8 +54,8 @@ function* playCard(
     },
   );
 
-  player.deck.moveCardsTo(cards, player.hand);
-  player.hand.moveCardTo(effect.trainerCard, player.discard);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: self });
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: [effect.trainerCard], sourceCard: self });
 
   if (cards.length > 0) {
     yield store.prompt(
@@ -70,7 +71,7 @@ function* playCard(
 }
 
 export class Cyrano extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'H';
   public set: string = 'SSP';
   public cardImage: string = 'assets/cardback.png';

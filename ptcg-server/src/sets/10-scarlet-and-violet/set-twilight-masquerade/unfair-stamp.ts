@@ -10,7 +10,7 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import { REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -36,8 +36,8 @@ function* playCard(
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
-  player.hand.moveCardsTo(cards, player.deck);
-  opponent.hand.moveTo(opponent.deck);
+  MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: self });
+  MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: self });
 
   yield store.prompt(
     state,
@@ -46,14 +46,14 @@ function* playCard(
       player.deck.applyOrder(deckOrder[0]);
       opponent.deck.applyOrder(deckOrder[1]);
 
-      player.deck.moveTo(player.hand, 5);
-      opponent.deck.moveTo(opponent.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: self });
+      MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 2, sourceCard: self });
     },
   );
 }
 
 export class UnfairStamp extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ACE_SPEC];
   public set: string = 'TWM';
   public cardImage: string = 'assets/cardback.png';

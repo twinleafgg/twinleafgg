@@ -7,7 +7,7 @@ import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/ca
 import { Card, CardList, GameError, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class SimisearVstar extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VSTAR];
@@ -55,7 +55,7 @@ export class SimisearVstar extends PokemonCard {
       // Move up to 5 top cards to a temp list
       const temp = new CardList();
       const count = Math.min(5, player.deck.cards.length);
-      player.deck.moveTo(temp, count);
+      MOVE_CARDS(store, state, player.deck, temp, { count: count, sourceCard: this });
 
       const attackEffect = effect;
       return store.prompt(
@@ -69,7 +69,7 @@ export class SimisearVstar extends PokemonCard {
         ),
         (selected: Card[] | null) => {
           const cards = selected || [];
-          cards.forEach((c) => temp.moveCardTo(c, player.discard));
+          cards.forEach((c) => MOVE_CARDS(store, state, temp, player.discard, { cards: [c], sourceCard: this }));
           // Return remaining cards to top of deck
           const remaining = temp.cards.splice(0);
           player.deck.cards.unshift(...remaining);

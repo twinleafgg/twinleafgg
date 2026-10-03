@@ -6,12 +6,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { CheckRetreatCostEffect } from '../../../game/store/effects/check-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
-
 export class AirBalloon extends TrainerCard {
-
   public regulationMark = 'D';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'SSH';
 
@@ -40,5 +38,4 @@ export class AirBalloon extends TrainerCard {
     }
     return state;
   }
-
 }

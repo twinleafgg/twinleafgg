@@ -44,7 +44,7 @@ export class Electrode extends PokemonCard {
 
       const temp = new CardList();
 
-      player.deck.moveTo(temp, 7);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 7, sourceCard: this });
       // Check if any cards drawn are basic energy
       const energyCardsDrawn = temp.cards.filter(card => {
         return card.superType === SuperType.ENERGY;
@@ -83,7 +83,7 @@ export class Electrode extends PokemonCard {
           if (transfers) {
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              temp.moveCardTo(transfer.card, target); // Move card to target
+              MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this }); // Move card to target
             }
             temp.cards.forEach(card => {
               MOVE_CARDS(store, state, temp, player.discard, { cards: [card] });

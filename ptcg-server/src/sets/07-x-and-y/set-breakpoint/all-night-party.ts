@@ -6,13 +6,14 @@ import { UseStadiumEffect, HealEffect } from '../../../game/store/effects/game-e
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class AllNightParty extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'BKP';
   public setNumber: string = '96';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'All-Night Party';
   public fullName: string = 'All-Night Party BKP';
-  public text: string = 'Once during each player\'s turn, if that player\'s Active Pokémon is Asleep, he or she may remove that Special Condition and heal 30 damage from that Pokémon.';
+  public text: string =
+    "Once during each player's turn, if that player's Active Pokémon is Asleep, he or she may remove that Special Condition and heal 30 damage from that Pokémon.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

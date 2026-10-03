@@ -4,10 +4,8 @@ import { StoreLike, State, ChooseCardsPrompt } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
-import {
-  WAS_ATTACK_USED,
-  WAS_POKEMON_KNOCKED_OUT_DURING_OPPONENTS_LAST_TURN,
-} from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED,
+  WAS_POKEMON_KNOCKED_OUT_DURING_OPPONENTS_LAST_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class IronLeaves extends PokemonCard {
   protected _tags = [CardTag.FUTURE];
@@ -68,7 +66,7 @@ export class IronLeaves extends PokemonCard {
         ],
         (selected) => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         },
       );
     }

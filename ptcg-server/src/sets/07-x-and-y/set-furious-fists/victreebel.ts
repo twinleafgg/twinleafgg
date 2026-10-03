@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { Card, ChooseCardsPrompt, GameError, GameMessage, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { ADD_CONFUSION_TO_PLAYER_ACTIVE, ADD_POISON_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
 import { EnergyCard } from '../../../game/store/card/energy-card';
@@ -70,7 +70,7 @@ export class Victreebel extends PokemonCard {
 
       // Discard a Grass Energy
       if (grassEnergy.length === 1) {
-        cardList.moveCardTo(grassEnergy[0], player.discard);
+        MOVE_CARDS(store, state, cardList, player.discard, { cards: [grassEnergy[0]], sourceCard: this });
       } else {
         const blocked: number[] = [];
         cardList.cards.forEach((card, index) => {
@@ -88,7 +88,7 @@ export class Victreebel extends PokemonCard {
         ), (selected: Card[]) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            cardList.moveCardTo(cards[0], player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [cards[0]], sourceCard: this });
           }
         });
       }

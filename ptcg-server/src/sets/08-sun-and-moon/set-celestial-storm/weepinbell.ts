@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State, StateUtils, GameMessage, EnergyCard, PlayerType, SlotType } from '../../../game';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Weepinbell extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -62,7 +62,7 @@ export class Weepinbell extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

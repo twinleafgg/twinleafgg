@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { GameMessage } from '../../../game/game-message';
@@ -66,7 +66,7 @@ export class Wigglytuff extends PokemonCard {
         { min: count, max: count, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.discard.moveCardsTo(selected, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: selected, sourceCard: this });
         }
       });
     }

@@ -6,11 +6,11 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { Player, PlayerType, PokemonCard, SlotType } from '../../../game';
-import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { Player, PlayerType, SlotType } from '../../../game';
+import { MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class ScoopUpCyclone extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ACE_SPEC];
   public regulationMark = 'H';
   public set: string = 'TWM';
@@ -43,31 +43,10 @@ export class ScoopUpCyclone extends TrainerCard {
         (result) => {
           const cardList = result.length > 0 ? result[0] : null;
           if (cardList !== null) {
-            const pokemons = cardList.getPokemons();
-            const otherCards = cardList.cards.filter(
-              (card) =>
-                !(card instanceof PokemonCard) &&
-                !pokemons.includes(card as PokemonCard) &&
-                (!cardList.tools || !cardList.tools.includes(card)),
-            );
-            const tools = [...cardList.tools];
-
-            // Move other cards to hand
-            if (otherCards.length > 0) {
-              MOVE_CARDS(store, state, cardList, player.hand, { cards: otherCards });
-            }
-
-            // Move tools to hand
-            if (tools.length > 0) {
-              for (const tool of tools) {
-                cardList.moveCardTo(tool, player.hand);
-              }
-            }
-
-            // Move Pokémon to hand
-            if (pokemons.length > 0) {
-              MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons });
-            }
+            MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+              pokemonDestination: player.hand,
+              sourceCard: this,
+            });
           }
         },
       );

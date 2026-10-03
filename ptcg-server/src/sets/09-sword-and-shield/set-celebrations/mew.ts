@@ -9,7 +9,7 @@ import { GameError, PokemonCard, PowerType, ShowCardsPrompt, ShuffleDeckPrompt, 
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { ABILITY_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mew extends PokemonCard {
 
@@ -78,7 +78,7 @@ export class Mew extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 6);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 6, sourceCard: this });
       const opponent = StateUtils.getOpponent(state, player);
 
       return store.prompt(state, new ChooseCardsPrompt(
@@ -90,8 +90,8 @@ export class Mew extends PokemonCard {
       ), selected => {
         ABILITY_USED(player, this);
         player.marker.addMarker(this.MYSTERIOUS_TAIL_MARKER, this);
-        deckTop.moveCardsTo(selected, player.hand);
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
 
         if (selected.length > 0) {
           return store.prompt(state, new ShowCardsPrompt(

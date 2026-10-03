@@ -13,7 +13,7 @@ import {
   ConfirmPrompt,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LugiaVSTAR extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VSTAR];
@@ -82,7 +82,7 @@ export class LugiaVSTAR extends PokemonCard {
           cards = selected || [];
 
           cards.forEach((card, index) => {
-            player.discard.moveCardTo(card, slots[index]);
+            MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
             slots[index].pokemonPlayedTurn = state.turn;
           });
           return state;
@@ -101,7 +101,7 @@ export class LugiaVSTAR extends PokemonCard {
               // Discard Stadium
               const cardList = StateUtils.findCardList(state, stadiumCard);
               const player = StateUtils.findOwner(state, cardList);
-              cardList.moveTo(player.discard);
+              MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
               return state;
             }
             return state;

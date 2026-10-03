@@ -2,7 +2,7 @@ import { PokemonCard, Stage, CardType, StoreLike, State, CardList, Card, SuperTy
 import { Effect } from "../../../game/store/effects/effect";
 import { AttackEffect } from "../../../game/store/effects/game-effects";
 import { COPY_ATTACK_FROM_POKEMON_LIST } from "../../../game/store/prefabs/copy-attack-prefabs";
-import { WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import { WAS_ATTACK_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class Slowking extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -43,9 +43,9 @@ export class Slowking extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
       const topdeck: Card = deckTop.cards[0];
-      deckTop.moveTo(player.discard);
+      MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
 
       if (!(topdeck instanceof PokemonCard)) {
         return state;

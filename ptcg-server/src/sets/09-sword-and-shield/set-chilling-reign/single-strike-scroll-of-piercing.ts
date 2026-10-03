@@ -15,7 +15,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class SingleStrikeScrollOfPiercing extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.SINGLE_STRIKE];
   public regulationMark: string = 'E';
   public set: string = 'CRE';

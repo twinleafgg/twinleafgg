@@ -4,7 +4,7 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { StateUtils } from '../../../game/store/state-utils';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Farfetchd extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -39,7 +39,7 @@ export class Farfetchd extends PokemonCard {
     // Collect
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
-      player.deck.moveTo(player.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       return state;
     }
     // Tool Buster
@@ -49,7 +49,7 @@ export class Farfetchd extends PokemonCard {
       const activePokemon = opponent.active;
       let toolDiscarded = false;
       if (activePokemon.tools.length > 0) {
-        activePokemon.moveCardsTo([...activePokemon.tools], opponent.discard);
+        MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: [...activePokemon.tools], sourceCard: this });
         toolDiscarded = true;
       }
       if (toolDiscarded) {

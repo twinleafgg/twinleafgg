@@ -3,7 +3,7 @@ import { CardType, Stage } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, PowerType, ShuffleDeckPrompt, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Abra extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -43,7 +43,7 @@ export class Abra extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.active.moveTo(player.deck);
+      MOVE_CARDS(store, state, player.active, player.deck, { sourceCard: this });
       player.active.clearEffects();
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

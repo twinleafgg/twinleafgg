@@ -14,7 +14,7 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Malamar extends PokemonCard {
   protected _tags = [CardTag.RAPID_STRIKE];
@@ -82,7 +82,7 @@ export class Malamar extends PokemonCard {
             );
 
             // Shuffle chosen cards into deck
-            player.hand.moveCardsTo(chosenCards, player.deck);
+            MOVE_CARDS(store, state, player.hand, player.deck, { cards: chosenCards, sourceCard: this });
             SHUFFLE_DECK(store, state, player);
           }
         },

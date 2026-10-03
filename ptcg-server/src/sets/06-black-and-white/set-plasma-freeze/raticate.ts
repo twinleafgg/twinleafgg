@@ -3,7 +3,7 @@ import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/ca
 import { GameMessage, StoreLike, State, TrainerCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class Raticate extends PokemonCard {
@@ -116,14 +116,14 @@ export class Raticate extends PokemonCard {
                         cardsToHand.push(...(selectedEnergy || []));
                         if (cardsToHand.length > 0) {
                           SHOW_CARDS_TO_PLAYER(store, state, opponent, cardsToHand);
-                          player.discard.moveCardsTo(cardsToHand, player.hand);
+                          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cardsToHand, sourceCard: this });
                         }
                       },
                     );
                   } else {
                     if (cardsToHand.length > 0) {
                       SHOW_CARDS_TO_PLAYER(store, state, opponent, cardsToHand);
-                      player.discard.moveCardsTo(cardsToHand, player.hand);
+                      MOVE_CARDS(store, state, player.discard, player.hand, { cards: cardsToHand, sourceCard: this });
                     }
                   }
                 },
@@ -155,14 +155,14 @@ export class Raticate extends PokemonCard {
                     cardsToHand.push(...(selectedEnergy || []));
                     if (cardsToHand.length > 0) {
                       SHOW_CARDS_TO_PLAYER(store, state, opponent, cardsToHand);
-                      player.discard.moveCardsTo(cardsToHand, player.hand);
+                      MOVE_CARDS(store, state, player.discard, player.hand, { cards: cardsToHand, sourceCard: this });
                     }
                   },
                 );
               } else {
                 if (cardsToHand.length > 0) {
                   SHOW_CARDS_TO_PLAYER(store, state, opponent, cardsToHand);
-                  player.discard.moveCardsTo(cardsToHand, player.hand);
+                  MOVE_CARDS(store, state, player.discard, player.hand, { cards: cardsToHand, sourceCard: this });
                 }
               }
             }

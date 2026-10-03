@@ -4,20 +4,29 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameError, GameMessage, Card, CardList } from '../../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameError,
+  GameMessage,
+  Card,
+  CardList,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import { SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ChipChipIceAxe extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'UNB';
   public setNumber: string = '165';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Chip-Chip Ice Axe';
   public fullName: string = 'Chip-Chip Ice Axe UNB';
-  public text: string = 'Look at the top 3 cards of your opponent\'s deck and choose 1 of them. Your opponent shuffles the other cards back into their deck. Then, put the card you chose on top of their deck.';
+  public text: string =
+    "Look at the top 3 cards of your opponent's deck and choose 1 of them. Your opponent shuffles the other cards back into their deck. Then, put the card you chose on top of their deck.";
 
   // Ref: set-guardians-rising/watchog.ts (Scrutinize - look at top cards, choose, rearrange)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -30,33 +39,43 @@ export class ChipChipIceAxe extends TrainerCard {
       }
 
       const topCards = new CardList();
-      opponent.deck.moveTo(topCards, Math.min(3, opponent.deck.cards.length));
-
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DECK,
-        topCards,
-        {},
-        { min: 1, max: 1, allowCancel: false }
-      ), (selected: Card[]) => {
-        const chosenCard = selected[0];
-
-        // Shuffle the other cards back into opponent's deck
-        const otherCards = topCards.cards.filter(c => c !== chosenCard);
-        otherCards.forEach(c => {
-          topCards.moveCardTo(c, opponent.deck);
-        });
-        SHUFFLE_DECK(store, state, opponent);
-
-        // Put the chosen card on top of opponent's deck
-        topCards.moveCardTo(chosenCard, opponent.deck);
-        // moveCardTo puts it at bottom; move it to top
-        const idx = opponent.deck.cards.indexOf(chosenCard);
-        if (idx !== -1) {
-          opponent.deck.cards.splice(idx, 1);
-          opponent.deck.cards.unshift(chosenCard);
-        }
+      MOVE_CARDS(store, state, opponent.deck, topCards, {
+        count: Math.min(3, opponent.deck.cards.length),
+        sourceCard: this,
       });
+
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DECK,
+          topCards,
+          {},
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected: Card[]) => {
+          const chosenCard = selected[0];
+
+          // Shuffle the other cards back into opponent's deck
+          const otherCards = topCards.cards.filter((c) => c !== chosenCard);
+          otherCards.forEach((c) => {
+            MOVE_CARDS(store, state, topCards, opponent.deck, { cards: [c], sourceCard: this });
+          });
+          SHUFFLE_DECK(store, state, opponent);
+
+          // Put the chosen card on top of opponent's deck
+          MOVE_CARDS(store, state, topCards, opponent.deck, {
+            cards: [chosenCard],
+            sourceCard: this,
+          });
+          // moveCardTo puts it at bottom; move it to top
+          const idx = opponent.deck.cards.indexOf(chosenCard);
+          if (idx !== -1) {
+            opponent.deck.cards.splice(idx, 1);
+            opponent.deck.cards.unshift(chosenCard);
+          }
+        },
+      );
     }
 
     return state;

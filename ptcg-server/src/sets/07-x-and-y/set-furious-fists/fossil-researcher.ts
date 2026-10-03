@@ -16,8 +16,14 @@ import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const supporterTurn = player.supporterTurn;
 
@@ -29,7 +35,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  const slots: PokemonCardList[] = player.bench.filter(b => b.cards.length === 0);
+  const slots: PokemonCardList[] = player.bench.filter((b) => b.cards.length === 0);
   if (slots.length === 0) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
@@ -43,45 +49,54 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   });
 
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: effect.trainerCard,
+  });
 
   const max = Math.min(2, slots.length);
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-    player.deck,
-    {},
-    { min: 0, max, allowCancel: false, blocked }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+      player.deck,
+      {},
+      { min: 0, max, allowCancel: false, blocked },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   if (cards.length > slots.length) {
     cards.length = slots.length;
   }
 
   cards.forEach((card, index) => {
-    store.reduceEffect(state, new PlayPokemonFromDeckEffect(player, card as PokemonCard, slots[index]));
+    store.reduceEffect(
+      state,
+      new PlayPokemonFromDeckEffect(player, card as PokemonCard, slots[index]),
+    );
   });
 
-
-
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class FossilResearcher extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'FFI';
   public setNumber: string = '92';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Fossil Researcher';
   public fullName: string = 'Fossil Researcher FFI';
-  public text: string = 'Search your deck for up to 2 in any combination of Amaura or Tyrunt and put them onto your bench. Shuffle your deck afterward. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Search your deck for up to 2 in any combination of Amaura or Tyrunt and put them onto your bench. Shuffle your deck afterward. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-furious-fists/korrina.ts (Supporter generator pattern with blocked indices)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

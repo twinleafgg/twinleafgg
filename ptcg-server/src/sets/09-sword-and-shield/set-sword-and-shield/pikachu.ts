@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { Card, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Pikachu extends PokemonCard {
@@ -55,7 +55,7 @@ export class Pikachu extends PokemonCard {
         if (cards.length > 0) {
           const cardList = StateUtils.findCardList(state, this);
           if (cardList) {
-            player.deck.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
           }
         }
         SHUFFLE_DECK(store, state, player);

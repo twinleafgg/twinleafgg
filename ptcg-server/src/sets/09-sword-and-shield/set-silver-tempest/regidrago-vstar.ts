@@ -13,7 +13,7 @@ import { StoreLike,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { COPY_ATTACK_FROM_POKEMON_LIST } from '../../../game/store/prefabs/copy-attack-prefabs';
 
 export class RegidragoVSTAR extends PokemonCard {
@@ -96,7 +96,7 @@ export class RegidragoVSTAR extends PokemonCard {
 
       player.usedVSTAR = true;
 
-      player.deck.moveTo(player.discard, 7);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 7, sourceCard: this });
 
       let cards: Card[] = [];
       return store.prompt(
@@ -112,7 +112,7 @@ export class RegidragoVSTAR extends PokemonCard {
           cards = selected || [];
 
           cards.forEach((card, index) => {
-            player.discard.moveCardTo(card, player.hand);
+            MOVE_CARDS(store, state, player.discard, player.hand, { cards: [card], sourceCard: this });
           });
 
           if (cards.length > 0) {

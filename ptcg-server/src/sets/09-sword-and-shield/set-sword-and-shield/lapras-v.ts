@@ -14,7 +14,7 @@ import { Card, ChooseEnergyPrompt, GameMessage, StoreLike, State, StateUtils } f
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
@@ -83,7 +83,7 @@ export class LaprasV extends PokemonCard {
             // Attach energy to Lapras V (this)
             const cardList = StateUtils.findCardList(state, this);
             if (cardList) {
-              player.hand.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
             }
             this.bodySurfAttached = true;
           }
@@ -133,7 +133,7 @@ export class LaprasV extends PokemonCard {
         (energy) => {
           const cards: Card[] = (energy || []).slice(0, count).map((e) => e.card);
           if (cards.length > 0) {
-            player.active.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
           }
         },
       );

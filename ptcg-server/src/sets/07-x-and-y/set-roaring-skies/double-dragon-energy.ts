@@ -4,7 +4,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { CheckPokemonTypeEffect, CheckProvidedEnergyEffect, CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
@@ -64,7 +64,7 @@ export class DoubleDragonEnergy extends EnergyCard {
           const checkPokemonType = new CheckPokemonTypeEffect(cardList);
           store.reduceEffect(state, checkPokemonType);
           if (!checkPokemonType.cardTypes.includes(CardType.DRAGON)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

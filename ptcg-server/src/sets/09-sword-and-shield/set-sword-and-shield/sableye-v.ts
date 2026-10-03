@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class SableyeV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -63,7 +63,7 @@ export class SableyeV extends PokemonCard {
         ),
         (selected) => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         },
       );
     }

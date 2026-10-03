@@ -14,12 +14,10 @@ import {
 } from '../../../game';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  DAMAGE_OPPONENT_POKEMON,
+import {DAMAGE_OPPONENT_POKEMON,
   REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Fezandipitiex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -82,7 +80,7 @@ export class Fezandipitiex extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.deck.moveTo(player.hand, 3);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
       player.usedTableTurner = true;
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {

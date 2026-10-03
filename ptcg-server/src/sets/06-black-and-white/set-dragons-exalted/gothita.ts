@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, CardList, OrderCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gothita extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -37,7 +37,7 @@ export class Gothita extends PokemonCard {
 
       const count = Math.min(5, player.deck.cards.length);
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, count);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: count, sourceCard: this });
 
       return store.prompt(state, new OrderCardsPrompt(
         player.id,

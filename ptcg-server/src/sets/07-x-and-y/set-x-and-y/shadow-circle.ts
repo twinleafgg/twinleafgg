@@ -7,17 +7,21 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, CardType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
-import { CheckProvidedEnergyEffect, CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
+import {
+  CheckProvidedEnergyEffect,
+  CheckPokemonStatsEffect,
+} from '../../../game/store/effects/check-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class ShadowCircle extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'XY';
   public name: string = 'Shadow Circle';
   public fullName: string = 'Shadow Circle XY';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '126';
-  public text: string = 'Each Pokemon that has any [D] Energy attached to it (both yours and your opponent\'s) has no Weakness.';
+  public text: string =
+    "Each Pokemon that has any [D] Energy attached to it (both yours and your opponent's) has no Weakness.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckPokemonStatsEffect && StateUtils.getStadiumCard(state) === this) {

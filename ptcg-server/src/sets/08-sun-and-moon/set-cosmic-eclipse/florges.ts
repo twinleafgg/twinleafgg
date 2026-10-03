@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SpecialCondition } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils, ConfirmPrompt, GameMessage, ShowCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, JUST_EVOLVED, IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, JUST_EVOLVED, IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 
 export class Florges extends PokemonCard {
@@ -81,7 +81,7 @@ export class Florges extends PokemonCard {
           ), () => {
             // Shuffle those cards into the opponent's deck
             randomCards.forEach(c => {
-              opponent.hand.moveCardTo(c, opponent.deck);
+              MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [c], sourceCard: this });
             });
             SHUFFLE_DECK(store, state, opponent);
           });

@@ -1,11 +1,15 @@
 import { GameError, GameMessage, State, StoreLike, TrainerCard, TrainerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS_AS_FACE_DOWN_PRIZES, GET_PLAYER_PRIZES, MOVE_CARD_TO, SHUFFLE_PRIZES_INTO_DECK } from '../../../game/store/prefabs/prefabs';
+import {
+  DRAW_CARDS_AS_FACE_DOWN_PRIZES,
+  GET_PLAYER_PRIZES,
+  MOVE_CARD_TO,
+  SHUFFLE_PRIZES_INTO_DECK,
+} from '../../../game/store/prefabs/prefabs';
 
 export class RotomDex extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'SUM';
 
@@ -25,8 +29,7 @@ export class RotomDex extends TrainerCard {
       const player = effect.player;
       const prizeCount = GET_PLAYER_PRIZES(player).length;
 
-      if (prizeCount === 0)
-        throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
+      if (prizeCount === 0) throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
 
       SHUFFLE_PRIZES_INTO_DECK(store, state, player);
       DRAW_CARDS_AS_FACE_DOWN_PRIZES(player, prizeCount);

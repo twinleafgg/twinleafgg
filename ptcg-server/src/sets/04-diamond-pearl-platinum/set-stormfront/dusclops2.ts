@@ -2,7 +2,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { WAS_ATTACK_USED, AFTER_ATTACK, CONFIRMATION_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, AFTER_ATTACK, CONFIRMATION_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 
 export class Dusclops2 extends PokemonCard {
@@ -50,7 +50,7 @@ export class Dusclops2 extends PokemonCard {
               { min: 1, max: 1, allowCancel: false }
             ), selected => {
               const cards = selected || [];
-              player.hand.moveCardsTo(cards, player.discard);
+              MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
             });
           }
           if (opponent.hand.cards.length > 0) {
@@ -62,7 +62,7 @@ export class Dusclops2 extends PokemonCard {
               { min: 1, max: 1, allowCancel: false }
             ), selected => {
               const cards = selected || [];
-              opponent.hand.moveCardsTo(cards, opponent.discard);
+              MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
             });
           }
         }

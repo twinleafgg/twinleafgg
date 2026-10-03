@@ -18,11 +18,9 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { CardTarget } from '../../../game';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   IS_ABILITY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ArticunoGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -125,7 +123,7 @@ export class ArticunoGX extends PokemonCard {
                 transfers.forEach((transfer) => {
                   const source = StateUtils.getTarget(state, player, transfer.from);
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  source.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
                 });
               },
             );

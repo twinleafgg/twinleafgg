@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, SelectPrompt, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lickilicky extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -70,7 +70,7 @@ export class Lickilicky extends PokemonCard {
 
           if (opponent.hand.cards.length <= 3) {
             const cards = opponent.hand.cards.slice();
-            opponent.hand.moveCardsTo(cards, opponent.discard);
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
           } else {
             store.prompt(state, new ChooseCardsPrompt(
               opponent,
@@ -80,7 +80,7 @@ export class Lickilicky extends PokemonCard {
               { min: discardCount, max: discardCount, allowCancel: false }
             ), selected => {
               const cards = selected || [];
-              opponent.hand.moveCardsTo(cards, opponent.discard);
+              MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
             });
           }
         }

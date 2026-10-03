@@ -7,7 +7,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { PlaySupporterEffect, TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
-import { IS_POKEPOWER_BLOCKED, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEPOWER_BLOCKED, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Jirachi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -70,7 +70,7 @@ export class Jirachi extends PokemonCard {
             (selected: any[]) => {
               cards = selected || [];
               if (cards.length > 0) {
-                player.deck.moveCardsTo(cards, player.hand);
+                MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
               }
               SHUFFLE_DECK(store, state, player);
             });

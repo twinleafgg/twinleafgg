@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, IS_ABILITY_BLOCKED, JUST_EVOLVED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, IS_ABILITY_BLOCKED, JUST_EVOLVED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { ConfirmPrompt } from '../../../game/store/prompts/confirm-prompt';
 import { GameMessage } from '../../../game/game-message';
@@ -74,7 +74,7 @@ export class Abomasnow extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.discard.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             }
           });
         }

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 
@@ -64,7 +64,7 @@ export class Whimsicott extends PokemonCard {
           ), transfers => {
             for (const transfer of transfers || []) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.deck.moveCardTo(cards[0], target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [cards[0]], sourceCard: this });
             }
             SHUFFLE_DECK(store, state, player);
           });

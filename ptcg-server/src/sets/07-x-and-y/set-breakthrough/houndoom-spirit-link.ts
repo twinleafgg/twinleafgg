@@ -9,13 +9,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN } from '../../../game/store/prefabs/tool-prefabs';
 
 export class HoundoomSpiritLink extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'BKT';
   public setNumber: string = '142';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Houndoom Spirit Link';
   public fullName: string = 'Houndoom Spirit Link BKT';
-  public text: string = 'Your turn does not end if the Pokémon this card is attached to becomes M Houndoom-EX.';
+  public text: string =
+    'Your turn does not end if the Pokémon this card is attached to becomes M Houndoom-EX.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN(store, state, effect, this, 'M Houndoom-EX');

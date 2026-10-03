@@ -1776,12 +1776,6 @@ export function SEARCH_DECK_FOR_CARDS_TO_HAND(
     (selected) => {
       const cards = selected || [];
       if (Object.keys(filter).length > 0) {
-        cards.forEach((card) => {
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-            name: player.name,
-            card: card.name,
-          });
-        });
         SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
       }
       MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard, sourceEffect });
@@ -1824,14 +1818,7 @@ export function SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND(
       });
       state = store.reduceEffect(state, moveEffect);
 
-      // Only log and show cards if the move wasn't prevented
       if (!moveEffect.preventDefault) {
-        cards.forEach((card) => {
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-            name: player.name,
-            card: card.name,
-          });
-        });
         SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
       }
 
@@ -1871,6 +1858,69 @@ export function MOVE_CARDS(
   } = {},
 ): State {
   return store.reduceEffect(state, new MoveCardsEffect(source, destination, options));
+}
+
+/**
+ * Move a Pokémon (and its attachments) off a board slot.
+ * When `attachedDestination` differs from `pokemonDestination`, attachments go to
+ * the attached destination first, then Pokémon move to their destination.
+ * Slot cleanup (damage, markers, tools array, etc.) is handled by MoveCardsEffect
+ * when the slot is vacated — callers should not manually clearEffects/damage=0.
+ */
+export function MOVE_POKEMON_OFF_BOARD(
+  store: StoreLike,
+  state: State,
+  slot: PokemonCardList,
+  options: {
+    pokemonDestination: CardList;
+    attachedDestination?: CardList;
+    sourceCard?: Card;
+    sourceEffect?: any;
+  },
+): State {
+  const pokemonDestination = options.pokemonDestination;
+  const attachedDestination = options.attachedDestination ?? pokemonDestination;
+  const sourceCard = options.sourceCard;
+  const sourceEffect = options.sourceEffect;
+
+  // Same destination: full-stack move handles tools + slot reset in the engine.
+  if (attachedDestination === pokemonDestination) {
+    return MOVE_CARDS(store, state, slot, pokemonDestination, { sourceCard, sourceEffect });
+  }
+
+  const pokemons = slot.getPokemons();
+  const tools = [...slot.tools];
+  const otherCards = slot.cards.filter(
+    card =>
+      !(card instanceof PokemonCard) &&
+      !pokemons.includes(card as PokemonCard) &&
+      !tools.includes(card),
+  );
+
+  // Attachments first so vacating via Pokémon move does not orphan them.
+  if (otherCards.length > 0) {
+    state = MOVE_CARDS(store, state, slot, attachedDestination, {
+      cards: otherCards,
+      sourceCard,
+      sourceEffect,
+    });
+  }
+  for (const tool of tools) {
+    state = MOVE_CARDS(store, state, slot, attachedDestination, {
+      cards: [tool],
+      sourceCard,
+      sourceEffect,
+    });
+  }
+  if (pokemons.length > 0) {
+    state = MOVE_CARDS(store, state, slot, pokemonDestination, {
+      cards: pokemons,
+      sourceCard,
+      sourceEffect,
+    });
+  }
+
+  return state;
 }
 
 export function MOVE_CARDS_TO_HAND(store: StoreLike, state: State, player: Player, cards: Card[]) {
@@ -2339,8 +2389,110 @@ export function CAN_EVOLVE_ON_FIRST_TURN_GOING_SECOND(
 ) {
   if (state.turn === 2) {
     player.canEvolve = true;
-    pokemon.pokemonPlayedTurn = state.turn - 1;
+    pokemon.canEvolveThisTurn = true;
   }
+}
+
+/**
+ * Evolutionary Advantage: "If you go second, this Pokémon can evolve during your first turn."
+ * Uses CheckTableState so any put-into-play path works. Only applies when `card` is
+ * the active Pokémon of a board slot belonging to the turn player (not hand/deck/etc.).
+ */
+export function EVOLUTIONARY_ADVANTAGE(
+  store: StoreLike,
+  state: State,
+  effect: Effect,
+  card: PokemonCard,
+): State {
+  if (!(effect instanceof CheckTableStateEffect) || state.turn !== 2) {
+    return state;
+  }
+
+  const cardList = StateUtils.findPokemonSlot(state, card);
+  if (!cardList || cardList.getPokemonCard() !== card) {
+    return state;
+  }
+
+  const owner = StateUtils.findOwner(state, cardList);
+  if (owner !== state.players[state.activePlayer]) {
+    return state;
+  }
+
+  if (IS_ABILITY_BLOCKED(store, state, owner, card)) {
+    cardList.canEvolveThisTurn = false;
+    return state;
+  }
+
+  CAN_EVOLVE_ON_FIRST_TURN_GOING_SECOND(state, owner, cardList);
+  return state;
+}
+
+export interface AdaptiveEvolutionOptions {
+  /** Boosted Evolution: only while this Pokémon is Active. */
+  requireActive?: boolean;
+  /** Extra condition (partner in play, opponent Active is ex, etc.). */
+  canActivate?: (
+    store: StoreLike,
+    state: State,
+    player: Player,
+    card: PokemonCard,
+  ) => boolean;
+}
+
+/**
+ * Adaptive / Boosted Evolution: "can evolve during your first turn or the turn you play it."
+ * Board-scoped CheckTableState; uses canEvolve + canEvolveThisTurn (no played-turn rewrite).
+ */
+export function ADAPTIVE_EVOLUTION(
+  store: StoreLike,
+  state: State,
+  effect: Effect,
+  card: PokemonCard,
+  options: AdaptiveEvolutionOptions = {},
+): State {
+  if (!(effect instanceof CheckTableStateEffect)) {
+    return state;
+  }
+
+  const cardList = StateUtils.findPokemonSlot(state, card);
+  if (!cardList || cardList.getPokemonCard() !== card) {
+    return state;
+  }
+
+  const owner = StateUtils.findOwner(state, cardList);
+  if (owner !== state.players[state.activePlayer]) {
+    return state;
+  }
+
+  const clear = () => {
+    cardList.canEvolveThisTurn = false;
+  };
+
+  if (options.requireActive && owner.active !== cardList) {
+    clear();
+    return state;
+  }
+
+  if (IS_ABILITY_BLOCKED(store, state, owner, card)) {
+    clear();
+    return state;
+  }
+
+  if (options.canActivate && !options.canActivate(store, state, owner, card)) {
+    clear();
+    return state;
+  }
+
+  const isFirstTurn = state.turn <= 2;
+  const playedThisTurn = cardList.pokemonPlayedTurn === state.turn;
+  if (!isFirstTurn && !playedThisTurn) {
+    clear();
+    return state;
+  }
+
+  owner.canEvolve = true;
+  cardList.canEvolveThisTurn = true;
+  return state;
 }
 
 // =============================================================================
@@ -3473,7 +3625,8 @@ export function CAN_PLAY_POKEMON_CARD(
             activePokemon.evolvesFromBase.includes(pokemonCard.evolvesFrom));
         if (matchesEvolution) {
           // Check if Pokemon was played this turn (can't evolve if played this turn)
-          if (player.active.pokemonPlayedTurn < state.turn) {
+          // unless an effect (e.g. Evolutionary Advantage) granted canEvolveThisTurn
+          if (player.active.pokemonPlayedTurn < state.turn || player.active.canEvolveThisTurn) {
             canEvolveActive = true;
           }
         }
@@ -3493,7 +3646,8 @@ export function CAN_PLAY_POKEMON_CARD(
               benchPokemon.evolvesFromBase.includes(pokemonCard.evolvesFrom));
           if (matchesEvolution) {
             // Check if Pokemon was played this turn (can't evolve if played this turn)
-            if (bench.pokemonPlayedTurn < state.turn) {
+            // unless an effect (e.g. Evolutionary Advantage) granted canEvolveThisTurn
+            if (bench.pokemonPlayedTurn < state.turn || bench.canEvolveThisTurn) {
               canEvolveBench = true;
               break;
             }

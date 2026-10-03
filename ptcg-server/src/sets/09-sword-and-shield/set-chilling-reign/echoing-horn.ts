@@ -71,7 +71,7 @@ export class EchoingHorn extends TrainerCard {
 
   protected _tags = [CardTag.RAPID_STRIKE];
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'CRE';
 

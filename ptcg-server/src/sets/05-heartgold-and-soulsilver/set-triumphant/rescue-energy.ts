@@ -6,7 +6,7 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State, GamePhase } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RescueEnergy extends EnergyCard {
 
@@ -59,7 +59,7 @@ export class RescueEnergy extends EnergyCard {
           .filter(m => m.name === this.RESCUE_ENERGY_MAREKER && m.source !== undefined)
           .map(m => m.source!);
 
-        player.discard.moveCardsTo(rescued, player.hand);
+        MOVE_CARDS(store, state, player.discard, player.hand, { cards: rescued, sourceCard: this });
         player.marker.removeMarker(this.RESCUE_ENERGY_MAREKER);
       });
     }

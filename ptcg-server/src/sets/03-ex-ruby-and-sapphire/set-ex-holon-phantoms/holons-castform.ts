@@ -19,16 +19,13 @@ import {
   ChoosePokemonPrompt,
   ChooseEnergyPrompt,
   Card,
-  GameLog,
   PokemonCardList,
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  DRAW_UP_TO_X_CARDS,
+import {DRAW_UP_TO_X_CARDS,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class HolonsCastform extends PokemonCard implements EnergyCard {
@@ -163,15 +160,11 @@ export class HolonsCastform extends PokemonCard implements EnergyCard {
             ),
             (energy) => {
               const cards: Card[] = (energy || []).map((e) => e.card);
-              store.log(state, GameLog.LOG_PLAYER_CHOOSES, {
-                name: player.name,
-                string: '' + cards[0].name,
-              });
-              targets[0].moveCardsTo(cards, player.hand);
+              MOVE_CARDS(store, state, targets[0], player.hand, { cards: cards, sourceCard: this });
 
               // Moving it onto the pokemon - first to main cards array, then to energies
               effect.preventDefault = true;
-              player.hand.moveCardTo(this, targets[0]);
+              MOVE_CARDS(store, state, player.hand, targets[0], { cards: [this], sourceCard: this });
               if (!targets[0].energies.cards.includes(this)) {
                 targets[0].energies.cards.push(this);
               }

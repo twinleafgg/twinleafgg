@@ -12,7 +12,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { StateUtils } from '../../../game/store/state-utils';
 import { Card, ChooseCardsPrompt, EnergyCard, GameMessage } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LucarioV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -82,7 +82,7 @@ export class LucarioV extends PokemonCard {
           cards = selected || [];
 
           if (cards.length > 0) {
-            opponent.active.moveCardsTo(cards, opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
           }
         },
       );

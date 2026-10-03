@@ -10,13 +10,14 @@ import { CheckPokemonStatsEffect } from '../../game/store/effects/check-effects'
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../game/store/prefabs/stadium-effect';
 
 export class ResistanceGym extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'G2';
   public setNumber = '109';
   public cardImage = 'assets/cardback.png';
   public name: string = 'Resistance Gym';
   public fullName: string = 'Resistance Gym G2';
-  public text: string = 'Each Pokémon\'s Resistance is reduced by 20. (If a Pokémon\'s Resistance is -30, it becomes -10.)';
+  public text: string =
+    "Each Pokémon's Resistance is reduced by 20. (If a Pokémon's Resistance is -30, it becomes -10.)";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckPokemonStatsEffect && StateUtils.getStadiumCard(state) === this) {
@@ -28,7 +29,7 @@ export class ResistanceGym extends TrainerCard {
       }
 
       if (target && Array.isArray(target.resistance)) {
-        effect.resistance = target.resistance.map(res => {
+        effect.resistance = target.resistance.map((res) => {
           if (typeof res.value === 'number') {
             return { ...res, value: Math.min(res.value + 20, 0) };
           }

@@ -7,30 +7,43 @@ import { TrainerType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import { SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, self: Oleana, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Oleana,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
   // Move to supporter zone first (manual because we use generator)
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   effect.preventDefault = true;
 
   // Discard 2 other cards from hand
-  const nonSelfCards = player.hand.cards.filter(c => c !== effect.trainerCard);
+  const nonSelfCards = player.hand.cards.filter((c) => c !== effect.trainerCard);
   if (nonSelfCards.length >= 2) {
-    yield store.prompt(state, new ChooseCardsPrompt(
-      player,
-      GameMessage.CHOOSE_CARD_TO_DISCARD,
-      player.hand,
-      {},
-      { min: 2, max: 2, allowCancel: false }
-    ), (selected: Card[] | null) => {
-      const cards = selected || [];
-      player.hand.moveCardsTo(cards, player.discard);
-      next();
-    });
+    yield store.prompt(
+      state,
+      new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_DISCARD,
+        player.hand,
+        {},
+        { min: 2, max: 2, allowCancel: false },
+      ),
+      (selected: Card[] | null) => {
+        const cards = selected || [];
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: self });
+        next();
+      },
+    );
   }
 
   // Show opponent's hand to us
@@ -39,46 +52,53 @@ function* playCard(next: Function, store: StoreLike, state: State, self: Oleana,
   }
 
   // Let player choose a Trainer card from opponent's hand to put on bottom of deck
-  const trainerCards = opponent.hand.cards.filter(c => c.superType === SuperType.TRAINER);
+  const trainerCards = opponent.hand.cards.filter((c) => c.superType === SuperType.TRAINER);
   if (trainerCards.length > 0) {
-    yield store.prompt(state, new ChooseCardsPrompt(
-      player,
-      GameMessage.CHOOSE_CARD_TO_DECK,
-      opponent.hand,
-      { superType: SuperType.TRAINER },
-      { min: 0, max: 1, allowCancel: false }
-    ), (selected: Card[] | null) => {
-      const cards = selected || [];
-      cards.forEach(card => {
-        // Put on bottom of deck
-        opponent.hand.moveCardTo(card, opponent.deck);
-      });
-      next();
-    });
+    yield store.prompt(
+      state,
+      new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_DECK,
+        opponent.hand,
+        { superType: SuperType.TRAINER },
+        { min: 0, max: 1, allowCancel: false },
+      ),
+      (selected: Card[] | null) => {
+        const cards = selected || [];
+        cards.forEach((card) => {
+          // Put on bottom of deck
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, {
+            cards: [card],
+            sourceCard: self,
+          });
+        });
+        next();
+      },
+    );
   }
 
   // Clean up supporter
-
 
   return state;
 }
 
 export class Oleana extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'RCL';
   public setNumber: string = '163';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Oleana';
   public fullName: string = 'Oleana RCL';
-  public text: string = 'You can play this card only if you discard 2 other cards from your hand. Your opponent reveals their hand. Put a Trainer card you find there on the bottom of their deck. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'You can play this card only if you discard 2 other cards from your hand. Your opponent reveals their hand. Put a Trainer card you find there on the bottom of their deck. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-hidden-fates/jessie-and-james.ts (generator pattern - discard from hand + interact with opponent's hand)
     // Ref: set-sword-and-shield/thievul.ts (SHOW_CARDS_TO_PLAYER + ChooseCardsPrompt + put on bottom of deck)
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
-      const nonSelfCards = player.hand.cards.filter(c => c !== effect.trainerCard);
+      const nonSelfCards = player.hand.cards.filter((c) => c !== effect.trainerCard);
 
       if (nonSelfCards.length < 2) {
         return state;

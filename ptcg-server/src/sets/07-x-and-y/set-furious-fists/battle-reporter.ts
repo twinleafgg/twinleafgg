@@ -10,13 +10,14 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class BattleReporter extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'FFI';
   public setNumber: string = '88';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Battle Reporter';
   public fullName: string = 'Battle Reporter FFI';
-  public text: string = 'Draw cards until you have the same number of cards in your hand as your opponent. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Draw cards until you have the same number of cards in your hand as your opponent. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-great-encounters/baltoy.ts (Psychic Balance - draw until equal to opponent)

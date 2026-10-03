@@ -17,7 +17,7 @@ import {
 
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, TERA_RULE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, TERA_RULE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class WellspringMaskOgerponex extends PokemonCard {
@@ -83,7 +83,7 @@ export class WellspringMaskOgerponex extends PokemonCard {
           { allowCancel: false }
         ), energy => {
           const cards: Card[] = (energy || []).map(e => e.card);
-          player.active.moveCardsTo(cards, player.deck);
+          MOVE_CARDS(store, state, player.active, player.deck, { cards: cards, sourceCard: this });
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
             player.deck.applyOrder(order);

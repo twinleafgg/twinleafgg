@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mantine extends PokemonCard {
 
@@ -79,7 +79,7 @@ export class Mantine extends PokemonCard {
           if (cards.length > 0) {
             const slot = player.bench.find(b => b.cards.length === 0);
             if (slot) {
-              player.discard.moveCardTo(cards[0], slot);
+              MOVE_CARDS(store, state, player.discard, slot, { cards: [cards[0]], sourceCard: this });
               slot.pokemonPlayedTurn = state.turn;
             }
           } else if (opponentHasBasics && opponentHasSpace) {
@@ -95,7 +95,7 @@ export class Mantine extends PokemonCard {
               if (cards2.length > 0) {
                 const slot = opponent.bench.find(b => b.cards.length === 0);
                 if (slot) {
-                  opponent.discard.moveCardTo(cards2[0], slot);
+                  MOVE_CARDS(store, state, opponent.discard, slot, { cards: [cards2[0]], sourceCard: this });
                   slot.pokemonPlayedTurn = state.turn;
                 }
               }
@@ -117,7 +117,7 @@ export class Mantine extends PokemonCard {
           if (cards.length > 0) {
             const slot = opponent.bench.find(b => b.cards.length === 0);
             if (slot) {
-              opponent.discard.moveCardTo(cards[0], slot);
+              MOVE_CARDS(store, state, opponent.discard, slot, { cards: [cards[0]], sourceCard: this });
               slot.pokemonPlayedTurn = state.turn;
             }
           }

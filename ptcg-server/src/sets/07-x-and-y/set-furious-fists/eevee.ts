@@ -10,7 +10,7 @@ import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eevee extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -87,7 +87,7 @@ export class Eevee extends PokemonCard {
           ), selected => {
             cards = selected || [];
             if (cards.length > 0) {
-              player.deck.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
               cardList.clearEffects();
               cardList.pokemonPlayedTurn = state.turn;
             }

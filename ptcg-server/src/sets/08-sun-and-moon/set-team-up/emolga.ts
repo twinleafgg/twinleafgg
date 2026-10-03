@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ABILITY_USED, ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, BLOCK_IF_DECK_EMPTY, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, USE_ABILITY_ONCE_PER_TURN, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, BLOCK_IF_DECK_EMPTY, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, USE_ABILITY_ONCE_PER_TURN, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
@@ -70,7 +70,7 @@ export class Emolga extends PokemonCard {
         { min: 0, max: 1, allowCancel: true, blocked }
       ), selected => {
         const cards: Card[] = selected || [];
-        cards.forEach(c => { player.deck.moveCardTo(c, player.hand); });
+        cards.forEach(c => { MOVE_CARDS(store, state, player.deck, player.hand, { cards: [c], sourceCard: this }); });
         return SHUFFLE_DECK(store, state, player);
       });
     }

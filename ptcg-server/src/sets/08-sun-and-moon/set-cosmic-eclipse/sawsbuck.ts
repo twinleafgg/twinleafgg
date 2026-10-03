@@ -4,7 +4,7 @@ import { ChoosePokemonPrompt, ConfirmPrompt, GameError, GameMessage, PlayerType,
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { ADD_MARKER, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_MARKER, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sawsbuck extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -51,7 +51,7 @@ export class Sawsbuck extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.deck.moveTo(player.hand, 1);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       ADD_MARKER(this.SEASONAL_BLESSINGS_MARKER, player, this);
     }
 

@@ -17,11 +17,9 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GardevoirSylveonGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX, CardTag.TAG_TEAM];
@@ -90,7 +88,7 @@ export class GardevoirSylveonGX extends PokemonCard {
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
           SHUFFLE_DECK(store, state, player);
         },
@@ -117,7 +115,7 @@ export class GardevoirSylveonGX extends PokemonCard {
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );
@@ -147,7 +145,7 @@ export class GardevoirSylveonGX extends PokemonCard {
       );
 
       if (meetsExtraEffectCost) {
-        opponent.hand.moveTo(opponent.deck);
+        MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
         return store.prompt(state, new ShuffleDeckPrompt(opponent.id), (order) => {
           opponent.deck.applyOrder(order);
         });

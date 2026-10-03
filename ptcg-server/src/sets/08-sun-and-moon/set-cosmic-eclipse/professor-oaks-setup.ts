@@ -6,15 +6,23 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, SuperType, Stage } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
-import { PlayPokemonFromDeckEffect, TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import {
+  PlayPokemonFromDeckEffect,
+  TrainerEffect,
+} from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
-  const slots: PokemonCardList[] = player.bench.filter(b => b.cards.length === 0);
+  const slots: PokemonCardList[] = player.bench.filter((b) => b.cards.length === 0);
   const max = Math.min(slots.length, 3);
 
   if (player.deck.cards.length === 0) {
@@ -22,35 +30,41 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   }
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.deck,
-    { superType: SuperType.POKEMON, stage: Stage.BASIC } as any,
-    { min: 0, max, allowCancel: true, differentTypes: true }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.deck,
+      { superType: SuperType.POKEMON, stage: Stage.BASIC } as any,
+      { min: 0, max, allowCancel: true, differentTypes: true },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   cards.forEach((card, index) => {
-    store.reduceEffect(state, new PlayPokemonFromDeckEffect(player, card as PokemonCard, slots[index]));
+    store.reduceEffect(
+      state,
+      new PlayPokemonFromDeckEffect(player, card as PokemonCard, slots[index]),
+    );
   });
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class ProfessorOaksSetup extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CEC';
 
-  public name: string = 'Professor Oak\'s Setup';
+  public name: string = "Professor Oak's Setup";
 
-  public fullName: string = 'Professor Oak\'s Setup CEC';
+  public fullName: string = "Professor Oak's Setup CEC";
 
   public cardImage: string = 'assets/cardback.png';
 
@@ -60,9 +74,7 @@ export class ProfessorOaksSetup extends TrainerCard {
     'Search your deck for up to 3 Basic Pokemon of different types and ' +
     'put them onto your Bench. Then, shuffle your deck.';
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, effect);
       return generator.next().value;
@@ -70,5 +82,4 @@ export class ProfessorOaksSetup extends TrainerCard {
 
     return state;
   }
-
 }

@@ -17,11 +17,9 @@ import {
 } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { AttackEffect } from '../../game/store/effects/game-effects';
-import {
-  COIN_FLIP_PROMPT,
+import {COIN_FLIP_PROMPT,
   IS_POKEMON_POWER_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { HANDLE_ABILITY_BLOCK } from '../../game/store/prefabs/ability-lock';
 
 export class DarkFeraligatr extends PokemonCard {
@@ -132,7 +130,7 @@ export class DarkFeraligatr extends PokemonCard {
               if (!card) {
                 return;
               }
-              opponent.active.moveCardTo(card, opponent.discard);
+              MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [card], sourceCard: this });
             },
           );
         }

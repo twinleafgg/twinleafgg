@@ -7,10 +7,10 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { AttachEnergyPrompt, ChoosePokemonPrompt, GameError, StateUtils } from '../../../game';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ElesasSparkle extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'E';
 
@@ -108,7 +108,7 @@ export class ElesasSparkle extends TrainerCard {
 
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                player.deck.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
               }
               SHUFFLE_DECK(store, state, player);
             },

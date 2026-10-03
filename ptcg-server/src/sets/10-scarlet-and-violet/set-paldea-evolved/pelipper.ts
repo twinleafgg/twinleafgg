@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { StoreLike, State, StateUtils, GameMessage, TrainerCard, GameError, ChooseCardsPrompt, Card, ShowCardsPrompt, SelectPrompt, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pelipper extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -78,7 +78,7 @@ export class Pelipper extends PokemonCard {
                   GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
                   cards
                 )], () => {
-                  player.discard.moveCardsTo(cards, player.hand);
+                  MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
                 });
               }
 
@@ -104,7 +104,7 @@ export class Pelipper extends PokemonCard {
                 GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
                 cards
               )], () => {
-                player.deck.moveCardsTo(cards, player.hand);
+                MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
               });
               return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
                 player.deck.applyOrder(order);

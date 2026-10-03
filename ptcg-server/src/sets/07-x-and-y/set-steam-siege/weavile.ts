@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, PowerType, CardTarget, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { MOVE_CARD_TO, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {MOVE_CARD_TO, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
@@ -57,7 +57,7 @@ function* useTearAway(next: Function, store: StoreLike, state: State, effect: Po
           }
         });
       } else {
-        target.moveCardTo(target.tools[0], owner.hand);
+        MOVE_CARDS(store, state, target, owner.hand, { cards: [target.tools[0]], sourceCard: effect.card });
       }
     }
   });

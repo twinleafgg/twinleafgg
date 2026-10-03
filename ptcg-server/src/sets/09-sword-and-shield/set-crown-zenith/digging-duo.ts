@@ -4,15 +4,28 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, GameError, GameMessage, Card, ChooseCardsPrompt, ShuffleDeckPrompt } from '../../../game';
+import {
+  StoreLike,
+  State,
+  GameError,
+  GameMessage,
+  Card,
+  ChooseCardsPrompt,
+  ShuffleDeckPrompt,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { CardList } from '../../../game/store/state/card-list';
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // Ref: set-battle-styles/sordward-and-shielbert.ts (generator pattern with effect.preventDefault)
 // Ref: set-plasma-blast/root-fossil-lileep.ts (bottom deck lookup pattern)
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   if (player.deck.cards.length === 0) {
@@ -21,7 +34,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Flip a coin to determine how many bottom cards to look at
   let isHeads = false;
-  yield COIN_FLIP_PROMPT(store, state, player, result => {
+  yield COIN_FLIP_PROMPT(store, state, player, (result) => {
     isHeads = result;
     next();
   });
@@ -41,30 +54,37 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Choose 1 card from the bottom cards to put into hand
   let chosen: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    deckBottom,
-    {},
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    chosen = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      deckBottom,
+      {},
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      chosen = selected || [];
+      next();
+    },
+  );
 
   // Move chosen card to hand; the rest stay in deck
-  chosen.forEach(card => {
-    player.deck.moveCardTo(card, player.hand);
+  chosen.forEach((card) => {
+    MOVE_CARDS(store, state, player.deck, player.hand, {
+      cards: [card],
+      sourceCard: effect.trainerCard,
+    });
   });
 
   // Shuffle the remaining deck cards
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class DiggingDuo extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark: string = 'F';
 
@@ -74,7 +94,8 @@ export class DiggingDuo extends TrainerCard {
   public name: string = 'Digging Duo';
   public fullName: string = 'Digging Duo CRZ 126';
 
-  public text: string = 'Flip a coin. If heads, look at the bottom 8 cards of your deck and put 1 of them into your hand. If tails, look at the bottom 3 cards of your deck and put 1 of them into your hand. Shuffle the other cards back into your deck. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Flip a coin. If heads, look at the bottom 8 cards of your deck and put 1 of them into your hand. If tails, look at the bottom 3 cards of your deck and put 1 of them into your hand. Shuffle the other cards back into your deck. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -84,7 +105,10 @@ export class DiggingDuo extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       effect.preventDefault = true;
 
       const generator = playCard(() => generator.next(), store, state, effect);

@@ -13,13 +13,14 @@ import { PlayerType } from '../../../game/store/actions/play-card-action';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 
 export class RoughSeas extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'PRC';
   public name: string = 'Rough Seas';
   public fullName: string = 'Rough Seas PRC';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '137';
-  public text: string = 'Once during each player\'s turn, that player may heal 30 damage from each of his or her [W] Pokémon and [L] Pokémon.';
+  public text: string =
+    "Once during each player's turn, that player may heal 30 damage from each of his or her [W] Pokémon and [L] Pokémon.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -27,7 +28,11 @@ export class RoughSeas extends TrainerCard {
 
       const targets: PokemonCardList[] = [];
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
-        if ((pokemonHasCardType(card, CardType.WATER) || pokemonHasCardType(card, CardType.LIGHTNING)) && cardList.damage > 0) {
+        if (
+          (pokemonHasCardType(card, CardType.WATER) ||
+            pokemonHasCardType(card, CardType.LIGHTNING)) &&
+          cardList.damage > 0
+        ) {
           targets.push(cardList);
         }
       });
@@ -36,7 +41,7 @@ export class RoughSeas extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_USE_STADIUM);
       }
 
-      targets.forEach(target => {
+      targets.forEach((target) => {
         const owner = StateUtils.findOwner(state, target);
         if (IS_STADIUM_EFFECT_BLOCKED(store, state, owner, target)) {
           return;

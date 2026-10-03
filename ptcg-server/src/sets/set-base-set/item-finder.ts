@@ -13,21 +13,25 @@ import { ShowCardsPrompt } from '../../game/store/prompts/show-cards-prompt';
 import { StateUtils } from '../../game/store/state-utils';
 import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
-
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: ItemFinder, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: ItemFinder,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
   let cards: Card[] = [];
 
-  cards = player.hand.cards.filter(c => c !== self);
+  cards = player.hand.cards.filter((c) => c !== self);
   if (cards.length < 2) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
   // Player has no Basic Energy in the discard pile
   let trainersInDiscard = 0;
-  player.discard.cards.forEach(c => {
+  player.discard.cards.forEach((c) => {
     if (c instanceof TrainerCard) {
       trainersInDiscard++;
     }
@@ -41,18 +45,22 @@ function* playCard(next: Function, store: StoreLike, state: State,
 
   // prepare card list without Junk Arm
   const handTemp = new CardList();
-  handTemp.cards = player.hand.cards.filter(c => c !== self);
+  handTemp.cards = player.hand.cards.filter((c) => c !== self);
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    handTemp,
-    {},
-    { min: 2, max: 2, allowCancel: false }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      handTemp,
+      {},
+      { min: 2, max: 2, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (cards.length === 0) {
@@ -61,31 +69,34 @@ function* playCard(next: Function, store: StoreLike, state: State,
 
   MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: self });
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.discard,
-    { superType: SuperType.TRAINER },
-    { min: 0, max: 1, allowCancel: false }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.discard,
+      { superType: SuperType.TRAINER },
+      { min: 0, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   if (cards.length > 0) {
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => next(),
+    );
   }
 
   MOVE_CARDS(store, state, player.discard, player.hand, { cards, sourceCard: self });
 }
 
 export class ItemFinder extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -107,5 +118,4 @@ export class ItemFinder extends TrainerCard {
     }
     return state;
   }
-
 }

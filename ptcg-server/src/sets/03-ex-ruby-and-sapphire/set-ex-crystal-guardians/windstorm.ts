@@ -1,4 +1,16 @@
-import { CardList, CardTarget, ChooseCardsPrompt, ChoosePokemonPrompt, GameError, GameLog, GameMessage, PlayerType, SelectOptionPrompt, SlotType, StateUtils } from '../../../game';
+import {
+  CardList,
+  CardTarget,
+  ChooseCardsPrompt,
+  ChoosePokemonPrompt,
+  GameError,
+  GameLog,
+  GameMessage,
+  PlayerType,
+  SelectOptionPrompt,
+  SlotType,
+  StateUtils,
+} from '../../../game';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -8,8 +20,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class Windstorm extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'CG';
   public name: string = 'Windstorm';
   public fullName: string = 'Windstorm CG';
@@ -17,7 +28,7 @@ export class Windstorm extends TrainerCard {
   public setNumber: string = '85';
 
   public text: string =
-    'Choose up to 2 in any combination of Pokémon Tool cards and Stadium cards in play (yours or your opponent\'s) and discard them.';
+    "Choose up to 2 in any combination of Pokémon Tool cards and Stadium cards in play (yours or your opponent's) and discard them.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -53,7 +64,7 @@ export class Windstorm extends TrainerCard {
 
       // Prevent default effect and move card to supporter pile temporarily
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       // Handle the case where only stadium is in play
       if (pokemonsWithTool === 0 && stadiumCard !== undefined) {
@@ -63,9 +74,9 @@ export class Windstorm extends TrainerCard {
         store.log(state, GameLog.LOG_PLAYER_DISCARDS_WITH_FIELD_BLOWER, {
           name: player.name,
           card: stadiumCard.name,
-          effectName: this.name
+          effectName: this.name,
         });
-        player.supporter.moveCardTo(this, player.discard);
+        MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
         return state;
       }
 
@@ -76,63 +87,96 @@ export class Windstorm extends TrainerCard {
 
       // Handle the case where both stadium and Pokémon tools are in play
       if (pokemonsWithTool >= 1 && stadiumCard !== undefined) {
-        return store.prompt(state, new SelectOptionPrompt(
-          player.id,
-          GameMessage.CHOOSE_OPTION,
-          [
-            'Discard the Stadium card and up to 1 Pokémon Tool card.',
-            'Discard up to 2 Pokémon Tool cards.'
-          ],
-          { allowCancel: false }
-        ), choice => {
-          if (choice === 0) { // YES - discard stadium and up to 1 tool
-            const cardList = StateUtils.findCardList(state, stadiumCard);
-            const owner = StateUtils.findOwner(state, cardList);
-            MOVE_CARDS(store, state, cardList, owner.discard, { sourceCard: this });
-            store.log(state, GameLog.LOG_PLAYER_DISCARDS_WITH_FIELD_BLOWER, {
-              name: player.name,
-              card: stadiumCard.name,
-              effectName: this.name
-            });
+        return store.prompt(
+          state,
+          new SelectOptionPrompt(
+            player.id,
+            GameMessage.CHOOSE_OPTION,
+            [
+              'Discard the Stadium card and up to 1 Pokémon Tool card.',
+              'Discard up to 2 Pokémon Tool cards.',
+            ],
+            { allowCancel: false },
+          ),
+          (choice) => {
+            if (choice === 0) {
+              // YES - discard stadium and up to 1 tool
+              const cardList = StateUtils.findCardList(state, stadiumCard);
+              const owner = StateUtils.findOwner(state, cardList);
+              MOVE_CARDS(store, state, cardList, owner.discard, { sourceCard: this });
+              store.log(state, GameLog.LOG_PLAYER_DISCARDS_WITH_FIELD_BLOWER, {
+                name: player.name,
+                card: stadiumCard.name,
+                effectName: this.name,
+              });
 
-            // Allow up to 1 Pokémon tool discard
-            return this.handlePokemonToolDiscard(store, state, player, blocked, 1);
-          } else { // NO - discard up to 2 tools
-            return this.handlePokemonToolDiscard(store, state, player, blocked, 2);
-          }
-        });
+              // Allow up to 1 Pokémon tool discard
+              return this.handlePokemonToolDiscard(store, state, player, blocked, 1);
+            } else {
+              // NO - discard up to 2 tools
+              return this.handlePokemonToolDiscard(store, state, player, blocked, 2);
+            }
+          },
+        );
       }
       return state;
     }
     return state;
   }
 
-  private handlePokemonToolDiscard(store: StoreLike, state: State, player: any, blocked: CardTarget[], maxTools: number): State {
-    return store.prompt(state, new ChoosePokemonPrompt(
-      player.id,
-      GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-      PlayerType.ANY,
-      [SlotType.ACTIVE, SlotType.BENCH],
-      { min: 0, max: maxTools, allowCancel: false, blocked }
-    ), results => {
-      const targets = results || [];
+  private handlePokemonToolDiscard(
+    store: StoreLike,
+    state: State,
+    player: any,
+    blocked: CardTarget[],
+    maxTools: number,
+  ): State {
+    return store.prompt(
+      state,
+      new ChoosePokemonPrompt(
+        player.id,
+        GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+        PlayerType.ANY,
+        [SlotType.ACTIVE, SlotType.BENCH],
+        { min: 0, max: maxTools, allowCancel: false, blocked },
+      ),
+      (results) => {
+        const targets = results || [];
+
+        if (targets.length === 0) {
+          // No Pokémon selected, just discard the Field Blower
+          player.supporter.moveCardTo(this, player.discard);
+          return state;
+        }
+
+        // Process tool discards sequentially
+        this.processToolDiscards(store, state, player, targets, 0, () => {
+          player.supporter.moveCardTo(this, player.discard);
+        });
 
       if (targets.length === 0) {
         // No Pokémon selected, just discard the Field Blower
-        player.supporter.moveCardTo(this, player.discard);
+        MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
         return state;
       }
 
       // Process tool discards sequentially
       this.processToolDiscards(store, state, player, targets, 0, () => {
-        player.supporter.moveCardTo(this, player.discard);
+        MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
       });
 
       return state;
     });
   }
 
-  private processToolDiscards(store: StoreLike, state: State, player: any, targets: any[], index: number, onComplete: () => void): void {
+  private processToolDiscards(
+    store: StoreLike,
+    state: State,
+    player: any,
+    targets: any[],
+    index: number,
+    onComplete: () => void,
+  ): void {
     if (index >= targets.length) {
       onComplete();
       return;
@@ -144,11 +188,11 @@ export class Windstorm extends TrainerCard {
     if (target.tools.length === 1) {
       // Single tool, discard it directly
       const tool = target.tools[0];
-      target.moveCardTo(tool, owner.discard);
+      MOVE_CARDS(store, state, target, owner.discard, { cards: [tool], sourceCard: this });
       store.log(state, GameLog.LOG_PLAYER_DISCARDS_WITH_FIELD_BLOWER, {
         name: player.name,
         card: tool.name,
-        effectName: this.name
+        effectName: this.name,
       });
       this.processToolDiscards(store, state, player, targets, index + 1, onComplete);
     } else if (target.tools.length > 1) {
@@ -165,7 +209,7 @@ export class Windstorm extends TrainerCard {
       ), selectedTools => {
         if (selectedTools && selectedTools.length > 0) {
           const tool = selectedTools[0];
-          target.moveCardTo(tool, owner.discard);
+          MOVE_CARDS(store, state, target, owner.discard, { cards: [tool], sourceCard: this });
           store.log(state, GameLog.LOG_PLAYER_DISCARDS_WITH_FIELD_BLOWER, {
             name: player.name,
             card: tool.name,

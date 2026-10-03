@@ -5,7 +5,7 @@ import { GameMessage } from '../../../game/game-message';
 import { Effect } from '../../../game/store/effects/effect';
 import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Serperior extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -115,7 +115,7 @@ export class Serperior extends PokemonCard {
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

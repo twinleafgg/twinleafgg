@@ -5,7 +5,7 @@ import { StoreLike } from '../../../game/store/store-like';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt, EnergyCard, GameError, GameMessage, PowerType, StateUtils } from '../../../game';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { ABILITY_USED, ADD_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 
 export class Regirock extends PokemonCard {
@@ -83,7 +83,7 @@ export class Regirock extends PokemonCard {
         if (cards.length === 0) {
           return;
         }
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
         ADD_MARKER(this.REGI_CYCLE_MARKER, player, this);
         ABILITY_USED(player, this);
@@ -91,7 +91,7 @@ export class Regirock extends PokemonCard {
         const cardList = StateUtils.findCardList(state, this);
         const energyCard = player.discard.cards.find(c => c instanceof EnergyCard && c.name === 'Fighting Energy');
         if (energyCard) {
-          player.discard.moveCardTo(energyCard, cardList);
+          MOVE_CARDS(store, state, player.discard, cardList, { cards: [energyCard], sourceCard: this });
         }
       });
     }

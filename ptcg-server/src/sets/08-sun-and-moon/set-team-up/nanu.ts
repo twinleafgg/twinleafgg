@@ -4,18 +4,32 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { CardType, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { GameError, GameMessage, StoreLike, State, PlayerType, SlotType, PokemonCard, PokemonCardList, ChooseCardsPrompt, ChoosePokemonPrompt, pokemonHasCardType } from '../../../game';
+import {
+  GameError,
+  GameMessage,
+  StoreLike,
+  State,
+  PlayerType,
+  SlotType,
+  PokemonCard,
+  PokemonCardList,
+  ChooseCardsPrompt,
+  ChoosePokemonPrompt,
+  pokemonHasCardType,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Nanu extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'TEU';
   public setNumber: string = '150';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Nanu';
   public fullName: string = 'Nanu TEU';
-  public text: string = 'Choose a Basic Darkness Pokémon in your discard pile. Switch it with 1 of your Pokémon in play. Any attached cards, damage counters, Special Conditions, turns in play, and any other effects remain on the new Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Choose a Basic Darkness Pokémon in your discard pile. Switch it with 1 of your Pokémon in play. Any attached cards, damage counters, Special Conditions, turns in play, and any other effects remain on the new Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-lost-origin/thorton.ts (Thorton - swap Basic from discard)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -28,56 +42,72 @@ export class Nanu extends TrainerCard {
       }
 
       // Check if there's a Basic Darkness Pokemon in discard
-      const hasBasicDarkInDiscard = player.discard.cards.some(c =>
-        c instanceof PokemonCard && c.stage === Stage.BASIC && pokemonHasCardType(c, CardType.DARK)
+      const hasBasicDarkInDiscard = player.discard.cards.some(
+        (c) =>
+          c instanceof PokemonCard &&
+          c.stage === Stage.BASIC &&
+          pokemonHasCardType(c, CardType.DARK),
       );
 
       if (!hasBasicDarkInDiscard) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       effect.preventDefault = true;
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-        player.discard,
-        { superType: SuperType.POKEMON, stage: Stage.BASIC, cardType: [CardType.DARK] },
-        { min: 1, max: 1, allowCancel: false }
-      ), (selectedCards) => {
-        const card = selectedCards[0];
-        if (!card) {
-
-          return state;
-        }
-
-        return store.prompt(state, new ChoosePokemonPrompt(
-          player.id,
-          GameMessage.CHOOSE_POKEMON,
-          PlayerType.BOTTOM_PLAYER,
-          [SlotType.ACTIVE, SlotType.BENCH],
-          { min: 1, max: 1, allowCancel: false }
-        ), (targets: PokemonCardList[]) => {
-          if (!targets || targets.length === 0) {
-
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+          player.discard,
+          { superType: SuperType.POKEMON, stage: Stage.BASIC, cardType: [CardType.DARK] },
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selectedCards) => {
+          const card = selectedCards[0];
+          if (!card) {
             return state;
           }
 
-          const targetList = targets[0];
+          return store.prompt(
+            state,
+            new ChoosePokemonPrompt(
+              player.id,
+              GameMessage.CHOOSE_POKEMON,
+              PlayerType.BOTTOM_PLAYER,
+              [SlotType.ACTIVE, SlotType.BENCH],
+              { min: 1, max: 1, allowCancel: false },
+            ),
+            (targets: PokemonCardList[]) => {
+              if (!targets || targets.length === 0) {
+                return state;
+              }
 
-          // Move all Pokemon cards (entire evolution chain) to discard
-          const pokemons = targetList.getPokemons();
-          pokemons.forEach(p => {
-            targetList.moveCardTo(p, player.discard);
-          });
+              const targetList = targets[0];
 
-          // Place the new Basic Darkness Pokemon into the slot
-          player.discard.moveCardTo(card, targetList);
+              // Move all Pokemon cards (entire evolution chain) to discard
+              const pokemons = targetList.getPokemons();
+              pokemons.forEach((p) => {
+                MOVE_CARDS(store, state, targetList, player.discard, {
+                  cards: [p],
+                  sourceCard: this,
+                });
+              });
 
-
-        });
-      });
+              // Place the new Basic Darkness Pokemon into the slot
+              MOVE_CARDS(store, state, player.discard, targetList, {
+                cards: [card],
+                sourceCard: this,
+              });
+            },
+          );
+        },
+      );
     }
 
     return state;

@@ -12,14 +12,15 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Brandon extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'F';
   public set: string = 'SIT';
   public setNumber: string = '151';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Brandon';
   public fullName: string = 'Brandon SIT 151';
-  public text: string = 'You can use this card only when it is the last card in your hand. Draw a card for each Benched Pokémon (both yours and your opponent\'s). You may play only 1 Supporter card during your turn.';
+  public text: string =
+    "You can use this card only when it is the last card in your hand. Draw a card for each Benched Pokémon (both yours and your opponent's). You may play only 1 Supporter card during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-primal-clash/archies-ace-in-the-hole.ts (last card in hand check + draw cards)
@@ -28,14 +29,14 @@ export class Brandon extends TrainerCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       // Check if this is the last card in hand
-      const otherCards = player.hand.cards.filter(c => c !== this);
+      const otherCards = player.hand.cards.filter((c) => c !== this);
       if (otherCards.length !== 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
       // Count benched Pokemon for both players
-      const playerBenched = player.bench.filter(b => b.cards.length > 0).length;
-      const opponentBenched = opponent.bench.filter(b => b.cards.length > 0).length;
+      const playerBenched = player.bench.filter((b) => b.cards.length > 0).length;
+      const opponentBenched = opponent.bench.filter((b) => b.cards.length > 0).length;
       const totalBenched = playerBenched + opponentBenched;
 
       if (totalBenched > 0) {

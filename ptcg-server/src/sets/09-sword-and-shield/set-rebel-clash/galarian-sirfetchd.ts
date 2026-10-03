@@ -4,10 +4,11 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike, State, GameError, GameMessage } from '../../../game';
+import { StoreLike, State } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_THIS_ATTACK_UNTIL_LEAVES_ACTIVE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class GalarianSirfetchd extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -39,23 +40,9 @@ export class GalarianSirfetchd extends PokemonCard {
   public name: string = 'Galarian Sirfetch\'d';
   public fullName: string = 'Galarian Sirfetch\'d RCL';
 
-  public readonly METEOR_ASSAULT_MARKER = 'GALARIAN_SIRFETCHD_RCL_METEOR_ASSAULT_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 2: Meteor Assault
-    // Ref: set-temporal-forces/gouging-fire-ex.ts (Blaze Blitz - can't use until leaves Active Spot)
-    // The Pokemon's marker is cleared automatically by clearEffects() when it leaves the Active Spot.
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-
-      if (player.active.marker.hasMarker(this.METEOR_ASSAULT_MARKER, this)) {
-        throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
-      }
-    }
-
-    if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-      player.active.marker.addMarker(this.METEOR_ASSAULT_MARKER, this);
+      return PREVENT_THIS_ATTACK_UNTIL_LEAVES_ACTIVE(store, state, effect, this.attacks[1].name);
     }
 
     return state;

@@ -6,16 +6,26 @@ import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import {
-  PlayerType, SlotType, CardTarget, GameError, GameMessage,
+  PlayerType,
+  SlotType,
+  CardTarget,
+  GameError,
+  GameMessage,
   PokemonCardList,
   Player,
   ChooseEnergyPrompt,
-  Card
+  Card,
 } from '../../../game';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   const blocked: CardTarget[] = [];
@@ -39,16 +49,20 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   effect.preventDefault = true;
 
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_HEAL,
-    PlayerType.BOTTOM_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { min: 1, max: 1, allowCancel: false, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_HEAL,
+      PlayerType.BOTTOM_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { min: 1, max: 1, allowCancel: false, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length === 0) {
     return state;
@@ -65,33 +79,38 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   const energyList: CardType[] = [CardType.COLORLESS, CardType.COLORLESS];
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseEnergyPrompt(
-    player.id,
-    GameMessage.CHOOSE_ENERGIES_TO_DISCARD,
-    checkProvidedEnergy.energyMap,
-    energyList,
-    { allowCancel: false }
-  ), energy => {
-    cards = (energy || []).map(e => e.card);
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseEnergyPrompt(
+      player.id,
+      GameMessage.CHOOSE_ENERGIES_TO_DISCARD,
+      checkProvidedEnergy.energyMap,
+      energyList,
+      { allowCancel: false },
+    ),
+    (energy) => {
+      cards = (energy || []).map((e) => e.card);
+      next();
+    },
+  );
 
   if (cards.length > 0) {
-    target.moveCardsTo(cards, player.discard);
+    MOVE_CARDS(store, state, target, player.discard, { cards: cards, sourceCard: effect.trainerCard });
   }
 
   return state;
 }
 
 export class HyperPotion extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'D';
   public set: string = 'CPA';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '54';
   public name: string = 'Hyper Potion';
   public fullName: string = 'Hyper Potion CPA';
-  public text: string = 'Heal 120 damage from 1 of your Pokémon that has at least 2 Energy attached. If you healed any damage in this way, discard 2 Energy from it.';
+  public text: string =
+    'Heal 120 damage from 1 of your Pokémon that has at least 2 Energy attached. If you healed any damage in this way, discard 2 Energy from it.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     let hasPokemonWithDamage: boolean = false;
@@ -117,5 +136,4 @@ export class HyperPotion extends TrainerCard {
     }
     return state;
   }
-
 }

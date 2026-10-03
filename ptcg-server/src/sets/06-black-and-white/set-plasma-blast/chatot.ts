@@ -1,8 +1,6 @@
-import {
-  ADD_CONFUSION_TO_PLAYER_ACTIVE,
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -46,7 +44,7 @@ export class Chatot extends PokemonCard {
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
         const tools = cardList.tools.slice();
         tools.forEach((tool) => {
-          cardList.moveCardTo(tool, opponent.discard);
+          MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [tool], sourceCard: this });
         });
       });
     }

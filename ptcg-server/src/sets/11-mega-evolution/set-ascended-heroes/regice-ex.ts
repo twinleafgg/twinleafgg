@@ -19,7 +19,7 @@ import {
 } from '../../../game';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Regiceex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -88,7 +88,7 @@ export class Regiceex extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );
@@ -124,7 +124,7 @@ export class Regiceex extends PokemonCard {
             }
             for (const transfer of transfers) {
               const source = StateUtils.getTarget(state, player, transfer.from);
-              source.moveCardTo(transfer.card, player.discard);
+              MOVE_CARDS(store, state, source, player.discard, { cards: [transfer.card], sourceCard: this });
             }
           },
         );

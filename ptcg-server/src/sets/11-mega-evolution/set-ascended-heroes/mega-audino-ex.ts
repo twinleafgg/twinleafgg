@@ -15,11 +15,9 @@ import {
 } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   SHUFFLE_DECK,
-  MULTIPLE_COIN_FLIPS_PROMPT,
-} from '../../../game/store/prefabs/prefabs';
+  MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MegaAudinoex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -80,7 +78,7 @@ export class MegaAudinoex extends PokemonCard {
               if (transfers.length > 0) {
                 for (const transfer of transfers) {
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  player.deck.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
                 }
               }
               SHUFFLE_DECK(store, state, player);

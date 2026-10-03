@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magikarp extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -47,7 +47,7 @@ export class Magikarp extends PokemonCard {
         { min: 0, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.deck.moveCardsTo(selected, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: selected, sourceCard: this });
 
           SHOW_CARDS_TO_PLAYER(store, state, effect.opponent, selected);
           SHUFFLE_DECK(store, state, player);

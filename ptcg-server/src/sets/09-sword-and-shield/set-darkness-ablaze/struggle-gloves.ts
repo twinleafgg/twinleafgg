@@ -11,14 +11,15 @@ import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 
 export class StruggleGloves extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'D';
   public set: string = 'DAA';
   public setNumber: string = '171';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Struggle Gloves';
   public fullName: string = 'Struggle Gloves DAA';
-  public text: string = 'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. If the Pokémon this card is attached to has Weakness to your opponent\'s Active Pokémon\'s type, its attacks do 30 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn.';
+  public text: string =
+    "Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached. If the Pokémon this card is attached to has Weakness to your opponent's Active Pokémon's type, its attacks do 30 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-shining-fates/rusted-sword.ts (TOOL_ACTIVE_DAMAGE_BONUS - DealDamageEffect + tool check pattern)
@@ -47,7 +48,7 @@ export class StruggleGloves extends TrainerCard {
     const opponentTypes = checkOpponentType.cardTypes;
 
     // Check if the source Pokemon has weakness to any of the opponent's active types
-    const hasWeakness = sourcePokemon.weakness.some(w => opponentTypes.includes(w.type));
+    const hasWeakness = sourcePokemon.weakness.some((w) => opponentTypes.includes(w.type));
     if (hasWeakness) {
       effect.damage += 30;
     }

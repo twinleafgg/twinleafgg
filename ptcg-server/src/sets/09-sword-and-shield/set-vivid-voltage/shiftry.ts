@@ -3,7 +3,7 @@ import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlaySupporterEffect } from '../../../game/store/effects/play-card-effects';
-import { AFTER_ATTACK, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shiftry extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -67,13 +67,13 @@ export class Shiftry extends PokemonCard {
         effect.preventDefault = true;
 
         // Move the supporter card to the supporter pile
-        effect.player.hand.moveCardTo(effect.trainerCard, effect.player.supporter);
+        MOVE_CARDS(store, state, effect.player.hand, effect.player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
         // Apply our "draw 3 cards" effect instead
-        opponent.deck.moveTo(opponent.hand, 3);
+        MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 3, sourceCard: this });
 
         // Move the supporter card to discard
-        effect.player.supporter.moveCardTo(effect.trainerCard, effect.player.discard);
+        MOVE_CARDS(store, state, effect.player.supporter, effect.player.discard, { cards: [effect.trainerCard], sourceCard: this });
 
         // Increment supporter turn counter
         effect.player.supporterTurn += 1;

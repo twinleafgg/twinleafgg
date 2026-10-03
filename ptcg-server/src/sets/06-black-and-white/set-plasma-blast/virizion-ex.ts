@@ -19,7 +19,7 @@ import {
   CheckProvidedEnergyEffect,
   CheckTableStateEffect,
 } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useEmeraldSlash(
   next: Function,
@@ -69,7 +69,7 @@ function* useEmeraldSlash(
           return;
         }
         const target = targets[0];
-        player.deck.moveCardsTo(cards, target);
+        MOVE_CARDS(store, state, player.deck, target, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
         next();
       },
     );

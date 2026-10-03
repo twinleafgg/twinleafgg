@@ -19,12 +19,10 @@ import {
   PokemonCardList,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ADD_CONFUSION_TO_PLAYER_ACTIVE,
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   IS_POKEBODY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import {
   HANDLE_ABILITY_BLOCK,
   IS_ABILITY_LOCKER_IN_PLAY,
@@ -125,7 +123,7 @@ export class Girafarig extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(
               state,
@@ -151,7 +149,7 @@ export class Girafarig extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(
               state,

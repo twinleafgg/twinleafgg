@@ -11,7 +11,7 @@ import { CardTag, CardType, Stage } from '../../game/store/card/card-types';
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Effect } from '../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
-import { IS_POKEMON_POWER_BLOCKED } from '../../game/store/prefabs/prefabs';
+import {IS_POKEMON_POWER_BLOCKED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class UnwonE extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -59,10 +59,10 @@ export class UnwonE extends PokemonCard {
         new ConfirmPrompt(opponent.id, GameMessage.WANT_TO_USE_ABILITY),
         (opponentWantsToShuffle) => {
           if (opponentWantsToShuffle) {
-            opponent.hand.moveTo(opponent.deck);
+            MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
             state = store.prompt(state, new ShuffleDeckPrompt(opponent.id), (deckOrder) => {
               opponent.deck.applyOrder(deckOrder);
-              opponent.deck.moveTo(opponent.hand, 4);
+              MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
             });
           }
 
@@ -73,10 +73,10 @@ export class UnwonE extends PokemonCard {
             (playerWantsToShuffle) => {
               if (playerWantsToShuffle) {
                 const cards = player.hand.cards.filter((c) => c !== this);
-                player.hand.moveCardsTo(cards, player.deck);
+                MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: this });
                 state = store.prompt(state, new ShuffleDeckPrompt(player.id), (deckOrder) => {
                   player.deck.applyOrder(deckOrder);
-                  player.deck.moveTo(player.hand, 4);
+                  MOVE_CARDS(store, state, player.deck, player.hand, { count: 4, sourceCard: this });
                 });
               }
             },

@@ -8,8 +8,14 @@ import { Card, CardList, OrderCardsPrompt, Player } from '../../../game';
 import { State } from '../../../game/store/state/state';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   let cards: Card[] = [];
 
@@ -24,42 +30,49 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   const deckBottom = new CardList();
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARDS_TO_PUT_ON_BOTTOM_OF_THE_DECK,
-    player.hand,
-    {},
-    { allowCancel: false, min: 2, max: 2 }
-  ), selected => {
-    cards = selected || [];
-    next();
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARDS_TO_PUT_ON_BOTTOM_OF_THE_DECK,
+      player.hand,
+      {},
+      { allowCancel: false, min: 2, max: 2 },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
+
+  MOVE_CARDS(store, state, player.hand, deckBottom, {
+    cards: cards,
+    sourceCard: effect.trainerCard,
   });
 
-  player.hand.moveCardsTo(cards, deckBottom);
+  return store.prompt(
+    state,
+    new OrderCardsPrompt(player.id, GameMessage.CHOOSE_CARDS_ORDER, deckBottom, {
+      allowCancel: false,
+    }),
+    (order) => {
+      if (order === null) {
+        return state;
+      }
 
-  return store.prompt(state, new OrderCardsPrompt(
-    player.id,
-    GameMessage.CHOOSE_CARDS_ORDER,
-    deckBottom,
-    { allowCancel: false },
-  ), order => {
-    if (order === null) {
-      return state;
-    }
+      deckBottom.applyOrder(order);
+      MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: effect.trainerCard });
 
-    deckBottom.applyOrder(order);
-    deckBottom.moveTo(player.deck);
-
-    player.deck.moveTo(player.hand, Math.min(4, player.deck.cards.length));
-
-
-
-  });
+      MOVE_CARDS(store, state, player.deck, player.hand, {
+        count: Math.min(4, player.deck.cards.length),
+        sourceCard: effect.trainerCard,
+      });
+    },
+  );
 }
 
 export class Kofu extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'H';
 
@@ -74,7 +87,7 @@ export class Kofu extends TrainerCard {
   public fullName: string = 'Kofu SCR';
 
   public text: string =
-    'Put 2 cards from your hand on the bottom of your deck in any order. If you put 2 cards on the bottom of your deck in this way, draw 4 cards. (If you can\'t put 2 cards from your hand on the bottom of your deck, you can\'t use this card.)';
+    "Put 2 cards from your hand on the bottom of your deck in any order. If you put 2 cards on the bottom of your deck in this way, draw 4 cards. (If you can't put 2 cards from your hand on the bottom of your deck, you can't use this card.)";
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {
@@ -86,9 +99,7 @@ export class Kofu extends TrainerCard {
     return true;
   }
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, effect);
       return generator.next().value;
@@ -96,5 +107,4 @@ export class Kofu extends TrainerCard {
 
     return state;
   }
-
 }

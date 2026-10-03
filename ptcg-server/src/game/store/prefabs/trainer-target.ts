@@ -1,3 +1,4 @@
+import { GameLog } from '../../game-message';
 import { CardTarget } from '../actions/play-card-action';
 import { Card } from '../card/card';
 import { TrainerType } from '../card/card-types';
@@ -80,7 +81,12 @@ export function WAS_TRAINER_TARGET_BLOCKED(effect: TrainerTargetEffect): boolean
 
 /**
  * Probe whether `trainerCard`'s effect is prevented on `slot`. For trainers
- * that affect a Pokemon without a targeting prompt.
+ * that affect a Pokemon without a targeting prompt (e.g. Hypnotoxic Laser,
+ * Koga's Trap). Call immediately before mutating that slot; if this returns
+ * true, skip only that slot's effect — still play/discard the trainer and keep
+ * unrelated effects (own Active, stadium discard, "played this card" markers).
+ * Do not rely on ChoosePokemonPrompt existing; prompt results are already
+ * filtered by filterTrainerPromptResult.
  */
 export function TRAINER_TARGET_BLOCKED(
   store: StoreLike,
@@ -91,7 +97,34 @@ export function TRAINER_TARGET_BLOCKED(
 ): boolean {
   const effect = new TrainerTargetEffect(player, trainerCard, slot);
   store.reduceEffect(state, effect);
-  return WAS_TRAINER_TARGET_BLOCKED(effect);
+  if (!WAS_TRAINER_TARGET_BLOCKED(effect)) {
+    return false;
+  }
+  logTrainerTargetBlocked(store, state, effect, trainerCard, slot);
+  return true;
+}
+
+function logTrainerTargetBlocked(
+  store: StoreLike,
+  state: State,
+  effect: TrainerTargetEffect,
+  trainerCard: TrainerCard,
+  slot: PokemonCardList,
+): void {
+  const blocker = effect.blockedBy;
+  if (blocker == null) {
+    return;
+  }
+
+  const owner = StateUtils.findOwner(state, slot);
+  store.log(state, slot === owner.active
+    ? GameLog.LOG_TRAINER_TARGET_BLOCKED_ACTIVE
+    : GameLog.LOG_TRAINER_TARGET_BLOCKED_BENCH, {
+    blocker: blocker.name,
+    card: trainerCard.name,
+    name: owner.name,
+    pokemon: slot.getPokemonCard()?.name ?? 'Pokémon',
+  });
 }
 
 /**

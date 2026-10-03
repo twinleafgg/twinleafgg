@@ -4,18 +4,29 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Stage, TrainerType } from '../../../game/store/card/card-types';
-import { CardTarget, ChoosePokemonPrompt, GameError, GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
+import {
+  CardTarget,
+  ChoosePokemonPrompt,
+  GameError,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  StoreLike,
+  State,
+  StateUtils,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class MegaCatcher extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'FCO';
   public setNumber: string = '104';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mega Catcher';
   public fullName: string = 'Mega Catcher FCO';
-  public text: string = 'Switch 1 of your opponent\'s Benched Mega Evolution Pokémon with his or her Active Pokémon.';
+  public text: string =
+    "Switch 1 of your opponent's Benched Mega Evolution Pokémon with his or her Active Pokémon.";
 
   // Ref: set-surging-sparks/lisias-appeal.ts (blocked CardTarget pattern for filtered bench selection)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -24,7 +35,7 @@ export class MegaCatcher extends TrainerCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       // Check if opponent has any Benched Mega Evolution Pokemon
-      const hasMegaOnBench = opponent.bench.some(b => {
+      const hasMegaOnBench = opponent.bench.some((b) => {
         if (b.cards.length > 0) {
           const pokemonCard = b.getPokemonCard();
           return pokemonCard && pokemonCard.stage === Stage.MEGA;
@@ -47,17 +58,21 @@ export class MegaCatcher extends TrainerCard {
         }
       });
 
-      return store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON,
-        PlayerType.TOP_PLAYER,
-        [SlotType.BENCH],
-        { min: 1, max: 1, allowCancel: false, blocked }
-      ), selected => {
-        if (selected && selected.length > 0) {
-          opponent.switchPokemon(selected[0]);
-        }
-      });
+      return store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON,
+          PlayerType.TOP_PLAYER,
+          [SlotType.BENCH],
+          { min: 1, max: 1, allowCancel: false, blocked },
+        ),
+        (selected) => {
+          if (selected && selected.length > 0) {
+            opponent.switchPokemon(selected[0]);
+          }
+        },
+      );
     }
 
     return state;

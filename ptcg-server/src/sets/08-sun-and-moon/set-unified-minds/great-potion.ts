@@ -10,7 +10,7 @@ import { HealEffect } from '../../../game/store/effects/game-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class GreatPotion extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'UNM';
   public setNumber: string = '198';
   public cardImage: string = 'assets/cardback.png';

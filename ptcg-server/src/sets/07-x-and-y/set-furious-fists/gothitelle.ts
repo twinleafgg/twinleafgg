@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/car
 import { Card, ChooseCardsPrompt, GameError, GameMessage, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, SHOW_CARDS_TO_PLAYER, DISCARD_A_STADIUM_CARD_IN_PLAY, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, SHOW_CARDS_TO_PLAYER, DISCARD_A_STADIUM_CARD_IN_PLAY, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gothitelle extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -91,7 +91,7 @@ export class Gothitelle extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.discard.moveCardTo(cards[0], player.stadium);
+          MOVE_CARDS(store, state, player.discard, player.stadium, { cards: [cards[0]], sourceCard: this });
         }
       });
     }

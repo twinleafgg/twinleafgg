@@ -3,7 +3,7 @@ import { Stage, CardType, BoardEffect, SpecialCondition } from '../../game/store
 import { StoreLike, State, PowerType, PlayerType, StateUtils, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, ChoosePokemonPrompt, SlotType } from '../../game';
 import { Effect, EffectOfAbilityEffect, MoveCardsEffect, PowerEffect } from '../../game/store/effects/game-effects';
 import { PutDamageEffect } from '../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class TestPokemon extends PokemonCard {
 
@@ -85,7 +85,7 @@ export class TestPokemon extends PokemonCard {
         {},
         { min: 0, max: 60, allowCancel: false }
       ), cards => {
-        player.deck.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
         player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
           if (cardList.getPokemonCard() === this) {
@@ -124,12 +124,12 @@ export class TestPokemon extends PokemonCard {
 
     if (effect instanceof PowerEffect && effect.power === this.powers[2]) {
       const player = effect.player;
-      player.deck.moveCardTo(player.deck.cards[0], player.hand);
+      MOVE_CARDS(store, state, player.deck, player.hand, { cards: [player.deck.cards[0]], sourceCard: this });
     }
 
     if (effect instanceof PowerEffect && effect.power === this.powers[3]) {
       const player = effect.player;
-      player.deck.moveCardTo(player.deck.cards[player.deck.cards.length - 1], player.hand);
+      MOVE_CARDS(store, state, player.deck, player.hand, { cards: [player.deck.cards[player.deck.cards.length - 1]], sourceCard: this });
     }
 
     if (effect instanceof PowerEffect && effect.power === this.powers[4]) {

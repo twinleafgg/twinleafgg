@@ -5,11 +5,27 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-import { PlayerType, SlotType, StateUtils, CardTarget, GameError, GameMessage, PokemonCardList, ChooseCardsPrompt, Card, Player } from '../../../game';
+import {
+  PlayerType,
+  SlotType,
+  StateUtils,
+  CardTarget,
+  GameError,
+  GameMessage,
+  PokemonCardList,
+  ChooseCardsPrompt,
+  Card,
+  Player,
+} from '../../../game';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -31,47 +47,53 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   effect.preventDefault = true;
 
   let coinResult: boolean = false;
-  yield COIN_FLIP_PROMPT(store, state, player, result => {
+  yield COIN_FLIP_PROMPT(store, state, player, (result) => {
     coinResult = result;
     next();
   });
 
   if (coinResult === false) {
-
     return state;
   }
 
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-    PlayerType.TOP_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { allowCancel: false, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+      PlayerType.TOP_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { allowCancel: false, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length === 0) {
-
     return state;
   }
 
   const target = targets[0];
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    target.energies,
-    {},
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    cards = selected;
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      target.energies,
+      {},
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected;
+      next();
+    },
+  );
 
-  target.moveCardsTo(cards, opponent.discard);
+  MOVE_CARDS(store, state, target, opponent.discard, { cards: cards, sourceCard: effect.trainerCard });
 
   return state;
 }
@@ -79,7 +101,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 export class CrushingHammer extends TrainerCard {
   public regulationMark = 'G';
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'SVI';
   public cardImage: string = 'assets/cardback.png';
@@ -88,8 +110,7 @@ export class CrushingHammer extends TrainerCard {
   public fullName: string = 'Crushing Hammer SVI';
 
   public text: string =
-    'Flip a coin. If heads, discard an Energy attached to 1 of your ' +
-    'opponent\'s Pokemon.';
+    'Flip a coin. If heads, discard an Energy attached to 1 of your ' + "opponent's Pokemon.";
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     const opponent = StateUtils.getOpponent(state, player);
@@ -115,5 +136,4 @@ export class CrushingHammer extends TrainerCard {
     }
     return state;
   }
-
 }

@@ -7,13 +7,14 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 export class Iris extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'PLB';
   public setNumber: string = '81';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Iris';
   public fullName: string = 'Iris PLB';
-  public text: string = 'During this turn, your Pokémon\'s attacks do 10 more damage to the Active Pokémon for each Prize card your opponent has taken (before applying Weakness and Resistance). You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    "During this turn, your Pokémon's attacks do 10 more damage to the Active Pokémon for each Prize card your opponent has taken (before applying Weakness and Resistance). You may play only 1 Supporter card during your turn (before your attack).";
 
   public readonly IRIS_MARKER = 'IRIS_MARKER';
 

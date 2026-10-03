@@ -2,7 +2,7 @@ import { PokemonCardList, PowerType, State, StateUtils, StoreLike } from '../../
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { MOVE_CARDS, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { MOVE_POKEMON_OFF_BOARD, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Jumpluff extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -41,35 +41,15 @@ export class Jumpluff extends PokemonCard {
       const cardList = StateUtils.findCardList(state, this);
 
       const pokemonCardList = cardList as PokemonCardList;
-      const jumpluffCard = pokemonCardList.getPokemonCard();
-      if (!jumpluffCard) {
+      if (!pokemonCardList.getPokemonCard()) {
         return state;
       }
 
-      const pokemons = pokemonCardList.getPokemons();
-      const otherCards = cardList.cards.filter(card =>
-        !(card instanceof PokemonCard) &&
-        !pokemons.includes(card as PokemonCard) &&
-        (!pokemonCardList.tools || !pokemonCardList.tools.includes(card))
-      );
-      const tools = [...pokemonCardList.tools];
-
-      // Move tools to discard first
-      if (tools.length > 0) {
-        for (const tool of tools) {
-          pokemonCardList.moveCardTo(tool, player.hand);
-        }
-      }
-
-      // Move other cards to hand
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.hand, { cards: otherCards });
-      }
-
-      // Move Pokémon to hand
-      if (pokemons.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons });
-      }
+      MOVE_POKEMON_OFF_BOARD(store, state, pokemonCardList, {
+        pokemonDestination: player.hand,
+        attachedDestination: player.discard,
+        sourceCard: this,
+      });
     }
 
     if (WAS_ATTACK_USED(effect, 0, this)) {

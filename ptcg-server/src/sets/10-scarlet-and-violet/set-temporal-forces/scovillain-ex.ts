@@ -51,7 +51,7 @@ export class Scovillainex extends PokemonCard {
       if (opponent.hand.cards.length > 0) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const randomCard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(randomCard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
       }
       MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: 1, sourceCard: this, sourceEffect: this.attacks[1] });
     }

@@ -1,11 +1,10 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { GameError, GameMessage, State, StoreLike } from '../../../game';
+import { State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ADD_MARKER, COIN_FLIP_PROMPT, HAS_MARKER, REMOVE_MARKER, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { COIN_FLIP_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { PUT_X_DAMAGE_COUNTERS_ON_YOUR_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
+import { YOUR_OPPONENT_CANNOT_ATTACH_ENERGY_FROM_HAND_TO_DEFENDING_POKEMON } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Duskull extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -20,12 +19,14 @@ export class Duskull extends PokemonCard {
     cost: [],
     damage: 0,
     text: 'Put up to 3 damage counters on Duskull. Then, put that many damage counters on the Defending Pokémon.'
-  }, {
+  },
+  {
     name: 'Ram',
     cost: [P],
     damage: 10,
     text: ''
-  }, {
+  },
+  {
     name: 'Night Bind',
     cost: [P, C],
     damage: 20,
@@ -38,31 +39,21 @@ export class Duskull extends PokemonCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = 'SH2';
 
-  public readonly NIGHT_BIND_MARKER = 'NIGHT_BIND_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
+    // Counting Song
     if (WAS_ATTACK_USED(effect, 0, this)) {
       effect.source.damage += 30;
       PUT_X_DAMAGE_COUNTERS_ON_YOUR_OPPONENTS_ACTIVE_POKEMON(3, store, state, effect);
     }
 
+    // Night Bind
     if (WAS_ATTACK_USED(effect, 2, this)) {
-      COIN_FLIP_PROMPT(store, state, effect.player, result => {
+      const attack = effect;
+      return COIN_FLIP_PROMPT(store, state, attack.player, result => {
         if (result) {
-          ADD_MARKER(this.NIGHT_BIND_MARKER, effect.opponent, this);
+          YOUR_OPPONENT_CANNOT_ATTACH_ENERGY_FROM_HAND_TO_DEFENDING_POKEMON(store, state, attack, this);
         }
       });
-    }
-
-    if (effect instanceof AttachEnergyEffect && effect.target === effect.player.active && HAS_MARKER(this.NIGHT_BIND_MARKER, effect.player, this)) {
-      throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
-    }
-
-    if (effect instanceof EndTurnEffect) {
-      if (HAS_MARKER(this.NIGHT_BIND_MARKER, effect.player, this)) {
-        REMOVE_MARKER(this.NIGHT_BIND_MARKER, effect.player, this);
-      }
     }
 
     return state;

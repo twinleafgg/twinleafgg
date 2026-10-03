@@ -9,7 +9,7 @@ import { GameMessage } from '../../../game/game-message';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useUltraEvolution(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -33,7 +33,7 @@ function* useUltraEvolution(next: Function, store: StoreLike, state: State,
 
   if (cards.length > 0) {
     // Evolve Pokemon
-    player.deck.moveCardsTo(cards, player.active);
+    MOVE_CARDS(store, state, player.deck, player.active, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
     player.active.clearEffects();
     player.active.pokemonPlayedTurn = state.turn;
   }

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Growlithe extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -52,7 +52,7 @@ export class Growlithe extends PokemonCard {
           ), selected => {
             const cards = selected || [];
             cards.forEach(card => {
-              player.discard.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, player.discard, player.hand, { cards: [card], sourceCard: this });
             });
           });
         }

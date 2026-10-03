@@ -8,17 +8,18 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import { SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ArcPhone extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark: string = 'F';
   public set: string = 'LOR';
   public setNumber: string = '152';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Arc Phone';
   public fullName: string = 'Arc Phone LOR 152';
-  public text: string = 'Look at the top card of your deck. You may switch that card with 1 of your face-down Prize cards. (The cards stay face down.) You may play any number of Item cards during your turn.';
+  public text: string =
+    'Look at the top card of your deck. You may switch that card with 1 of your face-down Prize cards. (The cards stay face down.) You may play any number of Item cards during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Look at the top card of your deck. You may switch that card with 1 of your face-down Prize cards.
@@ -33,9 +34,9 @@ export class ArcPhone extends TrainerCard {
 
       // Move top card to temp area to look at it
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
 
-      const faceDownPrizes = player.prizes.filter(p => p.isSecret && p.cards.length > 0);
+      const faceDownPrizes = player.prizes.filter((p) => p.isSecret && p.cards.length > 0);
 
       if (faceDownPrizes.length === 0) {
         // No face-down prizes to swap — show top card and return it to deck top
@@ -56,33 +57,41 @@ export class ArcPhone extends TrainerCard {
       });
 
       // Reveal face-down prizes to the player temporarily for selection
-      faceDownPrizes.forEach(p => { p.isSecret = false; });
-
-      return store.prompt(state, new ChoosePrizePrompt(
-        player.id,
-        GameMessage.CHOOSE_PRIZE_CARD,
-        { count: 1, blocked, allowCancel: true },
-      ), chosenPrize => {
-        // Restore prizes to face-down
-        faceDownPrizes.forEach(p => { p.isSecret = true; });
-
-        if (!chosenPrize || chosenPrize.length === 0) {
-          // No swap — return top card to deck top
-          deckTop.moveToTopOfDestination(player.deck);
-          return;
-        }
-
-        // Swap: put chosen prize card on deck top, put deck card into chosen prize slot
-        const prizeSlot = chosenPrize[0];
-        const deckCard = deckTop.cards[0];
-
-        // Move prize card to deck top via temp list
-        const prizeTemp = new CardList();
-        prizeSlot.moveTo(prizeTemp);
-        prizeTemp.moveToTopOfDestination(player.deck);
-        // Move deck card to prize slot
-        deckTop.moveCardTo(deckCard, prizeSlot);
+      faceDownPrizes.forEach((p) => {
+        p.isSecret = false;
       });
+
+      return store.prompt(
+        state,
+        new ChoosePrizePrompt(player.id, GameMessage.CHOOSE_PRIZE_CARD, {
+          count: 1,
+          blocked,
+          allowCancel: true,
+        }),
+        (chosenPrize) => {
+          // Restore prizes to face-down
+          faceDownPrizes.forEach((p) => {
+            p.isSecret = true;
+          });
+
+          if (!chosenPrize || chosenPrize.length === 0) {
+            // No swap — return top card to deck top
+            deckTop.moveToTopOfDestination(player.deck);
+            return;
+          }
+
+          // Swap: put chosen prize card on deck top, put deck card into chosen prize slot
+          const prizeSlot = chosenPrize[0];
+          const deckCard = deckTop.cards[0];
+
+          // Move prize card to deck top via temp list
+          const prizeTemp = new CardList();
+          MOVE_CARDS(store, state, prizeSlot, prizeTemp, { sourceCard: this });
+          prizeTemp.moveToTopOfDestination(player.deck);
+          // Move deck card to prize slot
+          MOVE_CARDS(store, state, deckTop, prizeSlot, { cards: [deckCard], sourceCard: this });
+        },
+      );
     }
 
     return state;

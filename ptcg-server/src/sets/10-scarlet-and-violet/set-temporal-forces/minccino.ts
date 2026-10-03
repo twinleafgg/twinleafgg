@@ -3,8 +3,7 @@ import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/car
 import { StoreLike, State, PokemonCardList, GameMessage, CardTarget, ChoosePokemonPrompt, GameError, PlayerType, SlotType, StateUtils, ChooseCardsPrompt } from '../../../game';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useCleaningUp(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -58,11 +57,11 @@ function* useCleaningUp(next: Function, store: StoreLike, state: State,
           { min: 1, max: 2, allowCancel: false }
         ), selected => {
           if (selected && selected.length > 0) {
-            target.moveCardsTo(selected, owner.discard);
+            MOVE_CARDS(store, state, target, owner.discard, { cards: selected, sourceCard: effect.source.getPokemonCard()! });
           }
         });
       } else {
-        target.moveCardTo(target.tools[0], owner.discard);
+        MOVE_CARDS(store, state, target, owner.discard, { cards: [target.tools[0]], sourceCard: effect.source.getPokemonCard()! });
       }
     }
   });

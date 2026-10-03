@@ -3,7 +3,7 @@ import { StoreLike, State, GameError, GameMessage, AttachEnergyPrompt, PlayerTyp
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EnergyPickup extends TrainerCard {
   public superType = SuperType.TRAINER;
@@ -56,7 +56,7 @@ export class EnergyPickup extends TrainerCard {
             }
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.discard.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
 
             }
           });

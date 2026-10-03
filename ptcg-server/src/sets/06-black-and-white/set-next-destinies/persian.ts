@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card, GameLog } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
@@ -53,11 +53,7 @@ export class Persian extends PokemonCard {
         const cards = selected || [];
 
         if (cards.length > 0) {
-          player.deck.moveCardsTo(cards, player.hand);
-
-          cards.forEach(card => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-          });
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
           store.prompt(state, new ShowCardsPrompt(
             opponent.id,
@@ -86,7 +82,7 @@ export class Persian extends PokemonCard {
           // Discard random card from opponent's hand
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const cardToDiscard = opponent.hand.cards[randomIndex];
-          opponent.hand.moveCardsTo([cardToDiscard], opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [cardToDiscard], sourceCard: this });
 
           store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD, { name: opponent.name, card: cardToDiscard.name });
         }

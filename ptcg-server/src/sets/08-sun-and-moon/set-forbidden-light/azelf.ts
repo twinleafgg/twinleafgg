@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameError } from '../../../game/game-error';
@@ -70,13 +70,13 @@ export class Azelf extends PokemonCard {
           // Move tools first
           const tools = target.tools.slice();
           tools.forEach(tool => {
-            target.moveCardTo(tool, opponent.deck);
+            MOVE_CARDS(store, state, target, opponent.deck, { cards: [tool], sourceCard: this });
           });
 
           // Move all cards (Pokemon + energy)
           const cards = target.cards.slice();
           cards.forEach(card => {
-            target.moveCardTo(card, opponent.deck);
+            MOVE_CARDS(store, state, target, opponent.deck, { cards: [card], sourceCard: this });
           });
 
           // Clear any effects/damage/conditions on the slot

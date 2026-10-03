@@ -5,7 +5,7 @@ import {
   ShuffleDeckPrompt,
   StateUtils,
 } from '../../../game';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { CardTag, EnergyType, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -30,7 +30,7 @@ function* playCard(
     throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
   effect.preventDefault = true;
 
   // If player has less than 2 cards in hand (excluding this card), only allow stadium search
@@ -141,13 +141,6 @@ function* playCard(
             cards = cards || [];
             MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: self });
 
-            cards.forEach((card) => {
-              store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, {
-                name: player.name,
-                card: card.name,
-              });
-            });
-
             // Search for tool, special energy, and stadium
             const blocked: number[] = [];
             player.deck.cards.forEach((card, index) => {
@@ -207,7 +200,7 @@ function* playCard(
 }
 
 export class GuzmaAndHala extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CEC';
 

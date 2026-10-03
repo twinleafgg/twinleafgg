@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { DEFENDING_POKEMON_WEAKNESS_IS_NOW } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Espurr extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -16,10 +15,6 @@ export class Espurr extends PokemonCard {
   public hp: number = 60;
   public weakness = [{ type: P }];
   public retreat = [C];
-
-  public readonly PERPLEXING_EYES_MARKER = 'ESPURR_BUS_PERPLEXING_EYES_MARKER';
-  public readonly PERPLEXING_EYES_2_MARKER = 'ESPURR_BUS_PERPLEXING_EYES_2_MARKER';
-  public readonly CLEAR_PERPLEXING_EYES_MARKER = 'ESPURR_BUS_CLEAR_PERPLEXING_EYES_MARKER';
 
   public attacks = [
     {
@@ -37,37 +32,8 @@ export class Espurr extends PokemonCard {
   public fullName: string = 'Espurr BUS';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Perplexing Eyes
-    // Ref: set-phantom-forces/pachirisu.ts (Trick Sticker)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      opponent.active.marker.addMarker(this.PERPLEXING_EYES_MARKER, this);
-      player.marker.addMarker(this.PERPLEXING_EYES_2_MARKER, this);
-    }
-
-    // Modify weakness for marked Pokemon
-    if (effect instanceof CheckPokemonStatsEffect) {
-      if (effect.target.marker.hasMarker(this.PERPLEXING_EYES_MARKER, this)) {
-        effect.weakness = [{ type: CardType.PSYCHIC, value: effect.weakness.length > 0 ? effect.weakness[0].value : undefined }];
-      }
-    }
-
-    // 2-phase cleanup: until end of your next turn
-    if (effect instanceof EndTurnEffect) {
-      // Phase 2: clear
-      if (effect.player.marker.hasMarker(this.CLEAR_PERPLEXING_EYES_MARKER, this)) {
-        effect.player.marker.removeMarker(this.CLEAR_PERPLEXING_EYES_MARKER, this);
-        const opponent = StateUtils.getOpponent(state, effect.player);
-        opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-          cardList.marker.removeMarker(this.PERPLEXING_EYES_MARKER, this);
-        });
-      }
-      // Phase 1 -> Phase 2
-      if (effect.player.marker.hasMarker(this.PERPLEXING_EYES_2_MARKER, this)) {
-        effect.player.marker.removeMarker(this.PERPLEXING_EYES_2_MARKER, this);
-        effect.player.marker.addMarker(this.CLEAR_PERPLEXING_EYES_MARKER, this);
-      }
+      return DEFENDING_POKEMON_WEAKNESS_IS_NOW(store, state, effect, this, CardType.PSYCHIC);
     }
 
     return state;

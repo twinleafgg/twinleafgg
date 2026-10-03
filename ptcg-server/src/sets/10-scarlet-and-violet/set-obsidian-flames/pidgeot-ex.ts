@@ -15,11 +15,9 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  DISCARD_A_STADIUM_CARD_IN_PLAY,
+import {DISCARD_A_STADIUM_CARD_IN_PLAY,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pidgeotex extends PokemonCard {
   public regulationMark = 'G';
@@ -107,7 +105,7 @@ export class Pidgeotex extends PokemonCard {
           { min: 1, max: 1, allowCancel: false },
         ),
         (cards) => {
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);

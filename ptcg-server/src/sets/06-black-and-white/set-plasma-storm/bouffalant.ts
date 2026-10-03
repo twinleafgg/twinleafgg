@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, TrainerType } from '../../../game/store/card/card-types';
 import { GameMessage, StateUtils, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CardList } from '../../../game/store/state/card-list';
 
@@ -46,7 +46,7 @@ export class Bouffalant extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
       if (opponent.active.tools.length === 1) {
-        opponent.active.moveCardTo(opponent.active.tools[0], opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [opponent.active.tools[0]], sourceCard: this });
       } else if (opponent.active.tools.length > 1) {
         const toolList = new CardList();
         toolList.cards = [...opponent.active.tools];
@@ -62,7 +62,7 @@ export class Bouffalant extends PokemonCard {
           (selectedTools) => {
             if (selectedTools && selectedTools.length === 1) {
               const tool = selectedTools[0];
-              opponent.active.moveCardTo(tool, opponent.discard);
+              MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [tool], sourceCard: this });
             }
             return state;
           },

@@ -2,12 +2,10 @@ import { AttachEnergyPrompt, Card, CardTag, CardTarget, CardType, EnergyType, Ga
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DealDamageEffect, DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import {
-  AFTER_ATTACK,
+import {AFTER_ATTACK,
   BLOCK_IF_GX_ATTACK_USED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LucarioMelmetalGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX, CardTag.TAG_TEAM];
@@ -73,7 +71,7 @@ export class LucarioMelmetalGX extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
           SHUFFLE_DECK(store, state, player);
         },

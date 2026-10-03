@@ -2,7 +2,6 @@ import {
   CardList,
   ChooseCardsPrompt,
   GameError,
-  GameLog,
   GameMessage,
   State,
   StateUtils,
@@ -12,11 +11,11 @@ import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-t
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_CARDS_FROM_YOUR_HAND } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class HolonLass extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.DELTA_SPECIES];
   public set: string = 'DS';
   public cardImage: string = 'assets/cardback.png';
@@ -39,14 +38,14 @@ export class HolonLass extends TrainerCard {
 
       DISCARD_X_CARDS_FROM_YOUR_HAND(effect, store, state, 1, 1);
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       const temp = new CardList();
 
       // Count total Prize cards left
       const totalPrizes = player.getPrizeLeft() + opponent.getPrizeLeft();
-      player.deck.moveTo(temp, totalPrizes);
+      MOVE_CARDS(store, state, player.deck, temp, { count: totalPrizes, sourceCard: this });
 
       // Count how many Energy cards are in temp
       const energyCount = temp.cards.filter((card) => card.superType === SuperType.ENERGY).length;
@@ -64,22 +63,18 @@ export class HolonLass extends TrainerCard {
           if (chosenCards.length === 0) {
             // No Energy chosen, shuffle all back
             temp.cards.forEach((card) => {
-              temp.moveCardTo(card, player.deck);
+              MOVE_CARDS(store, state, temp, player.deck, { cards: [card], sourceCard: this });
             });
           } else {
             // Move chosen Energy to hand
             chosenCards.forEach((card) => {
-              temp.moveCardTo(card, player.hand);
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-                name: player.name,
-                card: card.name,
-              });
+              MOVE_CARDS(store, state, temp, player.hand, { cards: [card], sourceCard: this });
             });
 
             if (chosenCards.length > 0) {
               SHOW_CARDS_TO_PLAYER(store, state, opponent, chosenCards);
             }
-            temp.moveTo(player.deck);
+            MOVE_CARDS(store, state, temp, player.deck, { sourceCard: this });
           }
 
           SHUFFLE_DECK(store, state, player);

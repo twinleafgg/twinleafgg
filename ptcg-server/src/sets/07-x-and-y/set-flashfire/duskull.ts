@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PUT_X_DAMAGE_COUNTERS_ON_YOUR_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Duskull extends PokemonCard {
@@ -63,7 +63,7 @@ export class Duskull extends PokemonCard {
         if (cards.length > 0) {
           const card = cards[0];
           const slot = openSlots[0];
-          opponent.discard.moveCardTo(card, slot);
+          MOVE_CARDS(store, state, opponent.discard, slot, { cards: [card], sourceCard: this });
           slot.pokemonPlayedTurn = state.turn;
         }
       });

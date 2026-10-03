@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, CardList, TrainerCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eevee extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -63,8 +63,8 @@ export class Eevee extends PokemonCard {
         { min: 1, max: 1, allowCancel: false, blocked }
       ), selected => {
         if (selected && selected.length > 0) {
-          opponent.hand.moveCardTo(selected[0], deckBottom);
-          deckBottom.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, deckBottom, { cards: [selected[0]], sourceCard: this });
+          MOVE_CARDS(store, state, deckBottom, opponent.deck, { sourceCard: this });
         }
       });
     }

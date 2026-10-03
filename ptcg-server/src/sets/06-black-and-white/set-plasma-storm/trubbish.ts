@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType, SuperType } from '../../../game/store/card/card-types';
 import { GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
 
@@ -64,7 +64,7 @@ export class Trubbish extends PokemonCard {
             if (selected.length > 0) {
               const opponent = StateUtils.getOpponent(state, player);
               SHOW_CARDS_TO_PLAYER(store, state, opponent, selected);
-              player.deck.moveCardsTo(selected, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: selected, sourceCard: this });
             }
             SHUFFLE_DECK(store, state, player);
           });

@@ -8,7 +8,7 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 export class TeamMagmaHideout extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '83';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'MA';
   public name = 'Team Magma Hideout';
   public fullName = 'Team Magma Hideout MA';

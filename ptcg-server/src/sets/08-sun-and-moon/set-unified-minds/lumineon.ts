@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { Card, ChooseCardsPrompt, ChoosePokemonPrompt, EnergyCard, GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils, ConfirmPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lumineon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -73,7 +73,7 @@ export class Lumineon extends PokemonCard {
               { min: 1, max: 1, allowCancel: false }
             ), targets => {
               if (targets && targets.length > 0) {
-                opponent.active.moveCardTo(cards[0], targets[0]);
+                MOVE_CARDS(store, state, opponent.active, targets[0], { cards: [cards[0]], sourceCard: this });
               }
             });
           });

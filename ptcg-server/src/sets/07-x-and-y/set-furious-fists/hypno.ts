@@ -15,11 +15,9 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   AFTER_ATTACK,
-  ADD_SLEEP_TO_PLAYER_ACTIVE,
-} from '../../../game/store/prefabs/prefabs';
+  ADD_SLEEP_TO_PLAYER_ACTIVE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WITH_PROMPT_CONTROLLER } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class Hypno extends PokemonCard {
@@ -81,7 +79,7 @@ export class Hypno extends PokemonCard {
           }
 
           const supporterCard = selected[0] as TrainerCard;
-          opponent.hand.moveCardTo(supporterCard, opponent.supporter);
+          MOVE_CARDS(store, state, opponent.hand, opponent.supporter, { cards: [supporterCard], sourceCard: this });
 
           state = WITH_PROMPT_CONTROLLER(store, state, player.id, (s) => {
             s = store.reduceEffect(s, new TrainerEffect(opponent, supporterCard));
@@ -99,7 +97,7 @@ export class Hypno extends PokemonCard {
             const target = supporterCard.hasTag(CardTag.PRISM_STAR)
               ? opponent.lostzone
               : opponent.discard;
-            opponent.supporter.moveCardTo(supporterCard, target);
+            MOVE_CARDS(store, state, opponent.supporter, target, { cards: [supporterCard], sourceCard: this });
           };
 
           if (store.hasPrompts()) {

@@ -2,9 +2,8 @@ import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../game/store/card/card-types';
 import { StoreLike, State, Card, ChooseCardsPrompt, GameMessage, PowerType, GameError, PokemonCardList, StateUtils, ShuffleDeckPrompt } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_POWER_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { CheckTableStateEffect } from '../../game/store/effects/check-effects';
-
 
 export class BuriedFossil extends PokemonCard {
 
@@ -90,7 +89,7 @@ export class BuriedFossil extends PokemonCard {
         const target = StateUtils.findCardList(state, this);
 
         // Evolve Pokemon
-        player.hand.moveCardTo(evolution, target);
+        MOVE_CARDS(store, state, player.hand, target, { cards: [evolution], sourceCard: this });
         const pokemonTarget = target as PokemonCardList;
         pokemonTarget.clearEffects();
         pokemonTarget.pokemonPlayedTurn = state.turn;
@@ -112,7 +111,7 @@ export class BuriedFossil extends PokemonCard {
       ), selected => {
         if (selected) {
           selected.forEach(card => {
-            player.hand.moveCardTo(card, player.deck);
+            MOVE_CARDS(store, state, player.hand, player.deck, { cards: [card], sourceCard: this });
           });
         }
 
@@ -132,7 +131,7 @@ export class BuriedFossil extends PokemonCard {
         ), selectedCards => {
           if (selectedCards && selectedCards.length > 0) {
             const selectedCard = selectedCards[0];
-            player.deck.moveCardTo(selectedCard, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [selectedCard], sourceCard: this });
           }
 
           store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

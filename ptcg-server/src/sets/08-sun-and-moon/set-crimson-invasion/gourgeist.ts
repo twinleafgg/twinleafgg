@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, CONFIRMATION_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, CONFIRMATION_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -69,7 +69,7 @@ export class Gourgeist extends PokemonCard {
         if (result) {
           const toolCount = allTools.length;
           allTools.forEach(({ tool, source }) => {
-            source.moveCardTo(tool, player.discard);
+            MOVE_CARDS(store, state, source, player.discard, { cards: [tool], sourceCard: this });
           });
           effect.damage += 40 * toolCount;
         }

@@ -13,7 +13,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Elekid extends PokemonCard {
@@ -86,7 +86,7 @@ export class Elekid extends PokemonCard {
           const target = StateUtils.findCardList(state, this);
 
           // Evolve Pokemon
-          player.hand.moveCardTo(evolution, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [evolution], sourceCard: this });
           const pokemonTarget = target as PokemonCardList;
           pokemonTarget.clearEffects();
           pokemonTarget.pokemonPlayedTurn = state.turn;

@@ -21,11 +21,9 @@ import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import {
-  IS_ABILITY_BLOCKED,
+import {IS_ABILITY_BLOCKED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Charizardex extends PokemonCard {
   public regulationMark = 'G';
@@ -110,7 +108,7 @@ export class Charizardex extends PokemonCard {
                 }
                 for (const transfer of transfers) {
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  player.deck.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
                 }
                 state = store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                   player.deck.applyOrder(order);

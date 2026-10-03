@@ -7,8 +7,7 @@ import { AttackEffect } from '../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../game/store/prompts/shuffle-prompt';
 import { GameMessage } from '../../game/game-message';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
-
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 function* useCallforFamily(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -28,7 +27,7 @@ function* useCallforFamily(next: Function, store: StoreLike, state: State,
     { min: 1, max: 1, allowCancel: false }
   ), selected => {
     const cards = selected || [];
-    player.deck.moveCardsTo(cards, slot);
+    MOVE_CARDS(store, state, player.deck, slot, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
     slot.pokemonPlayedTurn = state.turn;
     next();
   });

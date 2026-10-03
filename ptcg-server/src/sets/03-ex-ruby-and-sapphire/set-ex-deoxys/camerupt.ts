@@ -34,7 +34,6 @@ export class Camerupt extends PokemonCard {
   public name: string = 'Camerupt';
   public fullName: string = 'Camerupt DX';
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
     if (WAS_ATTACK_USED(effect, 0, this)) {

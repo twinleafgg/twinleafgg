@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -50,7 +50,7 @@ export class Frosmoth extends PokemonCard {
       const player = effect.player;
       const attachedEnergy = player.active.cards.filter(c => c instanceof EnergyCard);
       for (const energy of attachedEnergy) {
-        player.active.moveCardTo(energy, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: [energy], sourceCard: this });
       }
     }
 

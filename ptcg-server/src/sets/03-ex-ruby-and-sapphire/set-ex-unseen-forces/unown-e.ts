@@ -9,7 +9,7 @@ import {
   GameLog
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class UnownE extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -86,8 +86,8 @@ export class UnownE extends PokemonCard {
           card: pokemonCard.name,
           effect: effect.power.name,
         });
-        player.deck.moveCardTo(pokemonCard, targetCardList);
-        targetCardList.moveCardTo(this, player.deck);
+        MOVE_CARDS(store, state, player.deck, targetCardList, { cards: [pokemonCard], sourceCard: this });
+        MOVE_CARDS(store, state, targetCardList, player.deck, { cards: [this], sourceCard: this });
 
         SHUFFLE_DECK(store, state, player);
         ADD_MARKER(this.SHUFFLE_MARKER, player, this);
@@ -124,7 +124,7 @@ export class UnownE extends PokemonCard {
         }
 
         cards.forEach((card, index) => {
-          opponent.hand.moveCardTo(card, slots[index]);
+          MOVE_CARDS(store, state, opponent.hand, slots[index], { cards: [card], sourceCard: this });
           slots[index].pokemonPlayedTurn = state.turn;
 
           opponent.switchPokemon(slots[index]);

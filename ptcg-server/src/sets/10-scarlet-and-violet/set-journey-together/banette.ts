@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Banette extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -56,7 +56,7 @@ export class Banette extends PokemonCard {
         { allowCancel: false, min: cardsToShuffle, max: cardsToShuffle }
       ), cards => {
         cards = cards || [];
-        opponent.hand.moveCardsTo(cards, opponent.deck);
+        MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cards, sourceCard: this });
       });
 
       return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {

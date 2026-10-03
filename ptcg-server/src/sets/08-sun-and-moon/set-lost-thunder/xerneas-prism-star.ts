@@ -1,7 +1,7 @@
 import { CardTag, CardTarget, CardType, ConfirmPrompt, GameLog, GameMessage, MoveEnergyPrompt, PlayerType, PokemonCard, PowerType, SlotType, Stage, State, StateUtils, StoreLike, SuperType } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
 import { MovedToActiveEffect } from "../../../game/store/effects/game-effects";
-import { REMOVE_MARKER_AT_END_OF_TURN, MOVED_TO_ACTIVE_THIS_TURN, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN } from "../../../game/store/prefabs/prefabs";
+import {REMOVE_MARKER_AT_END_OF_TURN, MOVED_TO_ACTIVE_THIS_TURN, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class XerneasPrismStar extends PokemonCard {
   protected _tags = [CardTag.PRISM_STAR];
@@ -104,7 +104,7 @@ export class XerneasPrismStar extends PokemonCard {
 
               for (const transfer of transfers) {
                 const source = StateUtils.getTarget(state, player, transfer.from);
-                source.moveCardTo(transfer.card, player.active);
+                MOVE_CARDS(store, state, source, player.active, { cards: [transfer.card], sourceCard: this });
               }
             },
           );

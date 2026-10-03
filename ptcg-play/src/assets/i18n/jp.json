@@ -539,7 +539,17 @@
       "LOG_TEXT": "{{text}}",
       "LOG_TIME_ELAPSED": "{{name}}のための経過時間。",
       "LOG_TURN": "ターン{{turn}}。",
-      "LOG_PLAYER_PUTS_CARD_IN_HAND": "{{name}}は{{card}}を手札に加えます。"
+      "LOG_PLAYER_PUTS_CARD_IN_HAND": "{{name}}は{{card}}を手札に加えます。",
+      "LOG_TRAINER_TARGET_BLOCKED_BENCH": "{{blocker}}は{{card}}が{{name}}のベンチの{{pokemon}}に影響するのを防いだ。",
+      "LOG_TRAINER_TARGET_BLOCKED_ACTIVE": "{{blocker}}は{{card}}が{{name}}のバトル場の{{pokemon}}に影響するのを防いだ。",
+      "LOG_CARD_PREVENTS_BENCH": "{{blocker}}は{{effect}}が{{name}}のベンチの{{pokemon}}に影響するのを防いだ。",
+      "LOG_CARD_PREVENTS_ACTIVE": "{{blocker}}は{{effect}}が{{name}}のバトル場の{{pokemon}}に影響するのを防いだ。",
+      "LOG_CARD_PREVENTS": "{{blocker}}は{{effect}}を防いだ。",
+      "LOG_PLAYER_CHOOSES": "{{name}}は{{string}}を選んだ。",
+      "LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE_FROM_PLAY": "{{name}}は{{card}}をロストゾーンに置いた。",
+      "LOG_PLAYER_MOVES_CARD": "{{name}}は{{card}}を{{from}}から{{to}}へ移動した。",
+      "LOG_PLAYER_POKEMON_SPECIAL_CONDITION": "{{name}}の{{pokemon}}は{{condition}}になった。",
+      "LOG_PLAYER_POKEMON_RECOVERS_SPECIAL_CONDITION": "{{name}}の{{pokemon}}は{{condition}}ではなくなった。"
     }
   },
   "GAMES_SANDBOX_MODE": "サンドボックスモード",

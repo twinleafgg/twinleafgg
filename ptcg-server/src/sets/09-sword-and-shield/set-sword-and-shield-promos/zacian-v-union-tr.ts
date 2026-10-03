@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/game-effects';
 import { ZacianVUNIONTopLeft } from './zacian-v-union-tl';
 import { ZacianVUNIONBottomLeft } from './zacian-v-union-bl';
 import { ZacianVUNIONBottomRight } from './zacian-v-union-br';
-import { WAS_POWER_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DEFENDING_POKEMON_DOES_LESS_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class ZacianVUNIONTopRight extends PokemonCard {
@@ -75,22 +75,22 @@ export class ZacianVUNIONTopRight extends PokemonCard {
         if (slots.length > 0) {
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONTopRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONBottomLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONBottomRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof ZacianVUNIONTopLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.assembledVUNIONs.push(this.name);

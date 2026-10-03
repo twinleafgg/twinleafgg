@@ -1,10 +1,9 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PlayerType, StateUtils, StoreLike, State } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Steelix extends PokemonCard {
   protected _tags = [CardTag.TEAM_PLASMA];
@@ -37,35 +36,9 @@ export class Steelix extends PokemonCard {
   public name: string = 'Steelix';
   public fullName: string = 'Steelix PLF';
 
-  public readonly METAL_DEFENDER_MARKER = 'STEELIX_METAL_DEFENDER_MARKER';
-  public readonly CLEAR_METAL_DEFENDER_MARKER = 'STEELIX_CLEAR_METAL_DEFENDER_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Metal Defender - no weakness during opponent's next turn
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      player.active.marker.addMarker(this.METAL_DEFENDER_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_METAL_DEFENDER_MARKER, this);
-    }
-
-    // Remove weakness when marker is present
-    if (effect instanceof CheckPokemonStatsEffect) {
-      if (effect.target.marker.hasMarker(this.METAL_DEFENDER_MARKER, this)) {
-        effect.weakness = [];
-      }
-    }
-
-    // Clean up at end of opponent's turn
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_METAL_DEFENDER_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_METAL_DEFENDER_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.METAL_DEFENDER_MARKER, this);
-      });
+      return THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     return state;

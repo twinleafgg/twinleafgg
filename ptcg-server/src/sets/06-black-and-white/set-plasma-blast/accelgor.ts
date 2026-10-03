@@ -1,10 +1,8 @@
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
-import {
-  ADD_CONFUSION_TO_PLAYER_ACTIVE,
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -77,7 +75,7 @@ export class Accelgor extends PokemonCard {
         // Put all energy from defending Pokemon into opponent's hand
         const energyCards = opponent.active.cards.filter((c) => c.superType === SuperType.ENERGY);
         energyCards.forEach((card) => {
-          opponent.active.moveCardTo(card, opponent.hand);
+          MOVE_CARDS(store, state, opponent.active, opponent.hand, { cards: [card], sourceCard: this });
         });
       }
     }

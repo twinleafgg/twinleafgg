@@ -11,14 +11,15 @@ import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effect
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class DiggingGloves extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'EVS';
   public setNumber: string = '145';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Digging Gloves';
   public fullName: string = 'Digging Gloves EVS';
-  public text: string = 'The attacks of the Pokémon this card is attached to do 30 more damage to your opponent\'s Active Fighting Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached.';
+  public text: string =
+    "The attacks of the Pokémon this card is attached to do 30 more damage to your opponent's Active Fighting Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-chilling-reign/fire-resistant-gloves.ts (DealDamageEffect + source.tools + type check pattern)

@@ -2,14 +2,13 @@ import { getCardTarget } from "../../../simple-bot/simple-tactics/simple-tactics
 import { GameError } from "../../game-error";
 import { GameMessage, GameLog } from "../../game-message";
 import { PlayerType } from "../actions/play-card-action";
-import { PokemonCard } from "../card/pokemon-card";
 import { PutDamageEffect, AfterDamageEffect, ApplyWeaknessEffect, AfterWeaknessAndResistanceEffect, DealDamageEffect, KnockOutOpponentEffect, KOEffect, KnockOutPlayerEffect, PutCountersEffect, DiscardCardsEffect, DiscardCardsFromOpponentsActivePokemonEffect, DiscardDefendingPokemonEffect, LostZoneCardsEffect, CardsToHandEffect, MoveOpponentEnergyEffect, GustOpponentBenchEffect, SwitchOutOpponentsActiveEffect, AddMarkerEffect, HealTargetEffect, AddSpecialConditionsEffect, RemoveSpecialConditionsEffect } from "../effects/attack-effects";
 import { CheckHpEffect } from "../effects/check-effects";
 import { Effect } from "../effects/effect";
 import { shouldPreventAttackEffects, shouldPreventAttackDamage, shouldApplyDamageReduction, getActiveSurviveOnTenHpOptions, shouldKnockOutIfDamaged, getActiveRetaliateOnDamage, retaliateDamageEffect, RetaliateDamageEffect, EffectOfAttackEffect } from "../effects/effect-of-attack-effects";
 import { AttackEffect, KnockOutAttackEffect, HealEffect } from "../effects/game-effects";
 import { GameStatsTracker } from "../game-stats-tracker";
-import { TAKE_X_PRIZES, MOVE_CARDS } from "../prefabs/prefabs";
+import { TAKE_X_PRIZES, MOVE_CARDS, MOVE_POKEMON_OFF_BOARD } from "../prefabs/prefabs";
 import { CoinFlipPrompt } from "../prompts/coin-flip-prompt";
 import { StateUtils } from "../state-utils";
 import { State, GamePhase } from "../state/state";
@@ -162,6 +161,24 @@ export function attackReducer(store: StoreLike, state: State, effect: Effect): S
       }
     }
 
+    // Afterimage: when damaged during the opponent's next turn, flip; heads prevents that damage.
+    if (target.coinFlipPreventAttackDamageNextTurn
+      && effect.damage > 0
+      && state.phase === GamePhase.ATTACK
+      && effect.source
+      && StateUtils.findOwner(state, target) !== effect.player) {
+      const targetOwner = StateUtils.findOwner(state, target);
+      return store.prompt(state, new CoinFlipPrompt(
+        targetOwner.id,
+        GameMessage.COIN_FLIP,
+      ), (result) => {
+        if (result) {
+          effect.damage = 0;
+        }
+        return applyPutDamage(store, state, effect);
+      });
+    }
+
     // Reflect Shield: when damaged, flip a coin; heads prevents damage and retaliates.
     const coinFlipRetaliate = getActiveRetaliateOnDamage(target);
     if (coinFlipRetaliate !== null
@@ -218,6 +235,11 @@ export function attackReducer(store: StoreLike, state: State, effect: Effect): S
     // Defending Pokémon's attacks do N less — before Weakness and Resistance
     if (effect.source.attackDamageReductionNextTurn > 0) {
       effect.damage = Math.max(0, effect.damage - effect.source.attackDamageReductionNextTurn);
+    }
+
+    const dealOpponent = StateUtils.getOpponent(state, effect.player);
+    if (effect.source.outgoingAttackDamageBonusNextTurn > 0 && effect.target === dealOpponent.active) {
+      effect.damage += effect.source.outgoingAttackDamageBonusNextTurn;
     }
 
     if (effect.target.damageReductionBeforeWeaknessNextTurn > 0) {
@@ -446,23 +468,10 @@ export function attackReducer(store: StoreLike, state: State, effect: Effect): S
     }
 
     const owner = StateUtils.findOwner(state, target);
-    const pokemons = target.getPokemons();
-    const tools = [...target.tools];
-    const otherCards = target.cards.filter(card =>
-      !pokemons.includes(card as PokemonCard) &&
-      !tools.includes(card)
-    );
-
-    if (pokemons.length > 0) {
-      state = MOVE_CARDS(store, state, target, owner.discard, { cards: pokemons, sourceEffect: effect });
-    }
-    if (otherCards.length > 0) {
-      state = MOVE_CARDS(store, state, target, owner.discard, { cards: otherCards, sourceEffect: effect });
-    }
-    for (const tool of tools) {
-      target.moveCardTo(tool, owner.discard);
-    }
-    target.clearEffects();
+    state = MOVE_POKEMON_OFF_BOARD(store, state, target, {
+      pokemonDestination: owner.discard,
+      sourceEffect: effect,
+    });
     effect.discarded = true;
     return state;
   }

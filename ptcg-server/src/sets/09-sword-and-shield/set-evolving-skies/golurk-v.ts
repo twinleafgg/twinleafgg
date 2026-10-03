@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GolurkV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V, CardTag.SINGLE_STRIKE];
@@ -50,7 +50,7 @@ export class GolurkV extends PokemonCard {
       if (activePokemons.length > 1) {
         // Put the highest stage evolution (top card) into opponent's hand
         const topEvolution = activePokemons[activePokemons.length - 1];
-        opponent.active.moveCardTo(topEvolution, opponent.hand);
+        MOVE_CARDS(store, state, opponent.active, opponent.hand, { cards: [topEvolution], sourceCard: this });
       }
     }
 

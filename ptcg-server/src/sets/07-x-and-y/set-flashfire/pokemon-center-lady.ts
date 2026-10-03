@@ -11,37 +11,42 @@ import { SlotType } from '../../../game/store/actions/play-card-action';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class PokemonCenterLady extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'FLF';
   public setNumber: string = '93';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Pokémon Center Lady';
   public fullName: string = 'Pokémon Center Lady FLF';
-  public text: string = 'Heal 60 damage and remove all Special Conditions from 1 of your Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Heal 60 damage and remove all Special Conditions from 1 of your Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Refs: set-cosmic-eclipse/mallow-and-lana.ts (supporter heal pattern), set-perfect-order/lumiose-galette.ts (heal + condition removal)
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
 
-      return store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON_TO_HEAL,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { min: 1, max: 1, allowCancel: false }
-      ), targets => {
-        if (targets && targets.length > 0) {
-          const target = targets[0];
+      return store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON_TO_HEAL,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (targets) => {
+          if (targets && targets.length > 0) {
+            const target = targets[0];
 
-          // Heal 60 damage
-          const healEffect = new HealEffect(player, target, 60);
-          store.reduceEffect(state, healEffect);
+            // Heal 60 damage
+            const healEffect = new HealEffect(player, target, 60);
+            store.reduceEffect(state, healEffect);
 
-          // Remove all Special Conditions
-          target.specialConditions = [];
-        }
-      });
+            // Remove all Special Conditions
+            target.specialConditions = [];
+          }
+        },
+      );
     }
 
     return state;

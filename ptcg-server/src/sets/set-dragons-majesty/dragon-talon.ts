@@ -12,13 +12,14 @@ import { CheckPokemonTypeEffect } from '../../game/store/effects/check-effects';
 import { ToolEffect } from '../../game/store/effects/play-card-effects';
 
 export class DragonTalon extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'DRM';
   public setNumber: string = '59';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Dragon Talon';
   public fullName: string = 'Dragon Talon DRM';
-  public text: string = 'If the Dragon Pok\u00e9mon this card is attached to is your Active Pok\u00e9mon and is damaged by an opponent\u2019s attack (even if that Pok\u00e9mon is Knocked Out), put 3 damage counters on the Attacking Pok\u00e9mon.';
+  public text: string =
+    'If the Dragon Pok\u00e9mon this card is attached to is your Active Pok\u00e9mon and is damaged by an opponent\u2019s attack (even if that Pok\u00e9mon is Knocked Out), put 3 damage counters on the Attacking Pok\u00e9mon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-breakpoint/bursting-balloon.ts (tool damage on attack)

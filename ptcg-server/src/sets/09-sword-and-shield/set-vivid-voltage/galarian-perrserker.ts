@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, Card, ChooseCardsPrompt, GameMessage, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianPerrserker extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -63,7 +63,7 @@ export class GalarianPerrserker extends PokemonCard {
           { min: minDiscard, max: minDiscard, allowCancel: false }
         ), selected => {
           cards = selected || [];
-          opponent.hand.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
         });
       });
     }

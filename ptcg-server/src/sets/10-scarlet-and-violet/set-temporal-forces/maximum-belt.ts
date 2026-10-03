@@ -8,7 +8,7 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class MaximumBelt extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   protected _tags = [CardTag.ACE_SPEC];
 

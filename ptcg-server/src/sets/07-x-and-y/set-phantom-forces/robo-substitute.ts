@@ -18,18 +18,12 @@ import {
   TrainerType,
 } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  KnockOutEffect,
-  RetreatEffect,
-} from '../../../game/store/effects/game-effects';
-import {
-  PlayItemEffect,
-  PlayPokemonEffect,
-} from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { KnockOutEffect, RetreatEffect } from '../../../game/store/effects/game-effects';
+import { PlayItemEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RoboSubstitute extends TrainerCard {
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
   public superType = SuperType.TRAINER;
 
   public stage: Stage = Stage.BASIC;
@@ -83,17 +77,17 @@ This card can't retreat. If this card is Knocked Out, your opponent can't take a
 
       if (player.bench.every((b) => b.cards.length === 0)) {
         // technical implementation does not matter exactly because this ends the game
-        effect.player.active.moveCardsTo(
-          effect.player.active.cards,
-          player.deck,
-        );
+        MOVE_CARDS(store, state, effect.player.active, player.deck, {
+          cards: effect.player.active.cards,
+          sourceCard: this,
+        });
       } else {
         player.switchPokemon(cardList);
         const pokeDollCardList = StateUtils.findCardList(state, this);
-        pokeDollCardList.moveCardsTo(
-          pokeDollCardList.cards,
-          effect.player.discard,
-        );
+        MOVE_CARDS(store, state, pokeDollCardList, effect.player.discard, {
+          cards: pokeDollCardList.cards,
+          sourceCard: this,
+        });
       }
     }
 
@@ -105,33 +99,20 @@ This card can't retreat. If this card is Knocked Out, your opponent can't take a
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const playPokemonEffect = new PlayPokemonEffect(
-        player,
-        this as PokemonCard,
-        emptySlots[0],
-      );
+      const playPokemonEffect = new PlayPokemonEffect(player, this as PokemonCard, emptySlots[0]);
       store.reduceEffect(state, playPokemonEffect);
     }
 
-    if (
-      effect instanceof RetreatEffect &&
-      effect.player.active.cards.includes(this)
-    ) {
+    if (effect instanceof RetreatEffect && effect.player.active.cards.includes(this)) {
       throw new GameError(GameMessage.CANNOT_RETREAT);
     }
 
-    if (
-      effect instanceof KnockOutEffect &&
-      effect.target.cards.includes(this)
-    ) {
+    if (effect instanceof KnockOutEffect && effect.target.cards.includes(this)) {
       effect.prizeCount = 0;
       return state;
     }
 
-    if (
-      effect instanceof RetreatEffect &&
-      effect.player.active.cards.includes(this)
-    ) {
+    if (effect instanceof RetreatEffect && effect.player.active.cards.includes(this)) {
       throw new GameError(GameMessage.CANNOT_RETREAT);
     }
 

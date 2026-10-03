@@ -10,7 +10,7 @@ import { CheckAttackCostEffect } from '../../../game/store/effects/check-effects
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class ElementalBadge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'EVS';
   public setNumber: string = '147';

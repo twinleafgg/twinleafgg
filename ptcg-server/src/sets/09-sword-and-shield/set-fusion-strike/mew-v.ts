@@ -14,7 +14,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MewV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V, CardTag.FUSION_STRIKE];
@@ -91,7 +91,7 @@ export class MewV extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
           return state;
         },
@@ -106,7 +106,7 @@ export class MewV extends PokemonCard {
         new ConfirmPrompt(player.id, GameMessage.WANT_TO_USE_ABILITY),
         (wantToUse) => {
           if (wantToUse) {
-            player.active.moveTo(player.deck);
+            MOVE_CARDS(store, state, player.active, player.deck, { sourceCard: this });
             player.active.clearEffects();
 
             return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {

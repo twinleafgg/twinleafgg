@@ -26,10 +26,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect, RetreatEffect } from '../../../game/store/effects/game-effects';
 import { PlayItemEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { GamePhase } from '../../../game/store/state/state';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AntiqueSkullFossil extends TrainerCard {
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
   public stage: Stage = Stage.BASIC;
   public cardType: CardType[] = [CardType.COLORLESS];
   public cardTypez: CardType = CardType.COLORLESS;
@@ -120,7 +120,7 @@ export class AntiqueSkullFossil extends TrainerCard {
         effect: this.powers[1].name,
       });
       const cardList = StateUtils.findCardList(state, this);
-      cardList.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
     }
 
     if (effect instanceof PlayItemEffect && effect.trainerCard === this) {

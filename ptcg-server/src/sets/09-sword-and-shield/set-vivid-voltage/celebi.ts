@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, StateUtils, Card, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Celebi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -100,7 +100,7 @@ export class Celebi extends PokemonCard {
           const cards: Card[] = selected || [];
           if (cards.length > 0) {
             const evolution = cards[0];
-            player.deck.moveCardTo(evolution, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [evolution], sourceCard: this });
             target.clearEffects();
             target.pokemonPlayedTurn = state.turn;
           }

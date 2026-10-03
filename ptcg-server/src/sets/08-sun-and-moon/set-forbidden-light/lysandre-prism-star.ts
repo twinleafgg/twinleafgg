@@ -14,9 +14,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LysandrePrismStar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.PRISM_STAR];
   public set: string = 'FLI';
   public cardImage: string = 'assets/cardback.png';
@@ -46,14 +47,14 @@ export class LysandrePrismStar extends TrainerCard {
       });
 
       if (!firesInPlay) {
-        player.supporter.moveCardTo(this, player.lostzone);
+        MOVE_CARDS(store, state, player.supporter, player.lostzone, { cards: [this], sourceCard: this });
         return state;
       }
 
       let cards: Card[] = [];
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       store.prompt(
         state,
@@ -76,8 +77,8 @@ export class LysandrePrismStar extends TrainerCard {
             return state;
           }
 
-          opponent.discard.moveCardsTo(cards, opponent.lostzone);
-          player.supporter.moveCardTo(this, player.lostzone);
+          MOVE_CARDS(store, state, opponent.discard, opponent.lostzone, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, player.supporter, player.lostzone, { cards: [this], sourceCard: this });
 
           store.log(state, GameLog.LOG_PLAYER_DRAWS_CARD, { name: player.name });
         },

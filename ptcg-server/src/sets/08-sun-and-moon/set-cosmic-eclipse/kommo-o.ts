@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType, TrainerType } from '../../../ga
 import { PlayerType, SlotType, StoreLike, State, ConfirmPrompt, GameMessage } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class KommoO extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -76,7 +76,7 @@ export class KommoO extends PokemonCard {
         ), wantToDiscard => {
           if (wantToDiscard) {
             const tool = player.active.tools[0];
-            player.active.moveCardTo(tool, player.discard);
+            MOVE_CARDS(store, state, player.active, player.discard, { cards: [tool], sourceCard: this });
             effect.damage += 90;
           }
         });

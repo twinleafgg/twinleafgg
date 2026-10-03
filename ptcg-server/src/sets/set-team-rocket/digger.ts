@@ -8,7 +8,7 @@ import { StateUtils } from '../../game';
 import { COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
 
 export class Digger extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'TR';
   public setNumber: string = '75';
@@ -16,7 +16,8 @@ export class Digger extends TrainerCard {
   public name: string = 'Digger';
   public fullName: string = 'Digger TR';
 
-  public text: string = 'Flip a coin. If tails, do 10 damage to your Active Pokémon. If heads, your opponent flips a coin. If tails, your opponent does 10 damage to his or her Active Pokémon. If heads, you flip a coin. Keep doing this until a player gets tails.';
+  public text: string =
+    'Flip a coin. If tails, do 10 damage to your Active Pokémon. If heads, your opponent flips a coin. If tails, your opponent does 10 damage to his or her Active Pokémon. If heads, you flip a coin. Keep doing this until a player gets tails.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
@@ -24,7 +25,7 @@ export class Digger extends TrainerCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       const flipCoin = (flipper: typeof player): void => {
-        COIN_FLIP_PROMPT(store, state, flipper, result => {
+        COIN_FLIP_PROMPT(store, state, flipper, (result) => {
           if (result) {
             // Heads - other player flips
             const otherPlayer = flipper === player ? opponent : player;
@@ -37,11 +38,8 @@ export class Digger extends TrainerCard {
       };
 
       flipCoin(player);
-
-
     }
 
     return state;
   }
-
 }

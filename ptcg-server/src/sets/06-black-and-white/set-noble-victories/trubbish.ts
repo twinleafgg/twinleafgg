@@ -5,7 +5,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { CardList, ChooseCardsPrompt, GameMessage } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Trubbish extends PokemonCard {
 
@@ -60,7 +60,7 @@ export class Trubbish extends PokemonCard {
           return state;
         }
 
-        player.discard.moveCardsTo(cards, deckTop);
+        MOVE_CARDS(store, state, player.discard, deckTop, { cards: cards, sourceCard: this });
 
         deckTop.moveToTopOfDestination(player.deck);
       });

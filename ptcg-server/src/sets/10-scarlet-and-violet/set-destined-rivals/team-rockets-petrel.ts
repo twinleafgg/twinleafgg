@@ -61,7 +61,7 @@ function* playCard(
 }
 
 export class TeamRocketsPetrel extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.TEAM_ROCKET];
   public set: string = 'DRI';
   public name: string = "Team Rocket's Petrel";

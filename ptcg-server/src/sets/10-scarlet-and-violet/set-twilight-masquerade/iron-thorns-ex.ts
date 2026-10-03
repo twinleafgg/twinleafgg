@@ -14,6 +14,8 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { EffectOfAbilityEffect } from '../../../game/store/effects/game-effects';
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 import {
   CAN_APPLY_LOCK_TO_TARGET,
   HANDLE_ABILITY_LOCK,
@@ -130,7 +132,7 @@ export class IronThornsex extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.active.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

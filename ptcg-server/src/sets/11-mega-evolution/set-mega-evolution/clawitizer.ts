@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, PowerType, State, StoreLike, StateUtils, ConfirmPrompt, GameMessage, ChooseCardsPrompt, SuperType, EnergyCard, EnergyType, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MovedFromActiveToBenchEffect, PowerEffect } from '../../../game/store/effects/game-effects';
-import { DISCARD_ALL_ENERGY_FROM_POKEMON, MOVED_FROM_ACTIVE_TO_BENCH_THIS_TURN, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DISCARD_ALL_ENERGY_FROM_POKEMON, MOVED_FROM_ACTIVE_TO_BENCH_THIS_TURN, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Clawitizer extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -94,7 +94,7 @@ export class Clawitizer extends PokemonCard {
         ), cards => {
           cards = cards || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
           }
         });
       });

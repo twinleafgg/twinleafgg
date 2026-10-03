@@ -10,8 +10,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class FullFaceGuard extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'EVS';
 
@@ -26,15 +25,16 @@ export class FullFaceGuard extends TrainerCard {
   public fullName: string = 'Full Face Guard EVS';
 
   public text: string =
-    'If the Pokémon this card is attached to has no Abilities, it takes 20 less damage from attacks from your opponent\'s Pokémon (after applying Weakness and Resistance).';
+    "If the Pokémon this card is attached to has no Abilities, it takes 20 less damage from attacks from your opponent's Pokémon (after applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     // Reduce damage by 20
     if (effect instanceof PutDamageEffect && effect.target.tools.includes(this)) {
       const sourceCard = effect.source.getPokemonCard();
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       // It's not an attack
       if (state.phase !== GamePhase.ATTACK) {
@@ -46,10 +46,12 @@ export class FullFaceGuard extends TrainerCard {
         // Check if source Pokemon has no abilities using CheckPokemonPowersEffect
         const powersEffect = new CheckPokemonPowersEffect(effect.player, sourceCard);
         state = store.reduceEffect(state, powersEffect);
-        const hasAbilities = powersEffect.powers.some(power => power.powerType === PowerType.ABILITY);
+        const hasAbilities = powersEffect.powers.some(
+          (power) => power.powerType === PowerType.ABILITY,
+        );
 
         if (!hasAbilities) {
-          // Check if damage target is owned by this card's owner 
+          // Check if damage target is owned by this card's owner
           const targetPlayer = StateUtils.findOwner(state, effect.target);
           if (targetPlayer === player) {
             effect.reduceDamage(20);
@@ -61,4 +63,3 @@ export class FullFaceGuard extends TrainerCard {
     return state;
   }
 }
-

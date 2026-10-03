@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { AttachEnergyPrompt, GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Corviknight extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -46,10 +46,6 @@ export class Corviknight extends PokemonCard {
       effect.player.active.damageReductionNextTurn = 30;
     }
 
-
-
-
-
     // Attack 2: Power Cyclone
     // Ref: set-unbroken-bonds/landorus.ts (Power Cyclone - move energy from active to bench)
     if (WAS_ATTACK_USED(effect, 1, this)) {
@@ -80,7 +76,7 @@ export class Corviknight extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

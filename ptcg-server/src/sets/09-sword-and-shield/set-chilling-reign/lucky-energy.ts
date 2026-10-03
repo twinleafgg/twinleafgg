@@ -5,8 +5,7 @@ import { State, GamePhase } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { StateUtils } from '../../../game';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
-
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LuckyEnergy extends EnergyCard {
 
@@ -42,7 +41,7 @@ If the Pokémon this card is attached to is in the Active Spot and is damaged by
       // Check if damage target is owned by this card's owner 
       const targetPlayer = StateUtils.findOwner(state, effect.target);
       if (targetPlayer === player) {
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
 
       return state;

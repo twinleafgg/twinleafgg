@@ -13,7 +13,7 @@ import { Effect } from '../../../game/store/effects/game-effects';
 import { MewtwoVUNIONTopLeft } from './mewtwo-v-union-tl';
 import { MewtwoVUNIONBottomLeft } from './mewtwo-v-union-bl';
 import { MewtwoVUNIONBottomRight } from './mewtwo-v-union-br';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MewtwoVUNIONTopRight extends PokemonCard {
   public stage: Stage = Stage.VUNION;
@@ -87,22 +87,22 @@ export class MewtwoVUNIONTopRight extends PokemonCard {
           // gotta make sure the actual mon ends up on top
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONTopRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONBottomLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONBottomRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONTopLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.assembledVUNIONs.push(this.name);

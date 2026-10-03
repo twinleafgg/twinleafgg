@@ -8,7 +8,7 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class NightMine extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'I';
   public set: string = 'ASC';
   public cardImage: string = 'assets/cardback.png';

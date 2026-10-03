@@ -48,7 +48,7 @@ function* useEnergyRecycle(
       transfers = transfers || [];
       for (const transfer of transfers) {
         const target = StateUtils.getTarget(state, player, transfer.to);
-        player.discard.moveCardTo(transfer.card, target);
+        MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: effect.card });
         next();
       }
     },

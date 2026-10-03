@@ -3,12 +3,22 @@ import { GameMessage } from '../../game-message';
 import { CardTarget, PlayerType, SlotType } from '../actions/play-card-action';
 import { CardTag, CardType } from '../card/card-types';
 import { PokemonCard } from '../card/pokemon-card';
+import { PowerType } from '../card/pokemon-types';
 import { MovedFromActiveToBenchEffect, MovedToActiveEffect } from '../effects/game-effects';
 import { CardList } from './card-list';
 import { Marker } from './card-marker';
 import { PokemonCardList } from './pokemon-card-list';
 import { GameStats } from './game-stats-interfaces';
 import { PendingEndOfTurnEffect } from './pending-end-of-turn-effects';
+
+/** Attack-sourced power lock on a player (Greninja, Shield Beam, Psychic Lock). */
+export interface AttackPowerSuppression {
+  turnsRemaining: number;
+  powerTypes: PowerType[];
+  /** `'remove'` hides the power; `'block'` leaves it visible but unusable. */
+  mode: 'remove' | 'block';
+}
+
 export class Player {
 
   id: number = 0;
@@ -105,10 +115,11 @@ export class Player {
   public cannotEvolvePokemonCards = false;
   public playLocksTurnsRemaining = 0;
   /**
-   * Until end of this player's next turn countdown: their Pokémon in play,
-   * hand, and discard have no Abilities (Greninja Shadow Stitching).
+   * Attack-sourced power suppressions on this player. Each entry counts this
+   * player's EndTurns. `turnsRemaining` 1 = during their next turn.
+   * Default Greninja entry is remove + Ability; Poké-Power locks use block.
    */
-  public abilitiesSuppressedTurnsRemaining = 0;
+  public attackPowerSuppressions: AttackPowerSuppression[] = [];
   /**
    * Until end of this player's next turn countdown: Stadium/Tool cards in play
    * have no effect (checked globally via any player still holding the flag).
@@ -129,6 +140,12 @@ export class Player {
    * EndTurns until clear. Set to 2 for "during your next turn".
    */
   public cannotAttackTurnsRemaining = 0;
+  /**
+   * During this player's upcoming turn(s), Pokémon with this many Energy or
+   * fewer can't attack (Walrein Frigid Fangs). Null when inactive.
+   */
+  public cannotAttackMaxEnergy: number | null = null;
+  public cannotAttackMaxEnergyTurnsRemaining = 0;
   /**
    * Ignore Energy in attack costs for Pokémon of these types (Sunflora Solar Power).
    * Counts this player's EndTurns until clear. Set to 2 for "during your next turn".
@@ -210,15 +227,25 @@ export class Player {
     if (this.cannotAttackTurnsRemaining > 0) {
       this.cannotAttackTurnsRemaining -= 1;
     }
-    if (this.abilitiesSuppressedTurnsRemaining > 0) {
-      this.abilitiesSuppressedTurnsRemaining -= 1;
+    if (this.cannotAttackMaxEnergyTurnsRemaining > 0) {
+      this.cannotAttackMaxEnergyTurnsRemaining -= 1;
+      if (this.cannotAttackMaxEnergyTurnsRemaining <= 0) {
+        this.cannotAttackMaxEnergy = null;
+      }
     }
+    this.attackPowerSuppressions = this.attackPowerSuppressions
+      .map(suppression => ({ ...suppression, turnsRemaining: suppression.turnsRemaining - 1 }))
+      .filter(suppression => suppression.turnsRemaining > 0);
     if (this.ignoreAttackCostTurnsRemaining > 0) {
       this.ignoreAttackCostTurnsRemaining -= 1;
       if (this.ignoreAttackCostTurnsRemaining <= 0) {
         this.ignoreAttackCostCardTypes = null;
       }
     }
+    if (this.unlimitedEnergyAttachTurnsRemaining > 0) {
+      this.unlimitedEnergyAttachTurnsRemaining -= 1;
+    }
+    this.usedDragonsWish = this.unlimitedEnergyAttachTurnsRemaining === 1;
     this.cannotDrawAtStartOfTurn = false;
   }
 
@@ -244,6 +271,13 @@ export class Player {
   pokemonKnockedOutByAttackDuringOpponentsLastTurn = false;
   pokemonKnockedOutLastTurnEntries: CardTag[][] = [];
   usedDragonsWish = false;
+  /**
+   * Dragon's Wish countdown. 2 = armed this turn (not yet active), 1 = unlimited
+   * Energy attachments during this player's turn. `usedDragonsWish` is the active flag.
+   */
+  public unlimitedEnergyAttachTurnsRemaining = 0;
+  /** Rest-of-game ban on this player's GX attacks (Latios-GX Clear Vision). */
+  public cannotUseGXAttacks = false;
   pecharuntexIsInPlay = false;
   usedFanCall = false;
   canEvolve = false;
@@ -303,11 +337,40 @@ export class Player {
   }
 
   /**
-   * Remove all attack-sourced markers from the player level.
-   * Preserves ability markers, trainer markers, and other non-attack state.
+   * Remove effects of attacks currently on this player.
+   * Does not remove damage, Special Conditions, Ability/Trainer/Energy effects,
+   * or the fact that an attack was used (`usedGX`, `usedVSTAR`).
+   * Pokémon Ranger and Channeler both go through this.
    */
   removeAttackEffects(): void {
     this.marker.removeAttackEffects();
+    this.clearPlayLocks();
+    this.attackPowerSuppressions = [];
+    this.stadiumAndToolHaveNoEffectTurnsRemaining = 0;
+    this.coinFlipCancelTrainerPlayTurnsRemaining = 0;
+    this.cannotDrawAtStartOfTurn = false;
+    this.cannotAttackTurnsRemaining = 0;
+    this.cannotAttackMaxEnergy = null;
+    this.cannotAttackMaxEnergyTurnsRemaining = 0;
+    this.ignoreAttackCostCardTypes = null;
+    this.ignoreAttackCostTurnsRemaining = 0;
+    this.unlimitedEnergyAttachTurnsRemaining = 0;
+    this.usedDragonsWish = false;
+    this.pendingEndOfTurnEffects = [];
+    // Lingering GX attack effects (not the once-per-game GX use itself).
+    this.alteredCreationDamage = false;
+    this.usedAlteredCreation = false;
+    this.usedFullMetalWall = false;
+  }
+
+  /**
+   * Remove effects of attacks on this player and each of their Pokémon in play.
+   * Does not remove damage counters or Special Conditions.
+   */
+  removeAttackEffectsFromPlayerAndPokemon(): void {
+    this.removeAttackEffects();
+    this.active.removeAttackEffects();
+    this.bench.forEach(bench => bench.removeAttackEffects());
   }
 
   removePokemonEffects(target: PokemonCardList) {

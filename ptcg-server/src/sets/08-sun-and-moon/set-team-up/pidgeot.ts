@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pidgeot extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -73,7 +73,7 @@ export class Pidgeot extends PokemonCard {
       const opponent = effect.opponent;
       const active = opponent.active;
       if (active.cards.length > 0) {
-        opponent.hand.moveCardsTo(active.cards.slice(), opponent.hand);
+        MOVE_CARDS(store, state, opponent.hand, opponent.hand, { cards: active.cards.slice(), sourceCard: this });
         active.cards = [];
       }
       return state;

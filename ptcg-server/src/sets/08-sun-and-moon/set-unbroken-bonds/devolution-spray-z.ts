@@ -24,7 +24,7 @@ export class DevolutionSprayZ extends TrainerCard {
   public set = 'UNB';
   public fullName = 'Devolution Spray Z UB';
   public superType = SuperType.TRAINER;
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
 
   public text =
     "Devolve 1 of your evolved Pokémon by shuffling any number of Evolution cards on it into your deck. (That Pokémon can't evolve this turn.)";

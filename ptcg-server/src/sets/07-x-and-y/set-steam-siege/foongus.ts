@@ -10,6 +10,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Foongus extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -90,7 +91,7 @@ export class Foongus extends PokemonCard {
             { min: count, max: count, allowCancel: false, blocked }
           ), (selected: Card[]) => {
             if (selected && selected.length > 0) {
-              player.discard.moveCardsTo(selected, player.hand);
+              MOVE_CARDS(store, state, player.discard, player.hand, { cards: selected, sourceCard: this });
             }
           });
         }

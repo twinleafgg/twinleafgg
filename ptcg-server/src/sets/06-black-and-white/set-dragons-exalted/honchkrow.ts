@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StateUtils, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, CONFIRMATION_PROMPT, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, CONFIRMATION_PROMPT, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Honchkrow extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -72,7 +72,7 @@ export class Honchkrow extends PokemonCard {
       if (opponent.hand.cards.length > 0) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const cardToDiscard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(cardToDiscard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [cardToDiscard], sourceCard: this });
       }
     }
 

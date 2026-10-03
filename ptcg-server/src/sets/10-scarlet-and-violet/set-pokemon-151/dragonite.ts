@@ -8,7 +8,7 @@ import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Dragonite extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -44,7 +44,7 @@ export class Dragonite extends PokemonCard {
       const player = effect.player;
 
       // Discard 2 cards from your deck 
-      player.deck.moveTo(player.discard, 2);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 2, sourceCard: this });
       return state;
     }
 

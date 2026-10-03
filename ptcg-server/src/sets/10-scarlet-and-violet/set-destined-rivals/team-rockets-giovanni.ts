@@ -9,9 +9,10 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { StateUtils } from '../../../game/store/state-utils';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TeamRocketsGiovanni extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.TEAM_ROCKET];
   public regulationMark = 'I';
   public set: string = 'DRI';
@@ -59,7 +60,7 @@ export class TeamRocketsGiovanni extends TrainerCard {
       }
 
       player.rocketSupporter = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       // Check if active Pokémon is a Team Rocket's Pokémon

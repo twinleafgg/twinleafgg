@@ -16,11 +16,9 @@ import {
 } from '../../../game';
 import { AbstractAttackEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   IS_ABILITY_BLOCKED,
-  BLOCK_IF_GX_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CelesteelaGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX, CardTag.ULTRA_BEAST];
@@ -113,7 +111,7 @@ export class CelesteelaGx extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.active.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
             }
           },
         );
@@ -141,7 +139,7 @@ export class CelesteelaGx extends PokemonCard {
       // Put all prize cards into hand
       player.prizes.forEach((prizeList) => {
         if (prizeList.cards.length > 0) {
-          prizeList.moveTo(player.hand);
+          MOVE_CARDS(store, state, prizeList, player.hand, { sourceCard: this });
         }
       });
 
@@ -149,7 +147,7 @@ export class CelesteelaGx extends PokemonCard {
       let placed = 0;
       for (let i = 0; i < player.prizes.length && placed < prizeCount; i++) {
         if (player.prizes[i].cards.length === 0 && player.deck.cards.length > 0) {
-          player.deck.moveTo(player.prizes[i], 1);
+          MOVE_CARDS(store, state, player.deck, player.prizes[i], { count: 1, sourceCard: this });
           player.prizes[i].isSecret = true;
           player.prizes[i].isPublic = false;
           placed++;

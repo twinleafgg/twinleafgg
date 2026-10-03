@@ -4,7 +4,7 @@ import { CardType, Stage, EnergyType, SuperType, TrainerType } from '../../../ga
 import { StoreLike, State, ChooseCardsPrompt, EnergyCard, GameError, GameMessage, PowerType, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { ABILITY_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Claydol extends PokemonCard {
 
@@ -88,7 +88,7 @@ export class Claydol extends PokemonCard {
         cards = cards || [];
         if (cards.length > 0) {
           player.marker.addMarker(this.CHARGE_MARKER, this);
-          player.discard.moveCardsTo(cards, cardList);
+          MOVE_CARDS(store, state, player.discard, cardList, { cards: cards, sourceCard: this });
         }
       });
     }

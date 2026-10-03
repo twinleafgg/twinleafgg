@@ -9,10 +9,8 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
-
 export class ExpertBelt extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'AR';
 
@@ -25,16 +23,16 @@ export class ExpertBelt extends TrainerCard {
   public setNumber: string = '87';
 
   public text: string =
-    'The Pokemon this card is attached to gets +20 HP and that Pokemon\'s ' +
-    'attacks do 20 more damage to your opponent\'s Active Pokemon (before ' +
+    "The Pokemon this card is attached to gets +20 HP and that Pokemon's " +
+    "attacks do 20 more damage to your opponent's Active Pokemon (before " +
     'applying Weakness and Resistance). When the Pokemon this card is ' +
     'attached to is Knocked Out, your opponent takes 1 more Prize card.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckHpEffect && effect.target.tools.includes(this)) {
-
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       effect.hp += 20;
     }
@@ -43,7 +41,9 @@ export class ExpertBelt extends TrainerCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, effect.player);
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       if (effect.target !== player.active && effect.target !== opponent.active) {
         return state;
@@ -56,13 +56,13 @@ export class ExpertBelt extends TrainerCard {
     }
 
     if (effect instanceof KnockOutEffect && effect.target.tools.includes(this)) {
-
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       effect.prizeCount += 1;
     }
 
     return state;
   }
-
 }

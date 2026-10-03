@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChoosePokemonPrompt, GameMessage, PlayerType, SlotType, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
-import { JUST_EVOLVED, IS_ABILITY_BLOCKED, CONFIRMATION_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {JUST_EVOLVED, IS_ABILITY_BLOCKED, CONFIRMATION_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Banette extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -93,7 +93,7 @@ export class Banette extends PokemonCard {
           if (pokemons.length > 1) {
             // Remove the top evolution card and put it into opponent's hand
             const topEvolution = pokemons[pokemons.length - 1];
-            target.moveCardTo(topEvolution, opponent.hand);
+            MOVE_CARDS(store, state, target, opponent.hand, { cards: [topEvolution], sourceCard: this });
           }
         });
       }, GameMessage.WANT_TO_USE_ABILITY);

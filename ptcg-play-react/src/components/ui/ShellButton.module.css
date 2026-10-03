@@ -94,3 +94,33 @@
   filter: none;
   opacity: 0.55;
 }
+
+/* Dark glass chrome for Twinleaf-themed pages (transparent base + cyan border) */
+.ghost {
+  padding: 9px 16px;
+  border: 1px solid rgba(62, 199, 201, 0.35);
+  border-radius: 10px;
+  font-family: 'Urbanist', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fafafa;
+  background: rgba(10, 20, 36, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.ghost:hover:not(:disabled) {
+  border-color: rgba(62, 199, 201, 0.6);
+  background: rgba(62, 199, 201, 0.12);
+  color: #fff;
+}
+
+.ghost:active:not(:disabled) {
+  transform: translateY(1px);
+  background: rgba(62, 199, 201, 0.18);
+}
+
+.ghost:disabled {
+  opacity: 0.45;
+}

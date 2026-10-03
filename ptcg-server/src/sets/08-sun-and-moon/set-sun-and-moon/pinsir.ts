@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pinsir extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -56,13 +56,13 @@ export class Pinsir extends PokemonCard {
       // Move all tools first
       const tools = active.tools.slice();
       tools.forEach(tool => {
-        active.moveCardTo(tool, opponent.hand);
+        MOVE_CARDS(store, state, active, opponent.hand, { cards: [tool], sourceCard: this });
       });
 
       // Move all other cards (energy, etc.)
       const cards = active.cards.slice();
       cards.forEach(card => {
-        active.moveCardTo(card, opponent.hand);
+        MOVE_CARDS(store, state, active, opponent.hand, { cards: [card], sourceCard: this });
       });
 
       active.clearEffects();

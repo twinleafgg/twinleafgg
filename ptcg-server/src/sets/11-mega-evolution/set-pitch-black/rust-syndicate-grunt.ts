@@ -15,11 +15,11 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_POKEMON_KNOCKED_OUT_DURING_OPPONENTS_LAST_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_POKEMON_KNOCKED_OUT_DURING_OPPONENTS_LAST_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CLEAN_UP_SUPPORTER } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class RustSyndicateGrunt extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'J';
   public set: string = 'PBL';
   public setNumber: string = '81';
@@ -65,7 +65,7 @@ function playRust(
   store: StoreLike,
   state: State,
   effect: TrainerEffect,
-  _self: RustSyndicateGrunt,
+  self: RustSyndicateGrunt,
 ): State {
   const player = effect.player;
 
@@ -103,7 +103,7 @@ function playRust(
   });
 
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
 
   return store.prompt(
     state,
@@ -130,7 +130,7 @@ function playRust(
           { min: 1, max: 1, allowCancel: false },
         ),
         (sel) => {
-          tgt.moveCardsTo(sel || [], opponent.discard);
+          MOVE_CARDS(store, state, tgt, opponent.discard, { cards: sel || [], sourceCard: self });
           CLEAN_UP_SUPPORTER(store, effect, player);
           return state;
         },

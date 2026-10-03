@@ -20,7 +20,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianZapdosV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -156,7 +156,7 @@ export class GalarianZapdosV extends PokemonCard {
               cards = selected;
             },
           );
-          oppActive.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, oppActive, opponent.discard, { cards: cards, sourceCard: this });
 
           const damageEffect = new PutDamageEffect(effect, 20);
           damageEffect.target = opponent.active;

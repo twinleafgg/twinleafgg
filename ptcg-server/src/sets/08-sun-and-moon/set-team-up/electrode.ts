@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { PowerType, StoreLike, State, StateUtils, GameMessage, PlayerType, SlotType, MoveEnergyPrompt } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { JUST_EVOLVED, IS_ABILITY_BLOCKED, CONFIRMATION_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {JUST_EVOLVED, IS_ABILITY_BLOCKED, CONFIRMATION_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Electrode extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -78,7 +78,7 @@ export class Electrode extends PokemonCard {
             for (const transfer of transfers) {
               const source = StateUtils.getTarget(state, player, transfer.from);
               const target = StateUtils.getTarget(state, player, transfer.to);
-              source.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
             }
           });
         }

@@ -6,7 +6,7 @@ import { GameMessage } from '../../../game/game-message';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Armarouge extends PokemonCard {
 
@@ -93,7 +93,7 @@ export class Armarouge extends PokemonCard {
             const source = StateUtils.getTarget(state, player, transfer.from);
             if (source) {
               const target = player.active; // Always move to active Pokémon
-              source.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
             }
           }
         }

@@ -14,7 +14,7 @@ import { StoreLike, State, StateUtils } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { CardList } from '../../../game/store/state/card-list';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class TorkoalV extends PokemonCard {
@@ -60,7 +60,7 @@ export class TorkoalV extends PokemonCard {
 
       // Take top card into a temporary list
       const topCard = new CardList();
-      player.deck.moveTo(topCard, 1);
+      MOVE_CARDS(store, state, player.deck, topCard, { count: 1, sourceCard: this });
 
       // Check if it's a [R] Basic Energy card
       const isFireEnergy =
@@ -70,7 +70,7 @@ export class TorkoalV extends PokemonCard {
         (topCard.cards[0] as EnergyCard).provides.includes(CardType.FIRE);
 
       // Move the card to discard
-      topCard.moveTo(player.discard);
+      MOVE_CARDS(store, state, topCard, player.discard, { sourceCard: this });
 
       if (isFireEnergy) {
         effect.damage += 90;

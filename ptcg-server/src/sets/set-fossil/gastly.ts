@@ -4,7 +4,7 @@ import { StoreLike, State, GameMessage, ChooseCardsPrompt, EnergyCard } from '..
 import { Effect } from '../../game/store/effects/effect';
 import { AddSpecialConditionsEffect, DealDamageEffect } from '../../game/store/effects/attack-effects';
 
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Gastly extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -68,7 +68,7 @@ export class Gastly extends PokemonCard {
         cards = cards || [];
         if (cards.length > 0) {
           // Recover discarded Pokemon
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         }
       });
 

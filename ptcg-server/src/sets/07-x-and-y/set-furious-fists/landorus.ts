@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { GameMessage, PlayerType, SlotType, EnergyCard, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
@@ -88,7 +88,7 @@ export class Landorus extends PokemonCard {
         ), selected => {
           const cards = selected || [];
           cards.forEach(card => {
-            player.discard.moveCardTo(card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [card], sourceCard: this });
           });
         });
       });

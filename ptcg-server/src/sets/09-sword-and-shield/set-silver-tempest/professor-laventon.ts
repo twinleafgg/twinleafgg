@@ -12,14 +12,15 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ProfessorLaventon extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'F';
   public set: string = 'SIT';
   public setNumber: string = '162';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Professor Laventon';
   public fullName: string = 'Professor Laventon SIT 162';
-  public text: string = 'Put up to 3 Pokémon that have "Hisuian" in their names from your discard pile into your hand. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Put up to 3 Pokémon that have "Hisuian" in their names from your discard pile into your hand. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-silver-tempest/brandon.ts (WAS_TRAINER_USED Supporter pattern)
@@ -31,15 +32,14 @@ export class ProfessorLaventon extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       // Find Hisuian Pokemon in discard
-      const hisuianInDiscard = player.discard.cards.filter(c =>
-        c instanceof PokemonCard && c.name.includes('Hisuian')
+      const hisuianInDiscard = player.discard.cards.filter(
+        (c) => c instanceof PokemonCard && c.name.includes('Hisuian'),
       );
 
       if (hisuianInDiscard.length === 0) {
-
         return state;
       }
 
@@ -54,19 +54,22 @@ export class ProfessorLaventon extends TrainerCard {
         }
       });
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        player.discard,
-        { superType: SuperType.POKEMON },
-        { min: 0, max: maxPick, allowCancel: false, blocked }
-      ), selected => {
-        const cards = selected || [];
-        if (cards.length > 0) {
-          MOVE_CARDS(store, state, player.discard, player.hand, { cards, sourceCard: this });
-        }
-
-      });
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          player.discard,
+          { superType: SuperType.POKEMON },
+          { min: 0, max: maxPick, allowCancel: false, blocked },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          if (cards.length > 0) {
+            MOVE_CARDS(store, state, player.discard, player.hand, { cards, sourceCard: this });
+          }
+        },
+      );
     }
 
     return state;

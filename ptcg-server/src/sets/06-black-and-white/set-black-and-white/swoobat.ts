@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Swoobat extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -39,7 +39,7 @@ export class Swoobat extends PokemonCard {
       COIN_FLIP_PROMPT(store, state, player, result => {
         if (result) {
           // Shuffle opponent's hand into deck
-          opponent.hand.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
         }
       });

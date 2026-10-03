@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, StateUtils, Card, ChooseCardsPrompt, ChoosePokemonPrompt, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Honchkrow extends PokemonCard {
 
@@ -63,7 +63,7 @@ export class Honchkrow extends PokemonCard {
           { min: 1, max: 1, allowCancel: false, isSecret: true }
         ), selected => {
           cards = selected || [];
-          opponent.hand.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
         });
       }
 

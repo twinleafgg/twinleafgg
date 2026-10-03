@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, Card, ChooseCardsPrompt, GameMessage, PowerType, GameError, PokemonCardList, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tyrogue extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -67,7 +67,7 @@ export class Tyrogue extends PokemonCard {
         const target = StateUtils.findCardList(state, this);
 
         // Evolve Pokemon
-        player.hand.moveCardTo(evolution, target);
+        MOVE_CARDS(store, state, player.hand, target, { cards: [evolution], sourceCard: this });
         const pokemonTarget = target as PokemonCardList;
         pokemonTarget.clearEffects();
         pokemonTarget.pokemonPlayedTurn = state.turn;

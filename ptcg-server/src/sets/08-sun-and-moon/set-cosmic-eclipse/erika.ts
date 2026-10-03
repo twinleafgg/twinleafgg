@@ -10,13 +10,14 @@ import { DRAW_UP_TO_X_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class Erika extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'CEC';
   public setNumber: string = '191';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Erika';
   public fullName: string = 'Erika CEC';
-  public text: string = 'Each player may draw up to 3 cards. You draw first. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Each player may draw up to 3 cards. You draw first. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-unified-minds/blues-tactics.ts (WAS_TRAINER_USED supporter pattern)

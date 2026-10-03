@@ -8,8 +8,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class Lacey extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'SCR';
 
@@ -51,5 +50,4 @@ export class Lacey extends TrainerCard {
 
     return state;
   }
-
 }

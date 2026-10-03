@@ -10,7 +10,7 @@ import { Effect } from '../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../game/store/prompts/choose-pokemon-prompt';
 import { CardTarget, SlotType } from '../../game/store/actions/play-card-action';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Drampa extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -99,7 +99,7 @@ export class Drampa extends PokemonCard {
         ), cards => {
           cards = cards || [];
           cards.forEach(card => {
-            player.discard.moveCardTo(card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [card], sourceCard: this });
           });
         });
       });

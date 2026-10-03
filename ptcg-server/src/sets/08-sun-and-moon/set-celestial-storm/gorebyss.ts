@@ -4,10 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils } from '../../../game';
-import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ADD_MARKER, CLEAR_MARKER_AND_OPPONENTS_POKEMON_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Gorebyss extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -16,9 +16,6 @@ export class Gorebyss extends PokemonCard {
   public hp: number = 90;
   public weakness = [{ type: G }];
   public retreat = [];
-
-  public readonly DEFLECTING_SPLASH_MARKER = 'GOREBYSS_CES_DEFLECTING_SPLASH_MARKER';
-  public readonly CLEAR_DEFLECTING_SPLASH_MARKER = 'GOREBYSS_CES_CLEAR_DEFLECTING_SPLASH_MARKER';
 
   public attacks = [
     {
@@ -36,26 +33,9 @@ export class Gorebyss extends PokemonCard {
   public fullName: string = 'Gorebyss CES';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Deflecting Splash
-    // Ref: set-forbidden-light/aurorus.ts (Frost Wall)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      ADD_MARKER(this.DEFLECTING_SPLASH_MARKER, player.active, this);
-      ADD_MARKER(this.CLEAR_DEFLECTING_SPLASH_MARKER, opponent, this);
+      PREVENT_DAMAGE(store, state, effect, this, { sourceIsEvolution: true });
     }
-
-    // Prevent damage from Evolution Pokemon
-    if (effect instanceof DealDamageEffect
-      && effect.target.marker.hasMarker(this.DEFLECTING_SPLASH_MARKER, this)
-      && effect.target.getPokemonCard() === this) {
-      const sourceCard = effect.source.getPokemonCard();
-      if (sourceCard && sourceCard.stage !== Stage.BASIC) {
-        effect.damage = 0;
-      }
-    }
-
-    CLEAR_MARKER_AND_OPPONENTS_POKEMON_MARKER_AT_END_OF_TURN(state, effect, this.CLEAR_DEFLECTING_SPLASH_MARKER, this.DEFLECTING_SPLASH_MARKER, this);
 
     return state;
   }

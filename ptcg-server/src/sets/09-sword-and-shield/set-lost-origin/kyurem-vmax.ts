@@ -27,7 +27,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class KyuremVMAX extends PokemonCard {
   public stage: Stage = Stage.VMAX;
@@ -109,7 +109,7 @@ export class KyuremVMAX extends PokemonCard {
           const discardEnergy = new DiscardCardsEffect(effect, cards);
           discardEnergy.target = player.active;
           store.reduceEffect(state, discardEnergy);
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
           // Calculate damage
           const damage = cards.length * 50;
@@ -130,7 +130,7 @@ export class KyuremVMAX extends PokemonCard {
         throw new GameError(GameMessage.POWER_ALREADY_USED);
       }
 
-      player.deck.moveTo(temp, 1);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 1, sourceCard: this });
 
       // Check if any cards drawn are basic energy
       const energyCardsDrawn = temp.cards.filter((card) => {
@@ -156,7 +156,7 @@ export class KyuremVMAX extends PokemonCard {
             state,
             [new ShowCardsPrompt(player.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, temp.cards)],
             () => {
-              temp.moveTo(player.discard);
+              MOVE_CARDS(store, state, temp, player.discard, { sourceCard: this });
             },
           );
         });
@@ -186,10 +186,10 @@ export class KyuremVMAX extends PokemonCard {
             if (transfers) {
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                temp.moveCardTo(transfer.card, target); // Move card to target
+                MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this }); // Move card to target
               }
               temp.cards.forEach((card) => {
-                temp.moveCardTo(card, player.hand); // Move card to hand
+                MOVE_CARDS(store, state, temp, player.hand, { cards: [card], sourceCard: this }); // Move card to hand
               });
             }
           },

@@ -7,11 +7,9 @@ import {
   State,
   StateUtils,
   CardTag,
-  PlayerType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PowerEffect } from '../../../game/store/effects/game-effects';
-import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
+import { ADAPTIVE_EVOLUTION } from '../../../game/store/prefabs/prefabs';
 
 export class Luxio extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -46,46 +44,12 @@ export class Luxio extends PokemonCard {
   public fullName: string = 'Luxio M3';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Roar of the Tiger - can evolve on first turn if opponent's Active is ex
-    if (effect instanceof CheckTableStateEffect) {
-      const player = state.players[state.activePlayer];
-      if (player.active.cards[0] == this) {
+    return ADAPTIVE_EVOLUTION(store, state, effect, this, {
+      canActivate: (_store, state, player) => {
         const opponent = StateUtils.getOpponent(state, player);
         const opponentActive = opponent.active.getPokemonCard();
-
-        if (opponentActive && opponentActive.hasTag(CardTag.POKEMON_ex)) {
-          try {
-            const stub = new PowerEffect(
-              player,
-              {
-                name: 'test',
-                powerType: PowerType.ABILITY,
-                text: '',
-              },
-              this,
-            );
-            store.reduceEffect(state, stub);
-          } catch {
-            return state;
-          }
-
-          // Allow evolution on first turn or first turn this Pokemon is put into play
-          if (state.turn === 1 || state.turn === 2) {
-            player.canEvolve = true;
-            player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
-              if (
-                cardList.getPokemonCard() === this ||
-                cardList.cards.some((c) => c.name === 'Shinx')
-              ) {
-                cardList.pokemonPlayedTurn = state.turn - 1;
-              }
-            });
-          }
-        }
-      }
-      return state;
-    }
-
-    return state;
+        return !!opponentActive && opponentActive.hasTag(CardTag.POKEMON_ex);
+      },
+    });
   }
 }

@@ -10,8 +10,13 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Kindler, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Kindler,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   const supporterTurn = player.supporterTurn;
@@ -24,58 +29,70 @@ function* playCard(next: Function, store: StoreLike, state: State,
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  const hasEnergyInHand = player.hand.cards.some(c => {
-    return c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC && c.name === 'Fire Energy';
+  const hasEnergyInHand = player.hand.cards.some((c) => {
+    return (
+      c.superType === SuperType.ENERGY &&
+      c.energyType === EnergyType.BASIC &&
+      c.name === 'Fire Energy'
+    );
   });
 
   if (!hasEnergyInHand) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
-  state = store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    player.hand,
-    { superType: SuperType.ENERGY },
-    { allowCancel: false, min: 1, max: 1 }
-  ), cards => {
-    cards = cards || [];
-    if (cards.length === 0) {
-      return;
-    }
+  state = store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      player.hand,
+      { superType: SuperType.ENERGY },
+      { allowCancel: false, min: 1, max: 1 },
+    ),
+    (cards) => {
+      cards = cards || [];
+      if (cards.length === 0) {
+        return;
+      }
 
-    MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: self });
-  });
-
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: self });
+    },
+  );
 
   const deckTop = new CardList();
-  player.deck.moveTo(deckTop, 7);
+  MOVE_CARDS(store, state, player.deck, deckTop, { count: 7, sourceCard: self });
 
-  return store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    deckTop,
-    {},
-    { min: 0, max: 2, allowCancel: false }
-  ), selected => {
-    deckTop.moveCardsTo(selected, player.hand);
-    deckTop.moveTo(player.deck);
+  return store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      deckTop,
+      {},
+      { min: 0, max: 2, allowCancel: false },
+    ),
+    (selected) => {
+      MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: self });
+      MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: self });
 
-
-    return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-      player.deck.applyOrder(order);
-      return state;
-    });
-  });
+      return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+        player.deck.applyOrder(order);
+        return state;
+      });
+    },
+  );
 }
 
 export class Kindler extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BRS';
 
@@ -89,13 +106,11 @@ export class Kindler extends TrainerCard {
 
   public fullName: string = 'Kindler BRS';
 
-  public text: string =
-    `You can use this card only if you discard a [R] Energy card from your hand. 
+  public text: string = `You can use this card only if you discard a [R] Energy card from your hand. 
 
 Look at the top 7 cards of your deck and put up to 2 of them into your hand. Shuffle the other cards back into your deck.`;
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, this, effect);
       return generator.next().value;
@@ -103,5 +118,4 @@ Look at the top 7 cards of your deck and put up to 2 of them into your hand. Shu
 
     return state;
   }
-
 }

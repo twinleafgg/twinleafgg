@@ -4,7 +4,7 @@ import { StoreLike, State, ConfirmPrompt } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LucarioEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -68,7 +68,7 @@ export class LucarioEx extends PokemonCard {
         new ConfirmPrompt(effect.player.id, GameMessage.WANT_TO_DRAW_CARDS),
         (result) => {
           if (result) {
-            player.deck.moveTo(player.hand, cardsToDraw);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: cardsToDraw, sourceCard: this });
           }
         },
       );

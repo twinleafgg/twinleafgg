@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { CardList, EnergyCard, GameMessage, PlayerType, StoreLike, State } from '../../../game';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Kyurem extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -74,7 +74,7 @@ export class Kyurem extends PokemonCard {
         cards.forEach(card => {
           const entry = waterEnergyMap.find(e => e.card === card);
           if (entry) {
-            entry.source.moveCardTo(card, player.discard);
+            MOVE_CARDS(store, state, entry.source, player.discard, { cards: [card], sourceCard: this });
           }
         });
         effect.damage = 60 * cards.length;

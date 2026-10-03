@@ -8,17 +8,17 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class PokemonCirculator extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'UL';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '81';
   public name: string = 'Pokémon Circulator';
   public fullName: string = 'Pokémon Circulator UL';
 
-  public text: string = 'Your opponent switches his or her Active Pokémon with 1 of his or her Benched Pokémon.';
+  public text: string =
+    'Your opponent switches his or her Active Pokémon with 1 of his or her Benched Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
@@ -26,11 +26,8 @@ export class PokemonCirculator extends TrainerCard {
       effect.preventDefault = true;
 
       SWITCH_ACTIVE_WITH_BENCHED(store, state, opponent);
-
-
     }
 
     return state;
   }
-
 }

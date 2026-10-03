@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Greedent extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -54,7 +54,7 @@ export class Greedent extends PokemonCard {
       const handCards = player.hand.cards.slice();
       const discardedCount = handCards.length;
 
-      handCards.forEach(c => player.hand.moveCardTo(c, player.discard));
+      handCards.forEach(c => MOVE_CARDS(store, state, player.hand, player.discard, { cards: [c], sourceCard: this }));
 
       if (discardedCount >= 5) {
         effect.damage += 150;

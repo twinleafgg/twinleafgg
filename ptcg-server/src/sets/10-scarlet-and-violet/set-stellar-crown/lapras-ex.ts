@@ -21,7 +21,7 @@ import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Laprasex extends PokemonCard {
   public cardType: CardType[] = [CardType.WATER];
@@ -96,7 +96,7 @@ export class Laprasex extends PokemonCard {
       // Create deckBottom and move hand into it
       const deckBottom = new CardList();
 
-      player.deck.moveTo(temp, 20);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 20, sourceCard: this });
       // Check if any cards drawn are basic energy
       const energyCardsDrawn = temp.cards.filter((card) => {
         return card instanceof EnergyCard;
@@ -111,9 +111,9 @@ export class Laprasex extends PokemonCard {
             temp.cards.forEach((card) => {
               store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                 temp.applyOrder(order);
-                temp.moveCardTo(card, deckBottom);
+                MOVE_CARDS(store, state, temp, deckBottom, { cards: [card], sourceCard: this });
                 deckBottom.applyOrder(order);
-                deckBottom.moveTo(player.deck);
+                MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
               });
               return state;
             });
@@ -140,14 +140,14 @@ export class Laprasex extends PokemonCard {
             if (transfers) {
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                temp.moveCardTo(transfer.card, target); // Move card to target
+                MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this }); // Move card to target
               }
               temp.cards.forEach((card) => {
                 store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                   temp.applyOrder(order);
-                  temp.moveCardTo(card, deckBottom);
+                  MOVE_CARDS(store, state, temp, deckBottom, { cards: [card], sourceCard: this });
                   deckBottom.applyOrder(order);
-                  deckBottom.moveTo(player.deck);
+                  MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
                 });
                 return state;
               });

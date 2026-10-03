@@ -1,4 +1,4 @@
-import { Card, CardTarget, CardType, ChooseCardsPrompt, ChoosePokemonPrompt, GameError, GameLog, GameMessage, PlayerType, PokemonCard, PokemonCardList, Power, PowerType, ShuffleDeckPrompt, SlotType, State, StoreLike, SuperType } from '../../../game';
+import { Card, CardTarget, CardType, ChooseCardsPrompt, ChoosePokemonPrompt, GameError, GameMessage, PlayerType, PokemonCard, PokemonCardList, Power, PowerType, ShuffleDeckPrompt, SlotType, State, StoreLike, SuperType } from '../../../game';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
@@ -61,10 +61,6 @@ export class Duskull extends PokemonCard {
         cards = cards || [];
 
         MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: this, sourceEffect: this.powers[0] });
-
-        cards.forEach((card, index) => {
-          store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, { name: player.name, card: card.name });
-        });
 
         // Blocking pokemon cards, that cannot be valid evolutions
         const blocked: number[] = [];

@@ -2,7 +2,7 @@ import { PokemonCard, Stage, CardType, PowerType, State, StoreLike, GameError, G
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pyukumuku extends PokemonCard {
 
@@ -59,9 +59,9 @@ export class Pyukumuku extends PokemonCard {
 
       const deckBottom = new CardList();
       player.marker.addMarker(this.PYUK_MARKER, this);
-      player.hand.moveCardTo(this, deckBottom);
-      deckBottom.moveTo(player.deck);
-      player.deck.moveTo(player.hand, 1);
+      MOVE_CARDS(store, state, player.hand, deckBottom, { cards: [this], sourceCard: this });
+      MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
     }
 
     return state;

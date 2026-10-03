@@ -8,15 +8,17 @@ import { StoreLike, State, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MixedHerbs extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'LOT';
   public setNumber: string = '184';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mixed Herbs';
   public fullName: string = 'Mixed Herbs LOT';
-  public text: string = 'You may play 2 Mixed Herbs cards at once.\n\u2022 If you played 1 card, remove a Special Condition from your Active Pok\u00e9mon.\n\u2022 If you played 2 cards, heal 90 damage and remove all Special Conditions from your Active Pok\u00e9mon. (This effects works one time for 2 cards.)';
+  public text: string =
+    'You may play 2 Mixed Herbs cards at once.\n\u2022 If you played 1 card, remove a Special Condition from your Active Pok\u00e9mon.\n\u2022 If you played 2 cards, heal 90 damage and remove all Special Conditions from your Active Pok\u00e9mon. (This effects works one time for 2 cards.)';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-celestial-storm/life-herb.ts (heal + remove special conditions)
@@ -32,14 +34,14 @@ export class MixedHerbs extends TrainerCard {
       }
 
       // Check if another Mixed Herbs is in hand
-      const otherMixedHerbs = player.hand.cards.find(c =>
-        c instanceof TrainerCard && c.name === 'Mixed Herbs' && c !== this
+      const otherMixedHerbs = player.hand.cards.find(
+        (c) => c instanceof TrainerCard && c.name === 'Mixed Herbs' && c !== this,
       );
 
       if (otherMixedHerbs) {
         // Playing 2 cards - heal 90 damage and remove all Special Conditions
         // Discard the other Mixed Herbs too
-        player.hand.moveCardTo(otherMixedHerbs, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: [otherMixedHerbs], sourceCard: this });
 
         const healEffect = new HealEffect(player, player.active, 90);
         store.reduceEffect(state, healEffect);

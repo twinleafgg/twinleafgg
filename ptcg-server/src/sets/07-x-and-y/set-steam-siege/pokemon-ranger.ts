@@ -7,8 +7,7 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game';
 
 export class PokemonRanger extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'STS';
 
@@ -20,24 +19,16 @@ export class PokemonRanger extends TrainerCard {
 
   public setNumber: string = '104';
 
-  public text: string =
-    'Remove all effects of attacks on each player and his ' +
-    'or her Pokémon.';
+  public text: string = 'Remove all effects of attacks on each player and his ' + 'or her Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      // Remove all effects of attacks from both players
-      player.removeAttackEffects();
-      opponent.removeAttackEffects();
-
-      // Remove all effects of attacks from all Pokemon
-      [player, opponent].forEach(p => {
-        p.active.removeAttackEffects();
-        p.bench.forEach(b => b.removeAttackEffects());
-      });
+      // Both players and each of their Pokémon. Not damage or Special Conditions.
+      player.removeAttackEffectsFromPlayerAndPokemon();
+      opponent.removeAttackEffectsFromPlayerAndPokemon();
     }
 
     return state;

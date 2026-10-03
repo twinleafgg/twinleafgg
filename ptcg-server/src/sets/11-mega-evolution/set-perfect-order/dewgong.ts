@@ -4,7 +4,7 @@ import { StoreLike, State, GameError, GameMessage, StateUtils, MoveEnergyPrompt,
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { CardTarget } from '../../../game';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Dewgong extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -100,12 +100,12 @@ export class Dewgong extends PokemonCard {
 
           // Move the energy
           if (source.energies.cards.includes(transfer.card)) {
-            source.energies.moveCardTo(transfer.card, target.energies);
+            MOVE_CARDS(store, state, source.energies, target.energies, { cards: [transfer.card], sourceCard: this });
             if (!target.cards.includes(transfer.card)) {
               target.cards.push(transfer.card);
             }
           } else {
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
             if (!target.energies.cards.includes(transfer.card)) {
               target.energies.cards.push(transfer.card);
             }

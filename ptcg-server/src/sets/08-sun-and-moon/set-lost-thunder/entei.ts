@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -55,7 +55,7 @@ export class Entei extends PokemonCard {
       // Discard top card of player's deck
       if (player.deck.cards.length > 0) {
         const card = player.deck.cards[0];
-        player.deck.moveCardTo(card, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
         if (card instanceof EnergyCard) {
           energyCount++;
         }
@@ -64,7 +64,7 @@ export class Entei extends PokemonCard {
       // Discard top card of opponent's deck
       if (opponent.deck.cards.length > 0) {
         const card = opponent.deck.cards[0];
-        opponent.deck.moveCardTo(card, opponent.discard);
+        MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [card], sourceCard: this });
         if (card instanceof EnergyCard) {
           energyCount++;
         }

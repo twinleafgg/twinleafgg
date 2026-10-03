@@ -1,9 +1,24 @@
-import { AttachEnergyPrompt, CardList, EnergyType, GameMessage, PlayerType, ShowCardsPrompt, SlotType, State, StateUtils, StoreLike, SuperType, TrainerCard, TrainerType } from '../../../game';
+import {
+  AttachEnergyPrompt,
+  CardList,
+  EnergyType,
+  GameMessage,
+  PlayerType,
+  ShowCardsPrompt,
+  SlotType,
+  State,
+  StateUtils,
+  StoreLike,
+  SuperType,
+  TrainerCard,
+  TrainerType,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-export class GutsyPickaxe extends TrainerCard {
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+export class GutsyPickaxe extends TrainerCard {
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark = 'F';
 
@@ -29,61 +44,78 @@ export class GutsyPickaxe extends TrainerCard {
       // // We will discard this card after prompt confirmation
       // effect.preventDefault = true;
 
-      player.deck.moveTo(temp, 1);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 1, sourceCard: this });
 
       // Check if any cards drawn are basic energy
-      const energyCardsDrawn = temp.cards.filter(card => {
-        return card.superType === SuperType.ENERGY && card.energyType === EnergyType.BASIC && card.name === 'Fighting Energy';
+      const energyCardsDrawn = temp.cards.filter((card) => {
+        return (
+          card.superType === SuperType.ENERGY &&
+          card.energyType === EnergyType.BASIC &&
+          card.name === 'Fighting Energy'
+        );
       });
-
 
       // If no energy cards were drawn, move all cards to hand
       if (temp.cards.length > 0) {
-        return store.prompt(state, new ShowCardsPrompt(
-          opponent.id,
-          GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-          temp.cards
-        ), () => {
-          if (energyCardsDrawn.length == 0) {
-            return store.prompt(state, new ShowCardsPrompt(
-              player.id,
-              GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-              temp.cards
-            ), () => {
-              temp.cards.slice(0, 1).forEach(card => {
-                temp.moveCardTo(card, player.hand);
-              });
-            });
-          } else {
-
-
-            // Prompt to attach energy if any were drawn
-            return store.prompt(state, new AttachEnergyPrompt(
-              player.id,
-              GameMessage.ATTACH_ENERGY_CARDS,
-              temp, // Only show drawn energies
-              PlayerType.BOTTOM_PLAYER,
-              [SlotType.BENCH],
-              { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-              { min: 0, allowCancel: false, max: energyCardsDrawn.length }
-            ), transfers => {
-
-              // Attach energy based on prompt selection
-              if (transfers) {
-                for (const transfer of transfers) {
-                  const target = StateUtils.getTarget(state, player, transfer.to);
-                  temp.moveCardTo(transfer.card, target); // Move card to target
-                }
-                temp.cards.forEach(card => {
-                  temp.moveCardTo(card, player.hand); // Move card to hand
-                });
-                return state;
-              }
-              return state;
-            });
-          }
-          return state;
-        });
+        return store.prompt(
+          state,
+          new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, temp.cards),
+          () => {
+            if (energyCardsDrawn.length == 0) {
+              return store.prompt(
+                state,
+                new ShowCardsPrompt(
+                  player.id,
+                  GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
+                  temp.cards,
+                ),
+                () => {
+                  temp.cards.slice(0, 1).forEach((card) => {
+                    MOVE_CARDS(store, state, temp, player.hand, {
+                      cards: [card],
+                      sourceCard: this,
+                    });
+                  });
+                },
+              );
+            } else {
+              // Prompt to attach energy if any were drawn
+              return store.prompt(
+                state,
+                new AttachEnergyPrompt(
+                  player.id,
+                  GameMessage.ATTACH_ENERGY_CARDS,
+                  temp, // Only show drawn energies
+                  PlayerType.BOTTOM_PLAYER,
+                  [SlotType.BENCH],
+                  { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+                  { min: 0, allowCancel: false, max: energyCardsDrawn.length },
+                ),
+                (transfers) => {
+                  // Attach energy based on prompt selection
+                  if (transfers) {
+                    for (const transfer of transfers) {
+                      const target = StateUtils.getTarget(state, player, transfer.to);
+                      MOVE_CARDS(store, state, temp, target, {
+                        cards: [transfer.card],
+                        sourceCard: this,
+                      }); // Move card to target
+                    }
+                    temp.cards.forEach((card) => {
+                      MOVE_CARDS(store, state, temp, player.hand, {
+                        cards: [card],
+                        sourceCard: this,
+                      }); // Move card to hand
+                    });
+                    return state;
+                  }
+                  return state;
+                },
+              );
+            }
+            return state;
+          },
+        );
       }
       return state;
     }

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, Card, CardList, ChooseCardsPrompt, GameMessage, GameLog, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Slowking extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -64,7 +64,7 @@ export class Slowking extends PokemonCard {
           return state;
         }
 
-        opponent.hand.moveCardTo(cards[0], opponent.lostzone);
+        MOVE_CARDS(store, state, opponent.hand, opponent.lostzone, { cards: [cards[0]], sourceCard: this });
 
         cards.forEach((card, index) => {
           store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE, { name: opponent.name, card: card.name });

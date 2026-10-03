@@ -1,4 +1,4 @@
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, CONFIRMATION_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, CONFIRMATION_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { GameMessage } from '../../../game/game-message';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -55,14 +55,13 @@ export class Poliwrath extends PokemonCard {
       }, GameMessage.WANT_TO_DEAL_MORE_DAMAGE);
     }
 
-
     if (effect instanceof AfterAttackEffect && this.shuffleIntoDeck) {
       const player = effect.player;
 
       player.active.clearEffects();
       this.shuffleIntoDeck = false;
 
-      player.active.moveTo(player.deck);
+      MOVE_CARDS(store, state, player.active, player.deck, { sourceCard: this });
       SHUFFLE_DECK(store, state, player);
     }
 

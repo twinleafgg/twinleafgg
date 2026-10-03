@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, PowerType, State, StoreLike, StateUtils, ConfirmPrompt, GameLog, GameMessage, PlayerType, Card, ChooseCardsPrompt, ShuffleDeckPrompt, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MovedFromActiveToBenchEffect, PowerEffect } from '../../../game/store/effects/game-effects';
-import { MOVED_FROM_ACTIVE_TO_BENCH_THIS_TURN, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {MOVED_FROM_ACTIVE_TO_BENCH_THIS_TURN, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Palafin extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -91,8 +91,8 @@ export class Palafin extends PokemonCard {
           cards = (selected || []) as PokemonCard[];
 
           if (cards.length > 0) {
-            player.deck.moveCardTo(cards[0], cardList);
-            cardList.moveCardTo(this, player.deck);
+            MOVE_CARDS(store, state, player.deck, cardList, { cards: [cards[0]], sourceCard: this });
+            MOVE_CARDS(store, state, cardList, player.deck, { cards: [this], sourceCard: this });
           }
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

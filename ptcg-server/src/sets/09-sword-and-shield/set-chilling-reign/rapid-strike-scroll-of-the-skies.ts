@@ -16,7 +16,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class RapidStrikeScrollOfTheSkies extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.RAPID_STRIKE];
   public regulationMark: string = 'E';
   public set: string = 'CRE';

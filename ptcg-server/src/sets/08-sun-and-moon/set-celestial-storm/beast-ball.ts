@@ -17,8 +17,10 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 export class BeastBall extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'CES';
   public setNumber: string = '125';
   public cardImage: string = 'assets/cardback.png';
@@ -55,7 +57,7 @@ export class BeastBall extends TrainerCard {
 
       // Prevent default effect and move the trainer card to the supporter area
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       // Gather all prize cards for the prompt
       const allPrizeCards = new CardList();
@@ -115,8 +117,8 @@ export class BeastBall extends TrainerCard {
 
           // Move the chosen Ultra Beast to the player's hand & move the Beast Ball to the prize cards
           if (chosenPrizeList) {
-            chosenPrizeList.moveCardTo(prizeUltraBeast, player.hand);
-            player.supporter.moveCardTo(effect.trainerCard, chosenPrizeList);
+            MOVE_CARDS(store, state, chosenPrizeList, player.hand, { cards: [prizeUltraBeast], sourceCard: this });
+            MOVE_CARDS(store, state, player.supporter, chosenPrizeList, { cards: [effect.trainerCard], sourceCard: this });
           }
 
           // Reset the face-down prizes

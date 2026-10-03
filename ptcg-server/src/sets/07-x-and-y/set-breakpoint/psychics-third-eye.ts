@@ -7,16 +7,17 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { Card, ChooseCardsPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PsychicsThirdEye extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'BKP';
   public setNumber: string = '108';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Psychic\'s Third Eye';
-  public fullName: string = 'Psychic\'s Third Eye BKP';
-  public text: string = 'Your opponent reveals his or her hand. Discard as many cards as you like from your hand. Then, draw that many cards. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Psychic's Third Eye";
+  public fullName: string = "Psychic's Third Eye BKP";
+  public text: string =
+    'Your opponent reveals his or her hand. Discard as many cards as you like from your hand. Then, draw that many cards. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Refs: set-fates-collide/umbreon-ex.ts (Veil of Darkness - discard and draw), AGENTS-patterns.md (show cards)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -29,20 +30,27 @@ export class PsychicsThirdEye extends TrainerCard {
 
       // Discard as many cards as you like from your hand, then draw that many
       if (player.hand.cards.length > 0) {
-        return store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          player.hand,
-          {},
-          { allowCancel: true, min: 0, max: player.hand.cards.length }
-        ), (selected: Card[]) => {
-          const cards = selected || [];
-          if (cards.length === 0) {
-            return;
-          }
-          player.hand.moveCardsTo(cards, player.discard);
-          DRAW_CARDS(store, state, player, cards.length);
-        });
+        return store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            player.hand,
+            {},
+            { allowCancel: true, min: 0, max: player.hand.cards.length },
+          ),
+          (selected: Card[]) => {
+            const cards = selected || [];
+            if (cards.length === 0) {
+              return;
+            }
+            MOVE_CARDS(store, state, player.hand, player.discard, {
+              cards: cards,
+              sourceCard: this,
+            });
+            DRAW_CARDS(store, state, player, cards.length);
+          },
+        );
       }
     }
 

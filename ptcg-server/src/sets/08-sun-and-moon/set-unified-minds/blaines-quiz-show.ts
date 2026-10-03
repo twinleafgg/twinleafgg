@@ -10,13 +10,14 @@ import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class BlainesQuizShow extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNM';
   public setNumber: string = '186';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Blaine\'s Quiz Show';
-  public fullName: string = 'Blaine\'s Quiz Show UNM';
-  public text: string = 'Put a Pokémon from your hand face down in front of you and tell your opponent the name of an attack it has. Your opponent guesses the name of that Pokémon, and then you reveal it. If your opponent guessed right, they draw 4 cards. If they guessed wrong, you draw 4 cards. Return the Pokémon to your hand. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Blaine's Quiz Show";
+  public fullName: string = "Blaine's Quiz Show UNM";
+  public text: string =
+    'Put a Pokémon from your hand face down in front of you and tell your opponent the name of an attack it has. Your opponent guesses the name of that Pokémon, and then you reveal it. If your opponent guessed right, they draw 4 cards. If they guessed wrong, you draw 4 cards. Return the Pokémon to your hand. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: Simplified - guessing mechanic not supported by engine. Player draws 4 cards.

@@ -1,7 +1,7 @@
-import { Attack, CardType, GamePhase, PokemonCard, PokemonCardList, Stage, State, StateUtils, StoreLike } from '../../../game';
-import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
+import { Attack, CardType, PokemonCard, Stage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ADD_MARKER, CLEAR_MARKER_AND_OPPONENTS_POKEMON_MARKER_AT_END_OF_TURN, HAS_MARKER, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { THIS_POKEMON_RETALIATES_ON_DAMAGE_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Magby extends PokemonCard {
 
@@ -26,23 +26,10 @@ export class Magby extends PokemonCard {
   public name: string = 'Magby';
   public fullName: string = 'Magby PAR';
 
-  public readonly SCORCHING_HEATER_MARKER = 'SCORCHING_HEATER_MARKER';
-  public readonly CLEAR_SCORCHING_HEATER_MARKER = 'CLEAR_SCORCHING_HEATER_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      const cardList = StateUtils.findCardList(state, this) as PokemonCardList;
-      ADD_MARKER(this.SCORCHING_HEATER_MARKER, cardList, this);
-      ADD_MARKER(this.CLEAR_SCORCHING_HEATER_MARKER, opponent, this);
+      return THIS_POKEMON_RETALIATES_ON_DAMAGE_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this, { damage: 60 });
     }
-
-    if ((effect instanceof PutDamageEffect) && HAS_MARKER(this.SCORCHING_HEATER_MARKER, effect.target, this) && state.phase === GamePhase.ATTACK) {
-      effect.source.damage += 60;
-    }
-
-    CLEAR_MARKER_AND_OPPONENTS_POKEMON_MARKER_AT_END_OF_TURN(state, effect, this.CLEAR_SCORCHING_HEATER_MARKER, this.SCORCHING_HEATER_MARKER, this);
 
     return state;
   }

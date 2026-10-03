@@ -18,7 +18,7 @@ import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-e
 import { Effect } from '../../../game/store/effects/effect';
 import { StateUtils } from '../../../game/store/state-utils';
 
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class BlacephalonGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX, CardTag.ULTRA_BEAST];
@@ -109,7 +109,7 @@ export class BlacephalonGX extends PokemonCard {
 
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = player.lostzone;
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
 
             totalDiscarded = transfers.length;
 
@@ -137,14 +137,14 @@ export class BlacephalonGX extends PokemonCard {
         }),
         (prizes) => {
           const holdingZone = new CardList();
-          prizes[0].moveTo(holdingZone);
+          MOVE_CARDS(store, state, prizes[0], holdingZone, { sourceCard: this });
 
           const discardedEnergy = holdingZone.cards.filter((card) => {
             return card instanceof EnergyCard;
           });
 
           if (discardedEnergy.length == 0) {
-            holdingZone.moveTo(player.discard);
+            MOVE_CARDS(store, state, holdingZone, player.discard, { sourceCard: this });
           }
 
           if (discardedEnergy.length > 0) {
@@ -163,7 +163,7 @@ export class BlacephalonGX extends PokemonCard {
                 transfers = transfers || [];
                 for (const transfer of transfers) {
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  holdingZone.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, holdingZone, target, { cards: [transfer.card], sourceCard: this });
                 }
               },
             );

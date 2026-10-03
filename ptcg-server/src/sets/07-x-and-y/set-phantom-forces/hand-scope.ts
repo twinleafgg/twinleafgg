@@ -10,7 +10,7 @@ import { SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class HandScope extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'PHF';
   public setNumber: string = '96';
   public cardImage: string = 'assets/cardback.png';

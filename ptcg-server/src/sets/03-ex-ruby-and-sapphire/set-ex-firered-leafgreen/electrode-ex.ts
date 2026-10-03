@@ -14,13 +14,11 @@ import {
   DiscardEnergyPrompt,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   MOVE_CARD_TO,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Electrodeex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex];
@@ -73,8 +71,8 @@ export class Electrodeex extends PokemonCard {
       const attachedCards = cardList.cards.filter((c) => !pokemons.includes(c as PokemonCard));
       const tools = cardList.tools.slice();
 
-      attachedCards.forEach((c) => cardList.moveCardTo(c, player.discard));
-      tools.forEach((c) => cardList.moveCardTo(c, player.discard));
+      attachedCards.forEach((c) => MOVE_CARDS(store, state, cardList, player.discard, { cards: [c], sourceCard: this }));
+      tools.forEach((c) => MOVE_CARDS(store, state, cardList, player.discard, { cards: [c], sourceCard: this }));
 
       // Mark for KO - engine will handle the actual KO (prizes, slot cleanup)
       cardList.damage += 999;
@@ -144,7 +142,7 @@ export class Electrodeex extends PokemonCard {
           // Move all selected energies to discard
           transfers.forEach((transfer) => {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.discard);
+            MOVE_CARDS(store, state, source, player.discard, { cards: [transfer.card], sourceCard: this });
           });
 
           // Set damage based on number of discarded cards

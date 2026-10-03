@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { BREAK_RULE, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BREAK_RULE, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TalonflameBreak extends PokemonCard {
   protected _tags = [CardTag.BREAK];
@@ -40,7 +40,7 @@ export class TalonflameBreak extends PokemonCard {
         (c) => c instanceof EnergyCard && c.provides.includes(CardType.FIRE),
       );
       cards.forEach((c) => {
-        player.active.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
       });
     }
 

@@ -1,4 +1,4 @@
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
@@ -63,7 +63,7 @@ export class Beheeyem extends PokemonCard {
         ), (selected: Card[]) => {
           if (selected && selected.length > 0) {
             // Move chosen card to bottom of opponent's deck
-            opponent.hand.moveCardsTo(selected, opponent.deck);
+            MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: selected, sourceCard: this });
             // Move the card to the bottom (index 0 is bottom)
             const card = selected[0];
             const index = opponent.deck.cards.indexOf(card);

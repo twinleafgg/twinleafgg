@@ -15,7 +15,7 @@ import { StoreLike } from '../../../game/store/store-like';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 export class SingleStrikeScrollOfScorn extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.SINGLE_STRIKE];
   public regulationMark: string = 'E';
   public set: string = 'BST';

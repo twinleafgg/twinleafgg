@@ -4,19 +4,28 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameMessage, ConfirmPrompt, ShuffleDeckPrompt, ShowCardsPrompt } from '../../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameMessage,
+  ConfirmPrompt,
+  ShuffleDeckPrompt,
+  ShowCardsPrompt,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PeekingRedCard extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'CIN';
   public setNumber: string = '97';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Peeking Red Card';
   public fullName: string = 'Peeking Red Card CIN';
-  public text: string = 'Your opponent reveals their hand. You may have your opponent count the cards in their hand, shuffle those cards into their deck, then draw that many cards.';
+  public text: string =
+    'Your opponent reveals their hand. You may have your opponent count the cards in their hand, shuffle those cards into their deck, then draw that many cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-sun-and-moon/ilima.ts (shuffle hand into deck + draw), set-burning-shadows/tormenting-spray.ts (ShowCardsPrompt)
@@ -30,32 +39,36 @@ export class PeekingRedCard extends TrainerCard {
 
       // Reveal opponent's hand
       const handCards = opponent.hand.cards.slice();
-      store.prompt(state, new ShowCardsPrompt(
-        player.id,
-        GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-        handCards
-      ), () => {
-        // Ask if player wants to shuffle opponent's hand
-        store.prompt(state, new ConfirmPrompt(
-          player.id,
-          GameMessage.WANT_TO_USE_ABILITY
-        ), wantToShuffle => {
-          if (wantToShuffle) {
-            const cardCount = opponent.hand.cards.length;
+      store.prompt(
+        state,
+        new ShowCardsPrompt(player.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, handCards),
+        () => {
+          // Ask if player wants to shuffle opponent's hand
+          store.prompt(
+            state,
+            new ConfirmPrompt(player.id, GameMessage.WANT_TO_USE_ABILITY),
+            (wantToShuffle) => {
+              if (wantToShuffle) {
+                const cardCount = opponent.hand.cards.length;
 
-            // Shuffle opponent's hand into deck
-            const cards = opponent.hand.cards.slice();
-            opponent.hand.moveCardsTo(cards, opponent.deck);
+                // Shuffle opponent's hand into deck
+                const cards = opponent.hand.cards.slice();
+                MOVE_CARDS(store, state, opponent.hand, opponent.deck, {
+                  cards: cards,
+                  sourceCard: this,
+                });
 
-            store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
-              opponent.deck.applyOrder(order);
-            });
+                store.prompt(state, new ShuffleDeckPrompt(opponent.id), (order) => {
+                  opponent.deck.applyOrder(order);
+                });
 
-            // Opponent draws same number of cards
-            DRAW_CARDS(store, state, opponent, Math.min(cardCount, opponent.deck.cards.length));
-          }
-        });
-      });
+                // Opponent draws same number of cards
+                DRAW_CARDS(store, state, opponent, Math.min(cardCount, opponent.deck.cards.length));
+              }
+            },
+          );
+        },
+      );
     }
 
     return state;

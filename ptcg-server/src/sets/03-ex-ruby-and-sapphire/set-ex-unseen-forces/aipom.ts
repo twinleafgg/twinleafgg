@@ -79,7 +79,7 @@ export class Aipom extends PokemonCard {
       // Move tools to discard first
       if (tools.length > 0) {
         for (const tool of tools) {
-          aipomSlot.moveCardTo(tool, player.discard);
+          MOVE_CARDS(store, state, aipomSlot, player.discard, { cards: [tool], sourceCard: this });
         }
       }
 

@@ -19,12 +19,10 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  AFTER_ATTACK,
+import {AFTER_ATTACK,
   BLOCK_IF_GX_ATTACK_USED,
   SEARCH_DECK_FOR_CARDS_TO_HAND,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CharizardBraixenGX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -96,7 +94,7 @@ export class CharizardBraixenGX extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

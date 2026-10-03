@@ -4,7 +4,7 @@ import { StoreLike, State, PowerType, CardTarget, PlayerType, Card, SlotType, Mo
 import { Effect } from '../../game/store/effects/effect';
 import { PowerEffect } from '../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect } from '../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 function* useWashOut(next: Function, store: StoreLike, state: State, effect: PowerEffect): IterableIterator<State> {
   const player = effect.player;
@@ -56,7 +56,7 @@ function* useWashOut(next: Function, store: StoreLike, state: State, effect: Pow
     for (const transfer of transfers) {
       const source = StateUtils.getTarget(state, player, transfer.from);
       const target = player.active; // Always move to active Pokémon
-      source.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: effect.card });
     }
   });
 }

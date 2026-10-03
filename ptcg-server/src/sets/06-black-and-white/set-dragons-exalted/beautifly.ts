@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { EnergyCard, GameMessage, PlayerType, StoreLike, State } from '../../../game';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { SlotType } from '../../../game/store/actions/play-card-action';
@@ -102,7 +102,7 @@ export class Beautifly extends PokemonCard {
             { min: 1, max: 1, allowCancel: false }
           ), targets => {
             if (targets && targets.length > 0) {
-              player.deck.moveCardTo(card, targets[0]);
+              MOVE_CARDS(store, state, player.deck, targets[0], { cards: [card], sourceCard: this });
             }
             return attachNext(index + 1);
           });

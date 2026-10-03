@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 
 import { StoreLike, State, GameError, GameMessage, Card, ChooseCardsPrompt, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ditto extends PokemonCard {
 
@@ -79,8 +79,8 @@ export class Ditto extends PokemonCard {
 
           cards.forEach((card) => {
             effect.player.removePokemonEffects(player.active);
-            player.active.moveTo(player.discard);
-            player.deck.moveCardTo(card, player.active);
+            MOVE_CARDS(store, state, player.active, player.discard, { sourceCard: this });
+            MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
             // const pokemonPlayed = new PlayPokemonEffect(player, card as PokemonCard, player.active);
             // this.reduceEffect(store, state, pokemonPlayed);
             player.active.pokemonPlayedTurn = state.turn;

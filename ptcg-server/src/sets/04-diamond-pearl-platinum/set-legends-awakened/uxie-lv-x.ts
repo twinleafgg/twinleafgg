@@ -18,15 +18,13 @@ import {
 } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  WAS_POWER_USED,
+import {WAS_POWER_USED,
   BLOCK_EFFECT_IF_MARKER,
   ADD_MARKER,
   ABILITY_USED,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  BLOCK_IF_HAS_SPECIAL_CONDITION,
-} from '../../../game/store/prefabs/prefabs';
+  BLOCK_IF_HAS_SPECIAL_CONDITION, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class UxieLVX extends PokemonCard {
   public stage = Stage.LV_X;
@@ -72,7 +70,7 @@ export class UxieLVX extends PokemonCard {
 
       const deckBottom = new CardList();
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 2);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 2, sourceCard: this });
 
       return store.prompt(
         state,
@@ -87,9 +85,9 @@ export class UxieLVX extends PokemonCard {
           ADD_MARKER(this.TRADE_OFF_MARKER, player, this);
           ABILITY_USED(player, this);
 
-          deckTop.moveCardsTo(selected, player.hand);
-          deckTop.moveTo(deckBottom);
-          deckBottom.moveTo(player.deck);
+          MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+          MOVE_CARDS(store, state, deckTop, deckBottom, { sourceCard: this });
+          MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
           return state;
         },
       );

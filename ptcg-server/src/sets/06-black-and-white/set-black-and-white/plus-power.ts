@@ -8,8 +8,7 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 export class PlusPower extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BLW';
 
@@ -17,13 +16,12 @@ export class PlusPower extends TrainerCard {
 
   public fullName: string = 'PlusPower BLW';
 
-
   public cardImage: string = 'assets/cardback.png';
 
   public setNumber: string = '96';
 
   public text: string =
-    'During this turn, your Pokemon\'s attacks do 10 more damage to the ' +
+    "During this turn, your Pokemon's attacks do 10 more damage to the " +
     'Active Pokemon (before applying Weakness and Resistance).';
 
   private readonly PLUS_POWER_MARKER = 'PLUS_POWER_MARKER';
@@ -47,5 +45,4 @@ export class PlusPower extends TrainerCard {
 
     return state;
   }
-
 }

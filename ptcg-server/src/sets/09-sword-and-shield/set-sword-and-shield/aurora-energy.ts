@@ -6,6 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AuroraEnergy extends EnergyCard {
 
@@ -72,8 +73,8 @@ function* playCard(next: Function, store: StoreLike, state: State, self: AuroraE
     return state;
   }
 
-  player.hand.moveCardsTo(cards, player.discard);
-  player.supporter.moveCardTo(self, player.discard);
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: self });
+  MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [self], sourceCard: self });
 
   return state;
 }

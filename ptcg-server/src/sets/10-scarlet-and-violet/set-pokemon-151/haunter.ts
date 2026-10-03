@@ -1,4 +1,4 @@
-import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, ConfirmPrompt, GameMessage, StateUtils, TrainerCard, TrainerType, ChooseCardsPrompt, SuperType, GameLog } from "../../../game";
+import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, ConfirmPrompt, GameMessage, StateUtils, TrainerCard, TrainerType, ChooseCardsPrompt, SuperType } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
 import { EvolveEffect } from "../../../game/store/effects/game-effects";
 import { IS_ABILITY_BLOCKED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
@@ -71,7 +71,6 @@ export class Haunter extends PokemonCard {
             { superType: SuperType.TRAINER, trainerType: TrainerType.SUPPORTER },
             { min: 1, max: 1, allowCancel: false, blocked }
           ), selected => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: opponent.name, card: selected[0].name });
             MOVE_CARDS(store, state, opponent.discard, opponent.hand, { cards: selected, sourceCard: this, sourceEffect: this.powers[0] });
             return state;
           });

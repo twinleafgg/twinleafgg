@@ -5,7 +5,7 @@ import { StoreLike, State, TrainerCard, ChooseCardsPrompt, StateUtils } from '..
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Phione extends PokemonCard {
 
@@ -72,7 +72,7 @@ export class Phione extends PokemonCard {
           { min, max, allowCancel: false }
         )], selected => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         });
     }
 

@@ -1,4 +1,13 @@
-import { Card, CardTarget, ChooseCardsPrompt, ChoosePokemonPrompt, GameError, PlayerType, ShuffleDeckPrompt, SlotType } from '../../../game';
+import {
+  Card,
+  CardTarget,
+  ChooseCardsPrompt,
+  ChoosePokemonPrompt,
+  GameError,
+  PlayerType,
+  ShuffleDeckPrompt,
+  SlotType,
+} from '../../../game';
 import { GameLog, GameMessage } from '../../../game/game-message';
 import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
@@ -6,10 +15,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class NinjaBoy extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'STS';
 
@@ -34,7 +43,10 @@ export class NinjaBoy extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -45,53 +57,65 @@ export class NinjaBoy extends TrainerCard {
         }
       });
 
-      return store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON_TO_SWITCH,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { allowCancel: false, blocked }
-      ), results => {
-        const target = results || [];
+      return store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON_TO_SWITCH,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { allowCancel: false, blocked },
+        ),
+        (results) => {
+          const target = results || [];
 
-        if (target.length === 0) {
-          return state;
-        }
-
-        let cards: Card[] = [];
-        return store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-          player.deck,
-          { superType: SuperType.POKEMON, stage: Stage.BASIC },
-          { min: 1, max: 1, allowCancel: false }
-        ), selectedCards => {
-          cards = selectedCards || [];
-
-          if (cards.length === 0) {
+          if (target.length === 0) {
             return state;
           }
 
-          cards.forEach((card, index) => {
-            target[0].moveCardTo(card, player.deck);
-            player.deck.moveCardTo(card, target[0]);
-          });
+          let cards: Card[] = [];
+          return store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              player,
+              GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+              player.deck,
+              { superType: SuperType.POKEMON, stage: Stage.BASIC },
+              { min: 1, max: 1, allowCancel: false },
+            ),
+            (selectedCards) => {
+              cards = selectedCards || [];
 
+              if (cards.length === 0) {
+                return state;
+              }
 
+              cards.forEach((card, index) => {
+                MOVE_CARDS(store, state, target[0], player.deck, {
+                  cards: [card],
+                  sourceCard: this,
+                });
+                MOVE_CARDS(store, state, player.deck, target[0], {
+                  cards: [card],
+                  sourceCard: this,
+                });
+              });
 
+              store.log(state, GameLog.LOG_PLAYER_SWITCHES_POKEMON_WITH_POKEMON_FROM_DECK, {
+                name: player.name,
+                card: target[0].getPokemonCard()!.name,
+                secondCard: cards[0].name,
+              });
 
-          store.log(state, GameLog.LOG_PLAYER_SWITCHES_POKEMON_WITH_POKEMON_FROM_DECK, { name: player.name, card: target[0].getPokemonCard()!.name, secondCard: cards[0].name });
-
-
-
-          return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-            player.deck.applyOrder(order);
-          });
-        });
-      });
+              return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+                player.deck.applyOrder(order);
+              });
+            },
+          );
+        },
+      );
     }
 
     return state;
   }
-
 }

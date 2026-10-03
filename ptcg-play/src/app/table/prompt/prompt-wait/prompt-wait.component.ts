@@ -2,12 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { LocalGameState } from '../../../shared/session/session.interface';
 import { Prompt } from 'ptcg-server';
 import { GameService } from '../../../api/services/game.service';
-
-/** Draw-supporter animation gates — Angular has no hand/deck flights, so skip the wait. */
-const SKIP_WAIT_MESSAGES = new Set([
-  'Hand to deck animation',
-  'Deck shuffle animation',
-]);
+import { SKIP_WAIT_MESSAGES } from '../../self-play-background-waits';
 
 @Component({
   selector: 'ptcg-prompt-wait',

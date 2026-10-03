@@ -11,7 +11,7 @@ import { Effect } from '../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../game/store/prompts/choose-pokemon-prompt';
 import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
-import { WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Electrode extends PokemonCard implements EnergyCard {
   public name = 'Electrode';
@@ -57,8 +57,6 @@ export class Electrode extends PokemonCard implements EnergyCard {
   public text: string = '';
 
   public isBlocked = false;
-
-
 
   public energyEffect: any = undefined;
 
@@ -135,7 +133,7 @@ export class Electrode extends PokemonCard implements EnergyCard {
           effect.preventDefault = true;
           const cardList = StateUtils.findCardList(state, this);
           if (cardList) {
-            cardList.moveCardTo(this, targets[0]);
+            MOVE_CARDS(store, state, cardList, targets[0], { cards: [this], sourceCard: this });
             if (!targets[0].energies.cards.includes(this)) {
               targets[0].energies.cards.push(this);
             }

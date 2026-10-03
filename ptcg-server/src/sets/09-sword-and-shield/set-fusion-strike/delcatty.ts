@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Delcatty extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -60,7 +60,7 @@ export class Delcatty extends PokemonCard {
         const cards = selected || [];
         if (cards.length > 0) {
           // moveCardsTo puts at the end of the deck array (= bottom of deck)
-          opponent.hand.moveCardsTo(cards, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cards, sourceCard: this });
         }
       });
     }

@@ -4,35 +4,53 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameMessage, ConfirmPrompt, Card, ChooseCardsPrompt } from '../../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameMessage,
+  ConfirmPrompt,
+  Card,
+  ChooseCardsPrompt,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // Ref: set-legends-awakened/uxie.ts (generator pattern with yield for sequential prompts)
 // Ref: set-chilling-reign/agatha.ts (generator TrainerEffect)
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect, self: SordwardAndShielbert): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+  self: SordwardAndShielbert,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
   // Check if there are any Trainer cards in the discard
-  const trainerCards = player.discard.cards.filter(c => c.superType === SuperType.TRAINER);
+  const trainerCards = player.discard.cards.filter((c) => c.superType === SuperType.TRAINER);
   if (trainerCards.length === 0) {
     return state;
   }
 
   // Step 1: Player chooses a Trainer card from their discard pile
   let selectedCard: Card | undefined;
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.discard,
-    { superType: SuperType.TRAINER },
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    selectedCard = selected && selected.length > 0 ? selected[0] : undefined;
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.discard,
+      { superType: SuperType.TRAINER },
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      selectedCard = selected && selected.length > 0 ? selected[0] : undefined;
+      next();
+    },
+  );
 
   if (!selectedCard) {
     return state;
@@ -40,17 +58,18 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Step 2: Ask opponent if the player may take the card
   let opponentAllows = false;
-  yield store.prompt(state, new ConfirmPrompt(
-    opponent.id,
-    GameMessage.WANT_TO_USE_ABILITY
-  ), result => {
-    opponentAllows = result;
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ConfirmPrompt(opponent.id, GameMessage.WANT_TO_USE_ABILITY),
+    (result) => {
+      opponentAllows = result;
+      next();
+    },
+  );
 
   if (opponentAllows) {
     // Opponent says yes: put the trainer card into player's hand
-    player.discard.moveCardTo(selectedCard, player.hand);
+    MOVE_CARDS(store, state, player.discard, player.hand, { cards: [selectedCard], sourceCard: self });
   } else {
     // Opponent says no: draw 3 cards instead
     DRAW_CARDS(store, state, player, 3);
@@ -59,19 +78,20 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 }
 
 export class SordwardAndShielbert extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'BST';
   public setNumber: string = '135';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Sordward & Shielbert';
   public fullName: string = 'Sordward & Shielbert BST';
-  public text: string = 'Choose a Trainer card from your discard pile. Then, ask your opponent if you may put it into your hand. If yes, put that card into your hand. If no, draw 3 cards. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Choose a Trainer card from your discard pile. Then, ask your opponent if you may put it into your hand. If yes, put that card into your hand. If no, draw 3 cards. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
       const generator = playCard(() => generator.next(), store, state, effect, this);
       return generator.next().value;

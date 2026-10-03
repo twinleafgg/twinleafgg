@@ -11,7 +11,7 @@ import {
 } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { DAMAGE_OPPONENT_POKEMON, TERA_RULE, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGE_OPPONENT_POKEMON, TERA_RULE, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class Wugtrioex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex, CardTag.POKEMON_TERA];
@@ -62,7 +62,7 @@ export class Wugtrioex extends PokemonCard {
         (cards) => {
           cards = cards || [];
           watersCount = cards.length;
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
         },
       );
 

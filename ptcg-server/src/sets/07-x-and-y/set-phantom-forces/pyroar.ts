@@ -10,7 +10,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pyroar extends PokemonCard {
 
@@ -102,7 +102,7 @@ export class Pyroar extends PokemonCard {
         if (selected.length === 0) {
           return;
         }
-        player.active.moveCardsTo(selected, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: selected, sourceCard: this });
         player.marker.addMarker(this.FLARE_COMMAND_MARKER, this);
 
         const opponent = StateUtils.getOpponent(state, player);

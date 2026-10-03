@@ -2,7 +2,7 @@ import { CardTarget, CardType, ChooseCardsPrompt, ChoosePokemonPrompt, GameMessa
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sneasel extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -79,7 +79,7 @@ export class Sneasel extends PokemonCard {
           { superType: SuperType.ENERGY },
           { min: 1, max: 1, allowCancel: false }
         ), selected => {
-          targets[0].moveCardTo(selected[0], opponent.discard);
+          MOVE_CARDS(store, state, targets[0], opponent.discard, { cards: [selected[0]], sourceCard: this });
           return state;
         });
       });

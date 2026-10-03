@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { PlayerType, GameMessage, StoreLike, State, pokemonHasCardType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
@@ -71,7 +71,7 @@ export class Pancham extends PokemonCard {
         cards = selected || [];
 
         if (cards.length > 0) {
-          player.deck.moveCardsTo(cards, player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: cards, sourceCard: this });
           player.active.clearEffects();
           player.active.pokemonPlayedTurn = state.turn;
         }

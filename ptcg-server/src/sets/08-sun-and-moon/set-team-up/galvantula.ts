@@ -1,6 +1,6 @@
 import { PokemonCard, Stage, CardType, PowerType, State, StoreLike, StateUtils, PlayerType, GameError, GameMessage, ChooseCardsPrompt, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { BLOCK_TRAINER_TARGET, IS_ABILITY_BLOCKED, IS_TRAINER_TARGET, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_TRAINER_TARGET, IS_ABILITY_BLOCKED, IS_TRAINER_TARGET, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Galvantula extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -68,7 +68,7 @@ export class Galvantula extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         )], selected => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         });
     }
 

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ConfirmPrompt, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Jolteon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -55,7 +55,7 @@ export class Jolteon extends PokemonCard {
               (c as EnergyCard).provides?.includes(CardType.LIGHTNING)
             );
             if (lightningEnergy) {
-              player.active.moveCardTo(lightningEnergy, player.discard);
+              MOVE_CARDS(store, state, player.active, player.discard, { cards: [lightningEnergy], sourceCard: this });
               effect.damage += 40;
             }
           }

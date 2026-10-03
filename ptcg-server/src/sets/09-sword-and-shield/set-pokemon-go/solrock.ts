@@ -4,7 +4,7 @@ import { StoreLike, State, GameMessage, AttachEnergyPrompt, EnergyCard, GameErro
 
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Solrock extends PokemonCard {
 
@@ -108,7 +108,7 @@ export class Solrock extends PokemonCard {
           const target = StateUtils.getTarget(state, player, transfer.to);
           const targetPokemon = target.getPokemonCard();
           if (targetPokemon && targetPokemon.name === 'Lunatone') {
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         }
         return state;

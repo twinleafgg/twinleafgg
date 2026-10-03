@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class Sudowoodo extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -46,7 +46,7 @@ export class Sudowoodo extends PokemonCard {
       const activePokemon = opponent.active;
 
       if (activePokemon.tools.length > 0) {
-        activePokemon.moveCardsTo([...activePokemon.tools], opponent.discard);
+        MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: [...activePokemon.tools], sourceCard: this });
       }
     }
 

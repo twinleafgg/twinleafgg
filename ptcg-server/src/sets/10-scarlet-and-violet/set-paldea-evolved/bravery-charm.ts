@@ -4,7 +4,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class BraveryCharm extends TrainerCard {
-  public trainerType = TrainerType.TOOL;
+  protected _trainerType = TrainerType.TOOL;
 
   public regulationMark = 'G';
 
@@ -18,8 +18,7 @@ export class BraveryCharm extends TrainerCard {
 
   public fullName: string = 'Bravery Charm PAL';
 
-  public text: string =
-    'The Basic Pokémon this card is attached to gets +50 HP.';
+  public text: string = 'The Basic Pokémon this card is attached to gets +50 HP.';
 
   private readonly HP_BONUS = 50;
 
@@ -27,7 +26,9 @@ export class BraveryCharm extends TrainerCard {
     if (effect instanceof CheckHpEffect && effect.target.tools.includes(this)) {
       const card = effect.target.getPokemonCard();
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       if (card === undefined) {
         return state;

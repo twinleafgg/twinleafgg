@@ -17,7 +17,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 import { CardList } from '../../../game/store/state/card-list';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HisuianSamurottV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -113,7 +113,7 @@ export class HisuianSamurottV extends PokemonCard {
                 if (selectedTools && selectedTools.length > 0) {
                   const owner = StateUtils.findOwner(state, chosenPokemons[0]);
                   selectedTools.forEach((tool) => {
-                    chosenPokemons[0].moveCardTo(tool, owner.discard);
+                    MOVE_CARDS(store, state, chosenPokemons[0], owner.discard, { cards: [tool], sourceCard: this });
                   });
                 }
                 return state;
@@ -125,7 +125,7 @@ export class HisuianSamurottV extends PokemonCard {
           chosenPokemons.forEach((pokemon) => {
             if (pokemon.tools.length === 1) {
               const owner = StateUtils.findOwner(state, pokemon);
-              pokemon.moveCardTo(pokemon.tools[0], owner.discard);
+              MOVE_CARDS(store, state, pokemon, owner.discard, { cards: [pokemon.tools[0]], sourceCard: this });
             } else if (pokemon.tools.length > 1) {
               // Prompt to choose which tool to discard from this Pokémon
               const toolList = new CardList();
@@ -143,7 +143,7 @@ export class HisuianSamurottV extends PokemonCard {
                   if (selectedTools && selectedTools.length === 1) {
                     const tool = selectedTools[0];
                     const owner = StateUtils.findOwner(state, pokemon);
-                    pokemon.moveCardTo(tool, owner.discard);
+                    MOVE_CARDS(store, state, pokemon, owner.discard, { cards: [tool], sourceCard: this });
                   }
                   return state;
                 },

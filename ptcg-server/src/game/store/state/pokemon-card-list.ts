@@ -18,6 +18,16 @@ export interface PreventDamageFilter {
   sourceTags?: CardTag[];
   sourceCardTypes?: CardType[];
   sourceHasAbility?: boolean;
+  /** Attacker has this Special Condition (e.g. Burned). */
+  sourceHasSpecialCondition?: SpecialCondition;
+  /** Attacker has a Poké-Power or Poké-Body. */
+  sourceHasPokePowerOrBody?: boolean;
+}
+
+export interface NextTurnCoinFlipCount {
+  attackName: string;
+  flips: number;
+  sourceCardName: string;
 }
 
 export interface NextTurnAttackDamageBonus {
@@ -95,6 +105,12 @@ export class PokemonCardList extends CardList {
   public cannotBeHealedNextTurn: boolean = false;
   /** True if this Pokémon had damage counters removed by a HealEffect this turn. */
   public healedThisTurn: boolean = false;
+  /** During the opponent's next turn, flip a coin when attack damage would be done; heads prevents that damage. */
+  public coinFlipPreventAttackDamageNextTurn: boolean = false;
+  public coinFlipPreventAttackDamageNextTurnPending: boolean = false;
+  /** During the opponent's next turn, this Pokémon can't be affected by Special Conditions. */
+  public cannotBeSpecialConditionedNextTurn: boolean = false;
+  public cannotBeSpecialConditionedNextTurnPending: boolean = false;
   /** During the opponent's next turn, this Pokémon has no Weakness. */
   public noWeaknessNextTurn: boolean = false;
   public noWeaknessNextTurnPending: boolean = false;
@@ -110,6 +126,14 @@ export class PokemonCardList extends CardList {
   public attackCostIncreaseNextTurnAttackerId: number | undefined;
   public attackCostIncreaseWhileActive: number = 0;
   public attackCostIncreaseWhileActiveSourceCard: PokemonCard | undefined;
+  /** Extra attack damage while this Pokémon stays Active. Cleared on switch. */
+  public whileActiveAttackDamageBonus: number = 0;
+  /** Extra damage this Pokémon's attacks do to the opponent's Active during its next turn. */
+  public outgoingAttackDamageBonusNextTurn: number = 0;
+  public outgoingAttackDamageBonusNextTurnPending: number = 0;
+  /** Overrides the coin-flip count of a named attack during the owner's next turn. */
+  public nextTurnCoinFlipCount: NextTurnCoinFlipCount | null = null;
+  public nextTurnCoinFlipCountPending: NextTurnCoinFlipCount | null = null;
   public retreatCostIncreaseNextTurn = 0;
   public retreatCostIncreaseNextTurnPending = 0;
   public retreatCostIncreaseNextTurnAttackerId: number | undefined;
@@ -205,6 +229,11 @@ export class PokemonCardList extends CardList {
    * During the owner's next turn, Pokémon can't be played from hand to evolve this Pokémon.
    */
   public cannotEvolveNextTurn: boolean = false;
+  /**
+   * This Pokémon may evolve this turn even if it was put into play this turn
+   * (e.g. Evolutionary Advantage). Cleared at end of turn / when leaving play.
+   */
+  public canEvolveThisTurn: boolean = false;
   /**
    * The Defending Pokémon has no Abilities until the end of the attacker's next turn
    * (Gastro Acid). Cleared with a two-phase arm on the attacker's EndTurns.
@@ -340,6 +369,10 @@ export class PokemonCardList extends CardList {
     this.preventEffectsOfAttacksNextTurnPending = null;
     this.cannotBeHealedNextTurn = false;
     this.healedThisTurn = false;
+    this.coinFlipPreventAttackDamageNextTurn = false;
+    this.coinFlipPreventAttackDamageNextTurnPending = false;
+    this.cannotBeSpecialConditionedNextTurn = false;
+    this.cannotBeSpecialConditionedNextTurnPending = false;
     this.noWeaknessNextTurn = false;
     this.noWeaknessNextTurnPending = false;
     this.zeroRetreatCostNextTurn = false;
@@ -353,6 +386,11 @@ export class PokemonCardList extends CardList {
     this.attackCostIncreaseNextTurnAttackerId = undefined;
     this.attackCostIncreaseWhileActive = 0;
     this.attackCostIncreaseWhileActiveSourceCard = undefined;
+    this.whileActiveAttackDamageBonus = 0;
+    this.outgoingAttackDamageBonusNextTurn = 0;
+    this.outgoingAttackDamageBonusNextTurnPending = 0;
+    this.nextTurnCoinFlipCount = null;
+    this.nextTurnCoinFlipCountPending = null;
     this.retreatCostIncreaseNextTurn = 0;
     this.retreatCostIncreaseNextTurnPending = 0;
     this.retreatCostIncreaseNextTurnAttackerId = undefined;
@@ -424,6 +462,15 @@ export class PokemonCardList extends CardList {
     this.preventEffectsOfAttacksNextTurnPending = null;
     this.cannotBeHealedNextTurn = false;
     this.healedThisTurn = false;
+    this.coinFlipPreventAttackDamageNextTurn = false;
+    this.coinFlipPreventAttackDamageNextTurnPending = false;
+    this.cannotBeSpecialConditionedNextTurn = false;
+    this.cannotBeSpecialConditionedNextTurnPending = false;
+    this.whileActiveAttackDamageBonus = 0;
+    this.outgoingAttackDamageBonusNextTurn = 0;
+    this.outgoingAttackDamageBonusNextTurnPending = 0;
+    this.nextTurnCoinFlipCount = null;
+    this.nextTurnCoinFlipCountPending = null;
     this.noWeaknessNextTurn = false;
     this.noWeaknessNextTurnPending = false;
     this.zeroRetreatCostNextTurn = false;
@@ -471,6 +518,7 @@ export class PokemonCardList extends CardList {
     this.blockedAttackNameUntilLeavesActive = undefined;
     this.onlyAllowedAttackNameNextTurn = undefined;
     this.cannotEvolveNextTurn = false;
+    this.canEvolveThisTurn = false;
     this.noAbilities = false;
     this.noAbilitiesAttackerId = undefined;
     this.noAbilitiesClearArmed = false;
@@ -498,6 +546,9 @@ export class PokemonCardList extends CardList {
   }
 
   addSpecialCondition(sp: SpecialCondition): void {
+    if (this.cannotBeSpecialConditionedNextTurn) {
+      return;
+    }
     if (sp === SpecialCondition.POISONED) {
       this.poisonDamage = 10;
     }

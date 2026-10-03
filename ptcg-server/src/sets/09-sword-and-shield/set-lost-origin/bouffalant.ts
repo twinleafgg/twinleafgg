@@ -4,7 +4,7 @@ import { StoreLike, State, StateUtils, GameMessage, ChooseEnergyPrompt, Card, Ga
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Bouffalant extends PokemonCard {
 
@@ -73,7 +73,7 @@ export class Bouffalant extends PokemonCard {
         cards.forEach(card => {
           const cardList = StateUtils.findCardList(state, card);
           if (cardList) {
-            cardList.moveCardTo(card, opponent.lostzone);
+            MOVE_CARDS(store, state, cardList, opponent.lostzone, { cards: [card], sourceCard: this });
             store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE, {
               player: opponent.name,
               card: card.name

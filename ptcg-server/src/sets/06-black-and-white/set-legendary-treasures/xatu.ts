@@ -2,13 +2,13 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, DRAW_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, DRAW_CARDS, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameMessage } from '../../../game/game-message';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { GameLog, SelectPrompt, State, StoreLike } from '../../../game';
+import { SelectPrompt, State, StoreLike } from '../../../game';
 export class Xatu extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
   public evolvesFrom: string = 'Natu';
@@ -63,9 +63,6 @@ export class Xatu extends PokemonCard {
         const playerChoice = results[0];
         const opponentChoice = results[1];
 
-        store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: player.name, string: options[playerChoice].message });
-        store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: opponent.name, string: options[opponentChoice].message });
-
         if (playerChoice === opponentChoice) {
           return this.reduceEffect(store, state, effect);
         }
@@ -77,11 +74,11 @@ export class Xatu extends PokemonCard {
         if (playerWins) {
           DRAW_CARDS(store, state, player, 3);
           const millCount = Math.min(3, opponent.deck.cards.length);
-          opponent.deck.moveTo(opponent.discard, millCount);
+          MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: millCount, sourceCard: this });
         } else {
           DRAW_CARDS(store, state, opponent, 3);
           const millCount = Math.min(3, player.deck.cards.length);
-          player.deck.moveTo(player.discard, millCount);
+          MOVE_CARDS(store, state, player.deck, player.discard, { count: millCount, sourceCard: this });
         }
       });
     }

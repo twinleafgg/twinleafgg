@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt, TrainerCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Passimian extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -63,7 +63,7 @@ export class Passimian extends PokemonCard {
           effect.damage = 0;
         } else {
           cards.forEach(card => {
-            player.hand.moveCardTo(card, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
           });
         }
       });

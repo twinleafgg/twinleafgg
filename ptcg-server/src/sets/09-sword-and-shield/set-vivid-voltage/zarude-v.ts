@@ -21,7 +21,7 @@ import {
 } from '../../../game';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { HealEffect } from '../../../game/store/effects/game-effects';
@@ -108,7 +108,7 @@ export class ZarudeV extends PokemonCard {
           const healTargets = new Set<string>();
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
             healTargets.add(`${transfer.to.player}-${transfer.to.slot}-${transfer.to.index}`);
           }
 

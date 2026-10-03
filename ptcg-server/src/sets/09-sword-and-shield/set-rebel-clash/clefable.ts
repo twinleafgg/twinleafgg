@@ -8,7 +8,7 @@ import { Card, ConfirmPrompt, GameMessage, PowerType, StoreLike, State, StateUti
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseEnergyPrompt } from '../../../game/store/prompts/choose-energy-prompt';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { JUST_EVOLVED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {JUST_EVOLVED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Clefable extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -76,7 +76,7 @@ export class Clefable extends PokemonCard {
             const cards: Card[] = (energy || []).map(e => e.card);
             if (cards.length > 0) {
               // Put on top of opponent's deck (unshift = top)
-              opponent.active.moveCardsTo(cards, opponent.deck);
+              MOVE_CARDS(store, state, opponent.active, opponent.deck, { cards: cards, sourceCard: this });
               cards.forEach(c => {
                 const idx = opponent.deck.cards.indexOf(c);
                 if (idx > 0) {

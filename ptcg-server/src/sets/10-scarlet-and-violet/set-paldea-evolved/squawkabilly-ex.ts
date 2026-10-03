@@ -21,7 +21,7 @@ import {
   SlotType,
   StateUtils,
 } from '../../../game';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Squawkabillyex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -72,9 +72,9 @@ export class Squawkabillyex extends PokemonCard {
         throw new GameError(GameMessage.POWER_ALREADY_USED);
       }
       // Discard hand and draw cards
-      player.hand.moveTo(player.discard);
+      MOVE_CARDS(store, state, player.hand, player.discard, { sourceCard: this });
       // Draw 6 cards
-      player.deck.moveTo(player.hand, 6);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 6, sourceCard: this });
       // Mark power as used this turn
       player.usedSquawkAndSeizeThisTurn = true;
       // Return updated state
@@ -121,7 +121,7 @@ export class Squawkabillyex extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

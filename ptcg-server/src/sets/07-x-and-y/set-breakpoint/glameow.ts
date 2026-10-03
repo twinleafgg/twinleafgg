@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Glameow extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -57,7 +57,7 @@ export class Glameow extends PokemonCard {
       ), (selected: Card[]) => {
         if (selected && selected.length > 0) {
           // moveCardsTo pushes to the end of deck.cards, which is the bottom of the deck
-          opponent.hand.moveCardsTo(selected, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: selected, sourceCard: this });
         }
       });
     }

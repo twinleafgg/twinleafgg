@@ -6,13 +6,14 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Hala extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'GRI';
   public setNumber: string = '126';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Hala';
   public fullName: string = 'Hala GRI';
-  public text: string = 'Shuffle your hand into your deck. If you have used your GX attack, draw 7 cards. If not, draw 4 cards. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Shuffle your hand into your deck. If you have used your GX attack, draw 7 cards. If not, draw 4 cards. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {

@@ -4,20 +4,31 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { CardTarget, ChoosePokemonPrompt, GameError, GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
+import {
+  CardTarget,
+  ChoosePokemonPrompt,
+  GameError,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  StoreLike,
+  State,
+  StateUtils,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 
 export class ToyCatcher extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark: string = 'E';
   public set: string = 'EVS';
   public setNumber: string = '163';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Toy Catcher';
   public fullName: string = 'Toy Catcher EVS';
-  public text: string = 'Switch 1 of your opponent\'s Benched Pokémon that has 50 HP or less remaining with your opponent\'s Active Pokémon. You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached.';
+  public text: string =
+    "Switch 1 of your opponent's Benched Pokémon that has 50 HP or less remaining with your opponent's Active Pokémon. You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Switch 1 of your opponent's Benched Pokémon that has 50 HP or less remaining
@@ -30,7 +41,7 @@ export class ToyCatcher extends TrainerCard {
 
       // Check if any benched Pokemon has 50 HP or less remaining
       let hasValidTarget = false;
-      opponent.bench.forEach(b => {
+      opponent.bench.forEach((b) => {
         if (b.cards.length > 0) {
           const checkHp = new CheckHpEffect(opponent, b);
           store.reduceEffect(state, checkHp);
@@ -63,17 +74,21 @@ export class ToyCatcher extends TrainerCard {
         }
       });
 
-      return store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON,
-        PlayerType.TOP_PLAYER,
-        [SlotType.BENCH],
-        { min: 1, max: 1, allowCancel: false, blocked }
-      ), selected => {
-        if (selected && selected.length > 0) {
-          opponent.switchPokemon(selected[0]);
-        }
-      });
+      return store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON,
+          PlayerType.TOP_PLAYER,
+          [SlotType.BENCH],
+          { min: 1, max: 1, allowCancel: false, blocked },
+        ),
+        (selected) => {
+          if (selected && selected.length > 0) {
+            opponent.switchPokemon(selected[0]);
+          }
+        },
+      );
     }
 
     return state;

@@ -7,17 +7,21 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND } from '../../../game/store/prefabs/prefabs';
+import {
+  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 
 export class PokeKid extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'SSH';
   public setNumber: string = '173';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Poké Kid';
   public fullName: string = 'Poké Kid SSH';
-  public text: string = 'Search your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Search your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-sword-and-shield/hop.ts (WAS_TRAINER_USED + supporter pattern)
@@ -29,11 +33,12 @@ export class PokeKid extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
 
       SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND(store, state, player, {}, { min: 0, max: 1 });
-
-
     }
 
     return state;

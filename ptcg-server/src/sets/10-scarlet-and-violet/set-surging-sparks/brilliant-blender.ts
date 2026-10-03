@@ -10,6 +10,7 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { Player, ShowCardsPrompt, StateUtils } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -26,7 +27,7 @@ function* playCard(
   }
 
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
 
   yield store.prompt(
     state,
@@ -59,7 +60,7 @@ function* playCard(
     );
   }
 
-  player.deck.moveCardsTo(cards, player.discard);
+  MOVE_CARDS(store, state, player.deck, player.discard, { cards: cards, sourceCard: effect.trainerCard });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
@@ -67,7 +68,7 @@ function* playCard(
 }
 
 export class BrilliantBlender extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ACE_SPEC];
   public regulationMark = 'H';
   public set: string = 'SSP';

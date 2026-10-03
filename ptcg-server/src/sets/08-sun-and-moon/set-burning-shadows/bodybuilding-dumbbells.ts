@@ -7,8 +7,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class BodybuildingDumbbells extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'BUS';
 
@@ -23,7 +22,6 @@ export class BodybuildingDumbbells extends TrainerCard {
   public text: string = 'The Stage 1 Pokémon this card is attached to gets +40 HP.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckHpEffect && effect.target.tools.includes(this)) {
       const sourceCard = effect.target.getPokemonCard();
 
@@ -42,5 +40,4 @@ export class BodybuildingDumbbells extends TrainerCard {
     }
     return state;
   }
-
 }

@@ -23,11 +23,9 @@ import {
 } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   IS_ABILITY_BLOCKED,
-  COIN_FLIP_PROMPT,
-} from '../../game/store/prefabs/prefabs';
+  COIN_FLIP_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED } from '../../game/store/prefabs/attack-effects';
 
 export class Rotom extends PokemonCard {
@@ -125,7 +123,7 @@ export class Rotom extends PokemonCard {
                     ),
                   ],
                   () => {
-                    player.deck.moveCardsTo(cards, player.hand);
+                    MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
                   },
                 );
               }

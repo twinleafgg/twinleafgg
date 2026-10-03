@@ -18,7 +18,7 @@ import { PowerType,
   CardTarget,
   GameError, pokemonHasCardType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 export class Koraidonex extends PokemonCard {
@@ -118,7 +118,7 @@ export class Koraidonex extends PokemonCard {
           }
           transfers.forEach((transfer) => {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           });
         },
       );

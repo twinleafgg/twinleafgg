@@ -2,8 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ShuffleDeckPrompt, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Illumise extends PokemonCard {
 
@@ -44,7 +43,7 @@ export class Illumise extends PokemonCard {
       else {
         const player = effect.player;
         const opponent = StateUtils.getOpponent(state, player);
-        opponent.active.moveTo(opponent.deck);
+        MOVE_CARDS(store, state, opponent.active, opponent.deck, { sourceCard: this });
         opponent.active.clearEffects();
 
         return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {

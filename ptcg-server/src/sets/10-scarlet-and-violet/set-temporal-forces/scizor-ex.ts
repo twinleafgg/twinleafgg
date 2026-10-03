@@ -11,7 +11,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { DiscardEnergyPrompt, GameMessage, PlayerType, SlotType, StateUtils } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Scizorex extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -81,7 +81,7 @@ export class Scizorex extends PokemonCard {
 
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = player.discard;
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
 
             totalDiscarded = transfers.length;
 

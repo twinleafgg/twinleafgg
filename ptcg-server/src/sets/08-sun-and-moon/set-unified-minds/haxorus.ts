@@ -8,7 +8,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { PokemonCardList, PowerType, PlayerType, SlotType, StoreLike, State, StateUtils, GameError, GameMessage, AttachEnergyPrompt } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Haxorus extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -75,7 +75,7 @@ export class Haxorus extends PokemonCard {
       // Discard the stadium
       for (const p of state.players) {
         if (p.stadium.cards.length > 0) {
-          p.stadium.moveTo(p.discard);
+          MOVE_CARDS(store, state, p.stadium, p.discard, { sourceCard: this });
           break;
         }
       }
@@ -103,7 +103,7 @@ export class Haxorus extends PokemonCard {
       ), transfers => {
         transfers = transfers || [];
         for (const transfer of transfers) {
-          player.hand.moveCardTo(transfer.card, haxorusSlot);
+          MOVE_CARDS(store, state, player.hand, haxorusSlot, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

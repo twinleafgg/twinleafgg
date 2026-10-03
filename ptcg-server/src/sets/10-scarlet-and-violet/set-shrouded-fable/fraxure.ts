@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { StoreLike, State, CardList, GameLog } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { BLOCK_TRAINER_TARGET, IS_TRAINER_TARGET, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_TRAINER_TARGET, IS_TRAINER_TARGET, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Fraxure extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -44,10 +44,10 @@ export class Fraxure extends PokemonCard {
       const player = effect.player;
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
       const discards = deckTop.cards;
 
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
 
       discards.forEach((card, index) => {
         store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD, { name: player.name, card: card.name, effectName: effect.attack.name });

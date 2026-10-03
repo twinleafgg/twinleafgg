@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tyranitar extends PokemonCard {
   public regulationMark = 'G';
@@ -46,7 +46,7 @@ export class Tyranitar extends PokemonCard {
 
     // Dread Mountain
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      effect.player.deck.moveTo(effect.player.discard, 4);
+      MOVE_CARDS(store, state, effect.player.deck, effect.player.discard, { count: 4, sourceCard: this });
     }
 
     return state;

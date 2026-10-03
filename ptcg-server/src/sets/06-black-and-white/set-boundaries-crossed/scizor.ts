@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PlayerType, StateUtils, StoreLike, State } from '../../../game';
-import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Scizor extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -39,38 +38,9 @@ export class Scizor extends PokemonCard {
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Scizor';
   public fullName: string = 'Scizor BCR';
-  public readonly STEEL_SLASH_MARKER = 'STEEL_SLASH_MARKER';
-  public readonly CLEAR_STEEL_SLASH_MARKER = 'CLEAR_STEEL_SLASH_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Steel Slash
-    // Refs: set-paldea-evolved/noivern-ex.ts (targeted prevention marker), set-furious-fists/hawlucha.ts (CardTag.POKEMON_EX check)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      player.active.marker.addMarker(this.STEEL_SLASH_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_STEEL_SLASH_MARKER, this);
-    }
-
-    if (
-      effect instanceof PutDamageEffect &&
-      effect.target.marker.hasMarker(this.STEEL_SLASH_MARKER, this)
-    ) {
-      const sourceCard = effect.source.getPokemonCard();
-      if (sourceCard?.hasTag(CardTag.POKEMON_EX)) {
-        effect.preventDefault = true;
-      }
-    }
-
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_STEEL_SLASH_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_STEEL_SLASH_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.STEEL_SLASH_MARKER, this);
-      });
+      PREVENT_DAMAGE(store, state, effect, this, { sourceTags: [CardTag.POKEMON_EX] });
     }
 
     // Attack 2: Slashing Strike

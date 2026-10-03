@@ -15,7 +15,7 @@ import {
 } from '../../../game';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MegaCharizardXex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -100,7 +100,7 @@ export class MegaCharizardXex extends PokemonCard {
 
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = player.discard;
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
 
             totalDiscarded = transfers.length;
 

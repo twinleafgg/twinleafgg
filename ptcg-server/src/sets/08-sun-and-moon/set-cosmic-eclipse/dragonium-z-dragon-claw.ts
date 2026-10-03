@@ -8,13 +8,14 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 export class DragoniumZDragonClaw extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CEC';
   public setNumber: string = '190';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Dragonium Z: Dragon Claw';
   public fullName: string = 'Dragonium Z: Dragon Claw CEC';
-  public text: string = 'If the Pokémon this card is attached to has the Dragon Claw attack, it can use the GX attack on this card. (You still need the necessary Energy to use this attack.)';
+  public text: string =
+    'If the Pokémon this card is attached to has the Dragon Claw attack, it can use the GX attack on this card. (You still need the necessary Energy to use this attack.)';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // TODO: Z-move tool that grants a GX attack ("Devastating Drake-GX: 300") to Pokemon with

@@ -71,5 +71,4 @@ export class Crobat extends PokemonCard {
     return state;
   }
 
-
 }

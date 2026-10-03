@@ -1,6 +1,6 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, GameMessage, ChooseCardsPrompt, GameLog, ShowCardsPrompt, ShuffleDeckPrompt, StateUtils } from '../../../game';
+import { StoreLike, State, GameMessage, ChooseCardsPrompt, ShowCardsPrompt, ShuffleDeckPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
@@ -57,9 +57,6 @@ export class Xerneas extends PokemonCard {
             cards
           )], () => {
 
-            cards.forEach((card, index) => {
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-            });
             MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: this, sourceEffect: this.attacks[0] });
           });
         }

@@ -10,7 +10,7 @@ import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-e
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { SelectOptionPrompt } from '../../../game/store/prompts/select-option-prompt';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Aromatisse extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -71,7 +71,7 @@ export class Aromatisse extends PokemonCard {
           ), (selected: Card[]) => {
             const cards = selected || [];
             cards.forEach(c => {
-              opponent.hand.moveCardTo(c, opponent.deck);
+              MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [c], sourceCard: this });
             });
             if (cards.length > 0) {
               SHUFFLE_DECK(store, state, opponent);

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardTransfer, GameMessage, MoveEnergyPrompt, PlayerType, SlotType, StoreLike, State, StateUtils, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Staraptor extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -57,7 +57,7 @@ export class Staraptor extends PokemonCard {
         transfers.forEach(transfer => {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         });
       });
     }

@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State, StateUtils, PlayerType, SlotType, GameMessage, EnergyCard } from '../../../game';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, HEAL_X_DAMAGE_FROM_THIS_POKEMON, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Registeel extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -64,7 +64,7 @@ export class Registeel extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

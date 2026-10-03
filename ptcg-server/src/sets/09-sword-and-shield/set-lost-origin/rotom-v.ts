@@ -12,7 +12,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RotomV extends PokemonCard {
   public regulationMark = 'F';
@@ -80,7 +80,7 @@ export class RotomV extends PokemonCard {
           const discountTools = new DiscardCardsEffect(effect, cards);
           discountTools.target = player.active;
           store.reduceEffect(state, discountTools);
-          player.discard.moveCardsTo(cards, player.lostzone);
+          MOVE_CARDS(store, state, player.discard, player.lostzone, { cards: cards, sourceCard: this });
 
           // Calculate damage
           const damage = cards.length * 40;
@@ -97,7 +97,7 @@ export class RotomV extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.deck.moveTo(player.hand, 3);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
       const endTurnEffect = new EndTurnEffect(player);
       store.reduceEffect(state, endTurnEffect);
       return state;

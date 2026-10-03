@@ -11,9 +11,10 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { CardTarget, PlayerType, SlotType } from '../../../game/store/actions/play-card-action';
 import { Player } from '../../../game/store/state/player';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RebootPod extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   protected _tags = [CardTag.ACE_SPEC, CardTag.FUTURE];
 
@@ -90,14 +91,14 @@ export class RebootPod extends TrainerCard {
           transfers = transfers || [];
 
           if (transfers.length === 0) {
-            player.supporter.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
             return;
           }
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
-            player.supporter.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
+            MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
           }
         },
       );

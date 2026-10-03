@@ -9,10 +9,10 @@ import { GameMessage } from '../../../game/game-message';
 import { StateUtils } from '../../..';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { ConfirmCardsPrompt } from '../../../game/store/prompts/confirm-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PrimordialAltar extends TrainerCard {
-
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
 
   public regulationMark = 'F';
 
@@ -26,7 +26,8 @@ export class PrimordialAltar extends TrainerCard {
 
   public fullName = 'Primordial Altar SIT';
 
-  public text = 'Once during each player\'s turn, that player may look at the top card of their deck. They may discard that card.';
+  public text =
+    "Once during each player's turn, that player may look at the top card of their deck. They may discard that card.";
 
   reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -43,25 +44,27 @@ export class PrimordialAltar extends TrainerCard {
     }
 
     const deckTop = new CardList();
-    player.deck.moveTo(deckTop, 1);
+    MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
 
-    return store.prompt(state, new ConfirmCardsPrompt(
-      player.id,
-      GameMessage.TREKKING_SHOES,
-      deckTop.cards, // Fix error by changing toArray() to cards
-      { allowCancel: true },
-    ), yes => {
-
-      if (yes !== null) {
-
-        if (yes) {
-          // Add card to hand
-          deckTop.moveTo(player.discard);
-        } else {
-          // Discard card
-          deckTop.moveToTopOfDestination(player.deck);
+    return store.prompt(
+      state,
+      new ConfirmCardsPrompt(
+        player.id,
+        GameMessage.TREKKING_SHOES,
+        deckTop.cards, // Fix error by changing toArray() to cards
+        { allowCancel: true },
+      ),
+      (yes) => {
+        if (yes !== null) {
+          if (yes) {
+            // Add card to hand
+            MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
+          } else {
+            // Discard card
+            deckTop.moveToTopOfDestination(player.deck);
+          }
         }
-      }
-    });
+      },
+    );
   }
 }

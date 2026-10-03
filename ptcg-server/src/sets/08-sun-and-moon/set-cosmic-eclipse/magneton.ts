@@ -1,8 +1,14 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import {
-  StoreLike, State, GameMessage, PowerType, ChooseCardsPrompt, GameLog, PlayerType, StateUtils,
-  GameError
+  StoreLike,
+  State,
+  GameMessage,
+  PowerType,
+  ChooseCardsPrompt,
+  PlayerType,
+  StateUtils,
+  GameError,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ABILITY_USED, MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
@@ -73,10 +79,6 @@ export class Magneton extends PokemonCard {
 
         cards.forEach((card, index) => {
           MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this, sourceEffect: this.powers[0] });
-        });
-
-        cards.forEach((card, index) => {
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
         });
 
         SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);

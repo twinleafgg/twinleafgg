@@ -14,14 +14,12 @@ import {
   StateUtils,
 } from '../../../game';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 
 export class BronzongG extends PokemonCard {
@@ -125,7 +123,7 @@ export class BronzongG extends PokemonCard {
 
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
 
           return state;

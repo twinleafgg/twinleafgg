@@ -13,8 +13,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class FlyiniumZAirSlash extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'UNM';
 
@@ -26,22 +25,31 @@ export class FlyiniumZAirSlash extends TrainerCard {
 
   public fullName: string = 'Flyinium Z: Air Slash UNM';
 
-  public attacks: Attack[] = [{
-    name: 'Speeding Skystrike-GX',
-    cost: [CardType.COLORLESS, CardType.COLORLESS, CardType.COLORLESS, CardType.COLORLESS],
-    damage: 180,
-    text: 'Prevent all effects of attacks, including damage, done to this Pokémon during your opponent\'s next turn. (You can\'t use more than 1 GX attack in a game.)'
-  }];
+  public attacks: Attack[] = [
+    {
+      name: 'Speeding Skystrike-GX',
+      cost: [CardType.COLORLESS, CardType.COLORLESS, CardType.COLORLESS, CardType.COLORLESS],
+      damage: 180,
+      text: "Prevent all effects of attacks, including damage, done to this Pokémon during your opponent's next turn. (You can't use more than 1 GX attack in a game.)",
+    },
+  ];
 
-  public text: string = 'If the Pokémon this card is attached to has the Air Slash attack, it can use the GX attack on this card. (You still need the necessary Energy to use this attack.)';
+  public text: string =
+    'If the Pokémon this card is attached to has the Air Slash attack, it can use the GX attack on this card. (You still need the necessary Energy to use this attack.)';
 
   public FLYINIUM_Z_MARKER = 'FLYINIUM_Z_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
-    if (effect instanceof CheckPokemonAttacksEffect && effect.player.active.getPokemonCard()?.tools.includes(this) &&
-      !effect.attacks.includes(this.attacks[0])) {
-      if (!effect.player.active.getPokemonCard()?.attacks.some(attack => attack.name === 'Air Slash')) {
+    if (
+      effect instanceof CheckPokemonAttacksEffect &&
+      effect.player.active.getPokemonCard()?.tools.includes(this) &&
+      !effect.attacks.includes(this.attacks[0])
+    ) {
+      if (
+        !effect.player.active
+          .getPokemonCard()
+          ?.attacks.some((attack) => attack.name === 'Air Slash')
+      ) {
         return state;
       }
 
@@ -60,7 +68,11 @@ export class FlyiniumZAirSlash extends TrainerCard {
       return state;
     }
 
-    if (effect instanceof AbstractAttackEffect && effect.target.cards.includes(this) && effect.target.marker.hasMarker(this.FLYINIUM_Z_MARKER, this)) {
+    if (
+      effect instanceof AbstractAttackEffect &&
+      effect.target.cards.includes(this) &&
+      effect.target.marker.hasMarker(this.FLYINIUM_Z_MARKER, this)
+    ) {
       effect.preventDefault = true;
       return state;
     }
@@ -78,6 +90,4 @@ export class FlyiniumZAirSlash extends TrainerCard {
 
     return state;
   }
-
 }
-

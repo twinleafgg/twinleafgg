@@ -10,7 +10,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { GameError } from '../../../game/game-error';
 import { PokemonCardList, StateUtils } from '../../..';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gengar extends PokemonCard {
 
@@ -81,7 +81,7 @@ export class Gengar extends PokemonCard {
 
       const cards = player.discard.cards.filter(c => c === this);
       cards.forEach((card, index) => {
-        player.discard.moveCardTo(card, slots[index]);
+        MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
         slots[index].damage += 30; // Add 30 damage
       });
     }

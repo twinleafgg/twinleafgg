@@ -247,6 +247,8 @@ export class TrainerTargetEffect implements Effect {
   public player: Player;
   public trainerCard: TrainerCard;
   public target: PokemonCardList | undefined;
+  /** Card whose reduceEffect blocked this probe. Not serialized to the client. */
+  public blockedBy?: Card;
 
   constructor(player: Player, trainerCard: TrainerCard, target?: PokemonCardList) {
     this.player = player;

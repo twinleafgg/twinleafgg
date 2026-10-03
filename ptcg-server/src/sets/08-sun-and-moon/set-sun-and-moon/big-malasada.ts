@@ -10,7 +10,7 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 
 export class BigMalasada extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'SUM';
   public setNumber: string = '114';
   public cardImage: string = 'assets/cardback.png';
@@ -33,18 +33,19 @@ export class BigMalasada extends TrainerCard {
         player.active.specialConditions = [];
       } else if (specialConditions.length > 1) {
         // Player chooses which condition to remove
-        const options: string[] = specialConditions.map(sc => SpecialCondition[sc]);
+        const options: string[] = specialConditions.map((sc) => SpecialCondition[sc]);
 
-        store.prompt(state, new SelectPrompt(
-          player.id,
-          GameMessage.CHOOSE_SPECIAL_CONDITION,
-          options,
-          { allowCancel: false }
-        ), choice => {
-          if (choice !== null && choice >= 0 && choice < specialConditions.length) {
-            specialConditions.splice(choice, 1);
-          }
-        });
+        store.prompt(
+          state,
+          new SelectPrompt(player.id, GameMessage.CHOOSE_SPECIAL_CONDITION, options, {
+            allowCancel: false,
+          }),
+          (choice) => {
+            if (choice !== null && choice >= 0 && choice < specialConditions.length) {
+              specialConditions.splice(choice, 1);
+            }
+          },
+        );
       }
     }
 

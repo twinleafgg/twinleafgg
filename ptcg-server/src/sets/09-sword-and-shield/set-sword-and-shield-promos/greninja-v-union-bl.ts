@@ -13,7 +13,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { GreninjaVUNIONTopLeft } from './greninja-v-union-tl';
 import { GreninjaVUNIONTopRight } from './greninja-v-union-tr';
 import { GreninjaVUNIONBottomRight } from './greninja-v-union-br';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GreninjaVUNIONBottomLeft extends PokemonCard {
   public stage: Stage = Stage.VUNION;
@@ -119,23 +119,23 @@ export class GreninjaVUNIONBottomLeft extends PokemonCard {
         if (slots.length > 0) {
           player.discard.cards.forEach((card) => {
             if (card instanceof GreninjaVUNIONTopRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof GreninjaVUNIONBottomLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof GreninjaVUNIONBottomRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           // gotta make sure the actual mon ends up on top
           player.discard.cards.forEach((card) => {
             if (card instanceof GreninjaVUNIONTopLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.assembledVUNIONs.push(this.name);

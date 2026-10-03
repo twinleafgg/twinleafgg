@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types
 import { StoreLike, State, CardList } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Rhyhorn extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -48,13 +48,13 @@ export class Rhyhorn extends PokemonCard {
       }
 
       const topOfDeck = new CardList();
-      player.deck.moveTo(topOfDeck, 1);
+      MOVE_CARDS(store, state, player.deck, topOfDeck, { count: 1, sourceCard: this });
       const topCard = topOfDeck.cards[0];
 
       if (topCard instanceof EnergyCard && topCard.energyType === EnergyType.BASIC && topCard.provides.includes(CardType.FIGHTING)) {
-        topOfDeck.moveCardTo(topCard, player.active);
+        MOVE_CARDS(store, state, topOfDeck, player.active, { cards: [topCard], sourceCard: this });
       } else {
-        topOfDeck.moveTo(player.discard);
+        MOVE_CARDS(store, state, topOfDeck, player.discard, { sourceCard: this });
       }
     }
 

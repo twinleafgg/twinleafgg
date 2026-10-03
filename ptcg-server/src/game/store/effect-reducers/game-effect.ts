@@ -1,6 +1,6 @@
 import { GameError } from '../../game-error';
 import { GameLog, GameMessage } from '../../game-message';
-import { BoardEffect, CardTag, CardType, SpecialCondition, SuperType } from '../card/card-types';
+import { CardTag, CardType, SpecialCondition, SuperType } from '../card/card-types';
 import { PokemonCard, getPrimaryCardType } from '../card/pokemon-card';
 import { Power, PowerType, Resistance, Weakness } from '../card/pokemon-types';
 import { ApplyWeaknessEffect, DealDamageEffect, DiscardCardsEffect } from '../effects/attack-effects';
@@ -24,7 +24,8 @@ import {
   UseAttackEffect,
   UsePowerEffect,
   UseStadiumEffect,
-  UseTrainerPowerEffect
+  UseTrainerPowerEffect,
+  EffectOfAbilityEffect,
 } from '../effects/game-effects';
 import { AfterAttackEffect, BeforeDoingDamageEffect, EndTurnEffect } from '../effects/game-phase-effects';
 import { CoinFlipPrompt } from '../prompts/coin-flip-prompt';
@@ -36,8 +37,8 @@ import { MoveCardsEffect } from '../effects/game-effects';
 import { runDelegatedCopiedAttackGenerator } from '../prefabs/copy-attack-delegation';
 import { GameStatsTracker } from '../game-stats-tracker';
 import { PokemonCardList } from '../state/pokemon-card-list';
-import { MOVE_CARDS, COIN_FLIP_PROMPT } from '../prefabs/prefabs';
-import { STAMP_ABILITY_LOCK_ACTIVATION } from '../prefabs/ability-lock';
+import { MOVE_CARDS, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED } from '../prefabs/prefabs';
+import { OPPONENT_WEAKNESS_AURA_POWER, STAMP_ABILITY_LOCK_ACTIVATION } from '../prefabs/ability-lock';
 import { RESOLVE_COIN_FLIP_EFFECT, RUN_COIN_FLIP_SEQUENCE } from '../prefabs/attack-coin-reflip';
 import { CardList } from '../state/card-list';
 import { ConfirmPrompt } from '../prompts/confirm-prompt';
@@ -107,13 +108,33 @@ function applyWeaknessAndResistance(
   return (damage * multiply) + modifier;
 }
 
+/**
+ * Fully reset a board slot after its Pokémon leave play.
+ * Attachments must already have been moved off the slot before calling this.
+ */
 function resetEmptyPokemonSlot(slot: PokemonCardList): void {
+  slot.removeAttackEffects();
   slot.clearEffects();
   slot.damage = 0;
+  slot.hp = 0;
   slot.specialConditions = [];
+  slot.poisonDamage = 10;
+  slot.burnDamage = 20;
+  slot.confusionDamage = 30;
   slot.marker.markers = [];
   slot.tools = [];
-  slot.removeBoardEffect(BoardEffect.ABILITY_USED);
+  slot.boardEffect = [];
+  slot.abilityLockActivationOrder = 0;
+  slot.pokemonPlayedTurn = 0;
+  slot.hpBonus = 0;
+  slot.attacksThisTurn = undefined;
+  slot.stadium = undefined;
+  slot.sleepFlips = 1;
+  slot.showAllStageAbilities = false;
+  slot.triggerEvolutionAnimation = false;
+  slot.showBasicAnimation = false;
+  slot.triggerAttackAnimation = false;
+  slot.isActivatingCard = false;
 }
 
 function* useAttack(next: Function, store: StoreLike, state: State, effect: UseAttackEffect | AttackEffect): IterableIterator<State> {
@@ -147,9 +168,18 @@ function* useAttack(next: Function, store: StoreLike, state: State, effect: UseA
     throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
   }
 
-  // Player-wide attack lock (e.g. Steelix Gigaton Shake)
+  // Player-wide attack lock (e.g. Steelix Gigaton Shake, Cobalion-GX Iron Rule)
   if (player.cannotAttackTurnsRemaining > 0) {
     throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
+  }
+
+  if (player.cannotAttackMaxEnergyTurnsRemaining > 0 && player.cannotAttackMaxEnergy !== null) {
+    const checkEnergy = new CheckProvidedEnergyEffect(player, attackingPokemon);
+    store.reduceEffect(state, checkEnergy);
+    const energyCount = checkEnergy.energyMap.reduce((sum, entry) => sum + entry.provides.length, 0);
+    if (energyCount <= player.cannotAttackMaxEnergy) {
+      throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
+    }
   }
 
   // Check if specific attack cannot be used next turn
@@ -166,6 +196,17 @@ function* useAttack(next: Function, store: StoreLike, state: State, effect: UseA
     throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
   }
   if (attackingPokemon.blockedAttackNameUntilLeavesActive === attack.name) {
+    throw new GameError(GameMessage.CANNOT_USE_ATTACK);
+  }
+  const attackingCard = attackingPokemon.getPokemonCard();
+  if (attackingCard?.cannotUseAttackUntilLeavesPlay === attack.name) {
+    throw new GameError(
+      attack.name === 'Leek Slap'
+        ? GameMessage.LEEK_SLAP_CANNOT_BE_USED_AGAIN
+        : GameMessage.CANNOT_USE_ATTACK,
+    );
+  }
+  if (player.cannotUseGXAttacks && (attack.gxAttack === true || attack.name.includes('-GX'))) {
     throw new GameError(GameMessage.CANNOT_USE_ATTACK);
   }
 
@@ -241,6 +282,9 @@ function* useAttack(next: Function, store: StoreLike, state: State, effect: UseA
 
   const attackEffect = (effect instanceof AttackEffect) ? effect : new AttackEffect(player, opponent, attack);
   attackEffect.source = attackingPokemon;
+  if (attackingPokemon === player.active && attackingPokemon.whileActiveAttackDamageBonus > 0) {
+    attackEffect.damage += attackingPokemon.whileActiveAttackDamageBonus;
+  }
 
   const copycatCard = attackingPokemon.getPokemonCard();
   const delegateFrom = effect instanceof UseAttackEffect ? effect.delegateFrom : undefined;
@@ -622,6 +666,8 @@ export function gameReducer(store: StoreLike, state: State, effect: Effect): Sta
       effect.weakness = [];
     } else if (effect.target.weaknessOverrideType !== undefined) {
       effect.weakness = [{ type: effect.target.weaknessOverrideType }];
+    } else {
+      applyWhileInPlayOpponentWeakness(store, state, effect);
     }
     return state;
   }
@@ -893,10 +939,35 @@ export function gameReducer(store: StoreLike, state: State, effect: Effect): Sta
       }
     }
 
-    // Discard orphan attachments when no Pokemon remain in the slot.
+    // Salvage orphan attachments when no Pokemon remain in the slot.
+    // Tools live in tools[] (not cards[]), so they must be moved explicitly
+    // before resetEmptyPokemonSlot wipes the array.
     if (source instanceof PokemonCardList && source.getPokemons().length === 0) {
       const player = StateUtils.findOwner(state, source);
-      source.moveTo(player.discard);
+
+      // Remaining cards/energies → discard (Prism Star → lost zone)
+      if (source.cards.length > 0) {
+        const toLostZone = source.cards.filter(card => card.tags && card.tags.includes(CardTag.PRISM_STAR));
+        const toDiscard = source.cards.filter(card => !(card.tags && card.tags.includes(CardTag.PRISM_STAR)));
+        if (toLostZone.length > 0) {
+          source.moveCardsTo(toLostZone, player.lostzone);
+        }
+        if (toDiscard.length > 0) {
+          source.moveCardsTo(toDiscard, player.discard);
+        }
+      }
+      if (source.energies && source.energies.cards.length > 0) {
+        source.energies.cards = [];
+      }
+
+      // Remaining tools → discard (Prism Star → lost zone)
+      for (const tool of [...source.tools]) {
+        if (tool.tags && tool.tags.includes(CardTag.PRISM_STAR)) {
+          source.moveCardTo(tool, player.lostzone);
+        } else {
+          source.moveCardTo(tool, player.discard);
+        }
+      }
     }
 
     // In-play state (damage, special conditions, etc.) lives on the slot, not on cards.
@@ -917,4 +988,35 @@ export function gameReducer(store: StoreLike, state: State, effect: Effect): Sta
   }
 
   return state;
+}
+
+function applyWhileInPlayOpponentWeakness(
+  store: StoreLike,
+  state: State,
+  effect: CheckPokemonStatsEffect,
+): void {
+  const owner = StateUtils.findOwner(state, effect.target);
+  const opponent = StateUtils.getOpponent(state, owner);
+  let source: PokemonCard | undefined;
+  opponent.forEachPokemon(PlayerType.TOP_PLAYER, (_cardList, card) => {
+    if (card.whileInPlayOpponentWeakness !== undefined) {
+      source = card;
+    }
+  });
+  if (!source || source.whileInPlayOpponentWeakness === undefined) {
+    return;
+  }
+  if (IS_ABILITY_BLOCKED(store, state, opponent, source)) {
+    return;
+  }
+  const canApply = new EffectOfAbilityEffect(
+    opponent,
+    OPPONENT_WEAKNESS_AURA_POWER(source.whileInPlayOpponentWeakness),
+    source,
+    effect.target,
+  );
+  store.reduceEffect(state, canApply);
+  if (canApply.target) {
+    effect.weakness = [{ type: source.whileInPlayOpponentWeakness }];
+  }
 }

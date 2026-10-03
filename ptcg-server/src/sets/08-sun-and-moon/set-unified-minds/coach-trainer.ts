@@ -10,7 +10,7 @@ import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class CoachTrainer extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNM';
   public setNumber: string = '192';
   public cardImage: string = 'assets/cardback.png';

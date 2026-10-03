@@ -7,24 +7,31 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, CardType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
-import { CheckAttackCostEffect, CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
+import {
+  CheckAttackCostEffect,
+  CheckPokemonTypeEffect,
+} from '../../../game/store/effects/check-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class DimensionValley extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'PHF';
   public name: string = 'Dimension Valley';
   public fullName: string = 'Dimension Valley PHF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '93';
-  public text: string = 'Each [P] Pokémon\'s attacks (both yours and your opponent\'s) cost [C] less.';
+  public text: string =
+    "Each [P] Pokémon's attacks (both yours and your opponent's) cost [C] less.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckAttackCostEffect && StateUtils.getStadiumCard(state) === this) {
       const index = effect.cost.indexOf(CardType.COLORLESS);
       const checkPokemonType = new CheckPokemonTypeEffect(effect.player.active);
 
-      if (index === -1 || IS_STADIUM_EFFECT_BLOCKED(store, state, effect.player, effect.player.active)) {
+      if (
+        index === -1 ||
+        IS_STADIUM_EFFECT_BLOCKED(store, state, effect.player, effect.player.active)
+      ) {
         return state;
       }
 

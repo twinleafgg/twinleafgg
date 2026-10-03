@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Golduck extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -59,11 +59,11 @@ export class Golduck extends PokemonCard {
 
       // Discard the ORIGINAL active Pokemon and all attached cards
       // Tools must be moved first (moveTo does not move tools)
-      playerOriginalActive.tools.slice().forEach(t => { playerOriginalActive.moveCardTo(t, player.discard); });
-      playerOriginalActive.moveTo(player.discard);
+      playerOriginalActive.tools.slice().forEach(t => { MOVE_CARDS(store, state, playerOriginalActive, player.discard, { cards: [t], sourceCard: this }); });
+      MOVE_CARDS(store, state, playerOriginalActive, player.discard, { sourceCard: this });
 
-      opponentOriginalActive.tools.slice().forEach(t => { opponentOriginalActive.moveCardTo(t, opponent.discard); });
-      opponentOriginalActive.moveTo(opponent.discard);
+      opponentOriginalActive.tools.slice().forEach(t => { MOVE_CARDS(store, state, opponentOriginalActive, opponent.discard, { cards: [t], sourceCard: this }); });
+      MOVE_CARDS(store, state, opponentOriginalActive, opponent.discard, { sourceCard: this });
     }
 
     return state;

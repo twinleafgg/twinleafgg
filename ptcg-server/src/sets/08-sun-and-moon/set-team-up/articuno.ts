@@ -3,7 +3,7 @@ import { CardType, Stage, SuperType, TrainerType } from '../../../game/store/car
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { BLOCK_TRAINER_TARGET, IS_ABILITY_BLOCKED, IS_TRAINER_TARGET, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_TRAINER_TARGET, IS_ABILITY_BLOCKED, IS_TRAINER_TARGET, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Articuno extends PokemonCard {
 
@@ -78,7 +78,7 @@ export class Articuno extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

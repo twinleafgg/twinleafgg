@@ -1,6 +1,6 @@
 import { Effect } from '../../game/store/effects/effect';
 import { GameError } from '../../game/game-error';
-import { GameLog, GameMessage } from '../../game/game-message';
+import { GameMessage } from '../../game/game-message';
 import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 import { TrainerCard } from '../../game/store/card/trainer-card';
@@ -12,7 +12,7 @@ import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt'
 import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class ChampionshipArena extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'NP';
   public name: string = 'Championship Arena';
   public fullName: string = 'Championship Arena NP';
@@ -20,32 +20,35 @@ export class ChampionshipArena extends TrainerCard {
   public setNumber: string = '28';
 
   public text: string =
-    'At the end of each player\'s turn, if that player has 8 or more cards in his or her hand, that player discards a number of cards until the player has 7 cards left in his or her hand.';
+    "At the end of each player's turn, if that player has 8 or more cards in his or her hand, that player discards a number of cards until the player has 7 cards left in his or her hand.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof EndTurnEffect && StateUtils.getStadiumCard(state) === this) {
       const player = effect.player;
 
       if (player.hand.cards.length >= 8) {
         const discardAmount = player.hand.cards.length - 7;
 
-        state = store.prompt(state, new ChooseCardsPrompt(
-          effect.player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          player.hand,
-          {},
-          { allowCancel: false, min: discardAmount, max: discardAmount }
-        ), cards => {
-          cards = cards || [];
-          if (cards.length === 0) {
-            return;
-          }
-          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, { name: player.name, card: card.name });
-          });
-        });
+        state = store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            effect.player,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            player.hand,
+            {},
+            { allowCancel: false, min: discardAmount, max: discardAmount },
+          ),
+          (cards) => {
+            cards = cards || [];
+            if (cards.length === 0) {
+              return;
+            }
+            MOVE_CARDS(store, state, player.hand, player.discard, {
+              cards: cards,
+              sourceCard: this,
+            });
+          },
+        );
       }
     }
 
@@ -55,5 +58,4 @@ export class ChampionshipArena extends TrainerCard {
 
     return state;
   }
-
 }

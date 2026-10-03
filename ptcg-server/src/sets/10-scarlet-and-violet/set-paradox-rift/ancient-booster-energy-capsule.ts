@@ -13,7 +13,7 @@ import {
 } from '../../../game/store/prefabs/prefabs';
 
 export class AncientBoosterEnergyCapsule extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public regulationMark = 'G';
 

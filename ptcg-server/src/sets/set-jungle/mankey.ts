@@ -3,7 +3,7 @@ import { Stage, CardType, SpecialCondition } from '../../game/store/card/card-ty
 import { Card, CardList, ChooseCardsPrompt, GameError, GameMessage, PokemonCardList, PowerType, SelectOptionPrompt, ShowCardsPrompt, State, StateUtils, StoreLike } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 
-import { ABILITY_USED, ADD_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHOW_CARDS_TO_PLAYER, WAS_POWER_USED } from '../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHOW_CARDS_TO_PLAYER, WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Mankey extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -65,7 +65,7 @@ export class Mankey extends PokemonCard {
           action: () => {
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, 1);
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
 
             state = store.prompt(state, new ShowCardsPrompt(
               player.id,
@@ -84,7 +84,7 @@ export class Mankey extends PokemonCard {
           action: () => {
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 1);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 1, sourceCard: this });
 
             state = store.prompt(state, new ShowCardsPrompt(
               player.id,

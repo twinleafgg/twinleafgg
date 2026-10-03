@@ -1,4 +1,4 @@
-import { ChooseCardsPrompt, GameLog, GameMessage, State, StoreLike } from '../../../game';
+import { ChooseCardsPrompt, GameMessage, State, StoreLike } from '../../../game';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -55,7 +55,6 @@ export class Dunsparce extends PokemonCard {
 
         cards.forEach((card, index) => {
           store.reduceEffect(state, new PlayPokemonFromDeckEffect(player, card as PokemonCard, openSlots[index]));
-          store.log(state, GameLog.LOG_PLAYER_PLAYS_BASIC_POKEMON, { name: player.name, card: card.name });
         });
 
         SHUFFLE_DECK(store, state, player);

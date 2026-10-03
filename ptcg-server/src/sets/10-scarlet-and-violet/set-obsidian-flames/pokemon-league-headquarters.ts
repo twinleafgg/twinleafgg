@@ -8,14 +8,15 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class PokemonLeagueHeadquarters extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'G';
   public set: string = 'OBF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '192';
   public name: string = 'Pokémon League Headquarters';
   public fullName: string = 'Pokémon League Headquarters OBF';
-  public text: string = 'Attacks used by each Basic Pokémon in play (both yours and your opponent\'s) cost [C] more.';
+  public text: string =
+    "Attacks used by each Basic Pokémon in play (both yours and your opponent's) cost [C] more.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckAttackCostEffect && StateUtils.getStadiumCard(state) === this) {
@@ -40,4 +41,3 @@ export class PokemonLeagueHeadquarters extends TrainerCard {
     return state;
   }
 }
-

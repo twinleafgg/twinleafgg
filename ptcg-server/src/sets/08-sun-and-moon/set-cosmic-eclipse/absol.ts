@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { Card, ChooseCardsPrompt, ChoosePokemonPrompt, EnergyCard, GameMessage, PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Absol extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -116,7 +116,7 @@ export class Absol extends PokemonCard {
       ), cards => {
         cards = cards || [];
         if (cards.length > 0) {
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
         }
       });
     }

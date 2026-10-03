@@ -10,7 +10,7 @@ import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effect
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class WaterMemory extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'TEU';
   public setNumber: string = '157';
   public cardImage: string = 'assets/cardback.png';

@@ -5,16 +5,14 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { GameError, GameMessage, Player, StateUtils } from '../../../game';
-import {
-  ADD_MARKER,
+import {ADD_MARKER,
   DEAL_DAMAGE,
   HAS_MARKER,
-  REMOVE_MARKER,
-} from '../../../game/store/prefabs/prefabs';
+  REMOVE_MARKER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class BlackBeltsTraining extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'PRE';
 
@@ -51,7 +49,7 @@ export class BlackBeltsTraining extends TrainerCard {
 
       supporterTurn == 1;
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       ADD_MARKER(this.BLACK_BELTS_TRAINING_MARKER, player, this);
     }
 

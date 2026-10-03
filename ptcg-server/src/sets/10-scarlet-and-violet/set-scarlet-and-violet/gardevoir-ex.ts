@@ -19,7 +19,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { RemoveSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gardevoirex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -106,7 +106,7 @@ export class Gardevoirex extends PokemonCard {
             if (damageAfterTransfer >= checkHpEffect.hp) {
               throw new GameError(GameMessage.CANNOT_USE_POWER);
             }
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             target.damage += 20;
           }
         },

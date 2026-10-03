@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, MOVE_CARDS, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class Shiftry extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -57,14 +57,10 @@ export class Shiftry extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       if (opponent.active.damage > 0) {
-        // Move all tools back to opponent's hand first (moveTo does NOT move tools)
-        const tools = opponent.active.tools.slice();
-        tools.forEach(tool => {
-          opponent.active.moveCardTo(tool, opponent.hand);
+        MOVE_POKEMON_OFF_BOARD(store, state, opponent.active, {
+          pokemonDestination: opponent.hand,
+          sourceCard: this,
         });
-        // Move the active Pokemon and all other attached cards to hand
-        opponent.active.moveTo(opponent.hand);
-        opponent.active.clearEffects();
       }
     }
 
@@ -79,7 +75,7 @@ export class Shiftry extends PokemonCard {
       if (opponent.hand.cards.length > 0) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const randomCard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(randomCard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
       }
     }
 

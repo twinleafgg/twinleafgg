@@ -1,16 +1,24 @@
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { EnergyType, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GamePhase, CardList, AttachEnergyPrompt, GameMessage, PlayerType, SlotType } from '../../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GamePhase,
+  CardList,
+  AttachEnergyPrompt,
+  GameMessage,
+  PlayerType,
+  SlotType,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-
 export class HeavyBaton extends TrainerCard {
-
   public regulationMark = 'H';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'TEF';
 
@@ -23,18 +31,19 @@ export class HeavyBaton extends TrainerCard {
   public setNumber: string = '151';
 
   public text: string =
-    'If the Pokémon this card is attached to has a Retreat Cost of 4 or higher, is in the Active Spot, and is Knocked Out by damage from an attack from your opponent\'s Pokémon, move up to 3 Basic Energy cards from that Pokémon to your Benched Pokémon in any way you like.';
+    "If the Pokémon this card is attached to has a Retreat Cost of 4 or higher, is in the Active Spot, and is Knocked Out by damage from an attack from your opponent's Pokémon, move up to 3 Basic Energy cards from that Pokémon to your Benched Pokémon in any way you like.";
 
   public readonly HEAVY_BATON_MARKER = 'HEAVY_BATON_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof KnockOutEffect && effect.target.tools.includes(this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
       const active = effect.target;
 
-      if (IS_TOOL_BLOCKED(store, state, player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, player, this)) {
+        return state;
+      }
 
       // Do not activate between turns, or when it's not opponents turn.
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
@@ -57,7 +66,9 @@ export class HeavyBaton extends TrainerCard {
       }
 
       // Get all basic energy cards from the active Pokemon
-      const basicEnergyCards = active.cards.filter(c => c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC);
+      const basicEnergyCards = active.cards.filter(
+        (c) => c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC,
+      );
 
       if (basicEnergyCards.length === 0) {
         return state;
@@ -70,23 +81,27 @@ export class HeavyBaton extends TrainerCard {
       const energyToAttach = new CardList();
       energyToAttach.cards = basicEnergyCards.slice();
 
-      state = store.prompt(state, new AttachEnergyPrompt(
-        player.id,
-        GameMessage.ATTACH_ENERGY_TO_BENCH,
-        energyToAttach,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.BENCH],
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-        { allowCancel: true, min: 0, max: 3, sameTarget: true }
-      ), transfers => {
-        transfers = transfers || [];
-        active.marker.removeMarker(this.HEAVY_BATON_MARKER);
+      state = store.prompt(
+        state,
+        new AttachEnergyPrompt(
+          player.id,
+          GameMessage.ATTACH_ENERGY_TO_BENCH,
+          energyToAttach,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.BENCH],
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+          { allowCancel: true, min: 0, max: 3, sameTarget: true },
+        ),
+        (transfers) => {
+          transfers = transfers || [];
+          active.marker.removeMarker(this.HEAVY_BATON_MARKER);
 
-        for (const transfer of transfers) {
-          const target = StateUtils.getTarget(state, player, transfer.to);
-          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card] });
-        }
-      });
+          for (const transfer of transfers) {
+            const target = StateUtils.getTarget(state, player, transfer.to);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card] });
+          }
+        },
+      );
     }
 
     return state;

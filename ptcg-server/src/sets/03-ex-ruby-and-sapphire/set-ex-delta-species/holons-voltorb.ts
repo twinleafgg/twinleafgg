@@ -20,12 +20,10 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ADD_PARALYZED_TO_PLAYER_ACTIVE,
+import {ADD_PARALYZED_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   COIN_FLIP_PROMPT,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class HolonsVoltorb extends PokemonCard implements EnergyCard {
@@ -69,8 +67,6 @@ export class HolonsVoltorb extends PokemonCard implements EnergyCard {
 
   public isBlocked = false;
 
-
-
   public energyEffect: any = undefined;
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -107,7 +103,7 @@ export class HolonsVoltorb extends PokemonCard implements EnergyCard {
 
           // Moving it onto the pokemon - first to main cards array, then to energies
           effect.preventDefault = true;
-          player.hand.moveCardTo(this, targets[0]);
+          MOVE_CARDS(store, state, player.hand, targets[0], { cards: [this], sourceCard: this });
           if (!targets[0].energies.cards.includes(this)) {
             targets[0].energies.cards.push(this);
           }

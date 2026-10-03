@@ -8,7 +8,7 @@ import { ChoosePokemonPrompt, GameMessage, PlayerType, SlotType, StoreLike, Stat
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Heatmor extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -85,7 +85,7 @@ export class Heatmor extends PokemonCard {
         c.superType === SuperType.ENERGY && (c as EnergyCard).energyType === EnergyType.BASIC && (c as EnergyCard).provides.includes(CardType.FIRE)
       ).length;
 
-      player.deck.moveCardsTo(cardsToDiscard, player.discard);
+      MOVE_CARDS(store, state, player.deck, player.discard, { cards: cardsToDiscard, sourceCard: this });
       effect.damage = 50 * fireEnergyCount;
     }
 

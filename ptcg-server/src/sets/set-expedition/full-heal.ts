@@ -6,7 +6,7 @@ import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 
 export class FullHeal extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'EX';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '154';
@@ -16,21 +16,17 @@ export class FullHeal extends TrainerCard {
   public text: string = 'Remove all Special Conditions from your Active Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
 
       effect.preventDefault = true;
 
       const conditions = player.active.specialConditions.slice();
-      conditions?.forEach(condition => {
+      conditions?.forEach((condition) => {
         player.active.removeSpecialCondition(condition);
       });
-
-
     }
 
     return state;
   }
-
 }

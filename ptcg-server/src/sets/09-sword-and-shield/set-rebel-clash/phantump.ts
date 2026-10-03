@@ -4,7 +4,8 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, ChooseCardsPrompt, GameMessage, GameLog, Card } from '../../../game';
+import { StoreLike, State, ChooseCardsPrompt, GameMessage, Card } from '../../../game';
+import { PlayPokemonFromDiscardEffect } from '../../../game/store/effects/play-card-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
@@ -66,9 +67,7 @@ export class Phantump extends PokemonCard {
       ), selected => {
         cards = selected || [];
         cards.forEach((card, index) => {
-          player.discard.moveCardTo(card, openSlots[index]);
-          openSlots[index].pokemonPlayedTurn = state.turn;
-          store.log(state, GameLog.LOG_PLAYER_PLAYS_BASIC_POKEMON, { name: player.name, card: card.name });
+          store.reduceEffect(state, new PlayPokemonFromDiscardEffect(player, card as PokemonCard, openSlots[index]));
         });
       });
     }

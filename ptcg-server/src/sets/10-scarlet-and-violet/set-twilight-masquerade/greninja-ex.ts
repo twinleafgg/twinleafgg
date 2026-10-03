@@ -19,7 +19,7 @@ import { DiscardCardsEffect, PutDamageEffect } from '../../../game/store/effects
 import { GameMessage } from '../../../game/game-message';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { ChooseEnergyPrompt } from '../../../game/store/prompts/choose-energy-prompt';
-import { DAMAGE_OPPONENT_POKEMON, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGE_OPPONENT_POKEMON, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Greninjaex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex, CardTag.POKEMON_TERA];
@@ -77,7 +77,7 @@ export class Greninjaex extends PokemonCard {
                 { min: 1, max: 1, allowCancel: false },
               ),
               (cards) => {
-                player.deck.moveCardsTo(cards, player.hand);
+                MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
                 return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                   player.deck.applyOrder(order);

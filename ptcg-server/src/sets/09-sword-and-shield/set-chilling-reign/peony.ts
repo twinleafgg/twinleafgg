@@ -10,10 +10,9 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class Peony extends TrainerCard {
-
   public regulationMark = 'E';
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CRE';
 
@@ -37,36 +36,43 @@ export class Peony extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       if (player.deck.cards.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const cards = player.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
       MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: this });
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_ATTACH,
-        player.deck,
-        { superType: SuperType.TRAINER },
-        { min: 0, max: 2, allowCancel: false }
-      ), cards => {
-        cards = cards || [];
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_ATTACH,
+          player.deck,
+          { superType: SuperType.TRAINER },
+          { min: 0, max: 2, allowCancel: false },
+        ),
+        (cards) => {
+          cards = cards || [];
 
-        if (cards.length > 0) {
-          MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: this });
+          if (cards.length > 0) {
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: this });
 
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
+            cards.forEach((card, index) => {
+              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
+                name: player.name,
+                card: card.name,
+              });
+            });
+          }
+
+          return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+            player.deck.applyOrder(order);
           });
-        }
-
-        return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-          player.deck.applyOrder(order);
-        });
-      });
+        },
+      );
     }
     return state;
   }

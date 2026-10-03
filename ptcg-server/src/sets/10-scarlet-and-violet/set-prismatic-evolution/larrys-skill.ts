@@ -13,8 +13,13 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { GameError, Player, PokemonCard } from '../../../game';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: LarrysSkill, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: LarrysSkill,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
   let cards: Card[] = [];
@@ -25,11 +30,14 @@ function* playCard(next: Function, store: StoreLike, state: State,
     throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
-  MOVE_CARDS(store, state, player.hand, player.discard, { sourceCard: effect.trainerCard });
+  MOVE_CARDS(store, state, player.hand, player.discard, { sourceCard: self });
 
   // Count tools and items separately
   let pokemons = 0;
@@ -53,50 +61,52 @@ function* playCard(next: Function, store: StoreLike, state: State,
   const maxSupporters = Math.min(supporters, 1);
   const maxEnergies = Math.min(energies, 1);
 
-  // Total max is sum of max for each 
+  // Total max is sum of max for each
   const count = maxPokemons + maxSupporters + maxEnergies;
 
   // Pass max counts to prompt options
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARDS,
-    player.deck,
-    {},
-    { min: 0, max: count, allowCancel: false, blocked, maxPokemons, maxSupporters, maxEnergies }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARDS,
+      player.deck,
+      {},
+      { min: 0, max: count, allowCancel: false, blocked, maxPokemons, maxSupporters, maxEnergies },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
-  player.deck.moveCardsTo(cards, player.hand);
-
-
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: self });
 
   cards.forEach((card, index) => {
     store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
   });
 
   if (cards.length > 0) {
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => next(),
+    );
   }
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class LarrysSkill extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'H';
   public set: string = 'PRE';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '115';
-  public name: string = 'Larry\'s Skill';
-  public fullName: string = 'Larry\'s Skill PRE';
+  public name: string = "Larry's Skill";
+  public fullName: string = "Larry's Skill PRE";
 
   public text: string =
     'Discard your hand and search your deck for a Pokémon, a Supporter card, and a Basic Energy card, reveal them, and put them into your hand. Then, shuffle your deck.';
@@ -108,9 +118,7 @@ export class LarrysSkill extends TrainerCard {
     return true;
   }
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, this, effect);
       return generator.next().value;
@@ -118,5 +126,4 @@ export class LarrysSkill extends TrainerCard {
 
     return state;
   }
-
 }

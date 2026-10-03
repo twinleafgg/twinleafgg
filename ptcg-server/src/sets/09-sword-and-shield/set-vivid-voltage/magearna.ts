@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ShuffleDeckPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magearna extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -38,13 +38,13 @@ export class Magearna extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
 
-      player.hand.moveTo(player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: this });
 
       return store.prompt(state, [
         new ShuffleDeckPrompt(player.id)
       ], deckOrder => {
         player.deck.applyOrder(deckOrder);
-        player.deck.moveTo(player.hand, 6);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 6, sourceCard: this });
       });
     }
 

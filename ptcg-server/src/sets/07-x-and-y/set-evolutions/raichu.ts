@@ -8,7 +8,7 @@ import { StoreLike, State, GameMessage, ConfirmPrompt, Card, EnergyCard, ChooseC
 import { Effect } from '../../../game/store/effects/effect';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Raichu extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -65,7 +65,7 @@ export class Raichu extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.discard.moveCardTo(selected[0], player.active);
+          MOVE_CARDS(store, state, player.discard, player.active, { cards: [selected[0]], sourceCard: this });
         }
       });
     }

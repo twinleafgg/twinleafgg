@@ -10,13 +10,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class HardCharm extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'XY';
   public setNumber: string = '119';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Hard Charm';
   public fullName: string = 'Hard Charm XY';
-  public text: string = 'Any damage done to the Pokémon this card is attached to by an opponent\'s attack is reduced by 20 (after applying Weakness and Resistance).';
+  public text: string =
+    "Any damage done to the Pokémon this card is attached to by an opponent's attack is reduced by 20 (after applying Weakness and Resistance).";
 
   // Ref: set-x-and-y/muscle-band.ts (Tool damage modifier pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

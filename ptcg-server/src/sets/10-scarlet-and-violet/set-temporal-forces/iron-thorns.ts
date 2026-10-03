@@ -11,7 +11,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class IronThorns extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -57,7 +57,7 @@ export class IronThorns extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       // Filter for item cards
       const futureCards = deckTop.cards.filter(
@@ -81,10 +81,10 @@ export class IronThorns extends PokemonCard {
       }
 
       // Move item cards to hand
-      deckTop.moveCardsTo(futureCards, player.discard);
+      MOVE_CARDS(store, state, deckTop, player.discard, { cards: futureCards, sourceCard: this });
 
       // Move all cards to discard
-      deckTop.moveTo(player.deck, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.deck, { count: deckTop.cards.length, sourceCard: this });
 
       effect.damage = 70 * futureCards.length;
 

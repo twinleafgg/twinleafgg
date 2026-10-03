@@ -3,6 +3,7 @@ import { TrainerCard } from './trainer-card';
 import { StoreLike } from '../store-like';
 import { State } from '../state/state';
 import { Effect } from '../effects/effect';
+import { Player } from '../state/player';
 
 import { GreatBall as GreatBallRG } from '../../../sets/03-ex-ruby-and-sapphire/set-ex-firered-leafgreen/great-ball';
 import { GreatBall as GreatBallPAL } from '../../../sets/10-scarlet-and-violet/set-paldea-evolved/great-ball';
@@ -19,11 +20,14 @@ import { RareCandy as RareCandySVI } from '../../../sets/10-scarlet-and-violet/s
 import { PokemonCatcher as PokemonCatcherEPO } from '../../../sets/06-black-and-white/set-emerging-powers/pokemon-catcher';
 import { PokemonCatcher as PokemonCatcherSVI } from '../../../sets/10-scarlet-and-violet/set-scarlet-and-violet/pokemon-catcher';
 
+type ReduceEffectFn = (this: TrainerCard, store: StoreLike, state: State, effect: Effect) => State;
+type CanPlayFn = (this: TrainerCard, store: StoreLike, state: State, player: Player) => boolean | undefined;
+
 const effectOverrides: {
   [cardKey: string]: {
-    [format: number]: (this: TrainerCard, store: StoreLike, state: State, effect: Effect) => State
+    [format: number]: ReduceEffectFn
   } & {
-    default?: (this: TrainerCard, store: StoreLike, state: State, effect: Effect) => State
+    default?: ReduceEffectFn
   }
 } = {
   // 'Super Rod': {
@@ -56,16 +60,43 @@ const effectOverrides: {
   },
 };
 
-export function getOverriddenReduceEffect(card: TrainerCard, format: Format) {
-  const key = `${card.name}`;
-  const overrides = effectOverrides[key];
-  if (overrides) {
-    if (overrides[format]) {
-      return overrides[format].bind(card);
-    }
-    if (overrides.default) {
-      return overrides.default.bind(card);
-    }
+// Playability must follow the same format override as reduceEffect. Many reprints
+// (e.g. Rare Candy MEG) extend an older class that has no canPlay, so without this
+// Items are always marked unplayable even when the overridden effect is legal.
+const canPlayOverrides: {
+  [cardKey: string]: {
+    [format: number]: CanPlayFn | undefined
+  } & {
+    default?: CanPlayFn
   }
-  return undefined;
-} 
+} = {
+  'Rare Candy': {
+    [Format.RSPK]: RareCandyHP.prototype.canPlay,
+    default: RareCandySVI.prototype.canPlay,
+  },
+};
+
+function resolveOverride<T>(
+  map: { [cardKey: string]: { [format: number]: T | undefined } & { default?: T } },
+  card: TrainerCard,
+  format: Format,
+): T | undefined {
+  const overrides = map[card.name];
+  if (!overrides) {
+    return undefined;
+  }
+  if (Object.prototype.hasOwnProperty.call(overrides, format)) {
+    return overrides[format];
+  }
+  return overrides.default;
+}
+
+export function getOverriddenReduceEffect(card: TrainerCard, format: Format) {
+  const override = resolveOverride(effectOverrides, card, format);
+  return override ? override.bind(card) : undefined;
+}
+
+export function getOverriddenCanPlay(card: TrainerCard, format: Format) {
+  const override = resolveOverride(canPlayOverrides, card, format);
+  return override ? override.bind(card) : undefined;
+}

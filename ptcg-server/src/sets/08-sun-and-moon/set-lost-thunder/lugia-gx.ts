@@ -1,7 +1,7 @@
 import { PokemonCard, CardTag, Stage, CardType, StoreLike, State, StateUtils } from "../../../game";
 import { CheckProvidedEnergyEffect } from "../../../game/store/effects/check-effects";
 import { Effect } from "../../../game/store/effects/effect";
-import { WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, BLOCK_IF_GX_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import {WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class LugiaGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -68,7 +68,7 @@ export class LugiaGX extends PokemonCard {
       // set GX attack as used for game
       player.usedGX = true;
 
-      opponent.active.moveTo(opponent.lostzone);
+      MOVE_CARDS(store, state, opponent.active, opponent.lostzone, { sourceCard: this });
       opponent.active.clearEffects();
     }
 

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { EnergyCard, PlayerType, SlotType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Talonflame extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -62,7 +62,7 @@ export class Talonflame extends PokemonCard {
       const attachedEnergy = player.active.cards.filter(c => c instanceof EnergyCard);
 
       for (const energy of attachedEnergy) {
-        player.active.moveCardTo(energy, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: [energy], sourceCard: this });
       }
     }
 

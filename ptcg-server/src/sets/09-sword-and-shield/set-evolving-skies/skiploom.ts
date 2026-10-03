@@ -3,7 +3,7 @@ import { CardType, Stage, SuperType } from '../../../game/store/card/card-types'
 import { Card, ChooseCardsPrompt, ConfirmPrompt, GameMessage, PokemonCardList, PowerType, ShuffleDeckPrompt, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Skiploom extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -65,16 +65,15 @@ export class Skiploom extends PokemonCard {
             if (cards.length > 0) {
               if (effect.target.cards === player.active.cards) {
                 // Evolve Pokemon
-                player.deck.moveCardsTo(cards, player.active);
+                MOVE_CARDS(store, state, player.deck, player.active, { cards: cards, sourceCard: this });
                 player.active.clearEffects();
                 player.active.pokemonPlayedTurn = state.turn;
               } else {
                 const benchIndex = player.bench.indexOf(effect.target as PokemonCardList);
-                player.deck.moveCardsTo(cards, player.bench[benchIndex]);
+                MOVE_CARDS(store, state, player.deck, player.bench[benchIndex], { cards: cards, sourceCard: this });
                 player.bench[benchIndex].clearEffects();
                 player.bench[benchIndex].pokemonPlayedTurn = state.turn;
               }
-
 
             }
 

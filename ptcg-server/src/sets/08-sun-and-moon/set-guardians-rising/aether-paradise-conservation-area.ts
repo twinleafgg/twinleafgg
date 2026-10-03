@@ -12,13 +12,14 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class AetherParadiseConvserationArea extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'GRI';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '116';
   public name: string = 'Aether Paradise Conservation Area';
   public fullName: string = 'Aether Paradise Conservation Area GRI';
-  public text: string = 'Basic [G] Pokémon and Basic [L] Pokémon (both yours and your opponent\'s) take 30 less damage from the opponent\'s attacks (after applying Weakness and Resistance).';
+  public text: string =
+    "Basic [G] Pokémon and Basic [L] Pokémon (both yours and your opponent's) take 30 less damage from the opponent's attacks (after applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof PutDamageEffect && StateUtils.getStadiumCard(state) === this) {
@@ -31,8 +32,11 @@ export class AetherParadiseConvserationArea extends TrainerCard {
 
       store.reduceEffect(state, checkPokemonType);
 
-      if ((checkPokemonType.cardTypes.includes(CardType.GRASS) || checkPokemonType.cardTypes.includes(CardType.LIGHTNING)) &&
-        effect.target.isStage(Stage.BASIC)) {
+      if (
+        (checkPokemonType.cardTypes.includes(CardType.GRASS) ||
+          checkPokemonType.cardTypes.includes(CardType.LIGHTNING)) &&
+        effect.target.isStage(Stage.BASIC)
+      ) {
         effect.reduceDamage(30);
       }
     }

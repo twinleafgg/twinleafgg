@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, ShowCardsPrompt, ShuffleDeckPrompt, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Excadrill extends PokemonCard {
 
@@ -54,7 +54,7 @@ export class Excadrill extends PokemonCard {
             GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
             cards
           )], () => {
-            player.discard.moveCardsTo(cards, player.deck);
+            MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
           });
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

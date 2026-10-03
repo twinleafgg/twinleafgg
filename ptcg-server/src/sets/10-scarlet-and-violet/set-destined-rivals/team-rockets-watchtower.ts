@@ -14,40 +14,44 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 
 export class TeamRocketsWatchtower extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'DRI';
   public regulationMark = 'I';
-  public name: string = 'Team Rocket\'s Watchtower';
-  public fullName: string = 'Team Rocket\'s Watchtower DRI';
+  public name: string = "Team Rocket's Watchtower";
+  public fullName: string = "Team Rocket's Watchtower DRI";
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '180';
-  public text: string = '[C] Pokémon in play (both yours and your opponent\'s) have no Abilities.';
+  public text: string = "[C] Pokémon in play (both yours and your opponent's) have no Abilities.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    HANDLE_ABILITY_LOCK(effect, ({ card }) => {
-      if (StateUtils.getStadiumCard(state) !== this) {
-        return false;
-      }
-      try {
-        const cardList = StateUtils.findCardList(state, card);
-        if (!(cardList instanceof PokemonCardList)) {
+    HANDLE_ABILITY_LOCK(
+      effect,
+      ({ card }) => {
+        if (StateUtils.getStadiumCard(state) !== this) {
           return false;
         }
-        const owner = StateUtils.findOwner(state, cardList);
-        if (IS_STADIUM_EFFECT_BLOCKED(store, state, owner, cardList, this)) {
-          return false;
+        try {
+          const cardList = StateUtils.findCardList(state, card);
+          if (!(cardList instanceof PokemonCardList)) {
+            return false;
+          }
+          const owner = StateUtils.findOwner(state, cardList);
+          if (IS_STADIUM_EFFECT_BLOCKED(store, state, owner, cardList, this)) {
+            return false;
+          }
+          const checkType = new CheckPokemonTypeEffect(cardList);
+          store.reduceEffect(state, checkType);
+          return checkType.cardTypes.includes(CardType.COLORLESS);
+        } catch {
+          return pokemonHasCardType(card, CardType.COLORLESS);
         }
-        const checkType = new CheckPokemonTypeEffect(cardList);
-        store.reduceEffect(state, checkType);
-        return checkType.cardTypes.includes(CardType.COLORLESS);
-      } catch {
-        return pokemonHasCardType(card, CardType.COLORLESS);
-      }
-    }, {
-      allowUseFromHand: true,
-      allowUseFromDiscard: true,
-      error: GameMessage.BLOCKED_BY_EFFECT,
-    });
+      },
+      {
+        allowUseFromHand: true,
+        allowUseFromDiscard: true,
+        error: GameMessage.BLOCKED_BY_EFFECT,
+      },
+    );
 
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
       throw new GameError(GameMessage.CANNOT_USE_STADIUM);

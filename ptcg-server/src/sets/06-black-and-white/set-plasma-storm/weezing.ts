@@ -8,7 +8,7 @@ import { GamePhase, PowerType, StoreLike, State, StateUtils } from '../../../gam
 import { Effect } from '../../../game/store/effects/effect';
 import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Weezing extends PokemonCard {
   protected _tags = [CardTag.TEAM_PLASMA];
@@ -64,7 +64,7 @@ export class Weezing extends PokemonCard {
 
       // Discard top 3 cards of opponent's deck
       const cardsToDiscard = Math.min(3, opponent.deck.cards.length);
-      opponent.deck.moveTo(opponent.discard, cardsToDiscard);
+      MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: cardsToDiscard, sourceCard: this });
     }
 
     // Attack 1: Smogbank

@@ -16,7 +16,7 @@ import {
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Staryu extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -89,7 +89,7 @@ export class Staryu extends PokemonCard {
           cards = cards || [];
           if (cards.length > 0) {
             const cardList = StateUtils.findCardList(state, this);
-            player.hand.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
           }
         },
       );

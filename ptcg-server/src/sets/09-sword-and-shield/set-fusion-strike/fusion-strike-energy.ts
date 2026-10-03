@@ -11,7 +11,7 @@ import {
   PlaceDamageCountersEffect,
 } from '../../../game/store/effects/game-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class FusionStrikeEnergy extends EnergyCard {
   public provides: CardType[] = [CardType.COLORLESS];
@@ -92,7 +92,7 @@ export class FusionStrikeEnergy extends EnergyCard {
           }
 
           if (!cardList.getPokemonCard()?.hasTag(CardTag.FUSION_STRIKE)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

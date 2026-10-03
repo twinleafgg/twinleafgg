@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StateUtils, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { COIN_FLIP_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Whismur extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -42,7 +42,7 @@ export class Whismur extends PokemonCard {
         if (result && opponent.hand.cards.length > 0) {
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const cardToDiscard = opponent.hand.cards[randomIndex];
-          opponent.hand.moveCardTo(cardToDiscard, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [cardToDiscard], sourceCard: this });
         }
       });
     }

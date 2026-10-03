@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChooseCardsPrompt, GameMessage, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Dialga extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -62,7 +62,7 @@ export class Dialga extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         }
       });

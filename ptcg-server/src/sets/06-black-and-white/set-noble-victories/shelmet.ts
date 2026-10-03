@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, PlayerType, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shelmet extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -72,7 +72,7 @@ export class Shelmet extends PokemonCard {
       ), cards => {
         if (cards && cards.length > 0) {
           const evolutionCard = cards[0] as PokemonCard;
-          player.deck.moveCardTo(evolutionCard, player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: [evolutionCard], sourceCard: this });
           player.active.clearEffects();
           player.active.pokemonPlayedTurn = state.turn;
         }

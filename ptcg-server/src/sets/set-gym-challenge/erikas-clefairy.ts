@@ -2,7 +2,7 @@ import { Card, CardManager, CardTarget, ChooseCardsPrompt, ChoosePokemonPrompt, 
 import { CardTag, CardType, Stage, SuperType } from '../../game/store/card/card-types';
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { AttackEffect } from '../../game/store/effects/game-effects';
 
 function* playCard(
@@ -115,7 +115,7 @@ function* playCard(
   }
 
   // Evolve Pokemon
-  player.deck.moveCardTo(evolution, targets[0]);
+  MOVE_CARDS(store, state, player.deck, targets[0], { cards: [evolution], sourceCard: effect.source.getPokemonCard()! });
   targets[0].clearEffects();
   targets[0].pokemonPlayedTurn = state.turn;
 

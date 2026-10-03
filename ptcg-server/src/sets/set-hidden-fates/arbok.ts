@@ -8,7 +8,7 @@ import { Stage, CardType, TrainerType } from '../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { KnockOutEffect } from '../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Arbok extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -62,7 +62,7 @@ export class Arbok extends PokemonCard {
         if (opponent.hand.cards.length > 0) {
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const randomCard = opponent.hand.cards[randomIndex];
-          opponent.hand.moveCardTo(randomCard, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
         }
       }
     }

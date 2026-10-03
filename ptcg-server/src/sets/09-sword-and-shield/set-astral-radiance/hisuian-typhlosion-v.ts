@@ -2,12 +2,10 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import {
-  ADD_BURN_TO_PLAYER_ACTIVE,
+import {ADD_BURN_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameMessage } from '../../../game/game-message';
@@ -67,7 +65,7 @@ export class HisuianTyphlosionV extends PokemonCard {
           state,
           new ShowCardsPrompt(player.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, [randomCard]),
           () => {
-            opponent.hand.moveCardTo(randomCard, opponent.deck);
+            MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [randomCard], sourceCard: this });
             SHUFFLE_DECK(store, state, opponent);
           },
         );

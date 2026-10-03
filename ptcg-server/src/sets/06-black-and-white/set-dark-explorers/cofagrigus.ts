@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, Card, TrainerCard, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 export class Cofagrigus extends PokemonCard {
@@ -64,7 +64,7 @@ export class Cofagrigus extends PokemonCard {
 
         // Discard the selected cards
         cards.forEach(card => {
-          player.hand.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
         });
 
         // Calculate damage: 40 x number of cards discarded

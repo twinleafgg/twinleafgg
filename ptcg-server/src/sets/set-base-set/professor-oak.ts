@@ -9,8 +9,7 @@ import { TrainerType } from '../../game/store/card/card-types';
 import { DRAW_CARDS, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class ProfessorOak extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -22,8 +21,7 @@ export class ProfessorOak extends TrainerCard {
 
   public fullName: string = 'Professor Oak BS';
 
-  public text: string =
-    'Discard your hand, then draw 7 cards.';
+  public text: string = 'Discard your hand, then draw 7 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -33,12 +31,11 @@ export class ProfessorOak extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const cards = player.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
       MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: this });
       DRAW_CARDS(store, state, player, 7);
     }
 
     return state;
   }
-
 }

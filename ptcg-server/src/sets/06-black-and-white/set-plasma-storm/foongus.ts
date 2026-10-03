@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StateUtils, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { COIN_FLIP_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Foongus extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -41,7 +41,7 @@ export class Foongus extends PokemonCard {
           const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
           const randomCard = opponent.hand.cards[randomIndex];
           SHOW_CARDS_TO_PLAYER(store, state, player, [randomCard]);
-          opponent.hand.moveCardTo(randomCard, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [randomCard], sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
         }
       });

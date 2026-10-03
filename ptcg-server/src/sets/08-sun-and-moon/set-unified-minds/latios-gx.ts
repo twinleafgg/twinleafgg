@@ -4,7 +4,7 @@ import { PlayerType, PowerType, StoreLike, State, GameError, GameMessage } from 
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
+import { OPPONENT_CANNOT_USE_GX_ATTACKS_FOR_REST_OF_GAME, PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class LatiosGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -14,22 +14,19 @@ export class LatiosGx extends PokemonCard {
   public weakness = [{ type: P }];
   public retreat = [];
 
-  public readonly CLEAR_VISION_MARKER = 'LATIOS_GX_UNM_CLEAR_VISION_MARKER';
-
-  public powers = [
-    {
-      name: 'Power Bind',
-      powerType: PowerType.ABILITY,
-      text: "If you have 4 or fewer Pokemon in play, this Pokemon can't attack.",
-    },
-  ];
+  public powers = [{
+    name: 'Power Bind',
+    powerType: PowerType.ABILITY,
+    text: "If you have 4 or fewer Pokemon in play, this Pokemon can't attack.",
+  }];
 
   public attacks = [{
     name: 'Tag Purge',
     cost: [P, C, C],
     damage: 120,
     text: 'During your opponent\'s next turn, prevent all damage done to this Pokemon by attacks from TAG TEAM Pokemon.'
-  }, {
+  },
+  {
     name: 'Clear Vision-GX',
     cost: [P],
     damage: 0,
@@ -69,18 +66,10 @@ export class LatiosGx extends PokemonCard {
     // Clear Vision-GX
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
-      const opponent = effect.opponent;
 
       BLOCK_IF_GX_ATTACK_USED(player);
       player.usedGX = true;
-
-      opponent.marker.addMarker(this.CLEAR_VISION_MARKER, this);
-    }
-
-    if (effect instanceof AttackEffect && effect.attack && effect.attack.name.includes('-GX')) {
-      if (effect.player.marker.hasMarker(this.CLEAR_VISION_MARKER, this)) {
-        throw new GameError(GameMessage.CANNOT_USE_ATTACK);
-      }
+      OPPONENT_CANNOT_USE_GX_ATTACKS_FOR_REST_OF_GAME(effect);
     }
 
     return state;

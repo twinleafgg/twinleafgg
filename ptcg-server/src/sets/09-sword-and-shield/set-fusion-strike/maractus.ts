@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/car
 import { StoreLike, State, ChooseCardsPrompt, GameMessage, TrainerCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Maractus extends PokemonCard {
 
@@ -65,7 +65,7 @@ export class Maractus extends PokemonCard {
         const discardEnergy = new DiscardCardsEffect(effect, cards);
         discardEnergy.target = player.active;
         store.reduceEffect(state, discardEnergy);
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
         // Calculate damage
         const damage = cards.length * 50;

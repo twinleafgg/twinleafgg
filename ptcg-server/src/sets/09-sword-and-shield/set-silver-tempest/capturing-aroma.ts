@@ -1,17 +1,24 @@
 import { Effect } from '../../../game/store/effects/effect';
 import { GameError } from '../../../game/game-error';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { Card, ChooseCardsPrompt, PokemonCard, ShowCardsPrompt, ShuffleDeckPrompt, StateUtils } from '../../../game';
+import {
+  Card,
+  ChooseCardsPrompt,
+  PokemonCard,
+  ShowCardsPrompt,
+  ShuffleDeckPrompt,
+  StateUtils,
+} from '../../../game';
 
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CapturingAroma extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'SIT';
   public cardImage: string = 'assets/cardback.png';
@@ -44,83 +51,103 @@ export class CapturingAroma extends TrainerCard {
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
-      return COIN_FLIP_PROMPT(store, state, player, flipResult => {
+      return COIN_FLIP_PROMPT(store, state, player, (flipResult) => {
         if (flipResult) {
           let cards: Card[] = [];
-          return store.prompt(state, new ChooseCardsPrompt(
-            player,
-            GameMessage.CHOOSE_CARD_TO_HAND,
-            player.deck,
-            { superType: SuperType.POKEMON },
-            { min: 0, max: 1, allowCancel: false, blocked }
-          ), selectedCards => {
-            cards = selectedCards || [];
+          return store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              player,
+              GameMessage.CHOOSE_CARD_TO_HAND,
+              player.deck,
+              { superType: SuperType.POKEMON },
+              { min: 0, max: 1, allowCancel: false, blocked },
+            ),
+            (selectedCards) => {
+              cards = selectedCards || [];
 
-            // Operation canceled by the user
-            if (cards.length === 0) {
-              player.supporter.moveCardTo(this, player.discard);
-              return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+              // Operation canceled by the user
+              if (cards.length === 0) {
+                MOVE_CARDS(store, state, player.supporter, player.discard, {
+                  cards: [this],
+                  sourceCard: this,
+                });
+                return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+                  player.deck.applyOrder(order);
+                });
+              }
+
+              if (cards.length > 0) {
+                MOVE_CARDS(store, state, player.supporter, player.discard, {
+                  cards: [this],
+                  sourceCard: this,
+                });
+                state = store.prompt(
+                  state,
+                  new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+                  () => state,
+                );
+              }
+
+              cards.forEach((card) => {
+                MOVE_CARDS(store, state, player.deck, player.hand, {
+                  cards: [card],
+                  sourceCard: this,
+                });
+              });
+              return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                 player.deck.applyOrder(order);
               });
-            }
-
-            cards.forEach((card, index) => {
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-            });
-
-            if (cards.length > 0) {
-              player.supporter.moveCardTo(this, player.discard);
-              state = store.prompt(state, new ShowCardsPrompt(
-                opponent.id,
-                GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-                cards), () => state);
-            }
-
-            cards.forEach(card => {
-              player.deck.moveCardTo(card, player.hand);
-            });
-            return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-              player.deck.applyOrder(order);
-            });
-          });
+            },
+          );
         }
         if (!flipResult) {
           let cards: Card[] = [];
-          return store.prompt(state, new ChooseCardsPrompt(
-            player,
-            GameMessage.CHOOSE_CARD_TO_HAND,
-            player.deck,
-            { superType: SuperType.POKEMON, stage: Stage.BASIC },
-            { min: 0, max: 1, allowCancel: false }
-          ), selectedCards => {
-            cards = selectedCards || [];
+          return store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              player,
+              GameMessage.CHOOSE_CARD_TO_HAND,
+              player.deck,
+              { superType: SuperType.POKEMON, stage: Stage.BASIC },
+              { min: 0, max: 1, allowCancel: false },
+            ),
+            (selectedCards) => {
+              cards = selectedCards || [];
 
-            // Operation canceled by the user
-            if (cards.length === 0) {
-              player.supporter.moveCardTo(this, player.discard);
-              return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+              // Operation canceled by the user
+              if (cards.length === 0) {
+                MOVE_CARDS(store, state, player.supporter, player.discard, {
+                  cards: [this],
+                  sourceCard: this,
+                });
+                return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+                  player.deck.applyOrder(order);
+                });
+              }
+
+              if (cards.length > 0) {
+                MOVE_CARDS(store, state, player.supporter, player.discard, {
+                  cards: [this],
+                  sourceCard: this,
+                });
+                state = store.prompt(
+                  state,
+                  new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+                  () => state,
+                );
+              }
+              cards.forEach((card) => {
+                MOVE_CARDS(store, state, player.deck, player.hand, {
+                  cards: [card],
+                  sourceCard: this,
+                });
+              });
+              return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                 player.deck.applyOrder(order);
               });
-            }
-
-            cards.forEach((card, index) => {
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-            });
-
-            if (cards.length > 0) {
-              player.supporter.moveCardTo(this, player.discard);
-              state = store.prompt(state, new ShowCardsPrompt(
-                opponent.id,
-                GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-                cards), () => state);
-            }
-            cards.forEach(card => {
-              player.deck.moveCardTo(card, player.hand);
-            });
-            return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-              player.deck.applyOrder(order);
-            });
-          });
+            },
+          );
         }
         return state;
       });

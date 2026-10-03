@@ -11,7 +11,7 @@ import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { AttachPokemonToolEffect, ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class HerosMedal extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'D';
   public set: string = 'VIV';
   public setNumber: string = '152';

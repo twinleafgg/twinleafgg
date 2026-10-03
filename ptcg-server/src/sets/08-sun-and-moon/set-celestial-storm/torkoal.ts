@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_BURN_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { GameMessage } from '../../../game/game-message';
 import { StateUtils } from '../../../game/store/state-utils';
@@ -57,13 +57,13 @@ export class Torkoal extends PokemonCard {
 
       // Discard non-fire cards
       nonFireCards.forEach(card => {
-        player.deck.moveCardTo(card, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
       });
 
       // Attach fire energy to Pokemon in any way you like
       if (fireEnergy.length > 0) {
         fireEnergy.forEach(card => {
-          player.deck.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
         });
 
         store.prompt(state, new AttachEnergyPrompt(
@@ -78,7 +78,7 @@ export class Torkoal extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         });
       }

@@ -4,22 +4,32 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { EnergyType, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { CardTarget, StoreLike, State, GameMessage, GameError, PlayerType, SlotType } from '../../../game';
+import {
+  CardTarget,
+  StoreLike,
+  State,
+  GameMessage,
+  GameError,
+  PlayerType,
+  SlotType,
+} from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RainbowBrush extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'CES';
   public setNumber: string = '141';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Rainbow Brush';
   public fullName: string = 'Rainbow Brush CES';
-  public text: string = 'Choose an Energy card attached to 1 of your Pokémon. Search your deck for a basic Energy card and switch it with that card. Shuffle the first Energy card into your deck.';
+  public text: string =
+    'Choose an Energy card attached to 1 of your Pokémon. Search your deck for a basic Energy card and switch it with that card. Shuffle the first Energy card into your deck.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-phantom-forces/xerosic.ts (choose energy from Pokemon), set-fossil/energy-search.ts (search deck for basic energy)
@@ -30,7 +40,7 @@ export class RainbowBrush extends TrainerCard {
       let hasEnergyAttached = false;
       const blocked: CardTarget[] = [];
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
-        if (cardList.cards.some(c => c instanceof EnergyCard)) {
+        if (cardList.cards.some((c) => c instanceof EnergyCard)) {
           hasEnergyAttached = true;
         } else {
           blocked.push(target);
@@ -42,71 +52,89 @@ export class RainbowBrush extends TrainerCard {
       }
 
       // Step 1: Choose a Pokemon with energy attached
-      store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { min: 1, max: 1, allowCancel: false, blocked }
-      ), targets => {
-        if (!targets || targets.length === 0) {
-          return;
-        }
-
-        const targetPokemon = targets[0];
-
-        // Step 2: Choose an Energy card from that Pokemon
-        const energyBlocked: number[] = [];
-        targetPokemon.cards.forEach((c, index) => {
-          if (!(c instanceof EnergyCard)) {
-            energyBlocked.push(index);
-          }
-        });
-
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DECK,
-          targetPokemon,
-          { superType: SuperType.ENERGY },
-          { min: 1, max: 1, allowCancel: false, blocked: energyBlocked }
-        ), selectedEnergy => {
-          if (!selectedEnergy || selectedEnergy.length === 0) {
+      store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { min: 1, max: 1, allowCancel: false, blocked },
+        ),
+        (targets) => {
+          if (!targets || targets.length === 0) {
             return;
           }
 
-          const energyToReturn = selectedEnergy[0];
+          const targetPokemon = targets[0];
 
-          // Step 3: Search deck for a basic energy card
-          const deckBlocked: number[] = [];
-          player.deck.cards.forEach((c, index) => {
-            if (!(c instanceof EnergyCard && c.energyType === EnergyType.BASIC)) {
-              deckBlocked.push(index);
+          // Step 2: Choose an Energy card from that Pokemon
+          const energyBlocked: number[] = [];
+          targetPokemon.cards.forEach((c, index) => {
+            if (!(c instanceof EnergyCard)) {
+              energyBlocked.push(index);
             }
           });
 
-          store.prompt(state, new ChooseCardsPrompt(
-            player,
-            GameMessage.CHOOSE_CARD_TO_HAND,
-            player.deck,
-            { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-            { min: 0, max: 1, allowCancel: true, blocked: deckBlocked }
-          ), selectedFromDeck => {
-            if (selectedFromDeck && selectedFromDeck.length > 0) {
-              const newEnergy = selectedFromDeck[0];
+          store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              player,
+              GameMessage.CHOOSE_CARD_TO_DECK,
+              targetPokemon,
+              { superType: SuperType.ENERGY },
+              { min: 1, max: 1, allowCancel: false, blocked: energyBlocked },
+            ),
+            (selectedEnergy) => {
+              if (!selectedEnergy || selectedEnergy.length === 0) {
+                return;
+              }
 
-              // Move new energy from deck to the Pokemon
-              player.deck.moveCardTo(newEnergy, targetPokemon);
-              // Move old energy from Pokemon to deck
-              targetPokemon.moveCardTo(energyToReturn, player.deck);
-            }
+              const energyToReturn = selectedEnergy[0];
 
-            // Shuffle deck
-            store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-              player.deck.applyOrder(order);
-            });
-          });
-        });
-      });
+              // Step 3: Search deck for a basic energy card
+              const deckBlocked: number[] = [];
+              player.deck.cards.forEach((c, index) => {
+                if (!(c instanceof EnergyCard && c.energyType === EnergyType.BASIC)) {
+                  deckBlocked.push(index);
+                }
+              });
+
+              store.prompt(
+                state,
+                new ChooseCardsPrompt(
+                  player,
+                  GameMessage.CHOOSE_CARD_TO_HAND,
+                  player.deck,
+                  { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+                  { min: 0, max: 1, allowCancel: true, blocked: deckBlocked },
+                ),
+                (selectedFromDeck) => {
+                  if (selectedFromDeck && selectedFromDeck.length > 0) {
+                    const newEnergy = selectedFromDeck[0];
+
+                    // Move new energy from deck to the Pokemon
+                    MOVE_CARDS(store, state, player.deck, targetPokemon, {
+                      cards: [newEnergy],
+                      sourceCard: this,
+                    });
+                    // Move old energy from Pokemon to deck
+                    MOVE_CARDS(store, state, targetPokemon, player.deck, {
+                      cards: [energyToReturn],
+                      sourceCard: this,
+                    });
+                  }
+
+                  // Shuffle deck
+                  store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+                    player.deck.applyOrder(order);
+                  });
+                },
+              );
+            },
+          );
+        },
+      );
     }
 
     return state;

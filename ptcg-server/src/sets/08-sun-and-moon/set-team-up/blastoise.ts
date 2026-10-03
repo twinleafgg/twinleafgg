@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { PowerType, StoreLike, State, StateUtils, GameError, GameMessage, CardList, AttachEnergyPrompt, PlayerType, SlotType } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, BLOCK_IF_DECK_EMPTY, SHOW_CARDS_TO_PLAYER, SHUFFLE_CARDS_INTO_DECK, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, BLOCK_IF_DECK_EMPTY, SHOW_CARDS_TO_PLAYER, SHUFFLE_CARDS_INTO_DECK, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Blastoise extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -56,7 +56,7 @@ export class Blastoise extends PokemonCard {
       ABILITY_USED(player, this);
 
       const temp = new CardList();
-      player.deck.moveTo(temp, Math.min(6, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, temp, { count: Math.min(6, player.deck.cards.length), sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, temp.cards);
 
@@ -81,7 +81,7 @@ export class Blastoise extends PokemonCard {
         if (transfers) {
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            temp.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this });
           }
         }
         SHUFFLE_CARDS_INTO_DECK(store, state, player, temp.cards);

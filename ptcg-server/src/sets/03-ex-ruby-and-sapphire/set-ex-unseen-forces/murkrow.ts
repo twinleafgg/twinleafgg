@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, PlayerType, ChoosePokemonPrompt, GameMessage, SlotType, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_ASLEEP } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Murkrow extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -63,7 +63,7 @@ export class Murkrow extends PokemonCard {
       if (activePokemon.tools.length > 0) {
         // Discard all tools attached to the opponent's active Pokémon
         for (const tool of [...activePokemon.tools]) {
-          activePokemon.moveCardTo(tool, opponent.discard);
+          MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: [tool], sourceCard: this });
         }
       }
     }

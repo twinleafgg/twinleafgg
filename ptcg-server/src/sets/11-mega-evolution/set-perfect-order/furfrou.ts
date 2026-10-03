@@ -1,6 +1,6 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Furfrou extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -39,7 +39,7 @@ export class Furfrou extends PokemonCard {
       while (opponent.hand.cards.length > 5) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const randomCard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(randomCard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
       }
     }
 

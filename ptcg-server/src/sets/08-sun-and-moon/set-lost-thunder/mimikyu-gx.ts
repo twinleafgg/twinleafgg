@@ -15,7 +15,7 @@ import { SpecialCondition } from '../../../game/store/card/card-types';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class MimikyuGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -89,7 +89,7 @@ export class MimikyuGX extends PokemonCard {
       // set GX attack as used for game
       player.usedGX = true;
 
-      store.prompt(
+      return store.prompt(
         state,
         new ChoosePokemonPrompt(
           player.id,
@@ -100,15 +100,17 @@ export class MimikyuGX extends PokemonCard {
         ),
         (selection) => {
           selection.forEach((r) => {
-            r.moveTo(opponent.deck);
-            r.clearEffects();
+            MOVE_POKEMON_OFF_BOARD(store, state, r, {
+              pokemonDestination: opponent.deck,
+              sourceCard: this,
+            });
+          });
+
+          store.prompt(state, new ShuffleDeckPrompt(opponent.id), (order) => {
+            opponent.deck.applyOrder(order);
           });
         },
       );
-
-      return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
-        player.deck.applyOrder(order);
-      });
     }
 
     return state;

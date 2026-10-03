@@ -1,7 +1,7 @@
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../game/store/card/card-types';
 import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
-import { StoreLike, State, StateUtils, EnergyCard, ChooseCardsPrompt, Card, GameMessage, GameLog } from '../../game';
+import { StoreLike, State, StateUtils, EnergyCard, ChooseCardsPrompt, Card, GameMessage } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../game/store/prefabs/costs';
 
@@ -56,9 +56,6 @@ export class SeasManaphy2 extends PokemonCard {
         cards = selected || [];
 
         if (cards.length > 0) {
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-          });
 
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards });

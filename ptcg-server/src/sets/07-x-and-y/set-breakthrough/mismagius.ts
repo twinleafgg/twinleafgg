@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ABILITY_USED, ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, DRAW_CARDS, IS_ABILITY_BLOCKED, JUST_EVOLVED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, DRAW_CARDS, IS_ABILITY_BLOCKED, JUST_EVOLVED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { ConfirmPrompt } from '../../../game/store/prompts/confirm-prompt';
 import { GameMessage } from '../../../game/game-message';
@@ -73,7 +73,7 @@ export class Mismagius extends PokemonCard {
 
         // Shuffle opponent's hand into their deck
         const handCards = opponent.hand.cards.slice();
-        handCards.forEach(c => { opponent.hand.moveCardTo(c, opponent.deck); });
+        handCards.forEach(c => { MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [c], sourceCard: this }); });
         SHUFFLE_DECK(store, state, opponent);
 
         // Opponent draws cards equal to remaining prize cards

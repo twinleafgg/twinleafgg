@@ -6,10 +6,8 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
-  THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN,
-} from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED,
+  THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class DracovishV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -51,7 +49,7 @@ export class DracovishV extends PokemonCard {
 
       let toolDiscarded = false;
       if (activePokemon.tools.length > 0) {
-        activePokemon.moveCardsTo([...activePokemon.tools], opponent.discard);
+        MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: [...activePokemon.tools], sourceCard: this });
         toolDiscarded = true;
       }
 

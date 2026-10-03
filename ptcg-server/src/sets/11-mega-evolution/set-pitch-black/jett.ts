@@ -5,11 +5,11 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, CardTag } from '../../../game/store/card/card-types';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { GameError, GameMessage, StateUtils, PlayerType, PokemonCard } from '../../../game';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { Player } from '../../../game/store/state/player';
 
 export class Jett extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'PBL';
   public name: string = 'Jett';
   public fullName: string = 'Jett MEP';
@@ -46,7 +46,7 @@ export class Jett extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       // Count opponent's Mega Evolution Pokemon ex in play
       let megaEvolutionExCount = 0;

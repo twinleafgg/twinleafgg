@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ConfirmPrompt, GameMessage, PokemonCardList, PowerType, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DrewTopdeckEffect } from '../../../game/store/effects/game-phase-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { NEXT_TURN_ATTACK_BONUS } from '../../../game/store/prefabs/attack-effects';
 
 export class Metagross extends PokemonCard {
@@ -61,10 +61,10 @@ export class Metagross extends PokemonCard {
           const cards = player.hand.cards.filter(c => c.cards === this.cards);
 
           cards.forEach((card, index) => {
-            player.hand.moveCardTo(card, slots[index]);
+            MOVE_CARDS(store, state, player.hand, slots[index], { cards: [card], sourceCard: this });
             slots[index].pokemonPlayedTurn = state.turn;
           });
-          player.deck.moveTo(player.hand, 3);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
         }
       });
     }

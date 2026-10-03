@@ -6,11 +6,12 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class DeluxeBomb extends TrainerCard {
   public regulationMark = 'G';
   protected _tags = [CardTag.ACE_SPEC];
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'SCR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '134';
@@ -42,7 +43,7 @@ export class DeluxeBomb extends TrainerCard {
 
         effect.target.cards.forEach((card) => {
           if (card === this) {
-            effect.target.moveCardTo(card, targetPlayer.discard);
+            MOVE_CARDS(store, state, effect.target, targetPlayer.discard, { cards: [card], sourceCard: this });
           }
         });
       }

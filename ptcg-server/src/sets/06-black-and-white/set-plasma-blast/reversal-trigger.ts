@@ -10,7 +10,7 @@ import {
 } from '../../../game/store/prefabs/prefabs';
 
 export class ReversalTrigger extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.TEAM_PLASMA];
   public set: string = 'PLB';
   public setNumber: string = '86';

@@ -6,7 +6,7 @@ import { EvolveEffect, HealEffect } from '../../../game/store/effects/game-effec
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class WyndonStadium extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark: string = 'D';
   public set: string = 'VIV';
   public setNumber: string = '161';

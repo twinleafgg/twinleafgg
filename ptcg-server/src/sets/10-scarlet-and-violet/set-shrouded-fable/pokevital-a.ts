@@ -71,7 +71,7 @@ function* playCard(
 }
 
 export class PokeVitalA extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'H';
   protected _tags = [CardTag.ACE_SPEC];
   public set: string = 'SFA';

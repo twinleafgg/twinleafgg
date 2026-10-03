@@ -186,7 +186,6 @@ import { UltraForestKartenvoy } from './ultra-forest-kartenvoy';
 import { TripleAccelerationEnergy } from './triple-acceleration-energy';
 
 import {
-  DedenneGXUNB,
   PheromosaBuzzwoleGX2UNB,
   PheromosaBuzzwoleGX3UNB,
   ReshiramCharizardGX2UNB,
@@ -436,7 +435,6 @@ export const setUnbrokenBonds: Card[] = [
   new TripleAccelerationEnergy(),
 
   // Other Prints (Reprints & Alt Arts)
-  new DedenneGXUNB(),
   new PheromosaBuzzwoleGX2UNB(),
   new PheromosaBuzzwoleGX3UNB(),
   new ReshiramCharizardGX2UNB(),

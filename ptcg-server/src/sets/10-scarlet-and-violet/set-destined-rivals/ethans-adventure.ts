@@ -23,7 +23,7 @@ import {
 } from '../../../game/store/prefabs/prefabs';
 
 export class EthansAdventure extends TrainerCard {
-  public trainerType = TrainerType.SUPPORTER;
+  protected _trainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'I';
 
@@ -57,7 +57,7 @@ export class EthansAdventure extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(this, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [this], sourceCard: this });
       BLOCK_IF_DECK_EMPTY(player);
 
       const blocked: number[] = [];
@@ -94,7 +94,7 @@ export class EthansAdventure extends TrainerCard {
         },
       );
 
-      player.supporter.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
     }
 
     return state;

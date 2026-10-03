@@ -6,7 +6,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckRetreatCostEffect, CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { AttachEnergyPrompt, GameMessage, PlayerType, SlotType, StateUtils } from '../../../game';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Morpeko extends PokemonCard {
 
@@ -61,7 +61,6 @@ export class Morpeko extends PokemonCard {
         return state;
       }
 
-
       const checkProvidedEnergy = new CheckProvidedEnergyEffect(player);
       state = store.reduceEffect(state, checkProvidedEnergy);
 
@@ -69,7 +68,6 @@ export class Morpeko extends PokemonCard {
         effect.cost = [];
       }
     }
-
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
@@ -100,7 +98,7 @@ export class Morpeko extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

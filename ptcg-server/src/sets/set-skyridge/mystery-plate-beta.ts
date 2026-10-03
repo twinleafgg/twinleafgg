@@ -17,13 +17,13 @@ import { Effect } from '../../game/store/effects/effect';
 import { AttackEffect } from '../../game/store/effects/game-effects';
 
 import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
-import { DRAW_CARDS, SHUFFLE_DECK } from '../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, SHUFFLE_DECK, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
 import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 
 export class MysteryPlateBeta extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.TECHNICAL_MACHINE];
   public set: string = 'SK';
   public cardImage: string = 'assets/cardback.png';
@@ -57,7 +57,7 @@ export class MysteryPlateBeta extends TrainerCard {
           { min: 1, max: 1, allowCancel: false },
         ),
         (transfers) => {
-          player.supporter.moveCardTo(effect.trainerCard, transfers[0]);
+          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
         },
       );
     }
@@ -67,7 +67,7 @@ export class MysteryPlateBeta extends TrainerCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, index) => {
         if (cardList.cards.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         }
       });
     }
@@ -114,7 +114,7 @@ export class MysteryPlateBeta extends TrainerCard {
             if (!card) {
               return;
             }
-            opponent.active.moveCardTo(card, opponent.deck);
+            MOVE_CARDS(store, state, opponent.active, opponent.deck, { cards: [card], sourceCard: this });
             SHUFFLE_DECK(store, state, opponent);
           },
         );

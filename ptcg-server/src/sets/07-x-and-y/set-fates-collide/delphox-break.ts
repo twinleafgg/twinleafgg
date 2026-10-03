@@ -25,14 +25,12 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
-import {
-  WAS_POWER_USED,
+import {WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
   ABILITY_USED,
   REMOVE_MARKER_AT_END_OF_TURN,
-  BREAK_RULE,
-} from '../../../game/store/prefabs/prefabs';
+  BREAK_RULE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class DelphoxBreak extends PokemonCard {
   protected _tags = [CardTag.BREAK];
@@ -118,7 +116,7 @@ export class DelphoxBreak extends PokemonCard {
               ),
               (targets) => {
                 if (targets && targets.length > 0) {
-                  player.deck.moveCardTo(cards[0], targets[0]);
+                  MOVE_CARDS(store, state, player.deck, targets[0], { cards: [cards[0]], sourceCard: this });
                 }
                 store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                   player.deck.applyOrder(order);

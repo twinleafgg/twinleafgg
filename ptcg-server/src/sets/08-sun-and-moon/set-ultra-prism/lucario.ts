@@ -6,7 +6,7 @@ import { PowerType, StoreLike, State, GameMessage, PlayerType, GameError, Card }
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lucario extends PokemonCard {
 
@@ -89,7 +89,7 @@ export class Lucario extends PokemonCard {
       ), selected => {
         cards = selected || [];
         player.marker.addMarker(this.PRECOGNITIVE_MARKER, this);
-        player.deck.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
       });
     }
 

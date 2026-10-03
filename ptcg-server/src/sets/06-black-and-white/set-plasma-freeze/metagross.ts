@@ -1,5 +1,4 @@
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_CONFUSION_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   BLOCK_IF_DECK_EMPTY,
@@ -8,8 +7,7 @@ import {
   SHOW_CARDS_TO_PLAYER,
   SHUFFLE_DECK,
   USE_ABILITY_ONCE_PER_TURN,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
@@ -90,7 +88,7 @@ export class Metagross extends PokemonCard {
             // Reveal to opponent
             SHOW_CARDS_TO_PLAYER(store, state, opponent, selected);
 
-            player.deck.moveCardTo(selected[0], player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [selected[0]], sourceCard: this });
           }
           SHUFFLE_DECK(store, state, player);
         },

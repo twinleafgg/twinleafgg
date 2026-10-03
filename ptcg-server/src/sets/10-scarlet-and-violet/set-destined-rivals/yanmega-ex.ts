@@ -19,12 +19,10 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { MovedToActiveEffect, PowerEffect } from '../../../game/store/effects/game-effects';
-import {
-  MOVED_TO_ACTIVE_THIS_TURN,
+import {MOVED_TO_ACTIVE_THIS_TURN,
   REMOVE_MARKER_AT_END_OF_TURN,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Yanmegaex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex];
@@ -122,7 +120,7 @@ export class Yanmegaex extends PokemonCard {
 
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                player.deck.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
                 SHUFFLE_DECK(store, state, player);
               }
             },
@@ -148,7 +146,7 @@ export class Yanmegaex extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.active.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

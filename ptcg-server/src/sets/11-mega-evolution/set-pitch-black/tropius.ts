@@ -4,11 +4,9 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { GameMessage } from '../../../game/game-message';
-import {
-  SHOW_CARDS_TO_PLAYER,
+import {SHOW_CARDS_TO_PLAYER,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { State, StateUtils } from '../../../game';
 import { StoreLike } from '../../../game/store/store-like';
 
@@ -52,7 +50,7 @@ export class Tropius extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
       const topCards = new CardList();
       const count = Math.min(6, player.deck.cards.length);
-      player.deck.moveTo(topCards, count);
+      MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
       const looked = [...topCards.cards];
       SHOW_CARDS_TO_PLAYER(store, state, player, looked);
@@ -73,9 +71,9 @@ export class Tropius extends PokemonCard {
           const pokemonTaken = selected || [];
           if (pokemonTaken.length > 0) {
             SHOW_CARDS_TO_PLAYER(store, state, opponent, pokemonTaken);
-            topCards.moveCardsTo(pokemonTaken, player.hand);
+            MOVE_CARDS(store, state, topCards, player.hand, { cards: pokemonTaken, sourceCard: this });
           }
-          topCards.moveTo(player.deck);
+          MOVE_CARDS(store, state, topCards, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         },
       );

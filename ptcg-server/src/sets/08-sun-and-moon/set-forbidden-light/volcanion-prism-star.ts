@@ -17,7 +17,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class VolcanionPrismStar extends PokemonCard {
   protected _tags = [CardTag.PRISM_STAR];
@@ -83,7 +83,7 @@ export class VolcanionPrismStar extends PokemonCard {
         (cards) => {
           cards = cards || [];
           player.marker.addMarker(this.JET_GEYSER_MARKER, this);
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
           return store.prompt(
             state,

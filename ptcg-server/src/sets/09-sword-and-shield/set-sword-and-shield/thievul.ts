@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Thievul extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -62,7 +62,7 @@ export class Thievul extends PokemonCard {
         const cards = selected || [];
         cards.forEach(card => {
           // Put on bottom of deck using moveCardTo
-          opponent.hand.moveCardTo(card, opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [card], sourceCard: this });
         });
       });
     }

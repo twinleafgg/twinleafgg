@@ -11,7 +11,7 @@ import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effec
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class MagneticStorm extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'FLF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '91';

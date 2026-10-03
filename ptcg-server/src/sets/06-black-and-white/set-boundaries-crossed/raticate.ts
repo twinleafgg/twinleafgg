@@ -4,7 +4,7 @@ import { StoreLike, State, StateUtils, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-import { AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { CardList } from '../../../game/store/state/card-list';
@@ -42,7 +42,7 @@ export class Raticate extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
       if (opponent.active.tools.length === 1) {
-        opponent.active.moveCardTo(opponent.active.tools[0], opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [opponent.active.tools[0]], sourceCard: this });
       } else if (opponent.active.tools.length > 1) {
         const toolList = new CardList();
         toolList.cards = [...opponent.active.tools];
@@ -55,7 +55,7 @@ export class Raticate extends PokemonCard {
         ), selectedTools => {
           if (selectedTools && selectedTools.length === 1) {
             const tool = selectedTools[0];
-            opponent.active.moveCardTo(tool, opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [tool], sourceCard: this });
           }
           return state;
         });

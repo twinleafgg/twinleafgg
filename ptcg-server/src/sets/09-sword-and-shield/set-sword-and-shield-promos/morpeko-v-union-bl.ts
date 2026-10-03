@@ -14,7 +14,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { MorpekoVUNIONTopLeft } from './morpeko-v-union-tl';
 import { MorpekoVUNIONTopRight } from './morpeko-v-union-tr';
 import { MorpekoVUNIONBottomRight } from './morpeko-v-union-br';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MorpekoVUNIONBottomLeft extends PokemonCard {
   public stage: Stage = Stage.VUNION;
@@ -87,23 +87,23 @@ export class MorpekoVUNIONBottomLeft extends PokemonCard {
         if (slots.length > 0) {
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONTopRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONBottomLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONBottomRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           // gotta make sure the actual mon ends up on top
           player.discard.cards.forEach((card) => {
             if (card instanceof MorpekoVUNIONTopLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.assembledVUNIONs.push(this.name);

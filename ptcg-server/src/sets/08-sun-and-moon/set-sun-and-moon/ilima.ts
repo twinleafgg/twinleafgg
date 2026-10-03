@@ -7,10 +7,10 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { COIN_FLIP_PROMPT, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ilima extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'SUM';
   public setNumber: string = '121';
@@ -18,7 +18,8 @@ export class Ilima extends TrainerCard {
   public name: string = 'Ilima';
   public fullName: string = 'Ilima SUM';
 
-  public text: string = 'Each player shuffles their hand into their deck and flips a coin. If heads, that player draws 6 cards. If tails, they draw 3 cards. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Each player shuffles their hand into their deck and flips a coin. If heads, that player draws 6 cards. If tails, they draw 3 cards. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-unified-minds/reset-stamp.ts (shuffle hand into deck)
@@ -27,29 +28,32 @@ export class Ilima extends TrainerCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       // Shuffle player's hand into deck (excluding this card which is in supporter zone)
-      const playerCards = player.hand.cards.filter(c => c !== this);
-      player.hand.moveCardsTo(playerCards, player.deck);
+      const playerCards = player.hand.cards.filter((c) => c !== this);
+      MOVE_CARDS(store, state, player.hand, player.deck, { cards: playerCards, sourceCard: this });
 
-      store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+      store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
         player.deck.applyOrder(order);
       });
 
       // Flip coin for player
-      COIN_FLIP_PROMPT(store, state, player, playerResult => {
+      COIN_FLIP_PROMPT(store, state, player, (playerResult) => {
         const playerDraw = playerResult ? 6 : 3;
         DRAW_CARDS(store, state, player, Math.min(playerDraw, player.deck.cards.length));
       });
 
       // Shuffle opponent's hand into deck
       const opponentCards = opponent.hand.cards.slice();
-      opponent.hand.moveCardsTo(opponentCards, opponent.deck);
+      MOVE_CARDS(store, state, opponent.hand, opponent.deck, {
+        cards: opponentCards,
+        sourceCard: this,
+      });
 
-      store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
+      store.prompt(state, new ShuffleDeckPrompt(opponent.id), (order) => {
         opponent.deck.applyOrder(order);
       });
 
       // Flip coin for opponent
-      COIN_FLIP_PROMPT(store, state, opponent, opponentResult => {
+      COIN_FLIP_PROMPT(store, state, opponent, (opponentResult) => {
         const opponentDraw = opponentResult ? 6 : 3;
         DRAW_CARDS(store, state, opponent, Math.min(opponentDraw, opponent.deck.cards.length));
       });

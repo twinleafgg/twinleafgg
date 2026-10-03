@@ -16,7 +16,7 @@ import { AttachEnergyPrompt,
 import { Effect } from '../../../game/store/effects/effect';
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GreninjaAndZoroarkGX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -108,7 +108,7 @@ export class GreninjaAndZoroarkGX extends PokemonCard {
           }
 
           cards.forEach((card, index) => {
-            player.discard.moveCardTo(card, slots[index]);
+            MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
             slots[index].pokemonPlayedTurn = state.turn;
           });
         },
@@ -166,7 +166,7 @@ export class GreninjaAndZoroarkGX extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

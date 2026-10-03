@@ -391,6 +391,7 @@ function initiateSuddenDeath(store: StoreLike, state: State): State {
     // Reset VSTAR and GX markers
     player.usedGX = false;
     player.usedVSTAR = false;
+    player.cannotUseGXAttacks = false;
 
     // Shuffle deck
     return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
@@ -449,6 +450,13 @@ export function* executeCheckState(next: Function, store: StoreLike, state: Stat
   // Check table state and handle bench size after KOs
   const checkTableStateEffect = new CheckTableStateEffect([5, 5]);
   store.reduceEffect(state, checkTableStateEffect);
+  state.players.forEach(player => {
+    player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+      if (cardList.cannotBeSpecialConditionedNextTurn && cardList.specialConditions.length > 0) {
+        cardList.clearAllSpecialConditions();
+      }
+    });
+  });
   handleBenchSizeChange(store, state, checkTableStateEffect.benchSizes);
   if (store.hasPrompts()) {
     yield store.waitPrompt(state, () => next());

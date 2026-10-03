@@ -3,13 +3,11 @@
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  ADD_PARALYZED_TO_PLAYER_ACTIVE,
+import {ADD_PARALYZED_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   COIN_FLIP_PROMPT,
   SHOW_CARDS_TO_PLAYER,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
@@ -73,7 +71,7 @@ export class Liepard extends PokemonCard {
             selected = selected || [];
             if (selected.length > 0) {
               const supporterCard = selected[0] as TrainerCard;
-              opponent.hand.moveCardTo(supporterCard, opponent.discard);
+              MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [supporterCard], sourceCard: this });
 
               // Use the effect of that supporter card
               const trainerEffect = new TrainerEffect(player, supporterCard);

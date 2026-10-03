@@ -16,8 +16,7 @@ import {
 } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
-import {
-  WAS_POWER_USED,
+import {WAS_POWER_USED,
   ABILITY_USED,
   WAS_ATTACK_USED,
   BLOCK_IF_ASLEEP_CONFUSED_PARALYZED,
@@ -25,8 +24,7 @@ import {
   HAS_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   REMOVE_MARKER,
-  THIS_ATTACK_DOES_X_DAMAGE_TO_X_OF_YOUR_OPPONENTS_POKEMON,
-} from '../../game/store/prefabs/prefabs';
+  THIS_ATTACK_DOES_X_DAMAGE_TO_X_OF_YOUR_OPPONENTS_POKEMON, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class ErikasBellsprout extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -121,7 +119,7 @@ export class ErikasBellsprout extends PokemonCard {
               }
               const source = StateUtils.getTarget(state, player, transfer.from);
               const target = StateUtils.getTarget(state, player, transfer.to);
-              source.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
             }
           }
         },

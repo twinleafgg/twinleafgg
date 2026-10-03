@@ -14,7 +14,7 @@ import {
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Groudonex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -93,7 +93,7 @@ export class Groudonex extends PokemonCard {
           const discardEnergy = new DiscardCardsEffect(effect, cards);
           discardEnergy.target = player.active;
           store.reduceEffect(state, discardEnergy);
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
           effect.damage += cards.length * 10;
           return state;

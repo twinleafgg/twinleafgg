@@ -5,7 +5,6 @@ import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { MOVE_CARDS, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 
-
 export class Wynaut extends PokemonCard {
 
   public stage: Stage = Stage.BASIC;
@@ -70,7 +69,7 @@ export class Wynaut extends PokemonCard {
         const target = StateUtils.findCardList(state, this);
 
         // Evolve Pokemon
-        player.hand.moveCardTo(evolution, target);
+        MOVE_CARDS(store, state, player.hand, target, { cards: [evolution], sourceCard: this });
         const pokemonTarget = target as PokemonCardList;
         pokemonTarget.clearEffects();
         pokemonTarget.pokemonPlayedTurn = state.turn;

@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Garganacl extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -79,7 +79,7 @@ export class Garganacl extends PokemonCard {
         player.marker.addMarker(this.ENERGIZING_ROCK_SALT_MARKER, this);
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           const healEffect = new HealEffect(player, target, 30);
           state = store.reduceEffect(state, healEffect);
           return state;

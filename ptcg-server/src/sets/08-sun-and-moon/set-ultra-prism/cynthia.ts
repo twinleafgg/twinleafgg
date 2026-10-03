@@ -8,8 +8,7 @@ import { GameError, GameMessage } from '../../../game';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Cynthia extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'UPR';
 
@@ -21,8 +20,7 @@ export class Cynthia extends TrainerCard {
 
   public fullName: string = 'Cynthia UPR';
 
-  public text: string =
-    'Shuffle your hand into your deck. Then, draw 6 cards.';
+  public text: string = 'Shuffle your hand into your deck. Then, draw 6 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -40,5 +38,4 @@ export class Cynthia extends TrainerCard {
 
     return state;
   }
-
 }

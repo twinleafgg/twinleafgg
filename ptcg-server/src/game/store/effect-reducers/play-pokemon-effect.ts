@@ -47,6 +47,7 @@ export function playPokemonReducer(store: StoreLike, state: State, effect: Effec
     const isBasic = stage === Stage.BASIC || sandboxAllBasic;
 
     if (isBasic && effect.target.cards.length === 0) {
+      clearUntilLeavesPlay(effect.pokemonCard);
       store.log(state, GameLog.LOG_PLAYER_PLAYS_BASIC_POKEMON, {
         name: effect.player.name,
         card: effect.pokemonCard.name
@@ -97,12 +98,13 @@ export function playPokemonReducer(store: StoreLike, state: State, effect: Effec
         throw new GameError(GameMessage.CANNOT_EVOLVE_ON_YOUR_FIRST_TURN);
       }
 
-      if (playedTurnEffect.pokemonPlayedTurn >= state.turn) {
+      if (playedTurnEffect.pokemonPlayedTurn >= state.turn && !effect.target.canEvolveThisTurn) {
         throw new GameError(GameMessage.POKEMON_CANT_EVOLVE_THIS_TURN);
       }
 
       const evolveEffect = new EvolveEffect(effect.player, effect.target, effect.pokemonCard);
       store.reduceEffect(state, evolveEffect);
+      clearUntilLeavesPlay(effect.pokemonCard);
       effect.pokemonCard.marker.markers = [];
 
       // Check which special conditions should be preserved during evolution
@@ -138,4 +140,9 @@ export function playPokemonReducer(store: StoreLike, state: State, effect: Effec
   }
 
   return state;
+}
+
+function clearUntilLeavesPlay(card: { cannotUseAttackUntilLeavesPlay?: string; whileInPlayOpponentWeakness?: unknown }): void {
+  card.cannotUseAttackUntilLeavesPlay = undefined;
+  card.whileInPlayOpponentWeakness = undefined;
 }

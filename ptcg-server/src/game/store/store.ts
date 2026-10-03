@@ -16,6 +16,7 @@ import {
   APPLY_ATTACK_EFFECT_ABILITY_LOCKS,
 } from './prefabs/ability-lock';
 import { resolveCopyAttackSessions } from './prefabs/copy-attack-delegation';
+import { effectWasBlocked, logAppliedEffect, logPreventedEffect, logResolvedPrompt, stampEffectBlocker } from './prefabs/auto-log';
 import { filterTrainerPromptResult, ResolvingTrainerSource } from './prefabs/trainer-target';
 import { GameError } from '../game-error';
 import { GameMessage, GameLog } from '../game-message';
@@ -147,6 +148,9 @@ export class Store implements StoreLike {
     APPLY_ATTACK_EFFECT_ABILITY_LOCKS(state, effect);
 
     state = this.propagateEffect(state, effect);
+    if (!this.calculatingPlayability) {
+      logPreventedEffect(this, state, effect);
+    }
     state = resolveCopyAttackSessions(this, state, effect);
 
     const gs = state.gameSettings;
@@ -173,6 +177,9 @@ export class Store implements StoreLike {
     state = gameReducer(this, state, effect);
     state = attackReducer(this, state, effect);
     state = checkStateReducer(this, state, effect);
+    if (!this.calculatingPlayability) {
+      logAppliedEffect(this, state, effect);
+    }
 
     // Calculate playability after all effects are processed
     // The calculatingPlayability flag prevents nested calls during playability checks
@@ -274,6 +281,14 @@ export class Store implements StoreLike {
 
       if (pending.every(result => result !== undefined)) {
         this.applyTrainerTargetFilters(state, promptItem.ids);
+        if (!this.calculatingPlayability) {
+          for (const id of promptItem.ids) {
+            const resolved = state.prompts.find(item => item.id === id);
+            if (resolved) {
+              logResolvedPrompt(this, state, resolved);
+            }
+          }
+        }
         const results = promptItem.ids.map(id => {
           const p = state.prompts.find(item => item.id === id);
           return p === undefined ? undefined : p.result;
@@ -517,6 +532,8 @@ export class Store implements StoreLike {
       this.resolvingTrainer = { player: effect.player, trainerCard: effect.trainerCard };
     }
 
+    const alreadyBlocked = effectWasBlocked(effect);
+
     try {
       // Only try override for TrainerCard (for now)
       if ((card as any).trainerType !== undefined) {
@@ -530,6 +547,7 @@ export class Store implements StoreLike {
       }
       return card.reduceEffect(store, state, effect);
     } finally {
+      stampEffectBlocker(effect, card, alreadyBlocked);
       if (resolvingThisTrainer) {
         this.resolvingTrainer = previous;
       }

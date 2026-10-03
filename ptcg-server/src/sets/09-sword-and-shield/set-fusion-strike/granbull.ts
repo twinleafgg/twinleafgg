@@ -7,7 +7,7 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { JUST_EVOLVED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {JUST_EVOLVED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Granbull extends PokemonCard {
@@ -70,7 +70,7 @@ export class Granbull extends PokemonCard {
         { min: 0, max, allowCancel: true }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.discard.moveCardsTo(selected, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: selected, sourceCard: this });
         }
       });
     }

@@ -5,13 +5,12 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { CardList, ChooseCardsPrompt, GameMessage, Player, StateUtils } from '../../../game';
-
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Grabber extends TrainerCard {
-
   public regulationMark = 'G';
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'MEW';
 
@@ -26,9 +25,9 @@ export class Grabber extends TrainerCard {
   public text: string =
     'Your opponent reveals their hand, and you put a Pokémon you find there on the bottom of their deck.';
 
-  public canPlay(store: StoreLike, state: State, player: Player): boolean {    return true;
+  public canPlay(store: StoreLike, state: State, player: Player): boolean {
+    return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -40,28 +39,38 @@ export class Grabber extends TrainerCard {
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DECK,
-        opponent.hand,
-        { superType: SuperType.POKEMON },
-        { allowCancel: false, min: 0, max: 1 }
-      ), selectedCard => {
-        const selected = selectedCard || [];
-        if (selectedCard === null || selected.length === 0) {
-          player.supporter.moveCardTo(this, player.discard);
-          return;
-        }
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DECK,
+          opponent.hand,
+          { superType: SuperType.POKEMON },
+          { allowCancel: false, min: 0, max: 1 },
+        ),
+        (selectedCard) => {
+          const selected = selectedCard || [];
+          if (selectedCard === null || selected.length === 0) {
+            MOVE_CARDS(store, state, player.supporter, player.discard, {
+              cards: [this],
+              sourceCard: this,
+            });
+            return;
+          }
 
-        opponent.hand.moveCardTo(selected[0], deckBottom);
-        deckBottom.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, deckBottom, {
+            cards: [selected[0]],
+            sourceCard: this,
+          });
+          MOVE_CARDS(store, state, deckBottom, opponent.deck, { sourceCard: this });
 
-        player.supporter.moveCardTo(this, player.discard);
-
-      });
+          MOVE_CARDS(store, state, player.supporter, player.discard, {
+            cards: [this],
+            sourceCard: this,
+          });
+        },
+      );
     }
     return state;
   }
-
-
 }

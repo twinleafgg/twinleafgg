@@ -2,7 +2,7 @@ import { Card, CardManager, CardTarget, ChooseCardsPrompt, ChoosePokemonPrompt, 
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEBODY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { PlayItemEffect } from '../../../game/store/effects/play-card-effects';
 
@@ -90,7 +90,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Attac
   }
 
   // Evolve Pokemon
-  player.deck.moveCardTo(evolution, targets[0]);
+  MOVE_CARDS(store, state, player.deck, targets[0], { cards: [evolution], sourceCard: effect.source.getPokemonCard()! });
   targets[0].clearEffects();
   targets[0].pokemonPlayedTurn = state.turn;
 

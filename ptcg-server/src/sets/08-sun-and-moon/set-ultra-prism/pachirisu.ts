@@ -1,4 +1,4 @@
-import { ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import {
   CardType,
   EnergyType,
@@ -89,7 +89,7 @@ export class Pachirisu extends PokemonCard {
         const cards = selected || [];
         // Attach one energy to each Nuzzle Pokemon
         for (let i = 0; i < cards.length && i < nuzzleTargets.length; i++) {
-          player.deck.moveCardTo(cards[i], nuzzleTargets[i]);
+          MOVE_CARDS(store, state, player.deck, nuzzleTargets[i], { cards: [cards[i]], sourceCard: this });
         }
         return SHUFFLE_DECK(store, state, player);
       });

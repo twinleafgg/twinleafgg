@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, PokemonCardList, GameMessage, 
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, JUST_EVOLVED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, JUST_EVOLVED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sharpedo extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -62,7 +62,7 @@ export class Sharpedo extends PokemonCard {
         if (wantToUse) {
           const topCards = new CardList();
           const count = Math.min(6, player.deck.cards.length);
-          player.deck.moveTo(topCards, count);
+          MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
           // Find D energy cards
           const darkEnergy = topCards.cards.filter(c =>
@@ -72,11 +72,11 @@ export class Sharpedo extends PokemonCard {
           // Attach all D energy to this Pokemon
           const cardList = StateUtils.findCardList(state, this) as PokemonCardList;
           darkEnergy.forEach(card => {
-            topCards.moveCardTo(card, cardList);
+            MOVE_CARDS(store, state, topCards, cardList, { cards: [card], sourceCard: this });
           });
 
           // Shuffle remaining cards back
-          topCards.moveTo(player.deck);
+          MOVE_CARDS(store, state, topCards, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         }
       });

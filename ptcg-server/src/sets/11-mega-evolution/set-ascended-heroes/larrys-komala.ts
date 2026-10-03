@@ -19,12 +19,10 @@ import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-e
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   WAS_ATTACK_USED,
   DRAW_CARDS,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LarrysKomala extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -105,7 +103,7 @@ export class LarrysKomala extends PokemonCard {
           if (transfers.length > 0) {
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.hand.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
             }
             player.marker.addMarker(this.LETHARGIC_CHARGE_MARKER, this);
             ABILITY_USED(player, this);

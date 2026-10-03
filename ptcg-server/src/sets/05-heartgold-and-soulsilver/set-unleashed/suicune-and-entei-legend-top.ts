@@ -89,8 +89,8 @@ export class SuicuneAndEnteiLegendTop extends PokemonCard {
 
       if (topPiece && bottomPiece && topCard && bottomCard) {
         if (slots.length > 0) {
-          player.hand.moveCardTo(bottomCard, slots[0]);
-          player.hand.moveCardTo(topCard, slots[0]);
+          MOVE_CARDS(store, state, player.hand, slots[0], { cards: [bottomCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.hand, slots[0], { cards: [topCard], sourceCard: this });
           slots[0].pokemonPlayedTurn = state.turn;
         }
       } else {

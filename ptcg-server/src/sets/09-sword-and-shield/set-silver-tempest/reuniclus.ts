@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils, GameMessage, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
@@ -66,23 +66,23 @@ export class Reuniclus extends PokemonCard {
       const pokemons = target.getPokemons();
       const attachedCards = target.cards.filter(c => !pokemons.includes(c as PokemonCard));
       attachedCards.forEach(c => {
-        target.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, target, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Discard tools
       const tools = target.tools.slice();
       tools.forEach(c => {
-        target.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, target, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Discard evolution cards (not this card)
       const otherPokemons = pokemons.filter(c => c !== this);
       otherPokemons.forEach(c => {
-        target.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, target, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Put this card into hand
-      target.moveCardTo(this, player.hand);
+      MOVE_CARDS(store, state, target, player.hand, { cards: [this], sourceCard: this });
 
       // Prevent default KO discard
       effect.preventDefault = true;

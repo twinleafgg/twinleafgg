@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { GameMessage, StoreLike, State, ChooseCardsPrompt, Card } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, GET_PLAYER_BENCH_SLOTS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, GET_PLAYER_BENCH_SLOTS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class Volcarona extends PokemonCard {
@@ -73,7 +73,7 @@ export class Volcarona extends PokemonCard {
 
         const pokemonCard = cards[0] as PokemonCard;
         const targetSlot = slots[0];
-        player.deck.moveCardTo(pokemonCard, targetSlot);
+        MOVE_CARDS(store, state, player.deck, targetSlot, { cards: [pokemonCard], sourceCard: this });
         targetSlot.pokemonPlayedTurn = state.turn;
 
         // Step 2: Search for up to 2 basic Energy cards and attach to that Pokemon
@@ -102,7 +102,7 @@ export class Volcarona extends PokemonCard {
         ), (energySelected: Card[]) => {
           const energyCards = energySelected || [];
           energyCards.forEach(card => {
-            player.deck.moveCardTo(card, targetSlot);
+            MOVE_CARDS(store, state, player.deck, targetSlot, { cards: [card], sourceCard: this });
           });
           SHUFFLE_DECK(store, state, player);
         });

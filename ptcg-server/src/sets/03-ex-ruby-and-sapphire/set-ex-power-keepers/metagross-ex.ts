@@ -11,16 +11,14 @@ import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   HAS_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   SHUFFLE_DECK,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Metagrossex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -74,14 +72,14 @@ export class Metagrossex extends PokemonCard {
       ADD_MARKER(this.MAGNETIC_REDRAW_MARKER, player, this);
       ABILITY_USED(player, this);
 
-      player.hand.moveTo(player.deck);
-      opponent.hand.moveTo(opponent.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: this });
+      MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
 
       SHUFFLE_DECK(store, state, player);
       SHUFFLE_DECK(store, state, opponent);
 
-      player.deck.moveTo(player.hand, 4);
-      opponent.deck.moveTo(opponent.hand, 4);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 4, sourceCard: this });
+      MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
     }
 
     REMOVE_MARKER_AT_END_OF_TURN(effect, this.MAGNETIC_REDRAW_MARKER, this);

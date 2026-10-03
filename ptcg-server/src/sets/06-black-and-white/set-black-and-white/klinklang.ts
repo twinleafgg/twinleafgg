@@ -4,7 +4,7 @@ import { StoreLike, State, StateUtils, PlayerType, SlotType, MoveEnergyPrompt, C
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_BENCHED_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
@@ -52,7 +52,7 @@ function* useShiftGear(next: Function, store: StoreLike, state: State, effect: P
     for (const transfer of transfers) {
       const source = StateUtils.getTarget(state, player, transfer.from);
       const target = StateUtils.getTarget(state, player, transfer.to);
-      source.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: effect.card });
     }
   });
 }

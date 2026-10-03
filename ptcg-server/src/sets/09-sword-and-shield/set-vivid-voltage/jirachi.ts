@@ -6,13 +6,13 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useDreamyRevelation(next: Function, store: StoreLike, state: State, effect: PowerEffect): IterableIterator<State> {
   const player = effect.player;
 
   const deckTop = new CardList();
-  player.deck.moveTo(deckTop, 2);
+  MOVE_CARDS(store, state, player.deck, deckTop, { count: 2, sourceCard: effect.card });
 
   let cards: Card[] = [];
   yield store.prompt(state, new ChooseCardsPrompt(
@@ -26,7 +26,7 @@ function* useDreamyRevelation(next: Function, store: StoreLike, state: State, ef
     next();
   });
 
-  deckTop.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, deckTop, player.hand, { cards: cards, sourceCard: effect.card });
   deckTop.moveToTopOfDestination(player.deck);
 }
 
@@ -88,7 +88,6 @@ export class Jirachi extends PokemonCard {
       const generator = useDreamyRevelation(() => generator.next(), store, state, effect);
       return generator.next().value;
 
-
     }
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
@@ -111,7 +110,7 @@ export class Jirachi extends PokemonCard {
         }
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.deck.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
         }
         state = store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);
@@ -124,7 +123,6 @@ export class Jirachi extends PokemonCard {
       const player = (effect as EndTurnEffect).player;
       player.marker.removeMarker(this.DREAMY_REVELATION_MARKER, this);
     }
-
 
     return state;
   }

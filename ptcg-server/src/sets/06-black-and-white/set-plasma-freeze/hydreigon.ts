@@ -13,7 +13,7 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Hydreigon extends PokemonCard {
   protected _tags = [CardTag.TEAM_PLASMA];
@@ -98,7 +98,7 @@ export class Hydreigon extends PokemonCard {
       );
 
       toolCards.forEach((tool) => {
-        opponent.active.moveCardTo(tool, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [tool], sourceCard: this });
       });
     }
 

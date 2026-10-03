@@ -20,7 +20,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { HealTargetEffect } from '../../../game/store/effects/attack-effects';
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class BlastoisePiplupGX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -77,7 +77,7 @@ export class BlastoisePiplupGX extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
 
             const healing = new HealTargetEffect(effect, 50);
             healing.target = target;

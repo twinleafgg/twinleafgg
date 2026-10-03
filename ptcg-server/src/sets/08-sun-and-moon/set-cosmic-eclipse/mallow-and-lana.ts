@@ -17,7 +17,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class MallowAndLana extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CEC';
 
@@ -52,7 +52,7 @@ When you play this card, you may discard 2 other cards from your hand. If you do
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -95,13 +95,6 @@ When you play this card, you may discard 2 other cards from your hand. If you do
                     MOVE_CARDS(store, state, player.hand, player.discard, {
                       cards,
                       sourceCard: this,
-                    });
-
-                    cards.forEach((card, index) => {
-                      store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, {
-                        name: player.name,
-                        card: card.name,
-                      });
                     });
 
                     const healEffect = new HealEffect(player, previousActiveCardList, 120);

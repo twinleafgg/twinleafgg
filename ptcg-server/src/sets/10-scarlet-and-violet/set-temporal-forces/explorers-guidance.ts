@@ -6,9 +6,10 @@ import { State } from '../../../game/store/state/state';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { CardList, ChooseCardsPrompt, GameError, GameMessage, Player } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ExplorersGuidance extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'TEF';
 
@@ -51,7 +52,7 @@ export class ExplorersGuidance extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -60,7 +61,7 @@ export class ExplorersGuidance extends TrainerCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 6);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 6, sourceCard: this });
 
       const min = player.deck.cards.length > 1 ? Math.min(2, deckTop.cards.length) : 1;
 
@@ -75,8 +76,8 @@ export class ExplorersGuidance extends TrainerCard {
         ),
         (selected) => {
           player.ancientSupporter = true;
-          deckTop.moveCardsTo(selected, player.hand);
-          deckTop.moveTo(player.discard);
+          MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+          MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
         },
       );
     }

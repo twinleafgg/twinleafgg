@@ -17,12 +17,10 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   JUST_EVOLVED,
   IS_ABILITY_BLOCKED,
-  BLOCK_IF_GX_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LycanrocGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -99,7 +97,7 @@ export class LycanrocGx extends PokemonCard {
               (energy) => {
                 const cards: Card[] = (energy || []).map((e) => e.card);
                 if (cards.length > 0) {
-                  opponent.active.moveCardsTo(cards, opponent.discard);
+                  MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
                 }
               },
             );

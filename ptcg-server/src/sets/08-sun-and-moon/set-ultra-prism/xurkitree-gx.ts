@@ -17,12 +17,10 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   IS_ABILITY_BLOCKED,
   BLOCK_IF_GX_ATTACK_USED,
-  DISCARD_TOP_X_CARDS_FROM_YOUR_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  DISCARD_TOP_X_CARDS_FROM_YOUR_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class XurkitreeGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX, CardTag.ULTRA_BEAST];
@@ -137,7 +135,7 @@ export class XurkitreeGx extends PokemonCard {
             const card = selected[0];
             const newPrize = new CardList();
             newPrize.isSecret = true;
-            opponent.hand.moveCardTo(card, newPrize);
+            MOVE_CARDS(store, state, opponent.hand, newPrize, { cards: [card], sourceCard: this });
             opponent.prizes.push(newPrize);
           }
         },

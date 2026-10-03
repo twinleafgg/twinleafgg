@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { StoreLike, State, GameMessage, CardList, EnergyCard, ShowCardsPrompt, GameError, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { ABILITY_USED, ADD_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Slugma extends PokemonCard {
 
@@ -61,7 +61,7 @@ export class Slugma extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.deck.moveTo(temp, 1);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 1, sourceCard: this });
 
       // Check if any cards drawn are basic energy
       const energyCardsDrawn = temp.cards.filter(card => {
@@ -81,7 +81,7 @@ export class Slugma extends PokemonCard {
             GameMessage.CARDS_SHOWED_BY_EFFECT,
             temp.cards
           )], () => {
-            temp.moveTo(player.discard);
+            MOVE_CARDS(store, state, temp, player.discard, { sourceCard: this });
           });
         });
 
@@ -99,7 +99,7 @@ export class Slugma extends PokemonCard {
           temp.cards
         )], () => {
           energyCardsDrawn.forEach(card => {
-            temp.moveCardTo(card, cardList);
+            MOVE_CARDS(store, state, temp, cardList, { cards: [card], sourceCard: this });
           });
         });
       }

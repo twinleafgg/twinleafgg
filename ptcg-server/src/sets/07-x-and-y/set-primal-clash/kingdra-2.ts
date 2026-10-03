@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, Card, Cho
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Kingdra2 extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -62,7 +62,7 @@ export class Kingdra2 extends PokemonCard {
         if (cards.length > 0) {
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           cards.forEach(card => {
-            player.deck.moveCardTo(card, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
           });
         }
 

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { PlayerType, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Stonjourner extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -60,7 +60,7 @@ export class Stonjourner extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
       if (opponent.deck.cards.length > 0) {
-        opponent.deck.moveTo(opponent.lostzone, 1);
+        MOVE_CARDS(store, state, opponent.deck, opponent.lostzone, { count: 1, sourceCard: this });
       }
     }
 

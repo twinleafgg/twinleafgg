@@ -12,7 +12,7 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
 
 export class LifeHerb extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'CES';
   public setNumber: string = '136';
@@ -20,30 +20,35 @@ export class LifeHerb extends TrainerCard {
   public name: string = 'Life Herb';
   public fullName: string = 'Life Herb CES';
 
-  public text: string = 'Flip a coin. If heads, heal 60 damage and remove all Special Conditions from 1 of your Pokémon.';
+  public text: string =
+    'Flip a coin. If heads, heal 60 damage and remove all Special Conditions from 1 of your Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-guardians-rising/chansey.ts (coin flip + choose Pokemon + heal), set-sun-and-moon/big-malasada.ts (remove special conditions)
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
 
-      COIN_FLIP_PROMPT(store, state, player, result => {
+      COIN_FLIP_PROMPT(store, state, player, (result) => {
         if (result) {
-          store.prompt(state, new ChoosePokemonPrompt(
-            player.id,
-            GameMessage.CHOOSE_POKEMON_TO_HEAL,
-            PlayerType.BOTTOM_PLAYER,
-            [SlotType.ACTIVE, SlotType.BENCH],
-            { min: 1, max: 1, allowCancel: false }
-          ), targets => {
-            if (!targets || targets.length === 0) {
-              return;
-            }
-            const target = targets[0];
-            const healEffect = new HealEffect(player, target, 60);
-            store.reduceEffect(state, healEffect);
-            target.specialConditions = [];
-          });
+          store.prompt(
+            state,
+            new ChoosePokemonPrompt(
+              player.id,
+              GameMessage.CHOOSE_POKEMON_TO_HEAL,
+              PlayerType.BOTTOM_PLAYER,
+              [SlotType.ACTIVE, SlotType.BENCH],
+              { min: 1, max: 1, allowCancel: false },
+            ),
+            (targets) => {
+              if (!targets || targets.length === 0) {
+                return;
+              }
+              const target = targets[0];
+              const healEffect = new HealEffect(player, target, 60);
+              store.reduceEffect(state, healEffect);
+              target.specialConditions = [];
+            },
+          );
         }
       });
     }

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ConfirmPrompt, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DEFENDING_POKEMON_FLIPS_COIN_TO_ATTACK } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class Flareon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -60,7 +60,7 @@ export class Flareon extends PokemonCard {
               (c as EnergyCard).provides?.includes(CardType.FIRE)
             );
             if (fireEnergy) {
-              player.active.moveCardTo(fireEnergy, player.discard);
+              MOVE_CARDS(store, state, player.active, player.discard, { cards: [fireEnergy], sourceCard: this });
               effect.damage += 30;
             }
           }

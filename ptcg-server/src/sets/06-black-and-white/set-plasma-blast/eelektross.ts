@@ -11,7 +11,7 @@ import {
   PokemonCardList,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eelektross extends PokemonCard {
   protected _tags = [CardTag.TEAM_PLASMA];
@@ -79,7 +79,7 @@ export class Eelektross extends PokemonCard {
             selected.forEach((card) => {
               const entry = energyCards.find((e) => e.card === card);
               if (entry) {
-                entry.source.moveCardTo(card, player.discard);
+                MOVE_CARDS(store, state, entry.source, player.discard, { cards: [card], sourceCard: this });
               }
             });
             effect.damage = 30 * selected.length;

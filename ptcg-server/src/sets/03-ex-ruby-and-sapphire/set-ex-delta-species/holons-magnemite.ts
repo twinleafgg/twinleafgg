@@ -20,7 +20,7 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
@@ -99,7 +99,7 @@ export class HolonsMagnemite extends PokemonCard implements EnergyCard {
 
           // Moving it onto the pokemon - first to main cards array, then to energies
           effect.preventDefault = true;
-          player.hand.moveCardTo(this, targets[0]);
+          MOVE_CARDS(store, state, player.hand, targets[0], { cards: [this], sourceCard: this });
           if (!targets[0].energies.cards.includes(this)) {
             targets[0].energies.cards.push(this);
           }

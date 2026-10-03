@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../game/store/card/card-types';
 import { StoreLike } from '../../game/store/store-like';
 import { State } from '../../game/store/state/state';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { CardList, GameError, GameMessage, OrderCardsPrompt, SelectPrompt, StateUtils } from '../../game';
 import { THIS_ATTACKS_DAMAGE_ISNT_AFFECTED_BY_EFFECTS } from '../../game/store/prefabs/attack-effects';
 
@@ -51,7 +51,7 @@ export class PokeParksJirachi extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -78,7 +78,7 @@ export class PokeParksJirachi extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,

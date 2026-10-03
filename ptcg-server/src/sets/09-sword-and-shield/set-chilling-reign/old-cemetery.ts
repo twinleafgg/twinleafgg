@@ -11,11 +11,12 @@ export class OldCemetery extends TrainerCard {
   public regulationMark = 'E';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '147';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'CRE';
   public name = 'Old Cemetery';
   public fullName = 'Old Cemetery CRE 147';
-  public text = 'Whenever any player attaches an Energy card from their hand to 1 of their non-[P] Pokémon, put 2 damage counters on that Pokémon.';
+  public text =
+    'Whenever any player attaches an Energy card from their hand to 1 of their non-[P] Pokémon, put 2 damage counters on that Pokémon.';
 
   reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -36,7 +37,12 @@ export class OldCemetery extends TrainerCard {
         return state;
       }
 
-      store.log(state, GameLog.LOG_PLAYER_PLACES_DAMAGE_COUNTERS, { name: owner.name, damage: 20, target: effect.target.getPokemonCard()!.name, effect: this.name });
+      store.log(state, GameLog.LOG_PLAYER_PLACES_DAMAGE_COUNTERS, {
+        name: owner.name,
+        damage: 20,
+        target: effect.target.getPokemonCard()!.name,
+        effect: this.name,
+      });
 
       effect.target.damage += 20;
     }

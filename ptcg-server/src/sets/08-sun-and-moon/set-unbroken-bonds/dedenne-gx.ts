@@ -18,6 +18,7 @@ import {
   BLOCK_IF_GX_ATTACK_USED,
   IS_ABILITY_BLOCKED,
   WAS_ATTACK_USED,
+  MOVE_CARDS,
 } from '../../../game/store/prefabs/prefabs';
 
 export class DedenneGX extends PokemonCard {
@@ -58,9 +59,10 @@ export class DedenneGX extends PokemonCard {
 
   public set = 'UNB';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '195';
+  public setNumber: string = '57';
   public name = 'Dedenne-GX';
   public fullName = 'Dedenne GX UNB';
+  public legacyFullName = 'Dedenne-GX UNB';
 
   public readonly DEDECHANGE_MARKER = 'DEDECHANGE_MARKER';
 
@@ -93,8 +95,11 @@ export class DedenneGX extends PokemonCard {
             player.marker.addMarker(this.DEDECHANGE_MARKER, this);
 
             const cards = player.hand.cards.filter((c) => c !== this);
-            player.hand.moveCardsTo(cards, player.discard);
-            player.deck.moveTo(player.hand, 6);
+            MOVE_CARDS(store, state, player.hand, player.discard, {
+              cards: cards,
+              sourceCard: this,
+            });
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 6, sourceCard: this });
           }
         },
       );
@@ -124,8 +129,8 @@ export class DedenneGX extends PokemonCard {
           const cardList = result.length > 0 ? result[0] : null;
           if (cardList !== null) {
             const pokemons = cardList.getPokemons();
-            cardList.moveCardsTo(pokemons, player.hand);
-            cardList.moveTo(player.hand);
+            MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons, sourceCard: this });
+            MOVE_CARDS(store, state, cardList, player.hand, { sourceCard: this });
             cardList.clearEffects();
           }
         },

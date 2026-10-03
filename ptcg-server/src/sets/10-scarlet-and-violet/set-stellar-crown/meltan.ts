@@ -1,8 +1,8 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, GameLog } from '../../../game';
+import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Meltan extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -60,11 +60,7 @@ export class Meltan extends PokemonCard {
           }
 
           cards.forEach((card, index) => {
-            player.deck.moveCardTo(card, player.hand);
-          });
-
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
           });
 
           if (cards.length > 0) {

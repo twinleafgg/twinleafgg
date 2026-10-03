@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ABILITY_USED, ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, USE_ABILITY_ONCE_PER_TURN, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, USE_ABILITY_ONCE_PER_TURN, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
@@ -95,7 +95,7 @@ export class Vivillon extends PokemonCard {
                 { min: 1, max: 1, allowCancel: false }
               ), targets => {
                 if (targets && targets.length > 0) {
-                  player.deck.moveCardTo(cards[0], targets[0]);
+                  MOVE_CARDS(store, state, player.deck, targets[0], { cards: [cards[0]], sourceCard: this });
                 }
                 store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
                   player.deck.applyOrder(order);

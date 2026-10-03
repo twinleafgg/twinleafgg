@@ -12,7 +12,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MegaHawluchaex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -86,7 +86,7 @@ export class MegaHawluchaex extends PokemonCard {
         // Discard the Stadium
         const cardList = StateUtils.findCardList(state, stadiumCard);
         const stadiumOwner = StateUtils.findOwner(state, cardList);
-        cardList.moveTo(stadiumOwner.discard);
+        MOVE_CARDS(store, state, cardList, stadiumOwner.discard, { sourceCard: this });
       }
     }
 

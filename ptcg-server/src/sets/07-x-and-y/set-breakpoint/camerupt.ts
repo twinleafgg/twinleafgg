@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Camerupt extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -54,7 +54,7 @@ export class Camerupt extends PokemonCard {
         if (card instanceof EnergyCard) {
           energyCount++;
         }
-        player.deck.moveCardTo(card, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
       }
 
       // Discard top card of opponent's deck
@@ -63,7 +63,7 @@ export class Camerupt extends PokemonCard {
         if (card instanceof EnergyCard) {
           energyCount++;
         }
-        opponent.deck.moveCardTo(card, opponent.discard);
+        MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [card], sourceCard: this });
       }
 
       effect.damage += 60 * energyCount;

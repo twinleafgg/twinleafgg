@@ -6,11 +6,9 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   BLOCK_IF_GX_ATTACK_USED,
-  DRAW_CARDS_UNTIL_CARDS_IN_HAND,
-} from '../../../game/store/prefabs/prefabs';
+  DRAW_CARDS_UNTIL_CARDS_IN_HAND, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
@@ -80,7 +78,7 @@ export class DragoniteGx extends PokemonCard {
           (selected) => {
             const cards = selected || [];
             cards.forEach((card) => {
-              player.hand.moveCardTo(card, player.discard);
+              MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
             });
 
             DRAW_CARDS_UNTIL_CARDS_IN_HAND(player, 10);

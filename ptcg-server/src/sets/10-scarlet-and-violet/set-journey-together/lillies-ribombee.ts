@@ -14,6 +14,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LilliesRibombee extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -86,7 +87,7 @@ export class LilliesRibombee extends PokemonCard {
                 }
 
                 cards.forEach((card, index) => {
-                  opponent.hand.moveCardTo(card, slots[index]);
+                  MOVE_CARDS(store, state, opponent.hand, slots[index], { cards: [card], sourceCard: this });
                   slots[index].pokemonPlayedTurn = state.turn;
                 });
               },

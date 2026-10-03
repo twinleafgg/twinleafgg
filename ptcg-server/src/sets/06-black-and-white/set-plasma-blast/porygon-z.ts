@@ -13,12 +13,10 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  IS_ABILITY_BLOCKED,
+import {IS_ABILITY_BLOCKED,
   MULTIPLE_COIN_FLIPS_PROMPT,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PlasmaEnergy } from '../set-plasma-storm/plasma-energy';
 
 export class PorygonZ extends PokemonCard {
@@ -104,7 +102,7 @@ export class PorygonZ extends PokemonCard {
 
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

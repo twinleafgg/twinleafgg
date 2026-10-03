@@ -147,6 +147,7 @@ export class GameStateBroadcaster {
     for (const [viewKey, viewer] of views) {
       const sanitized = StateSanitizer.sanitizeForViewer(state, viewer, {
         trimLogs: false,
+        selfPlay: game.gameSettings.selfPlay === true,
       });
 
       const activePlayer = sanitized.players[sanitized.activePlayer];
@@ -206,7 +207,10 @@ export class GameStateBroadcaster {
           ? { playerId: Number(viewKey.slice(1)), roleId: viewer.roleId }
           : viewer;
 
-    const sanitized = StateSanitizer.sanitizeForViewer(state, sanitizeViewer, { trimLogs: false });
+    const sanitized = StateSanitizer.sanitizeForViewer(state, sanitizeViewer, {
+      trimLogs: false,
+      selfPlay: game.gameSettings.selfPlay === true,
+    });
     const fullSerialized = this.serializer.serialize(sanitized);
     if (this.viewCache.get(game.id) === undefined) {
       this.viewCache.set(game.id, new Map());
@@ -234,7 +238,10 @@ export class GameStateBroadcaster {
         : viewKey.startsWith('p')
           ? { playerId: Number(viewKey.slice(1)), roleId: viewer.roleId }
           : viewer;
-    const sanitized = StateSanitizer.sanitizeForViewer(game.state, sanitizeViewer, { trimLogs: false });
+    const sanitized = StateSanitizer.sanitizeForViewer(game.state, sanitizeViewer, {
+      trimLogs: false,
+      selfPlay: game.gameSettings.selfPlay === true,
+    });
     const fullSerialized = this.serializer.serialize(sanitized);
 
     // Keep diff base aligned with whatever we hand the client on join/create.

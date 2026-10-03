@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, GameMessage, PlayerType, SlotType } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 
@@ -70,7 +70,7 @@ export class Electivire extends PokemonCard {
         ), transfers => {
           transfers = transfers || [];
           for (const transfer of transfers) {
-            player.deck.moveCardTo(transfer.card, player.active);
+            MOVE_CARDS(store, state, player.deck, player.active, { cards: [transfer.card], sourceCard: this });
           }
           return SHUFFLE_DECK(store, state, player);
         });

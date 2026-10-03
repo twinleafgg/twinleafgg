@@ -48,7 +48,7 @@ function* usePower(next: Function, store: StoreLike, state: State, self: UnownG,
   ), targets => {
     if (targets && targets.length > 0) {
       // Attach Unown Q as a Pokemon Tool
-      player.bench[benchIndex].moveCardTo(pokemonCard, targets[0]);
+      MOVE_CARDS(store, state, player.bench[benchIndex], targets[0], { cards: [pokemonCard], sourceCard: self });
       targets[0].tools.push(pokemonCard);
 
       // Discard other cards
@@ -69,7 +69,7 @@ function* usePower(next: Function, store: StoreLike, state: State, self: UnownG,
       // Move tools to discard first
       if (tools.length > 0) {
         for (const tool of tools) {
-          unownGSlot.moveCardTo(tool, player.discard);
+          MOVE_CARDS(store, state, unownGSlot, player.discard, { cards: [tool], sourceCard: self });
         }
       }
 

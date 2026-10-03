@@ -3,7 +3,7 @@ import { Stage, CardType, CardTag, SuperType, EnergyType } from '../../../game/s
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DISCARD_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TeamRocketsMoltresex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -70,7 +70,7 @@ export class TeamRocketsMoltresex extends PokemonCard {
         (selected) => {
           const cards = selected || [];
 
-          player.active.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.active, player.discard, { cards: cards, sourceCard: this });
           DISCARD_OPPONENTS_ACTIVE_POKEMON(store, state, effect);
         },
       );

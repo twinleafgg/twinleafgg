@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, BLOCK_IF_DISCARD_EMPTY } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, BLOCK_IF_DISCARD_EMPTY, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Lillipup2 extends PokemonCard {
@@ -49,7 +49,7 @@ export class Lillipup2 extends PokemonCard {
       ), selected => {
         cards = selected || [];
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         }
       });

@@ -8,7 +8,7 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 export class TeamMagmasSecretBase extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '32';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'DCR';
   public name = "Team Magma's Secret Base";
   public fullName = "Team Magma's Secret Base DCR";

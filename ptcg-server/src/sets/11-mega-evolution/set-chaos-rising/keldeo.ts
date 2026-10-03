@@ -11,7 +11,7 @@ import {
   SlotType,
 } from '../../../game';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 
 export class Keldeo extends PokemonCard {
@@ -90,7 +90,7 @@ export class Keldeo extends PokemonCard {
             const list = transfers || [];
             for (const t of list) {
               const target = StateUtils.getTarget(state, player, t.to);
-              player.active.moveCardTo(t.card, target);
+              MOVE_CARDS(store, state, player.active, target, { cards: [t.card], sourceCard: this });
             }
           },
         );

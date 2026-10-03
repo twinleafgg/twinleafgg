@@ -5,7 +5,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { PowerType, StoreLike, State, GameError, GameMessage, AttachEnergyPrompt, PlayerType, SlotType, StateUtils, CardTarget, pokemonHasCardType } from '../../../game';
-import { ABILITY_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Barbaracle extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -76,7 +76,7 @@ export class Barbaracle extends PokemonCard {
         player.marker.addMarker(this.STONE_ARMS_MARKER, this);
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
         }
       });
       return state;

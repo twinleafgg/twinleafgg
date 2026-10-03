@@ -17,13 +17,11 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  ADD_MARKER,
+import {ADD_MARKER,
   HAS_MARKER,
   IS_ABILITY_BLOCKED,
   REMOVE_MARKER_AT_END_OF_TURN,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 
 export class MegaGengarex extends PokemonCard {
@@ -141,7 +139,7 @@ export class MegaGengarex extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.active.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

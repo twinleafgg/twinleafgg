@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, CardList, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
 
 export class Reuniclus extends PokemonCard {
@@ -46,7 +46,7 @@ export class Reuniclus extends PokemonCard {
 
       const deckTop = new CardList();
       const cardsToLook = Math.min(5, player.deck.cards.length);
-      player.deck.moveTo(deckTop, cardsToLook);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: cardsToLook, sourceCard: this });
 
       return store.prompt(state, new OrderCardsPrompt(
         player.id,

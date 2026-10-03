@@ -4,7 +4,7 @@ import { StoreLike, State, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { DRAW_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magmar extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,7 +58,7 @@ export class Magmar extends PokemonCard {
           return;
         }
 
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
         DRAW_CARDS(store, state, player, cards.length * 2);
       });
     }

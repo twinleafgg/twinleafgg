@@ -13,7 +13,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { EnergyMap } from '../../../game/store/prompts/choose-energy-prompt';
 import { CardList } from '../../../game/store/state/card-list';
 import { Card } from '../../../game/store/card/card';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 export class MagmaEnergy extends EnergyCard {
@@ -108,7 +108,7 @@ export class MagmaEnergy extends EnergyCard {
 
           const pokemonCard = cardList.getPokemonCard();
           if (pokemonCard && !pokemonCard.hasTag(CardTag.TEAM_MAGMA)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });
@@ -120,7 +120,7 @@ export class MagmaEnergy extends EnergyCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
         if (cardList.cards.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         }
       });
     }

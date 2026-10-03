@@ -4,16 +4,14 @@ import { StoreLike, State, PowerType, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DrawPrizesEffect } from '../../../game/store/effects/game-effects';
 import { KNOCK_OUT_DEFENDING_POKEMON_AT_END_OF_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/attack-effects';
-import {
-  ADD_SLEEP_TO_PLAYER_ACTIVE,
+import {ADD_SLEEP_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   CONFIRMATION_PROMPT,
   GET_PLAYER_BENCH_SLOTS,
   IS_ABILITY_BLOCKED,
   TAKE_SPECIFIC_PRIZES,
   TAKE_X_PRIZES,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class JirachiPrismStar extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -155,7 +153,7 @@ export class JirachiPrismStar extends PokemonCard {
     const targetSlot = emptyBenchSlots[0];
     for (const [index, prize] of player.prizes.entries()) {
       if (prize.cards.includes(this)) {
-        player.prizes[index].moveTo(targetSlot);
+        MOVE_CARDS(store, state, player.prizes[index], targetSlot, { sourceCard: this });
         targetSlot.pokemonPlayedTurn = state.turn;
         break;
       }

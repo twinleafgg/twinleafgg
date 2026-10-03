@@ -17,7 +17,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_BENCHED_POKEMON } from '../../../game/store/prefabs/attack-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Inteleon extends PokemonCard {
   protected _tags = [CardTag.RAPID_STRIKE];
@@ -103,7 +103,7 @@ export class Inteleon extends PokemonCard {
                     ),
                   ],
                   () => {
-                    player.deck.moveCardsTo(cards, player.hand);
+                    MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
                   },
                 );
                 return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {

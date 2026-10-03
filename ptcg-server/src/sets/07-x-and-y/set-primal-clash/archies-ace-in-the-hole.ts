@@ -11,27 +11,29 @@ import { GameMessage } from '../../../game/game-message';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ArchiesAceInTheHole extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'PRC';
   public setNumber: string = '124';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Archie\'s Ace in the Hole';
-  public fullName: string = 'Archie\'s Ace in the Hole PRC';
-  public text: string = 'You can play this card only when it is the last card in your hand. Put a Water Pokémon from your discard pile onto your Bench. Then, draw 5 cards. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Archie's Ace in the Hole";
+  public fullName: string = "Archie's Ace in the Hole PRC";
+  public text: string =
+    'You can play this card only when it is the last card in your hand. Put a Water Pokémon from your discard pile onto your Bench. Then, draw 5 cards. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-primal-clash/maxies-hidden-ball-trick.ts (last card in hand + Pokemon from discard to bench + draw 5)
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
-      const cards = player.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
 
-      const hasPokemon = player.discard.cards.some(c => {
+      const hasPokemon = player.discard.cards.some((c) => {
         return c instanceof PokemonCard && pokemonHasCardType(c, CardType.WATER);
       });
 
-      const slot = player.bench.find(b => b.cards.length === 0);
+      const slot = player.bench.find((b) => b.cards.length === 0);
       const hasEffect = (hasPokemon && slot) || player.deck.cards.length > 0;
 
       if (cards.length !== 0 || !hasEffect) {
@@ -41,22 +43,26 @@ export class ArchiesAceInTheHole extends TrainerCard {
       // It is not possible to recover Water Pokemon,
       // but we can still draw 5 cards
       if (!hasPokemon || slot === undefined) {
-        player.deck.moveTo(player.hand, 5);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: this });
         return state;
       }
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-        player.discard,
-        { superType: SuperType.POKEMON, cardType: [CardType.WATER] },
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        const cards = selected || [];
-        player.discard.moveCardsTo(cards, slot);
-        slot.pokemonPlayedTurn = state.turn;
-        player.deck.moveTo(player.hand, 5);
-      });
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+          player.discard,
+          { superType: SuperType.POKEMON, cardType: [CardType.WATER] },
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          MOVE_CARDS(store, state, player.discard, slot, { cards: cards, sourceCard: this });
+          slot.pokemonPlayedTurn = state.turn;
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: this });
+        },
+      );
     }
 
     return state;

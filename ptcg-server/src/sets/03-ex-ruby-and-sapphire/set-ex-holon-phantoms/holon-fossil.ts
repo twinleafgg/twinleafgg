@@ -7,10 +7,10 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, PokemonCard } from '../../../game';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { BLOCK_IF_NO_SLOTS, GET_PLAYER_BENCH_SLOTS, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { BLOCK_IF_NO_SLOTS, GET_PLAYER_BENCH_SLOTS, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HolonFossil extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'HP';
   public cardImage: string = 'assets/cardback.png';
@@ -34,7 +34,15 @@ export class HolonFossil extends TrainerCard {
 
       const blockedDeck: number[] = [];
       player.deck.cards.forEach((card, index) => {
-        if (card instanceof PokemonCard && (card.name === 'Omanyte' || card.name === 'Kabuto' || card.name === 'Aerodactyl' || card.name === 'Aerodactyl ex' || card.name === 'Lileep' || card.name === 'Anorith')) {
+        if (
+          card instanceof PokemonCard &&
+          (card.name === 'Omanyte' ||
+            card.name === 'Kabuto' ||
+            card.name === 'Aerodactyl' ||
+            card.name === 'Aerodactyl ex' ||
+            card.name === 'Lileep' ||
+            card.name === 'Anorith')
+        ) {
           return;
         } else {
           blockedDeck.push(index);
@@ -43,7 +51,15 @@ export class HolonFossil extends TrainerCard {
 
       const blockedHand: number[] = [];
       player.hand.cards.forEach((card, index) => {
-        if (card instanceof PokemonCard && (card.name === 'Omanyte' || card.name === 'Kabuto' || card.name === 'Aerodactyl' || card.name === 'Aerodactyl ex' || card.name === 'Lileep' || card.name === 'Anorith')) {
+        if (
+          card instanceof PokemonCard &&
+          (card.name === 'Omanyte' ||
+            card.name === 'Kabuto' ||
+            card.name === 'Aerodactyl' ||
+            card.name === 'Aerodactyl ex' ||
+            card.name === 'Lileep' ||
+            card.name === 'Anorith')
+        ) {
           return;
         } else {
           blockedHand.push(index);
@@ -53,9 +69,15 @@ export class HolonFossil extends TrainerCard {
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
-      return COIN_FLIP_PROMPT(store, state, player, flipResult => {
+      return COIN_FLIP_PROMPT(store, state, player, (flipResult) => {
         if (flipResult) {
-          SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH(store, state, player, {}, { min: 0, max: 1, blocked: blockedDeck });
+          SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH(
+            store,
+            state,
+            player,
+            {},
+            { min: 0, max: 1, blocked: blockedDeck },
+          );
         } else if (!flipResult) {
           if (player.hand.cards.length === 0 || player.hand.cards.length === blockedHand.length) {
             return state;
@@ -70,7 +92,7 @@ export class HolonFossil extends TrainerCard {
           ), selected => {
             const cards = selected || [];
             cards.forEach((card, index) => {
-              player.hand.moveCardTo(card, slots[index]);
+              MOVE_CARDS(store, state, player.hand, slots[index], { cards: [card], sourceCard: this });
               slots[index].pokemonPlayedTurn = state.turn;
             });
           });

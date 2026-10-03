@@ -23,14 +23,12 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   BLOCK_EFFECT_IF_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EthansHoOhex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex, CardTag.ETHANS];
@@ -135,7 +133,7 @@ export class EthansHoOhex extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
           }
 
           return state;

@@ -10,19 +10,22 @@ import { StoreLike } from '../../../game/store/store-like';
 
 export class CursedShovel extends TrainerCard {
   public regulationMark = 'D';
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'RCL';
   public name: string = 'Cursed Shovel';
   public fullName: string = 'Cursed Shovel RCL';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '157';
 
-  public text: string = 'If the Pokémon this card is attached to is Knocked Out by damage from an opponent\'s attack, discard the top 2 cards of your opponent\'s deck.';
+  public text: string =
+    "If the Pokémon this card is attached to is Knocked Out by damage from an opponent's attack, discard the top 2 cards of your opponent's deck.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
-    if (effect instanceof KnockOutEffect && effect.target.tools.includes(this) && effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
-
+    if (
+      effect instanceof KnockOutEffect &&
+      effect.target.tools.includes(this) &&
+      effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
+    ) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
@@ -33,8 +36,11 @@ export class CursedShovel extends TrainerCard {
         return state;
       }
 
-      MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: 2, sourceCard: this, sourceEffect: this.attacks[0] });
-
+      MOVE_CARDS(store, state, opponent.deck, opponent.discard, {
+        count: 2,
+        sourceCard: this,
+        sourceEffect: this.attacks[0],
+      });
     }
     return state;
   }

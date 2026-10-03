@@ -10,14 +10,15 @@ import { CheckHpEffect } from '../../game/store/effects/check-effects';
 import { IS_TOOL_BLOCKED } from '../../game/store/prefabs/prefabs';
 
 export class RustedShield extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'D';
   public set: string = 'SHF';
   public setNumber: string = '61';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Rusted Shield';
   public fullName: string = 'Rusted Shield SHF';
-  public text: string = 'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. The Zamazenta V this card is attached to gets +70 HP. You may play any number of Item cards during your turn.';
+  public text: string =
+    "Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached. The Zamazenta V this card is attached to gets +70 HP. You may play any number of Item cards during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-temporal-forces/heros-cape.ts (CheckHpEffect tool HP boost),

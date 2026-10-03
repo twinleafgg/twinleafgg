@@ -6,12 +6,12 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 import { GameMessage } from '../../../game/game-message';
-import { AbstractAttackEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
+import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PlayerType, SlotType } from '../../../game/store/actions/play-card-action';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { FLIP_COIN_TO_PREVENT_DAMAGE_AND_EFFECTS_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 function* useAquaJet(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -83,44 +83,14 @@ export class Floatzel extends PokemonCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '37';
 
-  public readonly CLEAR_AGILITY_MARKER = 'CLEAR_AGILITY_MARKER';
-  public readonly AGILITY_MARKER = 'AGILITY_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      state = COIN_FLIP_PROMPT(store, state, player, flipResult => {
-        if (flipResult) {
-          player.active.marker.addMarker(this.AGILITY_MARKER, this);
-          opponent.marker.addMarker(this.CLEAR_AGILITY_MARKER, this);
-        }
-      });
-
-      return state;
+      return FLIP_COIN_TO_PREVENT_DAMAGE_AND_EFFECTS_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const generator = useAquaJet(() => generator.next(), store, state, effect);
       return generator.next().value;
-    }
-
-    if (effect instanceof AbstractAttackEffect
-      && effect.target.marker.hasMarker(this.AGILITY_MARKER)) {
-      effect.preventDefault = true;
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect
-      && effect.player.marker.hasMarker(this.CLEAR_AGILITY_MARKER, this)) {
-
-      effect.player.marker.removeMarker(this.CLEAR_AGILITY_MARKER, this);
-
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.AGILITY_MARKER, this);
-      });
     }
 
     return state;

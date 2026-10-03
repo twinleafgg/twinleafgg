@@ -1,12 +1,26 @@
-import { TrainerCard, TrainerType, Stage, CardType, PokemonType, Power, PowerType, StoreLike, State, GameLog, StateUtils, GameError, GameMessage, PokemonCard } from '../../../game';
+import {
+  TrainerCard,
+  TrainerType,
+  Stage,
+  CardType,
+  PokemonType,
+  Power,
+  PowerType,
+  StoreLike,
+  State,
+  GameLog,
+  StateUtils,
+  GameError,
+  GameMessage,
+  PokemonCard,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { RetreatEffect } from '../../../game/store/effects/game-effects';
 import { PlayItemEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class UnidentifiedFossil extends TrainerCard {
-
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
 
   public stage: Stage = Stage.BASIC;
 
@@ -45,8 +59,8 @@ This card can't retreat.`,
       useWhenInPlay: true,
       exemptFromAbilityLock: true,
       isFossil: true,
-      powerType: PowerType.TRAINER_ABILITY
-    }
+      powerType: PowerType.TRAINER_ABILITY,
+    },
   ];
 
   // public text =
@@ -55,26 +69,32 @@ This card can't retreat.`,
   //   'This card can\'t retreat.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_POWER_USED(effect, 0, this)) {
       const player = effect.player;
 
-      store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD, { name: player.name, card: this.name, effect: 'Unidentified Fossil' });
+      store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD, {
+        name: player.name,
+        card: this.name,
+        effect: 'Unidentified Fossil',
+      });
 
       const cardList = StateUtils.findCardList(state, this);
-      cardList.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
     }
-
 
     if (effect instanceof PlayItemEffect && effect.trainerCard === this) {
       const player = effect.player;
 
-      const emptySlots = player.bench.filter(b => b.cards.length === 0);
+      const emptySlots = player.bench.filter((b) => b.cards.length === 0);
       if (emptySlots.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const playPokemonEffect = new PlayPokemonEffect(player, this as unknown as PokemonCard, emptySlots[0]);
+      const playPokemonEffect = new PlayPokemonEffect(
+        player,
+        this as unknown as PokemonCard,
+        emptySlots[0],
+      );
       store.reduceEffect(state, playPokemonEffect);
     }
 
@@ -84,5 +104,4 @@ This card can't retreat.`,
 
     return state;
   }
-
 }

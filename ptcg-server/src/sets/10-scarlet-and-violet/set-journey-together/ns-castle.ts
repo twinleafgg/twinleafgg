@@ -11,7 +11,7 @@ import { CheckRetreatCostEffect } from '../../../game/store/effects/check-effect
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class NsCastle extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.NS];
   public set: string = 'JTG';
   public name: string = "N's Castle";

@@ -14,6 +14,7 @@ import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useStadium(
   next: Function,
@@ -56,7 +57,7 @@ function* useStadium(
       }
 
       cards.forEach((card, index) => {
-        player.deck.moveCardTo(card, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: effect.stadium });
       });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
@@ -68,7 +69,7 @@ function* useStadium(
 }
 
 export class SpikemuthGym extends TrainerCard {
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'DRI';
   public setNumber: string = '169';
   public cardImage: string = 'assets/cardback.png';

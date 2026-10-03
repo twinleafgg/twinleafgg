@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChoosePokemonPrompt, GameMessage, PlayerType, SlotType, StoreLike, State } from '../../../game';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cramorant extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -73,7 +73,7 @@ export class Cramorant extends PokemonCard {
         // Discard the selected Arrokuda
         discarded.forEach(target => {
           const cards = target.cards.slice();
-          cards.forEach(card => target.moveCardTo(card, player.discard));
+          cards.forEach(card => MOVE_CARDS(store, state, target, player.discard, { cards: [card], sourceCard: this }));
         });
       });
     }

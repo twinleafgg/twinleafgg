@@ -16,7 +16,7 @@ import {
 } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GyaradosGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -65,7 +65,7 @@ export class GyaradosGx extends PokemonCard {
 
         const cardList = StateUtils.findCardList(state, stadiumCard);
         const owner = StateUtils.findOwner(state, cardList);
-        cardList.moveTo(owner.discard);
+        MOVE_CARDS(store, state, cardList, owner.discard, { sourceCard: this });
       }
     }
 
@@ -89,7 +89,7 @@ export class GyaradosGx extends PokemonCard {
 
       pokemonWithEnergy.forEach(({ cardList, energyCards }) => {
         if (energyCards.length === 1) {
-          cardList.moveCardTo(energyCards[0], opponent.discard);
+          MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [energyCards[0]], sourceCard: this });
         } else {
           store.prompt(
             state,
@@ -103,7 +103,7 @@ export class GyaradosGx extends PokemonCard {
             (selected: Card[]) => {
               const cards = selected || [];
               cards.forEach((card: Card) => {
-                cardList.moveCardTo(card, opponent.discard);
+                MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [card], sourceCard: this });
               });
             },
           );

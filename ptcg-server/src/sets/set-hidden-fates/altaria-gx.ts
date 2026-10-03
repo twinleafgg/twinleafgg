@@ -4,11 +4,11 @@
 
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, PlayerType } from '../../game';
+import { StoreLike, State, PlayerType } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import { AbstractAttackEffect, HealTargetEffect } from '../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
+import { HealTargetEffect } from '../../game/store/effects/attack-effects';
 import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../game/store/prefabs/effect-of-attack-prefabs';
 import {
   THIS_ATTACKS_DAMAGE_ISNT_AFFECTED_BY_EFFECTS,
   YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_ASLEEP,
@@ -22,9 +22,6 @@ export class AltariaGx extends PokemonCard {
   public hp: number = 200;
   public weakness = [{ type: Y }];
   public retreat = [C];
-
-  public readonly BRIGHT_TONE_MARKER = 'BRIGHT_TONE_MARKER';
-  public readonly CLEAR_BRIGHT_TONE_MARKER = 'CLEAR_BRIGHT_TONE_MARKER';
 
   public attacks = [
     {
@@ -54,41 +51,8 @@ export class AltariaGx extends PokemonCard {
   public fullName: string = 'Altaria-GX HIF';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Bright Tone
-    // Ref: set-dragons-majesty/altaria-gx.ts (Bright Tone)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      player.active.marker.addMarker(this.BRIGHT_TONE_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_BRIGHT_TONE_MARKER, this);
-    }
-
-    if (
-      effect instanceof AbstractAttackEffect &&
-      effect.target.marker.hasMarker(this.BRIGHT_TONE_MARKER, this)
-    ) {
-      const pokemonCard = effect.target.getPokemonCard();
-      if (pokemonCard !== this) {
-        return state;
-      }
-      const sourceCard = effect.source.getPokemonCard();
-      if (
-        sourceCard &&
-        (sourceCard.hasTag(CardTag.POKEMON_GX) || sourceCard.hasTag(CardTag.POKEMON_EX))
-      ) {
-        effect.preventDefault = true;
-      }
-    }
-
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_BRIGHT_TONE_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_BRIGHT_TONE_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.BRIGHT_TONE_MARKER, this);
-      });
+      PREVENT_DAMAGE(store, state, effect, this, { sourceTags: [CardTag.POKEMON_GX, CardTag.POKEMON_EX] });
     }
 
     // Attack 2: Sonic Edge

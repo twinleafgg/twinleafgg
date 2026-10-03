@@ -7,9 +7,15 @@ import { TrainerEffect } from '../../game/store/effects/play-card-effects';
 import { GameError } from '../../game/game-error';
 import { GameMessage } from '../../game/game-message';
 import { StateUtils } from '../../game/store/state-utils';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: ErikasHospitality, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: ErikasHospitality,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   const supporterTurn = player.supporterTurn;
@@ -18,11 +24,14 @@ function* playCard(next: Function, store: StoreLike, state: State,
     throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
-  const cards = player.hand.cards.filter(c => c !== effect.trainerCard);
+  const cards = player.hand.cards.filter((c) => c !== effect.trainerCard);
 
   if (cards.length > 4) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -39,20 +48,17 @@ function* playCard(next: Function, store: StoreLike, state: State,
   const opponentBenched = opponent.bench.reduce((left, b) => left + (b.cards.length ? 1 : 0), 0);
   const cardsToDraw = opponentBenched + 1;
 
-  player.deck.moveTo(player.hand, cardsToDraw);
-
-
-
+  MOVE_CARDS(store, state, player.deck, player.hand, { count: cardsToDraw, sourceCard: self });
 
   return state;
 }
 export class ErikasHospitality extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'HIF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '56';
-  public name: string = 'Erika\'s Hospitality';
-  public fullName: string = 'Erika\'s Hospitality HIF';
+  public name: string = "Erika's Hospitality";
+  public fullName: string = "Erika's Hospitality HIF";
   public text: string = `You can play this card only if you have 4 or fewer other cards in your hand.
 
   Draw a card for each of your opponent's Pokémon in play.`;
@@ -64,5 +70,4 @@ export class ErikasHospitality extends TrainerCard {
     }
     return state;
   }
-
 }

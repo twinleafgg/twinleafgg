@@ -5,7 +5,7 @@ import { StoreLike, State, GameMessage, StateUtils, Player, CardList, GameError,
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Kingdra extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -69,11 +69,11 @@ export class Kingdra extends PokemonCard {
             // Shuffle the opponent's hand
             this.shufflePlayerHand(opponent);
 
-            opponent.hand.moveTo(opponentDeckBottom);
+            MOVE_CARDS(store, state, opponent.hand, opponentDeckBottom, { sourceCard: this });
 
-            opponentDeckBottom.moveTo(opponent.deck);
+            MOVE_CARDS(store, state, opponentDeckBottom, opponent.deck, { sourceCard: this });
 
-            opponent.deck.moveTo(opponent.hand, 4);
+            MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
 
           }
         },
@@ -84,11 +84,11 @@ export class Kingdra extends PokemonCard {
             // Shuffle the player's hand
             this.shufflePlayerHand(player);
 
-            player.hand.moveTo(deckBottom);
+            MOVE_CARDS(store, state, player.hand, deckBottom, { sourceCard: this });
 
-            deckBottom.moveTo(player.deck);
+            MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
 
-            player.deck.moveTo(player.hand, 4);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 4, sourceCard: this });
 
           }
         }

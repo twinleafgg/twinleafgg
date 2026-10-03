@@ -10,7 +10,7 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class ChoiceHelmet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'LOT';
   public setNumber: string = '169';
   public cardImage: string = 'assets/cardback.png';

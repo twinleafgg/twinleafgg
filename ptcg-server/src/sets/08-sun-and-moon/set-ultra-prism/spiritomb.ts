@@ -2,7 +2,6 @@ import {
   Card,
   CardType,
   ChooseCardsPrompt,
-  GameLog,
   GameMessage,
   PokemonCard,
   Stage,
@@ -13,7 +12,7 @@ import {
   TrainerType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { SHOW_CARDS_TO_PLAYER, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHOW_CARDS_TO_PLAYER, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DEFENDING_POKEMON_CANNOT_ATTACK } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Spiritomb extends PokemonCard {
@@ -68,13 +67,9 @@ export class Spiritomb extends PokemonCard {
       ), selected => {
         cards = selected || [];
 
-        cards.forEach(card => {
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-        });
-
         if (cards.length > 0) {
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         }
       });
     }

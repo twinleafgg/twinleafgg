@@ -4,7 +4,7 @@ import { PowerType } from '../../game/store/card/pokemon-types';
 import { StoreLike, State, GameError, GameMessage, StateUtils, Card, ChooseCardsPrompt, ShowCardsPrompt, ShuffleDeckPrompt } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
-import { ABILITY_USED, ADD_MARKER, BLOCK_IF_HAS_SPECIAL_CONDITION, HAS_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_POWER_USED } from '../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, BLOCK_IF_HAS_SPECIAL_CONDITION, HAS_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { PowerEffect } from '../../game/store/effects/game-effects';
 
 function* usePower(next: Function, store: StoreLike, state: State, effect: PowerEffect): IterableIterator<State> {
@@ -25,7 +25,7 @@ function* usePower(next: Function, store: StoreLike, state: State, effect: Power
     }
 
     // Put cards from hand into the deck
-    player.hand.moveCardsTo(cards, player.deck);
+    MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: effect.card });
     next();
   });
 
@@ -47,7 +47,7 @@ function* usePower(next: Function, store: StoreLike, state: State, effect: Power
     next();
   });
 
-  player.deck.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: effect.card });
 
   if (cards.length > 0) {
     yield store.prompt(state, new ShowCardsPrompt(

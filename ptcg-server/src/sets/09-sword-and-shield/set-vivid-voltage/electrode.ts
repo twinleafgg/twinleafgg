@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { AttachEnergyPrompt, GameError, GameMessage, PlayerType, PowerType, SlotType, StoreLike, State, StateUtils, pokemonHasCardType } from '../../../game';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED, SHUFFLE_DECK, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, SHUFFLE_DECK, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 
 export class Electrode extends PokemonCard {
@@ -80,7 +80,7 @@ export class Electrode extends PokemonCard {
 
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.deck.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
         }
 
         SHUFFLE_DECK(store, state, player);

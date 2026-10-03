@@ -1,15 +1,37 @@
-import { Attack, CardTag, CardTarget, CardType, ChoosePokemonPrompt, GameError, GameMessage, PlayerType, SlotType, State, StateUtils, StoreLike, TrainerCard, TrainerType } from "../../../game";
-import { ColorlessCostReducer } from "../../../game/store/card/pokemon-interface";
-import { CheckTableStateEffect, CheckAttackCostEffect, CheckPokemonAttacksEffect } from "../../../game/store/effects/check-effects";
-import { Effect } from "../../../game/store/effects/effect";
-import { AttackEffect } from "../../../game/store/effects/game-effects";
-import { EndTurnEffect } from "../../../game/store/effects/game-phase-effects";
-import { MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
-import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from "../../../game/store/prefabs/effect-of-attack-prefabs";
-import { WAS_TRAINER_USED } from "../../../game/store/prefabs/trainer-prefabs";
+import {
+  Attack,
+  CardTag,
+  CardTarget,
+  CardType,
+  ChoosePokemonPrompt,
+  GameError,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  State,
+  StateUtils,
+  StoreLike,
+  TrainerCard,
+  TrainerType,
+} from '../../../game';
+import { ColorlessCostReducer } from '../../../game/store/card/pokemon-interface';
+import {
+  CheckTableStateEffect,
+  CheckAttackCostEffect,
+  CheckPokemonAttacksEffect,
+} from '../../../game/store/effects/check-effects';
+import { Effect } from '../../../game/store/effects/effect';
+import { AttackEffect } from '../../../game/store/effects/game-effects';
+import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import {
+  PREVENT_DAMAGE,
+  PREVENT_EFFECTS_OF_ATTACKS,
+} from '../../../game/store/prefabs/effect-of-attack-prefabs';
+import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class AncientTechnicalMachineIce extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.TECHNICAL_MACHINE];
   public set: string = 'HL';
   public cardImage: string = 'assets/cardback.png';
@@ -26,7 +48,8 @@ export class AncientTechnicalMachineIce extends TrainerCard {
     },
   ];
 
-  public text: string = 'Attach this card to 1 of your Evolved Pokémon (excluding Pokémon-ex and Pokémon that has an owner in its name) in play. That Pokémon may use this card\'s attack instead of its own. At the end of your turn, discard Ancient Technical Machine [Ice].';
+  public text: string =
+    "Attach this card to 1 of your Evolved Pokémon (excluding Pokémon-ex and Pokémon that has an owner in its name) in play. That Pokémon may use this card's attack instead of its own. At the end of your turn, discard Ancient Technical Machine [Ice].";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
@@ -58,7 +81,7 @@ export class AncientTechnicalMachineIce extends TrainerCard {
           { min: 1, max: 1, allowCancel: false, blocked },
         ),
         (transfers) => {
-          player.supporter.moveCardTo(effect.trainerCard, transfers[0]);
+          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
         },
       );
     }
@@ -68,7 +91,7 @@ export class AncientTechnicalMachineIce extends TrainerCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, index) => {
         if (cardList.cards.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         }
       });
     }
@@ -86,7 +109,7 @@ export class AncientTechnicalMachineIce extends TrainerCard {
             !!attachedTo &&
             (attachedTo.hasTag(CardTag.POKEMON_ex) || cardList.getPokemons().length < 2)
           ) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

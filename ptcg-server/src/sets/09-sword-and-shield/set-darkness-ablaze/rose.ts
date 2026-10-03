@@ -18,6 +18,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -62,7 +63,7 @@ function* playCard(
   }
 
   effect.preventDefault = true;
-  player.hand.moveCardTo(self, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [self], sourceCard: self });
 
   // Prompt to attach up to 2 basic energy from discard to 1 VMAX
   let attached: { to: CardTarget; card: Card }[] = [];
@@ -87,20 +88,20 @@ function* playCard(
   if (attached.length > 0) {
     for (const transfer of attached) {
       const target = StateUtils.getTarget(state, player, transfer.to);
-      player.discard.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: self });
     }
 
     // Discard entire hand
     const handCards = player.hand.cards.slice();
-    handCards.forEach((c) => player.hand.moveCardTo(c, player.discard));
+    handCards.forEach((c) => MOVE_CARDS(store, state, player.hand, player.discard, { cards: [c], sourceCard: self }));
   }
 
-  player.supporter.moveCardTo(self, player.discard);
+  MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [self], sourceCard: self });
   return state;
 }
 
 export class Rose extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'DAA';
   public setNumber: string = '168';

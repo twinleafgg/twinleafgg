@@ -14,7 +14,7 @@ import {
   ShowCardsPrompt,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, BLOCK_IF_DECK_EMPTY, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_DECK_EMPTY, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class Mawile extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -80,7 +80,7 @@ export class Mawile extends PokemonCard {
               () => {},
             );
             cards.forEach((c) => {
-              player.deck.moveCardTo(c, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: [c], sourceCard: this });
             });
           }
           return SHUFFLE_DECK(store, state, player);

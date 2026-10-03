@@ -23,6 +23,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import {
   IS_ABILITY_BLOCKED,
   MOVE_CARDS,
+  MOVE_POKEMON_OFF_BOARD,
   WAS_POWER_USED,
 } from '../../../game/store/prefabs/prefabs';
 
@@ -113,36 +114,16 @@ export class TapuKokoPrismStar extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
 
           player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
             if (cardList.getPokemonCard() === this) {
-              const pokemons = cardList.getPokemons();
-              const otherCards = cardList.cards.filter(
-                (card) =>
-                  !(card instanceof PokemonCard) &&
-                  !pokemons.includes(card as PokemonCard) &&
-                  (!cardList.tools || !cardList.tools.includes(card)),
-              );
-              const tools = [...cardList.tools];
-              cardList.clearEffects();
-              // Move Pokémon cards to the Lost Zone
-              if (pokemons.length > 0) {
-                MOVE_CARDS(store, state, cardList, player.lostzone, { cards: pokemons });
-              }
-
-              // Move other cards (tools, energies, etc.) to the discard
-              if (otherCards.length > 0) {
-                MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-              }
-
-              // Move tools to the discard
-              if (tools.length > 0) {
-                for (const tool of tools) {
-                  cardList.moveCardTo(tool, player.discard);
-                }
-              }
+              MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+                pokemonDestination: player.lostzone,
+                attachedDestination: player.discard,
+                sourceCard: this,
+              });
             }
           });
 

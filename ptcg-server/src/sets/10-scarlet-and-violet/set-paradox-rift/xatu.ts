@@ -7,7 +7,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyPrompt, EnergyCard, GameError, GameMessage, PlayerType, PowerType, SlotType, StateUtils } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Xatu extends PokemonCard {
 
@@ -103,9 +103,9 @@ export class Xatu extends PokemonCard {
           });
 
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
         }
-        player.deck.moveTo(player.hand, 2);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       });
     }
     if (effect instanceof EndTurnEffect) {

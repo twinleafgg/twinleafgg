@@ -7,9 +7,16 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { PlayerType, SlotType, GameError, GameMessage, PokemonCardList } from '../../../game';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
-  const hasBench = player.bench.some(b => b.cards.length > 0);
+  const hasBench = player.bench.some((b) => b.cards.length > 0);
 
   if (hasBench === false) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -17,7 +24,10 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Do not discard the card yet
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: effect.trainerCard,
+  });
 
   const pokemonCard = player.active.getPokemonCard();
 
@@ -26,18 +36,21 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   }
 
   if (pokemonCard && pokemonCard.stage === Stage.BASIC) {
-
     let targets: PokemonCardList[] = [];
-    yield store.prompt(state, new ChoosePokemonPrompt(
-      player.id,
-      GameMessage.CHOOSE_POKEMON_TO_SWITCH,
-      PlayerType.BOTTOM_PLAYER,
-      [SlotType.BENCH],
-      { allowCancel: false }
-    ), results => {
-      targets = results || [];
-      next();
-    });
+    yield store.prompt(
+      state,
+      new ChoosePokemonPrompt(
+        player.id,
+        GameMessage.CHOOSE_POKEMON_TO_SWITCH,
+        PlayerType.BOTTOM_PLAYER,
+        [SlotType.BENCH],
+        { allowCancel: false },
+      ),
+      (results) => {
+        targets = results || [];
+        next();
+      },
+    );
 
     if (targets.length === 0) {
       return state;
@@ -53,8 +66,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   return state;
 }
 export class SwitchCart extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark = 'F';
 
@@ -78,5 +90,4 @@ export class SwitchCart extends TrainerCard {
     }
     return state;
   }
-
 }

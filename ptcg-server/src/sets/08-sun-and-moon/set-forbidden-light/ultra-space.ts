@@ -12,6 +12,7 @@ import { Card } from '../../../game/store/card/card';
 import { CardTag } from '../../../game/store/card/card-types';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useStadium(
   next: Function,
@@ -52,7 +53,7 @@ function* useStadium(
     return state;
   }
 
-  player.deck.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: effect.stadium });
 
   if (cards.length > 0) {
     yield store.prompt(
@@ -68,7 +69,7 @@ function* useStadium(
 }
 
 export class UltraSpace extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
 
   public set: string = 'FLI';
 

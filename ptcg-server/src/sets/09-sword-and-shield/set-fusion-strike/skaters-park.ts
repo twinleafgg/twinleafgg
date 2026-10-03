@@ -10,14 +10,15 @@ import { RetreatEffect, UseStadiumEffect } from '../../../game/store/effects/gam
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class SkatersPark extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'E';
   public set: string = 'FST';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '242';
-  public name: string = 'Skaters\' Park';
-  public fullName: string = 'Skaters\' Park FST';
-  public text: string = 'Whenever either player\'s Active Pokémon retreats, put any basic Energy that would be discarded into their hand instead of the discard pile.';
+  public name: string = "Skaters' Park";
+  public fullName: string = "Skaters' Park FST";
+  public text: string =
+    "Whenever either player's Active Pokémon retreats, put any basic Energy that would be discarded into their hand instead of the discard pile.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof RetreatEffect && StateUtils.getStadiumCard(state) === this) {

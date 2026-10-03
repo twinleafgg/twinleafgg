@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StateUtils, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lairon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -39,7 +39,7 @@ export class Lairon extends PokemonCard {
       FLIP_UNTIL_TAILS_AND_COUNT_HEADS(store, state, player, (heads: number) => {
         const cardsToDiscard = Math.min(heads, opponent.deck.cards.length);
         for (let i = 0; i < cardsToDiscard; i++) {
-          opponent.deck.moveTo(opponent.discard, 1);
+          MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: 1, sourceCard: this });
         }
       });
     }

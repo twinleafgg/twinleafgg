@@ -10,7 +10,13 @@ import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect, self: Card): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+  self: Card,
+): IterableIterator<State> {
   const player = effect.player;
   const supporterTurn = player.supporterTurn;
 
@@ -22,16 +28,22 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  SEARCH_DECK_FOR_CARDS_TO_HAND(store, state, player, self, { superType: SuperType.TRAINER }, { min: 0, max: 1, allowCancel: false });
+  SEARCH_DECK_FOR_CARDS_TO_HAND(
+    store,
+    state,
+    player,
+    self,
+    { superType: SuperType.TRAINER },
+    { min: 0, max: 1, allowCancel: false },
+  );
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class Skyla extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BCR';
 
@@ -48,7 +60,6 @@ export class Skyla extends TrainerCard {
     'into your hand. Shuffle your deck afterward.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, effect, this);
       return generator.next().value;
@@ -56,5 +67,4 @@ export class Skyla extends TrainerCard {
 
     return state;
   }
-
 }

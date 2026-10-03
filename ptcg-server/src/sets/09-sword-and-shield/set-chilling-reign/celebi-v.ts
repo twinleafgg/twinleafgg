@@ -16,7 +16,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CelebiV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -81,7 +81,7 @@ export class CelebiV extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);

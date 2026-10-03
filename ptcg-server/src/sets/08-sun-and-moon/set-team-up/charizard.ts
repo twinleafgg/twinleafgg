@@ -2,7 +2,7 @@ import { CardType, AttachEnergyPrompt, Card, EnergyType, GameError, GameMessage,
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { HAS_MARKER, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {HAS_MARKER, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 
 export class Charizard extends PokemonCard {
@@ -87,7 +87,7 @@ export class Charizard extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.deck.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
         }
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

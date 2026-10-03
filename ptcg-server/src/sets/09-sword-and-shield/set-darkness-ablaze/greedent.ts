@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PUT_THIS_POKEMON_AND_ALL_ATTACHED_CARDS_INTO_YOUR_HAND } from '../../../game/store/prefabs/attack-effects';
@@ -54,7 +54,7 @@ export class Greedent extends PokemonCard {
       // Discard all tools from opponent's active
       const tools = activeTarget.tools.slice();
       tools.forEach(tool => {
-        activeTarget.moveCardTo(tool, opponent.discard);
+        MOVE_CARDS(store, state, activeTarget, opponent.discard, { cards: [tool], sourceCard: this });
       });
     }
 

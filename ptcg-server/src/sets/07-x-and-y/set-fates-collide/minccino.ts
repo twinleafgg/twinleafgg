@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType } from '../../../game/store/card/card-types';
 import { GameMessage, StateUtils, StoreLike, State, PlayerType, SlotType, ChoosePokemonPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CardList } from '../../../game/store/state/card-list';
 
@@ -65,7 +65,7 @@ export class Minccino extends PokemonCard {
 
         const target = targets[0];
         if (target.tools.length === 1) {
-          target.moveCardTo(target.tools[0], opponent.discard);
+          MOVE_CARDS(store, state, target, opponent.discard, { cards: [target.tools[0]], sourceCard: this });
         } else if (target.tools.length > 1) {
           const toolList = new CardList();
           toolList.cards = [...target.tools];
@@ -77,7 +77,7 @@ export class Minccino extends PokemonCard {
             { min: 1, max: 1, allowCancel: false }
           ), selectedTools => {
             if (selectedTools && selectedTools.length === 1) {
-              target.moveCardTo(selectedTools[0], opponent.discard);
+              MOVE_CARDS(store, state, target, opponent.discard, { cards: [selectedTools[0]], sourceCard: this });
             }
           });
         }

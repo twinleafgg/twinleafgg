@@ -16,7 +16,7 @@ import {
 } from '../../../game';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LarrysStaraptor extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -89,7 +89,7 @@ export class LarrysStaraptor extends PokemonCard {
             if (transfers.length > 0) {
               for (const transfer of transfers) {
                 const source = StateUtils.getTarget(state, player, transfer.from);
-                source.moveCardTo(transfer.card, player.discard);
+                MOVE_CARDS(store, state, source, player.discard, { cards: [transfer.card], sourceCard: this });
               }
             }
 

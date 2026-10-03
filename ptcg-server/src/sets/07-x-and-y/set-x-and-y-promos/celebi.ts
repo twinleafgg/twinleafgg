@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { CoinFlipEffect } from '../../../game/store/effects/play-card-effects';
 import { PUT_X_DAMAGE_COUNTERS_ON_ALL_YOUR_OPPONENTS_POKEMON } from '../../../game/store/prefabs/attack-effects';
-import { IS_ABILITY_BLOCKED, MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { IS_ABILITY_BLOCKED, MOVE_POKEMON_OFF_BOARD, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Celebi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,31 +58,10 @@ export class Celebi extends PokemonCard {
       effect.prizeCount = 0;
 
       const cardList = effect.target;
-      const pokemon = cardList.getPokemons();
-      const otherCards = cardList.cards.filter(card =>
-        !(card instanceof PokemonCard) &&
-        (!cardList.tools || !cardList.tools.includes(card))
-      );
-      const tools = [...cardList.tools];
-
-      // Move other cards (tools, energy, etc.) to deck
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.deck, { cards: otherCards });
-      }
-
-      // Move tools to deck
-      if (tools.length > 0) {
-        for (const tool of tools) {
-          cardList.moveCardTo(tool, player.deck);
-        }
-      }
-
-      // Move Pokémon to deck and clear their effects
-      if (pokemon.length > 0) {
-        cardList.damage = 0;
-        cardList.clearEffects();
-        MOVE_CARDS(store, state, cardList, player.deck, { cards: pokemon });
-      }
+      MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+        pokemonDestination: player.deck,
+        sourceCard: this,
+      });
 
       store.log(state, GameLog.LOG_SHUFFLE_POKEMON_INTO_DECK, { name: player.name, card: this.name, effect: this.powers[0].name });
 

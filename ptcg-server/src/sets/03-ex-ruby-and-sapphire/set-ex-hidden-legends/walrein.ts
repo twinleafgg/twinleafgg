@@ -5,7 +5,7 @@ import { StoreLike, State, GameMessage, AttachEnergyPrompt, CardList, EnergyCard
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { BLOCK_IF_HAS_SPECIAL_CONDITION, WAS_POWER_USED, WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_HAS_SPECIAL_CONDITION, WAS_POWER_USED, WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DEFENDING_POKEMON_CANNOT_ATTACK } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Walrein extends PokemonCard {
@@ -62,7 +62,7 @@ export class Walrein extends PokemonCard {
 
       BLOCK_IF_HAS_SPECIAL_CONDITION(player, this);
 
-      player.deck.moveTo(temp, 1);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 1, sourceCard: this });
 
       const energyCardsDrawn = temp.cards.filter(card => {
         return card instanceof EnergyCard && card.energyType === EnergyType.BASIC;
@@ -107,10 +107,10 @@ export class Walrein extends PokemonCard {
           if (transfers) {
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              temp.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this });
             }
             temp.cards.forEach(card => {
-              temp.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, temp, player.hand, { cards: [card], sourceCard: this });
             });
           }
         });

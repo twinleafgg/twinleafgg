@@ -8,8 +8,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class KarateBelt extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'UNM';
 
@@ -25,13 +24,14 @@ export class KarateBelt extends TrainerCard {
     'If you have more Prize cards remaining than your opponent, the attacks of the Pokémon this card is attached to cost [F] less.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckAttackCostEffect && effect.player.active.tools.includes(this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
       const index = effect.cost.indexOf(CardType.FIGHTING);
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       // No cost to reduce
       if (index === -1) {

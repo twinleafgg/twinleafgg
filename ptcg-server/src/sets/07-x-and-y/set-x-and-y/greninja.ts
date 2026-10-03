@@ -17,7 +17,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { AfterDamageEffect, ApplyWeaknessEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Greninja extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -91,7 +91,7 @@ export class Greninja extends PokemonCard {
         (cards) => {
           cards = cards || [];
           player.marker.addMarker(this.WATER_SHURIKEN_MARKER, this);
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
           return store.prompt(
             state,

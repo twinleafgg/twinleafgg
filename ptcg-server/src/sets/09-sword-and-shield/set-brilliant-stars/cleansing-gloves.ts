@@ -8,10 +8,8 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
-
 export class CleansingGloves extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark = 'F';
   public set: string = 'BRS';
   public cardImage: string = 'assets/cardback.png';
@@ -20,7 +18,7 @@ export class CleansingGloves extends TrainerCard {
   public fullName: string = 'Cleansing Gloves BRS';
 
   public text: string =
-    'The attacks of the Pokémon this card is attached to do 30 more damage to your opponent\'s Active [P] Pokémon (before applying Weakness and Resistance).';
+    "The attacks of the Pokémon this card is attached to do 30 more damage to your opponent's Active [P] Pokémon (before applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof DealDamageEffect && effect.source.tools.includes(this)) {
@@ -47,5 +45,4 @@ export class CleansingGloves extends TrainerCard {
 
     return state;
   }
-
 }

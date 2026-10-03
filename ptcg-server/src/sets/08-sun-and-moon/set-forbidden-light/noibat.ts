@@ -7,7 +7,7 @@ import { Stage, CardType, TrainerType } from '../../../game/store/card/card-type
 import { StoreLike, State, StateUtils } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Noibat extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -53,7 +53,7 @@ export class Noibat extends PokemonCard {
 
       if (itemCards.length > 0) {
         itemCards.forEach(card => {
-          opponent.hand.moveCardTo(card, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [card], sourceCard: this });
         });
       }
     }

@@ -1,10 +1,10 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { CardType, Stage } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameMessage, GameError } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PlayItemEffect } from '../../../game/store/effects/play-card-effects';
-import { ADD_MARKER, AFTER_ATTACK, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { SHUFFLE_THIS_POKEMON_AND_ALL_ATTACHED_CARDS_INTO_YOUR_DECK } from '../../../game/store/prefabs/attack-effects';
+import { OPPONENT_CANNOT_PLAY_ITEM_CARDS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Beheeyem extends PokemonCard {
 
@@ -36,29 +36,15 @@ export class Beheeyem extends PokemonCard {
   public name: string = 'Beheeyem';
   public fullName: string = 'Beheeyem UNM';
 
-  public readonly OPPONENT_CANNOT_PLAY_ITEM_CARDS_MARKER = 'OPPONENT_CANNOT_PLAY_ITEM_CARDS_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      ADD_MARKER(this.OPPONENT_CANNOT_PLAY_ITEM_CARDS_MARKER, opponent, this);
-    }
-
-    if (effect instanceof PlayItemEffect) {
-      const player = effect.player;
-      if (HAS_MARKER(this.OPPONENT_CANNOT_PLAY_ITEM_CARDS_MARKER, player, this)) {
-        throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
-      }
+      OPPONENT_CANNOT_PLAY_ITEM_CARDS(store, state, effect, this);
     }
 
     if (AFTER_ATTACK(effect, 1, this)) {
       SHUFFLE_THIS_POKEMON_AND_ALL_ATTACHED_CARDS_INTO_YOUR_DECK(store, state, effect);
     }
 
-    REMOVE_MARKER_AT_END_OF_TURN(effect, this.OPPONENT_CANNOT_PLAY_ITEM_CARDS_MARKER, this);
     return state;
   }
 }

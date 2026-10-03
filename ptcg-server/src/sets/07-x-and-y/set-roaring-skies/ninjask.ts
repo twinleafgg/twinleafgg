@@ -6,10 +6,8 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, ChooseCardsPrompt, GameError, GameMessage, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED,
-  REMOVE_MARKER_AT_END_OF_TURN, IS_ABILITY_BLOCKED, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH
-} from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED,
+  REMOVE_MARKER_AT_END_OF_TURN, IS_ABILITY_BLOCKED, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ninjask extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -83,11 +81,11 @@ export class Ninjask extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
           // Discard the top card of opponent's deck
           if (opponent.deck.cards.length > 0) {
             const topCard = opponent.deck.cards[0];
-            opponent.deck.moveCardTo(topCard, opponent.discard);
+            MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [topCard], sourceCard: this });
           }
         }
       });

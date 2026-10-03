@@ -9,13 +9,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN } from '../../../game/store/prefabs/tool-prefabs';
 
 export class SlowbroSpiritLink extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'EVO';
   public setNumber: string = '86';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Slowbro Spirit Link';
   public fullName: string = 'Slowbro Spirit Link EVO';
-  public text: string = 'Your turn does not end if the Pokémon this card is attached to becomes M Slowbro-EX.';
+  public text: string =
+    'Your turn does not end if the Pokémon this card is attached to becomes M Slowbro-EX.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN(store, state, effect, this, 'M Slowbro-EX');

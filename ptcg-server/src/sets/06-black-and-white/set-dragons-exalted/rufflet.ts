@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, ShowCardsPrompt, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 
 export class Rufflet extends PokemonCard {
@@ -69,7 +69,7 @@ export class Rufflet extends PokemonCard {
         { min: 0, max: maxToTake, allowCancel: false, blocked }
       ), selected => {
         const selectedCards = selected || [];
-        player.deck.moveCardsTo(selectedCards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: selectedCards, sourceCard: this });
 
         if (selectedCards.length > 0) {
           const opponent = StateUtils.getOpponent(state, player);

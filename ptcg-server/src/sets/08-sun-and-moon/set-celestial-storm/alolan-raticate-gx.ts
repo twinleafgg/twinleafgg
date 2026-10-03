@@ -13,13 +13,11 @@ import {
 import { ChooseCardsPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   COIN_FLIP_PROMPT,
   BLOCK_IF_GX_ATTACK_USED,
   BLOCK_IF_DECK_EMPTY,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AlolanRaticateGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -78,7 +76,7 @@ export class AlolanRaticateGx extends PokemonCard {
         (cards) => {
           cards = cards || [];
           effect.damage = cards.length * 40;
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
         },
       );
     }
@@ -121,7 +119,7 @@ export class AlolanRaticateGx extends PokemonCard {
               () => {},
             );
             cards.forEach((card) => {
-              player.deck.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
             });
           }
           SHUFFLE_DECK(store, state, player);

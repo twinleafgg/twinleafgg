@@ -5,7 +5,7 @@ import { StoreLike, State, StateUtils, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TingLu extends PokemonCard {
 
@@ -77,7 +77,7 @@ export class TingLu extends PokemonCard {
       if (stadiumCard) {
         const cardList = StateUtils.findCardList(state, stadiumCard);
         const owner = StateUtils.findOwner(state, cardList);
-        cardList.moveTo(owner.discard);
+        MOVE_CARDS(store, state, cardList, owner.discard, { sourceCard: this });
         this.discardedStadiumCard = false;
       }
     }

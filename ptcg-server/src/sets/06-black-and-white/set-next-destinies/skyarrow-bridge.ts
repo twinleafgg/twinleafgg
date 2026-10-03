@@ -11,7 +11,7 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 
 export class SkyarrowBridge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'NXD';
   public name: string = 'Skyarrow Bridge';
   public fullName: string = 'Skyarrow Bridge NXD';

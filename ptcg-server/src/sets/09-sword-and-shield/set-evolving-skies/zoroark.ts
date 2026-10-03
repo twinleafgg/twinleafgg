@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { Card, ChooseCardsPrompt, GameError, GameMessage, Player } from '../../../game';
 
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Zoroark extends PokemonCard {
 
@@ -76,17 +76,17 @@ export class Zoroark extends PokemonCard {
       ), selected => {
 
         if (index >= 0) {
-          effect.player.bench[index].moveCardTo(this, effect.player.discard);
+          MOVE_CARDS(store, state, effect.player.bench[index], effect.player.discard, { cards: [this], sourceCard: this });
         } else {
-          effect.player.active.moveCardTo(this, effect.player.discard);
+          MOVE_CARDS(store, state, effect.player.active, effect.player.discard, { cards: [this], sourceCard: this });
         }
 
         const replacement = selected[0];
 
         if (index >= 0) {
-          effect.player.discard.moveCardTo(replacement, effect.player.bench[index]);
+          MOVE_CARDS(store, state, effect.player.discard, effect.player.bench[index], { cards: [replacement], sourceCard: this });
         } else {
-          effect.player.discard.moveCardTo(replacement, effect.player.active);
+          MOVE_CARDS(store, state, effect.player.discard, effect.player.active, { cards: [replacement], sourceCard: this });
         }
 
         return state;

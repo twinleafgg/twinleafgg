@@ -1,6 +1,6 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, StateUtils, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Raticate extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -39,7 +39,7 @@ export class Raticate extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       if (opponent.active.tools.length > 0) {
-        opponent.active.moveCardsTo([...opponent.active.tools], opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [...opponent.active.tools], sourceCard: this });
       }
     }
 

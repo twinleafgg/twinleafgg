@@ -10,7 +10,7 @@ import {
   PokemonCardList,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HANDLE_ABILITY_LOCK } from '../../../game/store/prefabs/ability-lock';
 
 export class AerodactylVstar extends PokemonCard {
@@ -53,7 +53,7 @@ export class AerodactylVstar extends PokemonCard {
       const player = effect.player;
       const lostCount = Math.min(3, player.deck.cards.length);
       if (lostCount > 0) {
-        player.deck.moveTo(player.lostzone, lostCount);
+        MOVE_CARDS(store, state, player.deck, player.lostzone, { count: lostCount, sourceCard: this });
       }
     }
 

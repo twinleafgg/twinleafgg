@@ -6,11 +6,20 @@ import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import {
-  PlayerType, SlotType, CardTarget, GameError, GameMessage,
-  PokemonCardList
+  PlayerType,
+  SlotType,
+  CardTarget,
+  GameError,
+  GameMessage,
+  PokemonCardList,
 } from '../../../game';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   const blocked: CardTarget[] = [];
@@ -31,16 +40,20 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   effect.preventDefault = true;
 
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_HEAL,
-    PlayerType.BOTTOM_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { allowCancel: true, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_HEAL,
+      PlayerType.BOTTOM_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { allowCancel: true, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length === 0) {
     return state;
@@ -48,7 +61,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Discard trainer only when user selected a Pokemon
 
-  targets.forEach(target => {
+  targets.forEach((target) => {
     // Heal Pokemon
     const healEffect = new HealEffect(player, target, 30);
     store.reduceEffect(state, healEffect);
@@ -58,8 +71,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 }
 
 export class Potion extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BCR';
 
@@ -71,8 +83,7 @@ export class Potion extends TrainerCard {
 
   public setNumber: string = '132';
 
-  public text: string =
-    'Heal 30 damage from 1 of your Pokemon.';
+  public text: string = 'Heal 30 damage from 1 of your Pokemon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -81,5 +92,4 @@ export class Potion extends TrainerCard {
     }
     return state;
   }
-
 }

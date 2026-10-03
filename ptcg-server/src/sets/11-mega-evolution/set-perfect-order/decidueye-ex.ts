@@ -12,7 +12,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckAttackCostEffect } from '../../../game/store/effects/check-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { AFTER_ATTACK } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Decidueyeex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -88,7 +88,7 @@ export class Decidueyeex extends PokemonCard {
         (selected) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            opponent.active.moveCardsTo(cards, opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
           }
         },
       );

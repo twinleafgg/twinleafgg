@@ -9,7 +9,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { MoveEnergyPrompt, CardTarget } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PrimalKyogreEx extends PokemonCard {
   protected _tags = [CardTag.MEGA, CardTag.POKEMON_EX, CardTag.PRIMAL];
@@ -74,7 +74,7 @@ export class PrimalKyogreEx extends PokemonCard {
                 for (const transfer of transfers) {
                   const source = StateUtils.getTarget(state, player, transfer.from);
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  source.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
                 }
               }
             },

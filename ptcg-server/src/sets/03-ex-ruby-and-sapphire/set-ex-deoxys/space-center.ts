@@ -12,7 +12,7 @@ import { HANDLE_ABILITY_BLOCK, POKEBODY_TYPES } from '../../../game/store/prefab
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class SpaceCenter extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'DX';
   public name: string = 'Space Center';
   public fullName: string = 'Space Center DX';

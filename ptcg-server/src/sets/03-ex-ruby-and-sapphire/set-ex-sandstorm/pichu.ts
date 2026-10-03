@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { StoreLike, State, AttachEnergyPrompt, GameMessage, PlayerType, SlotType, StateUtils, PowerType, GameError, Card, ChooseCardsPrompt, PokemonCardList, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 
 export class Pichu extends PokemonCard {
@@ -66,7 +66,7 @@ export class Pichu extends PokemonCard {
         const target = StateUtils.findCardList(state, this);
 
         // Evolve Pokemon
-        player.hand.moveCardTo(evolution, target);
+        MOVE_CARDS(store, state, player.hand, target, { cards: [evolution], sourceCard: this });
         const pokemonTarget = target as PokemonCardList;
         pokemonTarget.clearEffects();
         pokemonTarget.pokemonPlayedTurn = state.turn;
@@ -101,7 +101,7 @@ export class Pichu extends PokemonCard {
         }
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           target.damage += 10;
         }
       });

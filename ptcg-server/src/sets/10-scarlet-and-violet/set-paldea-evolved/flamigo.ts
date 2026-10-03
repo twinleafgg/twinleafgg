@@ -3,8 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, GameMessage, ChooseCardsPrompt, ShuffleDeckPrompt, PowerType, ConfirmPrompt, ShowCardsPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Flamigo extends PokemonCard {
 
@@ -53,7 +52,6 @@ export class Flamigo extends PokemonCard {
 
   public fullName: string = 'Flamigo PAL';
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
     if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
@@ -80,7 +78,7 @@ export class Flamigo extends PokemonCard {
             { min: 0, max: 3, allowCancel: false }
           ), selected => {
             const cards = selected || [];
-            player.deck.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
             if (cards.length > 0) {
               state = store.prompt(state, new ShowCardsPrompt(

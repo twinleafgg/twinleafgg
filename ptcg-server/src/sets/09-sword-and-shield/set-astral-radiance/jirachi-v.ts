@@ -15,11 +15,9 @@ import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-pr
 import { PlayerType, SlotType, CardTarget } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   ADD_SLEEP_TO_PLAYER_ACTIVE,
-  IS_ABILITY_BLOCKED,
-} from '../../../game/store/prefabs/prefabs';
+  IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_ASLEEP } from '../../../game/store/prefabs/attack-effects';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 
@@ -142,7 +140,7 @@ export class JirachiV extends PokemonCard {
           target.marker.removeMarker(this.WISH_CONNECTOR_MARKER, this);
           for (const transfer of transfers) {
             const t = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, t);
+            MOVE_CARDS(store, state, player.discard, t, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

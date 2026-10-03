@@ -11,13 +11,14 @@ import { CheckPokemonTypeEffect } from '../../game/store/effects/check-effects';
 import { DRAW_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class BlaineSLastStand extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'DRM';
   public setNumber: string = '58';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Blaine\'s Last Stand';
-  public fullName: string = 'Blaine\'s Last Stand DRM';
-  public text: string = 'You can play this card only when it is the last card in your hand.\n\nDraw 2 cards for each Fire Pokémon you have in play.';
+  public name: string = "Blaine's Last Stand";
+  public fullName: string = "Blaine's Last Stand DRM";
+  public text: string =
+    'You can play this card only when it is the last card in your hand.\n\nDraw 2 cards for each Fire Pokémon you have in play.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-vivid-voltage/beedrill.ts (Elusive Master - last card in hand check), set-twilight-masquerade/hassel.ts (Supporter pattern)
@@ -25,7 +26,7 @@ export class BlaineSLastStand extends TrainerCard {
       const player = effect.player;
 
       // Check if this is the last card in hand
-      const otherCards = player.hand.cards.filter(c => c !== this);
+      const otherCards = player.hand.cards.filter((c) => c !== this);
       if (otherCards.length !== 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }

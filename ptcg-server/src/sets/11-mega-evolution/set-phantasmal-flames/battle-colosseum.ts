@@ -4,19 +4,23 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
-import { MoveDamageCountersEffect, PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
+import {
+  MoveDamageCountersEffect,
+  PlaceDamageCountersEffect,
+} from '../../../game/store/effects/game-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class BattleColosseum extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'I';
   public set: string = 'PFL';
   public name: string = 'Battle Cage';
   public fullName: string = 'Battle Colosseum M2';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '85';
-  public text: string = 'Prevent all damage counters from being placed on Benched Pokémon (both yours and your opponent\'s) by effects of attacks and Abilities from the opponent\'s Pokémon. (Damage from attacks is still taken.)';
+  public text: string =
+    "Prevent all damage counters from being placed on Benched Pokémon (both yours and your opponent's) by effects of attacks and Abilities from the opponent's Pokémon. (Damage from attacks is still taken.)";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof MoveDamageCountersEffect && StateUtils.getStadiumCard(state) === this) {

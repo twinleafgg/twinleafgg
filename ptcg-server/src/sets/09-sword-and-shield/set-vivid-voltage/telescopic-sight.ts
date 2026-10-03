@@ -8,7 +8,7 @@ import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class TelescopicSight extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'VIV';
   public setNumber = '160';
   public cardImage = 'assets/cardback.png';

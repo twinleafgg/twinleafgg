@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, GameError, PowerType, StateUtils, PlayerType, CardList, OrderCardsPrompt, SelectPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckRetreatCostEffect } from '../../../game/store/effects/check-effects';
-import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEBODY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lunatone extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -83,7 +83,7 @@ export class Lunatone extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -110,7 +110,7 @@ export class Lunatone extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,

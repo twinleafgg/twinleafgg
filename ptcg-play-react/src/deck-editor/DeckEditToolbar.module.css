@@ -1,8 +1,9 @@
 .toolbar {
   flex: 0 0 auto;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-  color: #222;
+  background: linear-gradient(180deg, rgba(12, 26, 46, 0.9) 0%, rgba(6, 16, 24, 0.94) 100%);
+  border-bottom: 1px solid rgba(62, 199, 201, 0.22);
+  color: var(--tl-text, #fafafa);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .row {
@@ -46,10 +47,15 @@
 
 .deckTitle {
   display: block;
-  font: inherit;
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #111;
+  font-family: var(--tl-font-display, 'Orbitron', system-ui, sans-serif);
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.45),
+    0 0 16px rgba(62, 199, 201, 0.2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -70,21 +76,21 @@
 }
 
 .plainSearchLabel {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.72rem;
-  color: #444;
+  color: var(--tl-text-dim, #a0a1a5);
   text-shadow: none;
   margin-bottom: 6px;
 }
 
-/* Higher specificity than shared TextField so deck toolbar search stays plain */
+/* Higher specificity than shared TextField so deck toolbar search stays dark & plain */
 .searchDesktop .plainSearchInput,
 .searchMobile .plainSearchInput {
   width: 100%;
-  background: #fff;
-  border: 1px solid #c4c4c4;
-  border-radius: 4px;
-  color: #222;
+  background: var(--tl-input-bg, #0a1424);
+  border: 1px solid rgba(62, 199, 201, 0.22);
+  border-radius: 10px;
+  color: #fff;
   min-height: 38px;
   padding: 0 12px;
   line-height: 36px;
@@ -96,14 +102,14 @@
 
 .searchDesktop .plainSearchInput::placeholder,
 .searchMobile .plainSearchInput::placeholder {
-  color: #888;
+  color: rgba(160, 161, 165, 0.8);
 }
 
 .searchDesktop .plainSearchInput:focus,
 .searchMobile .plainSearchInput:focus {
   outline: none;
-  border-color: #666;
-  box-shadow: 0 0 0 1px #666;
+  border-color: var(--tl-green, #548c5c);
+  box-shadow: 0 0 0 2px rgba(69, 144, 88, 0.35);
 }
 
 .searchDesktop .plainSearchInput:disabled,
@@ -129,12 +135,13 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.28s ease;
-  border-top: 1px solid #e8e8e8;
-  background: #fafafa;
+  border-top: 1px solid transparent;
+  background: rgba(6, 16, 32, 0.72);
 }
 
 .filtersPanelOpen {
   max-height: 480px;
+  border-top-color: rgba(62, 199, 201, 0.16);
 }
 
 .filtersInner {
@@ -144,6 +151,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(62, 199, 201, 0.4) transparent;
 }
 
 @media (max-width: 960px) {
@@ -187,29 +196,29 @@
 }
 
 .group {
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(62, 199, 201, 0.2);
+  border-radius: 12px;
   padding: 10px 12px;
-  background: #fff;
+  background: rgba(10, 20, 36, 0.6);
 }
 
 .groupTitle {
   margin: 0 0 8px;
   font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555;
-  border-bottom: 1px solid #eee;
+  color: var(--tl-cyan, #3ec7c9);
+  border-bottom: 1px solid rgba(62, 199, 201, 0.14);
   padding-bottom: 6px;
 }
 
 .superRow {
   display: flex;
   flex-wrap: wrap;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #c4c4c4;
+  border: 1px solid rgba(62, 199, 201, 0.3);
 }
 
 .superBtn {
@@ -217,37 +226,52 @@
   min-width: 72px;
   padding: 8px 10px;
   border: none;
-  border-right: 1px solid #c4c4c4;
-  background: #fff;
-  color: #222;
+  border-right: 1px solid rgba(62, 199, 201, 0.3);
+  background: rgba(10, 20, 36, 0.72);
+  color: var(--tl-text-soft, #c8d0dc);
   font: inherit;
   font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .superBtn:last-child {
   border-right: none;
 }
 
-.superBtn:hover {
-  background: #f3f3f3;
+.superBtn:hover:not(:disabled) {
+  background: rgba(62, 199, 201, 0.1);
+  color: #fff;
 }
 
 .superBtnActive {
-  background: #e8e8e8;
-  font-weight: 600;
+  background: linear-gradient(135deg, rgba(84, 140, 92, 0.4), rgba(62, 199, 201, 0.16));
+  font-weight: 800;
+  color: #fff;
 }
 
 .select {
   width: 100%;
   margin-top: 6px;
   padding: 8px 10px;
-  border-radius: 4px;
-  border: 1px solid #c4c4c4;
-  background: #fff;
-  color: #222;
+  border-radius: 8px;
+  border: 1px solid rgba(62, 199, 201, 0.22);
+  background: var(--tl-input-bg, #0a1424);
+  color: #fff;
   font: inherit;
   font-size: 0.85rem;
+}
+
+.select option {
+  background: #0a1424;
+  color: #fafafa;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--tl-green, #548c5c);
+  box-shadow: 0 0 0 2px rgba(69, 144, 88, 0.35);
 }
 
 .selectMulti {
@@ -256,18 +280,18 @@
 
 .adminNote {
   font-size: 0.75rem;
-  color: #8a5a00;
+  color: var(--tl-gold, #fbbf24);
   margin-top: 6px;
 }
 
 .filterCheckbox {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.78rem;
-  color: #333;
+  color: var(--tl-text-soft, #c8d0dc);
   text-shadow: none;
   margin-top: 8px;
 }
 
 .filterCheckbox input {
-  accent-color: #333;
+  accent-color: var(--tl-green, #548c5c);
 }

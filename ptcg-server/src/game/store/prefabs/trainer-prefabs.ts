@@ -1,5 +1,5 @@
 import { GameError } from '../../game-error';
-import { GameLog, GameMessage } from '../../game-message';
+import { GameMessage } from '../../game-message';
 import { Card } from '../card/card';
 import { TrainerCard } from '../card/trainer-card';
 import { Format, TrainerType, CardTag } from '../card/card-types';
@@ -9,6 +9,7 @@ import { ChooseCardsPrompt } from '../prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../prompts/show-cards-prompt';
 import { ShuffleDeckPrompt } from '../prompts/shuffle-prompt';
 import { canPlayDualStadium } from '../dual-stadium-utils';
+import { getOverriddenCanPlay } from '../card/card-effect-overrides';
 import { StateUtils } from '../state-utils';
 import { Player } from '../state/player';
 import { State, GamePhase } from '../state/state';
@@ -94,9 +95,6 @@ export function DISCARD_X_CARDS_FROM_YOUR_HAND(effect: TrainerEffect, store: Sto
         return;
       }
       MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: effect.trainerCard });
-      cards.forEach((card, index) => {
-        store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, { name: player.name, card: card.name });
-      });
     });
   }
 }
@@ -304,11 +302,15 @@ export function CAN_PLAY_TRAINER_CARD(
       }
     }
 
-    // Rely on canPlay method for card-specific validation
-    if (trainerCard.canPlay) {
-      const canPlayResult = trainerCard.canPlay(store, state, player);
+    // Prefer format-overridden canPlay (same print routing as reduceEffect), then instance canPlay
+    const format = state.gameSettings?.format ?? Format.NONE;
+    const canPlayFn =
+      getOverriddenCanPlay(trainerCard, format) ??
+      (trainerCard.canPlay ? trainerCard.canPlay.bind(trainerCard) : undefined);
+    if (canPlayFn) {
+      const canPlayResult = canPlayFn(store, state, player);
       if (canPlayResult !== undefined) {
-        return canPlayResult; // Use canPlay result
+        return canPlayResult;
       }
     }
 

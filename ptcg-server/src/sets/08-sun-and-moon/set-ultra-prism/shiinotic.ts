@@ -4,7 +4,7 @@ import { StoreLike, State, PowerType, GameError, GameMessage, StateUtils, Card, 
 import { Effect } from '../../../game/store/effects/effect';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shiinotic extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -85,7 +85,7 @@ export class Shiinotic extends PokemonCard {
         });
 
         cards.forEach((card, index) => {
-          player.deck.moveCardTo(card, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
         });
 
         if (cards.length > 0) {

@@ -7,7 +7,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { DRAW_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { Card } from '../../../game/store/card/card';
 
 export class Skarmory extends PokemonCard {
@@ -70,7 +70,7 @@ export class Skarmory extends PokemonCard {
         (cards: Card[] | null) => {
           cards = cards || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
             DRAW_CARDS(store, state, player, 3);
           }
         },

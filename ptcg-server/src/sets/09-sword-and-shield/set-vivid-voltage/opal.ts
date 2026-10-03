@@ -7,10 +7,14 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { MULTIPLE_COIN_FLIPS_PROMPT, SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
+import {
+  MULTIPLE_COIN_FLIPS_PROMPT,
+  SEARCH_DECK_FOR_CARDS_TO_HAND,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 
 export class Opal extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark: string = 'D';
 
@@ -20,7 +24,8 @@ export class Opal extends TrainerCard {
   public name: string = 'Opal';
   public fullName: string = 'Opal VIV';
 
-  public text: string = 'Flip 2 coins. Search your deck for a number of cards up to the number of heads, put them into your hand, and shuffle your deck. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Flip 2 coins. Search your deck for a number of cards up to the number of heads, put them into your hand, and shuffle your deck. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-darkness-ablaze/hippopotas.ts (MULTIPLE_COIN_FLIPS_PROMPT),
@@ -28,15 +33,24 @@ export class Opal extends TrainerCard {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       effect.preventDefault = true;
 
-      MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 2, results => {
-        const heads = results.filter(r => r).length;
+      MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 2, (results) => {
+        const heads = results.filter((r) => r).length;
         if (heads > 0 && player.deck.cards.length > 0) {
-          SEARCH_DECK_FOR_CARDS_TO_HAND(store, state, player, this, {}, { min: 0, max: heads, allowCancel: false });
+          SEARCH_DECK_FOR_CARDS_TO_HAND(
+            store,
+            state,
+            player,
+            this,
+            {},
+            { min: 0, max: heads, allowCancel: false },
+          );
         }
-
       });
     }
 

@@ -4,12 +4,12 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PlayerType, PowerType, StateUtils, StoreLike, State } from '../../../game';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
+import { PlayerType, PowerType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { BetweenTurnsEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effects';
 import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class CresseliaEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -42,9 +42,6 @@ export class CresseliaEx extends PokemonCard {
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Cresselia-EX';
   public fullName: string = 'Cresselia-EX BCR';
-  public readonly PSYCHIC_PROTECTION_MARKER = 'PSYCHIC_PROTECTION_MARKER';
-  public readonly CLEAR_PSYCHIC_PROTECTION_MARKER = 'CLEAR_PSYCHIC_PROTECTION_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ability: Sparkling Particles
     // Refs: set-ex-sandstorm/lotad.ts (between-turn healing), set-black-and-white/serperior2.ts (ability lock check)
@@ -58,31 +55,8 @@ export class CresseliaEx extends PokemonCard {
       });
     }
 
-    // Attack 1: Psychic Protection
-    // Refs: set-primal-clash/gardevoir-ex.ts (no-weakness marker lifecycle), set-surging-sparks/archaludon-ex.ts (CheckPokemonStatsEffect)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      player.active.marker.addMarker(this.PSYCHIC_PROTECTION_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_PSYCHIC_PROTECTION_MARKER, this);
-    }
-
-    if (effect instanceof CheckPokemonStatsEffect) {
-      const player = StateUtils.findOwner(state, effect.target);
-      if (player.active.marker.hasMarker(this.PSYCHIC_PROTECTION_MARKER, this)) {
-        effect.weakness = [];
-      }
-    }
-
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_PSYCHIC_PROTECTION_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_PSYCHIC_PROTECTION_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.PSYCHIC_PROTECTION_MARKER, this);
-      });
+      return THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     return state;

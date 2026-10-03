@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Beldum extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -47,7 +47,7 @@ export class Beldum extends PokemonCard {
 
       const count = Math.min(4, player.deck.cards.length);
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, count);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: count, sourceCard: this });
 
       return store.prompt(state, new OrderCardsPrompt(
         player.id,

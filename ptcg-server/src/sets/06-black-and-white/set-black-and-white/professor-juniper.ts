@@ -10,7 +10,7 @@ import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { Player } from '../../../game';
 
 export class ProfessorJuniper extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'BLW';
   public name: string = 'Professor Juniper';
   public fullName: string = 'Professor Juniper BLW';

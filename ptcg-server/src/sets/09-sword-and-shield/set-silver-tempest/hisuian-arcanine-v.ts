@@ -17,11 +17,9 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MoveEnergyPrompt } from '../../../game/store/prompts/move-energy-prompt';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
-  IS_ABILITY_BLOCKED,
-} from '../../../game/store/prefabs/prefabs';
+  IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 
 export class HisuianArcanineV extends PokemonCard {
@@ -129,7 +127,7 @@ export class HisuianArcanineV extends PokemonCard {
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

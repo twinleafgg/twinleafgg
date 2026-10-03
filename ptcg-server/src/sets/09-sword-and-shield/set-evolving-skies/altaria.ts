@@ -12,7 +12,7 @@ import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects
 import { CardList } from '../../../game/store/state/card-list';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Altaria extends PokemonCard {
 
@@ -83,7 +83,7 @@ export class Altaria extends PokemonCard {
 
           const deckTop = new CardList();
 
-          player.deck.moveCardTo(card, deckTop);
+          MOVE_CARDS(store, state, player.deck, deckTop, { cards: [card], sourceCard: this });
 
           state = store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
             player.deck.applyOrder(order);

@@ -14,6 +14,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -73,13 +74,13 @@ function* playCard(
   transfers.forEach((transfer) => {
     const source = StateUtils.getTarget(state, player, transfer.from);
     const target = StateUtils.getTarget(state, player, transfer.to);
-    source.moveCardTo(transfer.card, target);
+    MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: effect.trainerCard });
   });
   return state;
 }
 
 export class TagSwitch extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'UNM';
 

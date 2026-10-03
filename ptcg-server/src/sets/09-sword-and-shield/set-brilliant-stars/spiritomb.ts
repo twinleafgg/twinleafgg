@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { DEFENDING_POKEMON_WEAKNESS_IS_NOW } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 import { PUT_X_DAMAGE_COUNTERS_IN_ANY_WAY_YOU_LIKE } from '../../../game/store/prefabs/attack-effects';
 
 export class Spiritomb extends PokemonCard {
@@ -40,43 +39,9 @@ export class Spiritomb extends PokemonCard {
   public name: string = 'Spiritomb';
   public fullName: string = 'Spiritomb BRS 89';
 
-  public readonly TICKING_TERROR_MARKER = 'SPIRITOMB_BRS_TICKING_TERROR_MARKER';
-  public readonly TICKING_TERROR_2_MARKER = 'SPIRITOMB_BRS_TICKING_TERROR_2_MARKER';
-  public readonly CLEAR_TICKING_TERROR_MARKER = 'SPIRITOMB_BRS_CLEAR_TICKING_TERROR_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Ticking Terror
-    // Ref: set-phantom-forces/pachirisu.ts (Trick Sticker - weakness override with 2-phase marker)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      opponent.active.marker.addMarker(this.TICKING_TERROR_MARKER, this);
-      player.marker.addMarker(this.TICKING_TERROR_2_MARKER, this);
-    }
-
-    // Modify weakness for marked Pokemon to Darkness
-    if (effect instanceof CheckPokemonStatsEffect) {
-      if (effect.target.marker.hasMarker(this.TICKING_TERROR_MARKER, this)) {
-        const originalValue = effect.weakness.length > 0 ? effect.weakness[0].value : undefined;
-        effect.weakness = [{ type: CardType.DARK, value: originalValue }];
-      }
-    }
-
-    // 2-phase cleanup: until end of your next turn
-    if (effect instanceof EndTurnEffect) {
-      // Phase 2: clear the marker
-      if (effect.player.marker.hasMarker(this.CLEAR_TICKING_TERROR_MARKER, this)) {
-        effect.player.marker.removeMarker(this.CLEAR_TICKING_TERROR_MARKER, this);
-        const opponent = StateUtils.getOpponent(state, effect.player);
-        opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-          cardList.marker.removeMarker(this.TICKING_TERROR_MARKER, this);
-        });
-      }
-      // Phase 1 -> Phase 2
-      if (effect.player.marker.hasMarker(this.TICKING_TERROR_2_MARKER, this)) {
-        effect.player.marker.removeMarker(this.TICKING_TERROR_2_MARKER, this);
-        effect.player.marker.addMarker(this.CLEAR_TICKING_TERROR_MARKER, this);
-      }
+      DEFENDING_POKEMON_WEAKNESS_IS_NOW(store, state, effect, this, CardType.DARK);
     }
 
     // Attack 2: Cursed Drop

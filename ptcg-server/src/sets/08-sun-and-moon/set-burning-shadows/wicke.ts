@@ -7,16 +7,17 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Wicke extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'BUS';
   public setNumber: string = '127';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Wicke';
   public fullName: string = 'Wicke BUS';
-  public text: string = 'Each player counts the cards in their hand, shuffles those cards into their deck, then draws that many cards. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Each player counts the cards in their hand, shuffles those cards into their deck, then draws that many cards. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-sun-and-moon/ilima.ts (Ilima - shuffle hand into deck and draw)
@@ -25,14 +26,14 @@ export class Wicke extends TrainerCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       // Count cards in each player's hand (excluding this card for the player)
-      const playerHandCount = player.hand.cards.filter(c => c !== this).length;
+      const playerHandCount = player.hand.cards.filter((c) => c !== this).length;
       const opponentHandCount = opponent.hand.cards.length;
 
       // Shuffle player's hand into deck
-      const playerCards = player.hand.cards.filter(c => c !== this);
-      player.hand.moveCardsTo(playerCards, player.deck);
+      const playerCards = player.hand.cards.filter((c) => c !== this);
+      MOVE_CARDS(store, state, player.hand, player.deck, { cards: playerCards, sourceCard: this });
 
-      store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+      store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
         player.deck.applyOrder(order);
       });
 
@@ -41,9 +42,12 @@ export class Wicke extends TrainerCard {
 
       // Shuffle opponent's hand into deck
       const opponentCards = opponent.hand.cards.slice();
-      opponent.hand.moveCardsTo(opponentCards, opponent.deck);
+      MOVE_CARDS(store, state, opponent.hand, opponent.deck, {
+        cards: opponentCards,
+        sourceCard: this,
+      });
 
-      store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
+      store.prompt(state, new ShuffleDeckPrompt(opponent.id), (order) => {
         opponent.deck.applyOrder(order);
       });
 

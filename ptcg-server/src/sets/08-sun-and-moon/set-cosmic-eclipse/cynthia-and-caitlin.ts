@@ -1,5 +1,5 @@
 import { GameError } from '../../../game/game-error';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -50,10 +50,6 @@ function* playCard(
       ),
       (discarded) => {
         if (discarded && discarded.length > 0) {
-          store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, {
-            name: player.name,
-            card: discarded[0].name,
-          });
           MOVE_CARDS(store, state, player.hand, player.discard, {
             cards: discarded,
             sourceCard: self,
@@ -106,10 +102,6 @@ function* playCard(
           ),
           (selected) => {
             if (selected && selected.length > 0) {
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-                name: player.name,
-                card: selected[0].name,
-              });
               MOVE_CARDS(store, state, player.discard, player.hand, {
                 cards: selected,
                 sourceCard: self,
@@ -135,12 +127,6 @@ function* playCard(
           ),
           (discarded) => {
             if (discarded && discarded.length > 0) {
-              const discardedCard = discarded[0];
-              store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, {
-                name: player.name,
-                card: discardedCard.name,
-              });
-
               // Then choose a supporter to recover
               state = store.prompt(
                 state,
@@ -153,16 +139,12 @@ function* playCard(
                 ),
                 (selected) => {
                   if (selected && selected.length > 0) {
-                    store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-                      name: player.name,
-                      card: selected[0].name,
-                    });
-                    player.discard.moveCardsTo(selected, player.hand);
+                    MOVE_CARDS(store, state, player.discard, player.hand, { cards: selected, sourceCard: self });
                     // Now move the discarded card to discard
-                    player.hand.moveCardsTo(discarded, player.discard);
+                    MOVE_CARDS(store, state, player.hand, player.discard, { cards: discarded, sourceCard: self });
                     // Draw 3 cards
                     const drawnCards = player.deck.cards.slice(0, 3);
-                    player.deck.moveCardsTo(drawnCards, player.hand);
+                    MOVE_CARDS(store, state, player.deck, player.hand, { cards: drawnCards, sourceCard: self });
                   }
                 },
               );
@@ -176,7 +158,7 @@ function* playCard(
 }
 
 export class CynthiaAndCaitlin extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'CEC';
   protected _tags = [CardTag.TAG_TEAM];
   public cardImage: string = 'assets/cardback.png';

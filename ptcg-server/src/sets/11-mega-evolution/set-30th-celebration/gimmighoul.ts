@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { COIN_FLIP_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gimmighoul extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -44,7 +44,7 @@ export class Gimmighoul extends PokemonCard {
             { min: 1, max: 1, allowCancel: false }
           ), selected => {
             if (selected && selected.length > 0) {
-              player.deck.moveCardsTo(selected, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: selected, sourceCard: this });
             }
             SHUFFLE_DECK(store, state, player);
           });

@@ -9,7 +9,7 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { SlotType } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Meowth extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -72,7 +72,7 @@ export class Meowth extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), selected => {
           if (selected && selected.length > 0) {
-            target.moveCardTo(selected[0], opponent.discard);
+            MOVE_CARDS(store, state, target, opponent.discard, { cards: [selected[0]], sourceCard: this });
           }
         });
       });

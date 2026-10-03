@@ -6,7 +6,7 @@ import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effect
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS, IS_POKEPOWER_BLOCKED, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, IS_POKEPOWER_BLOCKED, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Spiritomb extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -53,7 +53,7 @@ export class Spiritomb extends PokemonCard {
           const powerEffect = new PowerEffect(player, this.powers[0], this);
           store.reduceEffect(state, powerEffect);
 
-          opponent.hand.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
           DRAW_CARDS(store, state, opponent, 6);
         }

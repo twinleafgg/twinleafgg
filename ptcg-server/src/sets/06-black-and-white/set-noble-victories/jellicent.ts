@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, HEAL_X_DAMAGE_FROM_THIS_POKEMON, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GamePhase } from '../../../game/store/state/state';
@@ -64,7 +64,7 @@ export class Jellicent extends PokemonCard {
       }
 
       if (attackerEnergy.length === 1) {
-        attacker.moveCardTo(attackerEnergy[0], player.discard);
+        MOVE_CARDS(store, state, attacker, player.discard, { cards: [attackerEnergy[0]], sourceCard: this });
         return state;
       }
 
@@ -76,7 +76,7 @@ export class Jellicent extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          attacker.moveCardTo(selected[0], player.discard);
+          MOVE_CARDS(store, state, attacker, player.discard, { cards: [selected[0]], sourceCard: this });
         }
       });
     }

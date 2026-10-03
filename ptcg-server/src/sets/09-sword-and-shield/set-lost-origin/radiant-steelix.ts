@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { PlayerType, SlotType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RadiantSteelix extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -69,7 +69,7 @@ export class RadiantSteelix extends PokemonCard {
 
       while (player.deck.cards.length > 1) {
         const topCard = player.deck.cards[0];
-        player.deck.moveCardTo(topCard, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [topCard], sourceCard: this });
 
         if (topCard instanceof EnergyCard) {
           energyDiscarded++;

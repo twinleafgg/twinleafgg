@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils } from '../../../game';
 import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Forretress extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -79,10 +79,10 @@ export class Forretress extends PokemonCard {
 
       // Move tools first
       const tools = player.active.tools.slice();
-      tools.forEach(t => { player.active.moveCardTo(t, player.lostzone); });
+      tools.forEach(t => { MOVE_CARDS(store, state, player.active, player.lostzone, { cards: [t], sourceCard: this }); });
 
       // Move all cards (Pokemon + energy)
-      player.active.moveTo(player.lostzone);
+      MOVE_CARDS(store, state, player.active, player.lostzone, { sourceCard: this });
     }
 
     if (effect instanceof EndTurnEffect) {

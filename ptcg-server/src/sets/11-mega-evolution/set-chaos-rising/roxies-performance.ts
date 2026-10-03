@@ -12,7 +12,7 @@ import { ADD_MARKER, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/pr
 const ROXIE_POISONED_NO_RETREAT = 'ROXIE_POISONED_NO_RETREAT';
 
 export class RoxiesPerformance extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'J';
   public set: string = 'CRI';
   public cardImage: string = 'assets/cardback.png';

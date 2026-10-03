@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
-import { WAS_ATTACK_USED, DRAW_CARDS, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MrMime extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -46,7 +46,7 @@ export class MrMime extends PokemonCard {
       const opponentHandSize = opponent.hand.cards.length;
 
       const cardsToShuffle = player.hand.cards.slice();
-      player.hand.moveCardsTo(cardsToShuffle, player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { cards: cardsToShuffle, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
         player.deck.applyOrder(order);

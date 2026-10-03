@@ -14,7 +14,7 @@ import {
   ABILITY_USED,
   CONFIRMATION_PROMPT,
   IS_ABILITY_BLOCKED,
-  MOVE_CARDS,
+  MOVE_POKEMON_OFF_BOARD,
   SEARCH_DECK_FOR_CARDS_TO_HAND,
 } from '../../../game/store/prefabs/prefabs';
 
@@ -104,34 +104,10 @@ export class Meowthex extends PokemonCard {
 
     if (effect instanceof AfterAttackEffect && effect.attack === this.attacks[0]) {
       const player = effect.player;
-      const pokemons = player.active.getPokemons();
-      const otherCards = player.active.cards.filter(
-        (card) =>
-          !(card instanceof PokemonCard) &&
-          !pokemons.includes(card as PokemonCard) &&
-          (!player.active.tools || !player.active.tools.includes(card)),
-      );
-      const tools = [...player.active.tools];
-      player.active.clearEffects();
-
-      // Move other cards to hand
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, player.active, player.hand, {
-          cards: otherCards,
-        });
-      }
-
-      // Move tools to hand explicitly
-      for (const tool of tools) {
-        player.active.moveCardTo(tool, player.hand);
-      }
-
-      // Move Pokémon to hand
-      if (pokemons.length > 0) {
-        MOVE_CARDS(store, state, player.active, player.hand, {
-          cards: pokemons,
-        });
-      }
+      MOVE_POKEMON_OFF_BOARD(store, state, player.active, {
+        pokemonDestination: player.hand,
+        sourceCard: this,
+      });
       return state;
     }
     return state;

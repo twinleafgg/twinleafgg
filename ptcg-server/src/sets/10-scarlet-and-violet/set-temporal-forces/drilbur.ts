@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, PowerType, ChooseCardsPrompt, ConfirmPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Drilbur extends PokemonCard {
 
@@ -77,7 +77,7 @@ export class Drilbur extends PokemonCard {
               return state;
             }
 
-            player.deck.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.deck, player.discard, { cards: cards, sourceCard: this });
 
             return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
               player.deck.applyOrder(order);

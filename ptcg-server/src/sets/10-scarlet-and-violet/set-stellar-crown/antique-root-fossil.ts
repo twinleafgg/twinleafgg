@@ -1,12 +1,29 @@
-import { CardTag, CardType, GameError, GameLog, GameMessage, Player, PokemonCard, PokemonType, Power, PowerType, Stage, State, StateUtils, StoreLike, TrainerCard, TrainerType } from "../../../game";
-import { AddSpecialConditionsEffect } from "../../../game/store/effects/attack-effects";
-import { Effect } from "../../../game/store/effects/effect";
-import { RetreatEffect } from "../../../game/store/effects/game-effects";
-import { PlayItemEffect, PlayPokemonEffect } from "../../../game/store/effects/play-card-effects";
-import { WAS_POWER_USED } from "../../../game/store/prefabs/prefabs";
+import {
+  CardTag,
+  CardType,
+  GameError,
+  GameLog,
+  GameMessage,
+  Player,
+  PokemonCard,
+  PokemonType,
+  Power,
+  PowerType,
+  Stage,
+  State,
+  StateUtils,
+  StoreLike,
+  TrainerCard,
+  TrainerType,
+} from '../../../game';
+import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
+import { Effect } from '../../../game/store/effects/effect';
+import { RetreatEffect } from '../../../game/store/effects/game-effects';
+import { PlayItemEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AntiqueRootFossil extends TrainerCard {
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
   public stage: Stage = Stage.BASIC;
   public cardType: CardType[] = [CardType.COLORLESS];
   public cardTypez: CardType = CardType.COLORLESS;
@@ -30,14 +47,16 @@ export class AntiqueRootFossil extends TrainerCard {
   public evolvesFromBase: string[] = [];
   public maxTools: number = 1;
 
-  public powers: Power[] = [{
-    name: 'Antique Root Fossil',
-    text: "Play this card as a 60 HP Basic [C] Pokémon. This card can't be affected by Special Conditions and can't retreat. At any time during your turn, you may discard this card from play.",
-    useWhenInPlay: true,
-    exemptFromAbilityLock: true,
-    isFossil: true,
-    powerType: PowerType.TRAINER_ABILITY,
-  }];
+  public powers: Power[] = [
+    {
+      name: 'Antique Root Fossil',
+      text: "Play this card as a 60 HP Basic [C] Pokémon. This card can't be affected by Special Conditions and can't retreat. At any time during your turn, you may discard this card from play.",
+      useWhenInPlay: true,
+      exemptFromAbilityLock: true,
+      isFossil: true,
+      powerType: PowerType.TRAINER_ABILITY,
+    },
+  ];
 
   public regulationMark = 'H';
   public set: string = 'SCR';
@@ -64,7 +83,7 @@ export class AntiqueRootFossil extends TrainerCard {
         effect: 'Antique Root Fossil',
       });
       const cardList = StateUtils.findCardList(state, this);
-      cardList.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
     }
 
     // Play as Pokemon

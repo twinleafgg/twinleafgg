@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Toucannon extends PokemonCard {
@@ -66,7 +66,7 @@ export class Toucannon extends PokemonCard {
         { min: toReturn, max: toReturn, allowCancel: false }
       ), selected => {
         const cards = selected || [];
-        player.active.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
       });
     }
 

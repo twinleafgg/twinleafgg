@@ -7,13 +7,14 @@ import { UseStadiumEffect } from '../../game/store/effects/game-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../game/store/prefabs/stadium-effect';
 
 export class BrocksPewterCityGym extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'HIF';
   public setNumber: string = '54';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Brock\'s Pewter City Gym';
-  public fullName: string = 'Brock\'s Pewter City Gym HIF';
-  public text: string = 'Onix-GX (both yours and your opponent\'s) take 40 less damage from the opponent\'s attacks (after applying Weakness and Resistance).';
+  public name: string = "Brock's Pewter City Gym";
+  public fullName: string = "Brock's Pewter City Gym HIF";
+  public text: string =
+    "Onix-GX (both yours and your opponent's) take 40 less damage from the opponent's attacks (after applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

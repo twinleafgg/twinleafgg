@@ -11,10 +11,15 @@ import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt'
 import { CardList } from '../../game/store/state/card-list';
 import { ShuffleDeckPrompt } from '../../game/store/prompts/shuffle-prompt';
 import { OrderCardsPrompt } from '../../game';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
-
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Oracle, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Oracle,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   let cards: Card[] = [];
 
@@ -24,7 +29,10 @@ function* playCard(next: Function, store: StoreLike, state: State,
     throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -34,43 +42,45 @@ function* playCard(next: Function, store: StoreLike, state: State,
 
   const deckTop = new CardList();
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARDS,
-    player.deck,
-    {},
-    { min: 2, max: 2, allowCancel: false }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARDS,
+      player.deck,
+      {},
+      { min: 2, max: 2, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
-  player.deck.moveCardsTo(cards, deckTop);
+  MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: self });
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
 
-    return store.prompt(state, new OrderCardsPrompt(
-      player.id,
-      GameMessage.CHOOSE_CARDS_ORDER,
-      deckTop,
-      { allowCancel: false },
-    ), order => {
-      if (order === null) {
-        return state;
-      }
+    return store.prompt(
+      state,
+      new OrderCardsPrompt(player.id, GameMessage.CHOOSE_CARDS_ORDER, deckTop, {
+        allowCancel: false,
+      }),
+      (order) => {
+        if (order === null) {
+          return state;
+        }
 
-      deckTop.applyOrder(order);
-      deckTop.moveToTopOfDestination(player.deck);
-
-
-
-    });
+        deckTop.applyOrder(order);
+        deckTop.moveToTopOfDestination(player.deck);
+      },
+    );
   });
 }
 
 export class Oracle extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'SK';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '138';
@@ -87,5 +97,4 @@ export class Oracle extends TrainerCard {
     }
     return state;
   }
-
 }

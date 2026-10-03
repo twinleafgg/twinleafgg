@@ -52,7 +52,7 @@ function* playGwynn(
 }
 
 export class Gwynn extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'J';
   public set: string = 'PBL';
   public setNumber: string = '78';
@@ -86,7 +86,7 @@ export class Gwynn extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       const generator = playGwynn(() => generator.next(), store, state, effect, this);

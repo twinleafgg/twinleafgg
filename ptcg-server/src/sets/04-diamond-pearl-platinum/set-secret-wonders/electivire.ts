@@ -4,7 +4,7 @@ import { ChooseCardsPrompt, EnergyCard, PowerType, State, StateUtils, StoreLike 
 import { Effect } from '../../../game/store/effects/effect';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
-import { ABILITY_USED, ADD_MARKER, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class Electivire extends PokemonCard {
@@ -68,7 +68,7 @@ export class Electivire extends PokemonCard {
         }
         ABILITY_USED(player, this);
         ADD_MARKER(this.MOTOR_DRIVE_MARKER, player, this);
-        player.discard.moveCardsTo(cards, cardList);
+        MOVE_CARDS(store, state, player.discard, cardList, { cards: cards, sourceCard: this });
       });
       return state;
     }

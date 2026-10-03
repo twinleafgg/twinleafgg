@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ConfirmPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Card } from '../../../game/store/card/card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Unfezant extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -51,23 +51,23 @@ export class Unfezant extends PokemonCard {
           const playerPokemons: Card[] = player.active.getPokemons();
           const playerAttached = player.active.cards.filter(c => !playerPokemons.includes(c));
           playerAttached.forEach(c => {
-            player.active.moveCardTo(c, player.deck);
+            MOVE_CARDS(store, state, player.active, player.deck, { cards: [c], sourceCard: this });
           });
           // Also handle tools
           const playerTools = player.active.tools.slice();
           playerTools.forEach(c => {
-            player.active.moveCardTo(c, player.deck);
+            MOVE_CARDS(store, state, player.active, player.deck, { cards: [c], sourceCard: this });
           });
 
           // Shuffle opponent's active attached cards into deck
           const oppPokemons: Card[] = opponent.active.getPokemons();
           const oppAttached = opponent.active.cards.filter(c => !oppPokemons.includes(c));
           oppAttached.forEach(c => {
-            opponent.active.moveCardTo(c, opponent.deck);
+            MOVE_CARDS(store, state, opponent.active, opponent.deck, { cards: [c], sourceCard: this });
           });
           const oppTools = opponent.active.tools.slice();
           oppTools.forEach(c => {
-            opponent.active.moveCardTo(c, opponent.deck);
+            MOVE_CARDS(store, state, opponent.active, opponent.deck, { cards: [c], sourceCard: this });
           });
 
           SHUFFLE_DECK(store, state, player);

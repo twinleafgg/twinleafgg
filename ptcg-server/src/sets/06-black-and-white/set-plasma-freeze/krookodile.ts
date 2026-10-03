@@ -11,7 +11,7 @@ import {
   SlotType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Krookodile extends PokemonCard {
   protected _tags = [CardTag.TEAM_PLASMA];
@@ -90,7 +90,7 @@ export class Krookodile extends PokemonCard {
               if (!targets || targets.length === 0) {
                 return;
               }
-              opponent.active.moveCardTo(energyCard, targets[0]);
+              MOVE_CARDS(store, state, opponent.active, targets[0], { cards: [energyCard], sourceCard: this });
             },
           );
         },

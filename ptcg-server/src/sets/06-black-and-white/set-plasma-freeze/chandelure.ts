@@ -18,8 +18,7 @@ import {
   EnergyCard,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
@@ -27,8 +26,7 @@ import {
   ABILITY_USED,
   SHUFFLE_DECK,
   BLOCK_IF_DECK_EMPTY,
-  HEAL_X_DAMAGE_FROM_THIS_POKEMON,
-} from '../../../game/store/prefabs/prefabs';
+  HEAL_X_DAMAGE_FROM_THIS_POKEMON, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Chandelure extends PokemonCard {
   protected _tags = [CardTag.TEAM_PLASMA];
@@ -124,7 +122,7 @@ export class Chandelure extends PokemonCard {
               }
 
               const target = targets[0];
-              player.deck.moveCardTo(energyCard, target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [energyCard], sourceCard: this });
               SHUFFLE_DECK(store, state, player);
 
               // Put 1 damage counter on that Pokemon

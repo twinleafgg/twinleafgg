@@ -4,20 +4,31 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameMessage, GameError, SelectPrompt, CardList, ChooseCardsPrompt, ShowCardsPrompt } from '../../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameMessage,
+  GameError,
+  SelectPrompt,
+  CardList,
+  ChooseCardsPrompt,
+  ShowCardsPrompt,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 
 export class CedricJuniper extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'LTR';
   public setNumber: string = '110';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Cedric Juniper';
   public fullName: string = 'Cedric Juniper LTR';
-  public text: string = 'Put a Pokémon from your hand face down in front of you and tell your opponent its name. Your opponent guesses the height of that Pokémon. Reveal that Pokémon. If your opponent guessed right, he or she draws 3 cards. If your opponent guessed wrong, you draw 3 cards. Return the Pokémon to your hand. (You can\'t choose a Pokémon that doesn\'t have the height printed on the card.) You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    "Put a Pokémon from your hand face down in front of you and tell your opponent its name. Your opponent guesses the height of that Pokémon. Reveal that Pokémon. If your opponent guessed right, he or she draws 3 cards. If your opponent guessed wrong, you draw 3 cards. Return the Pokémon to your hand. (You can't choose a Pokémon that doesn't have the height printed on the card.) You may play only 1 Supporter card during your turn (before your attack).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Refs: set-surging-sparks/tyme.ts (hidden Pokemon guessing flow), set-rebel-clash/dan.ts (opponent-choice branch)
@@ -29,58 +40,72 @@ export class CedricJuniper extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      const hasPokemonInHand = player.hand.cards.some(c =>
-        c instanceof PokemonCard
-      );
+      const hasPokemonInHand = player.hand.cards.some((c) => c instanceof PokemonCard);
 
       if (!hasPokemonInHand) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
 
       const selectedPokemon = new CardList();
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        player.hand,
-        { superType: SuperType.POKEMON },
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        const cards = selected || [];
-        if (cards.length === 0) {
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          player.hand,
+          { superType: SuperType.POKEMON },
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          if (cards.length === 0) {
+            return;
+          }
 
-          return;
-        }
-
-        player.hand.moveCardsTo(cards, selectedPokemon);
-
-        // Height data is not stored on PokemonCard in the engine; opponent self-adjudicates
-        // whether their pre-reveal guess was correct.
-        store.prompt(state, new SelectPrompt(
-          opponent.id,
-          GameMessage.CHOOSE_OPTION,
-          ['Guessed right', 'Guessed wrong'],
-          { allowCancel: false }
-        ), choice => {
-          const opponentGuessedRight = choice === 0;
-
-          store.prompt(state, new ShowCardsPrompt(
-            opponent.id,
-            GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-            selectedPokemon.cards
-          ), () => {
-            if (opponentGuessedRight) {
-              DRAW_CARDS(store, state, opponent, 3);
-            } else {
-              DRAW_CARDS(store, state, player, 3);
-            }
-
-            selectedPokemon.moveTo(player.hand);
-
+          MOVE_CARDS(store, state, player.hand, selectedPokemon, {
+            cards: cards,
+            sourceCard: this,
           });
-        });
-      });
+
+          // Height data is not stored on PokemonCard in the engine; opponent self-adjudicates
+          // whether their pre-reveal guess was correct.
+          store.prompt(
+            state,
+            new SelectPrompt(
+              opponent.id,
+              GameMessage.CHOOSE_OPTION,
+              ['Guessed right', 'Guessed wrong'],
+              { allowCancel: false },
+            ),
+            (choice) => {
+              const opponentGuessedRight = choice === 0;
+
+              store.prompt(
+                state,
+                new ShowCardsPrompt(
+                  opponent.id,
+                  GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
+                  selectedPokemon.cards,
+                ),
+                () => {
+                  if (opponentGuessedRight) {
+                    DRAW_CARDS(store, state, opponent, 3);
+                  } else {
+                    DRAW_CARDS(store, state, player, 3);
+                  }
+
+                  MOVE_CARDS(store, state, selectedPokemon, player.hand, { sourceCard: this });
+                },
+              );
+            },
+          );
+        },
+      );
     }
 
     return state;

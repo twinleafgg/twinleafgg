@@ -9,7 +9,7 @@ import {
   ShuffleDeckPrompt,
 } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Quilladin extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -69,7 +69,7 @@ export class Quilladin extends PokemonCard {
         (selected) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            player.deck.moveCardTo(cards[0], player.active);
+            MOVE_CARDS(store, state, player.deck, player.active, { cards: [cards[0]], sourceCard: this });
             return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
               player.deck.applyOrder(order);
             });

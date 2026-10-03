@@ -3,7 +3,7 @@ import { CardTag, CardType, Stage, SuperType } from '../../game/store/card/card-
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Effect } from '../../game/store/effects/effect';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON } from '../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class FolkloresLucarioex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -71,7 +71,7 @@ export class FolkloresLucarioex extends PokemonCard {
         (selected) => {
           const cards = selected || [];
           if (cards.length > 0) {
-            player.hand.moveCardTo(cards[0], player.active);
+            MOVE_CARDS(store, state, player.hand, player.active, { cards: [cards[0]], sourceCard: this });
           }
           return state;
         },

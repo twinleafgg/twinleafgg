@@ -12,7 +12,7 @@ import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class SnowLeafBadge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'EVS';
   public setNumber: string = '159';

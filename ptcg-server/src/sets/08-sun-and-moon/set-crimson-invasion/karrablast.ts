@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { PowerType, StoreLike, State, GameMessage, GameError, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { StateUtils } from '../../../game/store/state-utils';
 
 export class Karrablast extends PokemonCard {
@@ -83,7 +83,7 @@ export class Karrablast extends PokemonCard {
       ), selectedShelmet => {
         const discardCards = selectedShelmet || [];
         discardCards.forEach(card => {
-          player.hand.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
         });
 
         // Search deck for a card that evolves from this Pokemon
@@ -103,7 +103,7 @@ export class Karrablast extends PokemonCard {
         ), selectedEvolution => {
           if (selectedEvolution && selectedEvolution.length > 0) {
             const evolutionCard = selectedEvolution[0] as PokemonCard;
-            player.deck.moveCardTo(evolutionCard, cardList);
+            MOVE_CARDS(store, state, player.deck, cardList, { cards: [evolutionCard], sourceCard: this });
             cardList.clearEffects();
             cardList.pokemonPlayedTurn = state.turn;
           }

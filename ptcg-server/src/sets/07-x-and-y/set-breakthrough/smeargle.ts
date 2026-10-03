@@ -8,7 +8,7 @@ import { Card, GameError, GameMessage, PowerType, StoreLike, State } from '../..
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Smeargle extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -89,7 +89,7 @@ export class Smeargle extends PokemonCard {
         const removedType = removedEnergy.provides.length > 0 ? removedEnergy.provides[0] : null;
 
         // Move energy from active to discard first
-        player.active.moveCardTo(removedEnergy, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: [removedEnergy], sourceCard: this });
 
         // Block discard energy of the same type (computed after move so indices are correct)
         const blocked: number[] = [];
@@ -103,7 +103,7 @@ export class Smeargle extends PokemonCard {
 
         if (blocked.length === player.discard.cards.length) {
           // No different type energy in discard, move original back
-          player.discard.moveCardTo(removedEnergy, player.active);
+          MOVE_CARDS(store, state, player.discard, player.active, { cards: [removedEnergy], sourceCard: this });
           return;
         }
 
@@ -117,7 +117,7 @@ export class Smeargle extends PokemonCard {
         ), (selectedFromDiscard: Card[] | null) => {
           const discardCards = selectedFromDiscard || [];
           if (discardCards.length > 0) {
-            player.discard.moveCardTo(discardCards[0], player.active);
+            MOVE_CARDS(store, state, player.discard, player.active, { cards: [discardCards[0]], sourceCard: this });
           }
         });
       });

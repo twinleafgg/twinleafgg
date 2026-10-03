@@ -8,7 +8,7 @@ import { Stage, CardType, TrainerType } from '../../../game/store/card/card-type
 import { PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Aegislash extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -63,23 +63,23 @@ export class Aegislash extends PokemonCard {
       const pokemons = target.getPokemons();
       const attachedCards = target.cards.filter(c => !pokemons.includes(c as PokemonCard));
       attachedCards.forEach(c => {
-        target.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, target, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Move tools to discard
       const tools = target.tools.slice();
       tools.forEach(c => {
-        target.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, target, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Move the evolution line (except this card) to discard
       const otherPokemons = pokemons.filter(c => c !== this);
       otherPokemons.forEach(c => {
-        target.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, target, player.discard, { cards: [c], sourceCard: this });
       });
 
       // Move this card to hand
-      target.moveCardTo(this, player.hand);
+      MOVE_CARDS(store, state, target, player.hand, { cards: [this], sourceCard: this });
 
       // Prevent the normal KO discard
       effect.preventDefault = true;

@@ -4,18 +4,28 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { CardList, ConfirmPrompt, GameMessage, OrderCardsPrompt, ShuffleDeckPrompt, StoreLike, State } from '../../../game';
+import {
+  CardList,
+  ConfirmPrompt,
+  GameMessage,
+  OrderCardsPrompt,
+  ShuffleDeckPrompt,
+  StoreLike,
+  State,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RotomDexPokeFinderMode extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'BUS';
   public setNumber: string = '122';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Rotom Dex Poké Finder Mode';
   public fullName: string = 'Rotom Dex Poké Finder Mode BUS';
-  public text: string = 'Look at the top 4 cards of your deck and put them back in any order or shuffle them into your deck.';
+  public text: string =
+    'Look at the top 4 cards of your deck and put them back in any order or shuffle them into your deck.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-guardians-rising/absol.ts (Future Sight - look at top cards and reorder)
@@ -27,33 +37,40 @@ export class RotomDexPokeFinderMode extends TrainerCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(4, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, {
+        count: Math.min(4, player.deck.cards.length),
+        sourceCard: this,
+      });
 
       // Ask: put back in order or shuffle into deck?
-      return store.prompt(state, new ConfirmPrompt(
-        player.id,
-        GameMessage.ORDER_YOUR_DECK,
-      ), wantToOrder => {
-        if (wantToOrder) {
-          // Put them back in any order
-          store.prompt(state, new OrderCardsPrompt(
-            player.id,
-            GameMessage.CHOOSE_CARDS_ORDER,
-            deckTop,
-            { allowCancel: false },
-          ), order => {
-            if (order === null) { return state; }
-            deckTop.applyOrder(order);
-            deckTop.moveToTopOfDestination(player.deck);
-          });
-        } else {
-          // Shuffle into deck
-          deckTop.moveTo(player.deck);
-          store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-            player.deck.applyOrder(order);
-          });
-        }
-      });
+      return store.prompt(
+        state,
+        new ConfirmPrompt(player.id, GameMessage.ORDER_YOUR_DECK),
+        (wantToOrder) => {
+          if (wantToOrder) {
+            // Put them back in any order
+            store.prompt(
+              state,
+              new OrderCardsPrompt(player.id, GameMessage.CHOOSE_CARDS_ORDER, deckTop, {
+                allowCancel: false,
+              }),
+              (order) => {
+                if (order === null) {
+                  return state;
+                }
+                deckTop.applyOrder(order);
+                deckTop.moveToTopOfDestination(player.deck);
+              },
+            );
+          } else {
+            // Shuffle into deck
+            MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
+            store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+              player.deck.applyOrder(order);
+            });
+          }
+        },
+      );
     }
 
     return state;

@@ -6,8 +6,7 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ATTACH_UP_TO_X_ENERGY_FROM_DECK_TO_Y_OF_YOUR_POKEMON } from '../../../game/store/prefabs/prefabs';
 
 export class MirageGate extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'LOR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '163';
@@ -15,8 +14,7 @@ export class MirageGate extends TrainerCard {
   public name: string = 'Mirage Gate';
   public fullName: string = 'Mirage Gate LOR';
 
-  public text: string =
-    `You can use this card only if you have 7 or more cards in the Lost Zone. 
+  public text: string = `You can use this card only if you have 7 or more cards in the Lost Zone. 
 
 Search your deck for up to 2 basic Energy cards of different types and attach them to your Pokémon in any way you like. Then, shuffle your deck.`;
 
@@ -40,20 +38,13 @@ Search your deck for up to 2 basic Energy cards of different types and attach th
        * - manual deck shuffle prompt
        */
       // Converted to prefab version (ATTACH_UP_TO_X_ENERGY_FROM_DECK_TO_Y_OF_YOUR_POKEMON).
-      ATTACH_UP_TO_X_ENERGY_FROM_DECK_TO_Y_OF_YOUR_POKEMON(
-        store,
-        state,
-        player,
-        2,
-        2,
-        {
-          destinationSlots: [SlotType.BENCH, SlotType.ACTIVE],
-          energyFilter: { energyType: EnergyType.BASIC },
-          differentTypes: true,
-          allowCancel: false,
-          min: 0
-        }
-      );
+      ATTACH_UP_TO_X_ENERGY_FROM_DECK_TO_Y_OF_YOUR_POKEMON(store, state, player, 2, 2, {
+        destinationSlots: [SlotType.BENCH, SlotType.ACTIVE],
+        energyFilter: { energyType: EnergyType.BASIC },
+        differentTypes: true,
+        allowCancel: false,
+        min: 0,
+      });
     }
 
     return state;

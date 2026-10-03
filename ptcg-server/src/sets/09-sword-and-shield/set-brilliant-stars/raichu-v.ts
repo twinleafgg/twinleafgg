@@ -125,7 +125,7 @@ export class RaichuV extends PokemonCard {
 
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = player.discard;
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
 
             totalDiscarded = transfers.length;
 

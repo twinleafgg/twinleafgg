@@ -3,7 +3,7 @@ import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/ca
 import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tyranitarex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -67,7 +67,7 @@ export class Tyranitarex extends PokemonCard {
         (cards) => {
           cards = cards || [];
 
-          opponent.hand.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
         },
       );
     }

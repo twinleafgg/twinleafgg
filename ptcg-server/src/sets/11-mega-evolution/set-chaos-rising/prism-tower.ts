@@ -11,7 +11,7 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PrismTower extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'CRI';
   public setNumber: string = '80';
   public name: string = 'Prism Tower';
@@ -49,8 +49,16 @@ export class PrismTower extends TrainerCard {
             player.stadiumUsedTurn = stadiumUsedTurn;
             return;
           }
-          MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected, sourceCard: this, sourceEffect: this });
-          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this, sourceEffect: this });
+          MOVE_CARDS(store, state, player.hand, player.discard, {
+            cards: selected,
+            sourceCard: this,
+            sourceEffect: this,
+          });
+          MOVE_CARDS(store, state, player.deck, player.hand, {
+            count: 1,
+            sourceCard: this,
+            sourceEffect: this,
+          });
         },
       );
     }

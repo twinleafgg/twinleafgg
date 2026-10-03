@@ -11,7 +11,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import {
   KNOCK_OUT_DEFENDING_POKEMON_AT_END_OF_OPPONENTS_NEXT_TURN,
 } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HisuianZoroark extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -67,7 +67,7 @@ export class HisuianZoroark extends PokemonCard {
         ],
         (selected) => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         },
       );
     }

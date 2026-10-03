@@ -4,7 +4,7 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
-import { DRAW_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Morpekoex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -41,7 +41,7 @@ export class Morpekoex extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const copied = [...player.hand.cards];
-      copied.forEach((c) => player.hand.moveCardTo(c, player.deck));
+      copied.forEach((c) => MOVE_CARDS(store, state, player.hand, player.deck, { cards: [c], sourceCard: this }));
       return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
         player.deck.applyOrder(order);
         DRAW_CARDS(store, state, player, 6);

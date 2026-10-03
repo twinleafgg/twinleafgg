@@ -11,13 +11,14 @@ import { CheckPokemonPowersEffect } from '../../../game/store/effects/check-effe
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class CursedStone extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'LM';
   public setNumber = '72';
   public cardImage = 'assets/cardback.png';
   public name: string = 'Cursed Stone';
   public fullName: string = 'Cursed Stone LM';
-  public text: string = 'At any time between turns, each player puts 1 damage counter on his or her Pokémon that has a Poké-Power.';
+  public text: string =
+    'At any time between turns, each player puts 1 damage counter on his or her Pokémon that has a Poké-Power.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof BetweenTurnsEffect && StateUtils.getStadiumCard(state) === this) {
@@ -33,8 +34,8 @@ export class CursedStone extends TrainerCard {
         if (card) {
           const powersEffect = new CheckPokemonPowersEffect(player, card);
           state = store.reduceEffect(state, powersEffect);
-          if (powersEffect.powers.some(power => power.powerType === PowerType.POKEPOWER)) {
-            cardList.damage += (10);
+          if (powersEffect.powers.some((power) => power.powerType === PowerType.POKEPOWER)) {
+            cardList.damage += 10;
           }
         }
       });

@@ -4,7 +4,7 @@ import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealTargetEffect } from '../../../game/store/effects/attack-effects';
 
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shaymin extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -51,7 +51,7 @@ export class Shaymin extends PokemonCard {
 
       return COIN_FLIP_PROMPT(store, state, player, result => {
         if (result === true) {
-          opponent.active.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, opponent.active, opponent.deck, { sourceCard: this });
           opponent.active.clearEffects();
         }
       });

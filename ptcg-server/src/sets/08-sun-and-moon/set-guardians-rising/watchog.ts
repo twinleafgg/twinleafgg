@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card, ChooseCardsPrompt, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Watchog extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -47,7 +47,7 @@ export class Watchog extends PokemonCard {
       }
 
       const topCards = new CardList();
-      opponent.deck.moveTo(topCards, Math.min(2, opponent.deck.cards.length));
+      MOVE_CARDS(store, state, opponent.deck, topCards, { count: Math.min(2, opponent.deck.cards.length), sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -58,7 +58,7 @@ export class Watchog extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         if (cards.length > 0) {
-          topCards.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, topCards, opponent.discard, { cards: cards, sourceCard: this });
         }
         // Put remaining card(s) back on top
         topCards.moveToTopOfDestination(opponent.deck);

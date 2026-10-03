@@ -22,11 +22,9 @@ import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { KNOCK_OUT_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   IS_ABILITY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // LOT Alolan Ninetales-GX 132 (https://limitlesstcg.com/cards/LOT/132)
 export class AlolanNinetalesGX extends PokemonCard {
@@ -105,7 +103,7 @@ export class AlolanNinetalesGX extends PokemonCard {
                   }
                 });
 
-                player.deck.moveCardsTo(cards, player.hand);
+                MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
                 return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
                   player.deck.applyOrder(order);

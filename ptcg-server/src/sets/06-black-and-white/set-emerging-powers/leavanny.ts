@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, GameMessage, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
@@ -70,7 +70,7 @@ export class Leavanny extends PokemonCard {
             ), cards => {
               if (cards && cards.length > 0) {
                 const evolutionCard = cards[0] as PokemonCard;
-                player.deck.moveCardTo(evolutionCard, targetSlot);
+                MOVE_CARDS(store, state, player.deck, targetSlot, { cards: [evolutionCard], sourceCard: this });
                 targetSlot.pokemonPlayedTurn = state.turn;
               }
               SHUFFLE_DECK(store, state, player);

@@ -12,7 +12,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Talonflame extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -77,7 +77,7 @@ export class Talonflame extends PokemonCard {
         ),
         (selected) => {
           const cards = selected || [];
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
         },
       );
       return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {

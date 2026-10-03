@@ -12,15 +12,15 @@ import { DRAW_CARDS, SHOW_CARDS_TO_PLAYER } from '../../game/store/prefabs/prefa
 export class AncientRuins extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '119';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'SK';
   public name = 'Ancient Ruins';
   public fullName = 'Ancient Ruins SK';
 
-  public text = 'Once during each player\'s turn (before he or she attacks), if he or she has not played a Supporter card, that player may reveal his or her hand to his or her opponent. If that player reveals his or her hand and there is no Supporter card there, that player draws a card.';
+  public text =
+    "Once during each player's turn (before he or she attacks), if he or she has not played a Supporter card, that player may reveal his or her hand to his or her opponent. If that player reveals his or her hand and there is no Supporter card there, that player draws a card.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
@@ -28,7 +28,11 @@ export class AncientRuins extends TrainerCard {
       if (player.supporterTurn > 0) {
         throw new GameError(GameMessage.CANNOT_USE_STADIUM);
       }
-      if (player.hand.cards.some(c => c instanceof TrainerCard && c.trainerType === TrainerType.SUPPORTER)) {
+      if (
+        player.hand.cards.some(
+          (c) => c instanceof TrainerCard && c.trainerType === TrainerType.SUPPORTER,
+        )
+      ) {
         throw new GameError(GameMessage.CANNOT_USE_STADIUM);
       }
 
@@ -38,5 +42,4 @@ export class AncientRuins extends TrainerCard {
 
     return state;
   }
-
 }

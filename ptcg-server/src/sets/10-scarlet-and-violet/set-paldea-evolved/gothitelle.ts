@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, PowerType, ChooseCardsPrompt, GameMessage, ShowCardsPrompt, StateUtils, GameError, CardList, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gothitelle extends PokemonCard {
   public regulationMark = 'G';
@@ -53,7 +53,7 @@ export class Gothitelle extends PokemonCard {
 
       let cards: Card[] = [];
       const deckTop = new CardList();
-      opponent.deck.moveTo(deckTop, 2);
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 2, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -67,7 +67,7 @@ export class Gothitelle extends PokemonCard {
         ABILITY_USED(player, this);
         ADD_MARKER(this.READ_THE_STARS_MARKER, player, this);
 
-        deckTop.moveCardsTo(cards, opponent.deck);
+        MOVE_CARDS(store, state, deckTop, opponent.deck, { cards: cards, sourceCard: this });
         deckTop.moveToTopOfDestination(opponent.deck);
       });
     }
@@ -96,7 +96,7 @@ export class Gothitelle extends PokemonCard {
           cards
         ), () => []);
 
-        opponent.hand.moveCardsTo(cards, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
       });
     }
 

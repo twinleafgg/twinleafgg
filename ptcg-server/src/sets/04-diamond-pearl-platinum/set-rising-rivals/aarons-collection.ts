@@ -37,7 +37,7 @@ function* playCard(
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -78,7 +78,7 @@ function* playCard(
     },
   );
 
-  MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: effect.trainerCard });
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: self });
 
   cards.forEach((card, index) => {
     store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
@@ -89,7 +89,7 @@ function* playCard(
 }
 
 export class AaronsCollection extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'RR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '88';

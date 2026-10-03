@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { PowerType, StoreLike, State, StateUtils, GameMessage, ConfirmPrompt, ChooseCardsPrompt, EnergyCard, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class BloodmoonUrsaluna extends PokemonCard {
 
@@ -50,7 +50,6 @@ export class BloodmoonUrsaluna extends PokemonCard {
 
     if ((effect instanceof PlayPokemonEffect) && effect.pokemonCard === this) {
 
-
       const player = effect.player;
 
       // Try to reduce PowerEffect, to check if something is blocking our ability
@@ -77,7 +76,6 @@ export class BloodmoonUrsaluna extends PokemonCard {
             return state;
           }
 
-
           return store.prompt(state, new ChooseCardsPrompt(
             player,
             GameMessage.CHOOSE_CARD_TO_ATTACH,
@@ -87,7 +85,7 @@ export class BloodmoonUrsaluna extends PokemonCard {
           ), cards => {
             cards = cards || [];
             if (cards.length > 0) {
-              player.hand.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
             }
           });
         }

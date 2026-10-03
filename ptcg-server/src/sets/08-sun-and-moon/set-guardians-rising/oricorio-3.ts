@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { PowerType, StoreLike, State, ConfirmPrompt, GameMessage, ChooseCardsPrompt, Card, ShowCardsPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Oricorio3 extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -75,7 +75,7 @@ export class Oricorio3 extends PokemonCard {
                 cards
               ), () => {
                 cards.forEach(card => {
-                  player.deck.moveCardTo(card, player.hand);
+                  MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
                 });
                 SHUFFLE_DECK(store, state, player);
               });

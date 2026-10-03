@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils, GameMessage, ConfirmPrompt, Card } from '
 import { Effect } from '../../../game/store/effects/effect';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cinccino extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -67,7 +67,7 @@ export class Cinccino extends PokemonCard {
           if (opponentSaysYes) {
             // Put the cards into player's hand
             cards.forEach(card => {
-              player.discard.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, player.discard, player.hand, { cards: [card], sourceCard: this });
             });
           } else {
             // Do 80 damage to opponent's Active Pokemon

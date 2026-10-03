@@ -8,7 +8,7 @@ import { StateUtils } from '../../game';
 import { DRAW_CARDS, MOVE_CARDS, SHUFFLE_DECK } from '../../game/store/prefabs/prefabs';
 
 export class ImpostorProfessorOak extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -20,7 +20,8 @@ export class ImpostorProfessorOak extends TrainerCard {
 
   public setNumber: string = '73';
 
-  public text: string = 'Your opponent shuffles his or her hand into his or her deck, then draws 7 cards.';
+  public text: string =
+    'Your opponent shuffles his or her hand into his or her deck, then draws 7 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {

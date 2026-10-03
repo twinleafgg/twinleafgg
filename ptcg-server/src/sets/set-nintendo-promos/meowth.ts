@@ -2,8 +2,7 @@ import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType } from '../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, TrainerCard } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
-
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Meowth extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -40,7 +39,7 @@ export class Meowth extends PokemonCard {
       const activePokemon = opponent.active;
       const toolsToDiscard = activePokemon.tools.filter(card => card instanceof TrainerCard && card.trainerType === TrainerType.TOOL);
       if (toolsToDiscard.length > 0) {
-        activePokemon.moveCardsTo(toolsToDiscard, opponent.discard);
+        MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: toolsToDiscard, sourceCard: this });
       }
     }
     return state;

@@ -7,15 +7,13 @@ import {
   SlotType,
   StateUtils,
   ChoosePokemonPrompt,
-  GameError,
   GameMessage,
 } from '../../../game';
 
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { PlayItemEffect } from '../../../game/store/effects/play-card-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { OPPONENT_CANNOT_PLAY_ITEM_CARDS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class SeismitoadEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -59,13 +57,9 @@ export class SeismitoadEx extends PokemonCard {
 
   public setNumber: string = '20';
 
-  public readonly QUAKING_PUNCH_MARKER = 'QUAKING_PUNCH_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      opponent.marker.addMarker(this.QUAKING_PUNCH_MARKER, this, 'attack', 'player');
+      OPPONENT_CANNOT_PLAY_ITEM_CARDS(store, state, effect, this);
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {
@@ -97,17 +91,6 @@ export class SeismitoadEx extends PokemonCard {
           });
         },
       );
-    }
-
-    if (effect instanceof PlayItemEffect) {
-      const player = effect.player;
-      if (player.marker.hasMarker(this.QUAKING_PUNCH_MARKER, this)) {
-        throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
-      }
-    }
-
-    if (effect instanceof EndTurnEffect) {
-      effect.player.marker.removeMarker(this.QUAKING_PUNCH_MARKER, this);
     }
 
     return state;

@@ -7,7 +7,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_CONFUSED } from '../../../game/store/prefabs/attack-effects';
 
 export class Mienshao extends PokemonCard {
@@ -59,9 +59,9 @@ export class Mienshao extends PokemonCard {
       // Move all attached cards and this Pokemon to deck
       const tools = activePokemon.tools.slice();
       tools.forEach((tool) => {
-        activePokemon.moveCardTo(tool, player.deck);
+        MOVE_CARDS(store, state, activePokemon, player.deck, { cards: [tool], sourceCard: this });
       });
-      activePokemon.moveTo(player.deck);
+      MOVE_CARDS(store, state, activePokemon, player.deck, { sourceCard: this });
       activePokemon.clearEffects();
 
       SHUFFLE_DECK(store, state, player);

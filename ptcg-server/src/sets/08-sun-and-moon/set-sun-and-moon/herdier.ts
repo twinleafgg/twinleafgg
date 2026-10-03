@@ -4,6 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { StoreLike, State, Card, ChooseCardsPrompt, GameMessage, TrainerCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Herdier extends PokemonCard {
   public cardType: CardType[] = [CardType.COLORLESS];
@@ -58,7 +59,7 @@ export class Herdier extends PokemonCard {
         cards = selected || [];
 
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         }
       });
     }

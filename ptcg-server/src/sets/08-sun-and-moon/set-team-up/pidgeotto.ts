@@ -9,7 +9,7 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { CardList } from '../../../game/store/state/card-list';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pidgeotto extends PokemonCard {
 
@@ -75,7 +75,7 @@ export class Pidgeotto extends PokemonCard {
 
       const deckBottom = new CardList();
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 2);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 2, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -92,9 +92,9 @@ export class Pidgeotto extends PokemonCard {
           }
         });
 
-        deckTop.moveCardsTo(selected, player.hand);
-        deckTop.moveTo(deckBottom);
-        deckBottom.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, deckBottom, { sourceCard: this });
+        MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
         return state;
       });
     }

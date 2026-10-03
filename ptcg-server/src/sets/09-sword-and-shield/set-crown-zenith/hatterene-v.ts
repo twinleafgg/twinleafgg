@@ -24,7 +24,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
 
 export class HattereneV extends PokemonCard {
@@ -73,7 +73,7 @@ export class HattereneV extends PokemonCard {
 
       const topCards = new CardList();
       const count = Math.min(3, player.deck.cards.length);
-      player.deck.moveTo(topCards, count);
+      MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
       const energyCards = topCards.cards.filter((c) => c instanceof EnergyCard);
 
@@ -112,7 +112,7 @@ export class HattereneV extends PokemonCard {
             const energyCard = transfer.card as EnergyCard;
             if (energyCard.energyType === EnergyType.SPECIAL) {
               // For special energy, just move the card
-              topCards.moveCardTo(energyCard, target);
+              MOVE_CARDS(store, state, topCards, target, { cards: [energyCard], sourceCard: this });
             } else {
               const attachEnergyEffect = new AttachEnergyEffect(player, energyCard, target);
               store.reduceEffect(state, attachEnergyEffect);

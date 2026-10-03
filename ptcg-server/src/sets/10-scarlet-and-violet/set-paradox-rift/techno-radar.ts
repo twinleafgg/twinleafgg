@@ -13,6 +13,7 @@ import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { CardList } from '../../../game/store/state/card-list';
 import { Player, PokemonCard } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -68,7 +69,7 @@ function* playCard(
     return state;
   }
 
-  player.hand.moveCardsTo(cards, player.discard);
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: self });
 
   yield store.prompt(
     state,
@@ -85,7 +86,7 @@ function* playCard(
     },
   );
 
-  player.deck.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: self });
 
   if (cards.length > 0) {
     yield store.prompt(
@@ -101,7 +102,7 @@ function* playCard(
 }
 
 export class TechnoRadar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'G';
   protected _tags = [CardTag.FUTURE];
   public set: string = 'PAR';

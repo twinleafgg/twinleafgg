@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ADD_MARKER, HAS_MARKER, IS_ABILITY_BLOCKED, JUST_EVOLVED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_MARKER, HAS_MARKER, IS_ABILITY_BLOCKED, JUST_EVOLVED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class Salazzle extends PokemonCard {
@@ -52,7 +52,7 @@ export class Salazzle extends PokemonCard {
 
       if (opponent.hand.cards.length < markerCount) {
         const cards = opponent.hand.cards;
-        opponent.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, opponent.hand, player.discard, { cards: cards, sourceCard: this });
         return state;
       }
 
@@ -64,7 +64,7 @@ export class Salazzle extends PokemonCard {
         { min: markerCount, max: markerCount, allowCancel: false }
       ), selected => {
         const cards = selected || [];
-        opponent.hand.moveCardsTo(cards, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
       });
 
       return state;

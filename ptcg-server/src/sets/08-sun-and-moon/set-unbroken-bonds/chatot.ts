@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, DRAW_CARDS, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, DRAW_CARDS, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -45,7 +45,7 @@ export class Chatot extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       const cardsInOpponentHand = opponent.hand.cards.length;
-      player.hand.moveTo(player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: this });
       SHUFFLE_DECK(store, state, player);
       DRAW_CARDS(store, state, player, cardsInOpponentHand);
     }

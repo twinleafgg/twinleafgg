@@ -4,20 +4,33 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameError, GameMessage, PlayerType, SlotType, SuperType, Card, CardTarget } from '../../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameError,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  SuperType,
+  Card,
+  CardTarget,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class WaitAndSeeHammer extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'LOT';
   public setNumber: string = '192';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Wait and See Hammer';
   public fullName: string = 'Wait and See Hammer LOT';
-  public text: string = 'You can use this card only if you go second, and only on your first turn. Discard an Energy from 1 of your opponent\'s Pokémon.';
+  public text: string =
+    "You can use this card only if you go second, and only on your first turn. Discard an Energy from 1 of your opponent's Pokémon.";
 
   // Ref: set-ultra-prism/sneasel.ts (Sneaky Smash - first turn energy discard)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -33,7 +46,7 @@ export class WaitAndSeeHammer extends TrainerCard {
       // Check if opponent has any energy attached
       let hasEnergy = false;
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        if (cardList.cards.some(c => c.superType === SuperType.ENERGY)) {
+        if (cardList.cards.some((c) => c.superType === SuperType.ENERGY)) {
           hasEnergy = true;
         }
       });
@@ -45,36 +58,47 @@ export class WaitAndSeeHammer extends TrainerCard {
       // Block Pokemon without energy
       const blocked: CardTarget[] = [];
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList, card, target) => {
-        if (!cardList.cards.some(c => c.superType === SuperType.ENERGY)) {
+        if (!cardList.cards.some((c) => c.superType === SuperType.ENERGY)) {
           blocked.push(target);
         }
       });
 
-      store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-        PlayerType.TOP_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { min: 1, max: 1, allowCancel: false, blocked }
-      ), targets => {
-        if (!targets || targets.length === 0) {
-          return;
-        }
-        const target = targets[0];
+      store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+          PlayerType.TOP_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { min: 1, max: 1, allowCancel: false, blocked },
+        ),
+        (targets) => {
+          if (!targets || targets.length === 0) {
+            return;
+          }
+          const target = targets[0];
 
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          target,
-          { superType: SuperType.ENERGY },
-          { min: 1, max: 1, allowCancel: false }
-        ), (selected: Card[]) => {
-          const cards = selected || [];
-          cards.forEach(card => {
-            target.moveCardTo(card, opponent.discard);
-          });
-        });
-      });
+          store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              player,
+              GameMessage.CHOOSE_CARD_TO_DISCARD,
+              target,
+              { superType: SuperType.ENERGY },
+              { min: 1, max: 1, allowCancel: false },
+            ),
+            (selected: Card[]) => {
+              const cards = selected || [];
+              cards.forEach((card) => {
+                MOVE_CARDS(store, state, target, opponent.discard, {
+                  cards: [card],
+                  sourceCard: this,
+                });
+              });
+            },
+          );
+        },
+      );
     }
 
     return state;

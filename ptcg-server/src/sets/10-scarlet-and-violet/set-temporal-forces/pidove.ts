@@ -10,7 +10,7 @@ import { PlayerType } from '../../../game';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Pidove extends PokemonCard {
 
@@ -79,7 +79,7 @@ export class Pidove extends PokemonCard {
           ), selected => {
             cards = selected || [];
             if (cards) {
-              player.deck.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
               cardList.clearEffects();
               cardList.pokemonPlayedTurn = state.turn;
             }

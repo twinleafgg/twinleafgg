@@ -6,14 +6,12 @@ import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-e
 import { StoreLike, State, GameError, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { CardList } from '../../../game/store/state/card-list';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   ABILITY_USED,
   USE_ABILITY_ONCE_PER_TURN,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
+  REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Crobat extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -78,7 +76,7 @@ export class Crobat extends PokemonCard {
           const cards = selected || [];
           if (cards.length === 0) return state;
           const deckTop = new CardList();
-          player.deck.moveCardsTo(cards, deckTop);
+          MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: this });
           return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);
             if (order === null) return state;

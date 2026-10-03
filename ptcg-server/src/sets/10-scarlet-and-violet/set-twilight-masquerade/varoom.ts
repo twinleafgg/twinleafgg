@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { AttachEnergyPrompt, GameMessage, PlayerType, SlotType, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { HAS_CARD_IN_DISCARD, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {HAS_CARD_IN_DISCARD, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Varoom extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -53,7 +53,7 @@ export class Varoom extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

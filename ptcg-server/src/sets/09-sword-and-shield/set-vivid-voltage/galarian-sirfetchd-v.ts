@@ -1,7 +1,7 @@
 import { PokemonCard, CardTag, Stage, CardType, PowerType, StoreLike, State, CardTarget, PlayerType, SuperType, MoveEnergyPrompt, GameMessage, SlotType, EnergyType, CardTransfer, StateUtils, BoardEffect } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
 import { MovedToActiveEffect } from "../../../game/store/effects/game-effects";
-import { REMOVE_MARKER_AT_END_OF_TURN, MOVED_TO_ACTIVE_THIS_TURN, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN } from "../../../game/store/prefabs/prefabs";
+import {REMOVE_MARKER_AT_END_OF_TURN, MOVED_TO_ACTIVE_THIS_TURN, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class GalarianSirfetchdV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -92,7 +92,7 @@ export class GalarianSirfetchdV extends PokemonCard {
           const validTransfers: CardTransfer[] = transfers || [];
           for (const transfer of validTransfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.active);
+            MOVE_CARDS(store, state, source, player.active, { cards: [transfer.card], sourceCard: this });
           }
 
           player.marker.addMarker(this.ABILITY_USED_MARKER, this);

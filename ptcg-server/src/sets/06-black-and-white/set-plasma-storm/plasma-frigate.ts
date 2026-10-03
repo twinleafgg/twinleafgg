@@ -10,7 +10,7 @@ import {
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class PlasmaFrigate extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.TEAM_PLASMA];
   public set: string = 'PLS';
   public setNumber: string = '124';

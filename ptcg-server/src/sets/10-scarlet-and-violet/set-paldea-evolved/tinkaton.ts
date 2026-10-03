@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tinkaton extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -73,8 +73,8 @@ export class Tinkaton extends PokemonCard {
           }
         });
 
-        player.hand.moveCardsTo(cards, player.discard);
-        player.deck.moveTo(player.hand, 3);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
       });
 
       return state;

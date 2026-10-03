@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
-import { WAS_ATTACK_USED, CONFIRMATION_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, CONFIRMATION_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Diglett extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -49,7 +49,7 @@ export class Diglett extends PokemonCard {
       }
 
       const topCard = new CardList();
-      opponent.deck.moveTo(topCard, 1);
+      MOVE_CARDS(store, state, opponent.deck, topCard, { count: 1, sourceCard: this });
 
       store.prompt(state, new ShowCardsPrompt(
         player.id,

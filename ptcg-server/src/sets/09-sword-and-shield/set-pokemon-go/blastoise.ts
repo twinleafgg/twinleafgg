@@ -5,7 +5,7 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useVitalitySpring(next: Function, store: StoreLike, state: State,
   effect: PowerEffect): IterableIterator<State> {
@@ -28,7 +28,7 @@ function* useVitalitySpring(next: Function, store: StoreLike, state: State,
     transfers = transfers || [];
     for (const transfer of transfers) {
       const target = StateUtils.getTarget(state, player, transfer.to);
-      player.deck.moveCardTo(transfer.card, target);
+      MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: effect.card });
       next();
     }
   });

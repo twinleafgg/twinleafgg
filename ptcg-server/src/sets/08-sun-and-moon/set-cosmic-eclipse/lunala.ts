@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, GameError, GameMessage, PlayerType, SlotType, Card, CardTarget } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
@@ -106,7 +106,7 @@ export class Lunala extends PokemonCard {
             { allowCancel: false, blocked: blockedTargets }
           ), targets => {
             if (targets && targets.length > 0) {
-              player.deck.moveCardTo(cards[index], targets[0]);
+              MOVE_CARDS(store, state, player.deck, targets[0], { cards: [cards[index]], sourceCard: this });
             }
             attachNext(index + 1);
           });

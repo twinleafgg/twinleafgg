@@ -16,7 +16,7 @@ import {
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class IronLeavesex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -120,7 +120,7 @@ export class IronLeavesex extends PokemonCard {
                   const target = player.active;
                   const source = StateUtils.getTarget(state, player, transfer.from);
                   transfers.forEach((transfer) => {
-                    source.moveCardTo(transfer.card, target);
+                    MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
                     return state;
                   });
                 }

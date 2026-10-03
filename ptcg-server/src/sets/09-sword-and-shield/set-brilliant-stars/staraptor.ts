@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class Staraptor extends PokemonCard {
@@ -58,7 +58,7 @@ export class Staraptor extends PokemonCard {
       // Move all cards from opponent's active to their deck
       const cardsToShuffle = opponent.active.cards.slice();
       cardsToShuffle.forEach(card => {
-        opponent.active.moveCardTo(card, opponent.deck);
+        MOVE_CARDS(store, state, opponent.active, opponent.deck, { cards: [card], sourceCard: this });
       });
       opponent.active.clearEffects();
 

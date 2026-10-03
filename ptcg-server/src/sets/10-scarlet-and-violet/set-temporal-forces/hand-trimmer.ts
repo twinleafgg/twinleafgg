@@ -5,11 +5,10 @@ import { StoreLike } from '../../../game/store/store-like';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, Player, StateUtils } from '../../..';
-
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HandTrimmer extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark = 'H';
 
@@ -30,7 +29,6 @@ export class HandTrimmer extends TrainerCard {
     return true;
   }
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
@@ -47,19 +45,26 @@ export class HandTrimmer extends TrainerCard {
 
       // Opponent discards first
       if (opponent.hand.cards.length > 5) {
-        store.prompt(state, new ChooseCardsPrompt(
-          opponent,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          opponent.hand,
-          {},
-          { min: discardAmount, max: discardAmount, allowCancel: false }
-        ), selected => {
-          const cards = selected || [];
-          opponent.hand.moveCardsTo(cards, opponent.discard);
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            opponent,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            opponent.hand,
+            {},
+            { min: discardAmount, max: discardAmount, allowCancel: false },
+          ),
+          (selected) => {
+            const cards = selected || [];
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, {
+              cards: cards,
+              sourceCard: this,
+            });
+          },
+        );
       }
 
-      const playerCards = player.hand.cards.filter(c => c !== this);
+      const playerCards = player.hand.cards.filter((c) => c !== this);
       // Get player's hand length
       const playerHandLength = playerCards.length;
 
@@ -68,22 +73,27 @@ export class HandTrimmer extends TrainerCard {
 
       // Player discards next
       if (player.hand.cards.length > 5) {
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          player.hand,
-          {},
-          { min: playerDiscardAmount, max: playerDiscardAmount, allowCancel: false }
-        ), selected => {
-          const cards = selected || [];
-          player.hand.moveCardsTo(cards, player.discard);
-        });
-
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            player.hand,
+            {},
+            { min: playerDiscardAmount, max: playerDiscardAmount, allowCancel: false },
+          ),
+          (selected) => {
+            const cards = selected || [];
+            MOVE_CARDS(store, state, player.hand, player.discard, {
+              cards: cards,
+              sourceCard: this,
+            });
+          },
+        );
       }
 
       return state;
     }
     return state;
-
   }
 }

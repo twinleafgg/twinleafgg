@@ -12,12 +12,17 @@ import { CardList } from '../../game/store/state/card-list';
 import { ShuffleDeckPrompt } from '../../game/store/prompts/shuffle-prompt';
 import { DRAW_CARDS, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Maintenance, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Maintenance,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   let cards: Card[] = [];
 
-  cards = player.hand.cards.filter(c => c !== self);
+  cards = player.hand.cards.filter((c) => c !== self);
   if (cards.length < 2) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
@@ -31,18 +36,22 @@ function* playCard(next: Function, store: StoreLike, state: State,
 
   // prepare card list without Junk Arm
   const handTemp = new CardList();
-  handTemp.cards = player.hand.cards.filter(c => c !== self);
+  handTemp.cards = player.hand.cards.filter((c) => c !== self);
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    handTemp,
-    {},
-    { min: 2, max: 2, allowCancel: false }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      handTemp,
+      {},
+      { min: 2, max: 2, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (cards.length === 0) {
@@ -59,8 +68,7 @@ function* playCard(next: Function, store: StoreLike, state: State,
 }
 
 export class Maintenance extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -82,5 +90,4 @@ export class Maintenance extends TrainerCard {
     }
     return state;
   }
-
 }

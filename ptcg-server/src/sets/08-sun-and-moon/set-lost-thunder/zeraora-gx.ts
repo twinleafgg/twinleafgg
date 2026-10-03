@@ -23,11 +23,9 @@ import {
   CheckProvidedEnergyEffect,
   CheckRetreatCostEffect,
 } from '../../../game/store/effects/check-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   IS_ABILITY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ZeraoraGX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -148,7 +146,7 @@ export class ZeraoraGX extends PokemonCard {
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

@@ -1,11 +1,10 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike, State, PowerType, GamePhase } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ADD_MARKER, HAS_MARKER, REMOVE_MARKER, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { AddSpecialConditionsEffect, PutCountersEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
+import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Umbreon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -36,28 +35,11 @@ export class Umbreon extends PokemonCard {
   public name: string = 'Umbreon';
   public fullName: string = 'Umbreon CL';
 
-  public readonly MOONLIGHT_FANG_MARKER = 'MOONLIGHT_FANG_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      this.marker.addMarker(this.MOONLIGHT_FANG_MARKER, this);
-      ADD_MARKER(this.MOONLIGHT_FANG_MARKER, effect.opponent, this);
-    }
-
-    if ((effect instanceof PutDamageEffect || effect instanceof PutCountersEffect || effect instanceof AddSpecialConditionsEffect)
-      && effect.target.getPokemonCard() === this
-      && effect.source.getPokemonCard()?.powers.some(power => (power.powerType === PowerType.POKEBODY || power.powerType === PowerType.POKEPOWER))
-      && (state.phase === GamePhase.ATTACK || state.phase === GamePhase.AFTER_ATTACK)) {
-
-      if (this.marker.hasMarker(this.MOONLIGHT_FANG_MARKER, this)) {
-        effect.preventDefault = true;
-      }
-    }
-
-    if (effect instanceof EndTurnEffect && HAS_MARKER(this.MOONLIGHT_FANG_MARKER, effect.player, this)) {
-      REMOVE_MARKER(this.MOONLIGHT_FANG_MARKER, effect.player, this);
-      this.marker.removeMarker(this.MOONLIGHT_FANG_MARKER, this);
+      const options = { sourceHasPokePowerOrBody: true };
+      PREVENT_DAMAGE(store, state, effect, this, options);
+      return PREVENT_EFFECTS_OF_ATTACKS(store, state, effect, this, options);
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {

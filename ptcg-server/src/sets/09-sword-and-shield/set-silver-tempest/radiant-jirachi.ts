@@ -6,11 +6,9 @@ import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
-import {
-  IS_ABILITY_BLOCKED,
+import {IS_ABILITY_BLOCKED,
   MULTIPLE_COIN_FLIPS_PROMPT,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { KNOCK_OUT_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class RadiantJirachi extends PokemonCard {
@@ -70,7 +68,7 @@ export class RadiantJirachi extends PokemonCard {
         (selected: any[]) => {
           cards = selected || [];
           if (cards.length > 0) {
-            player.deck.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
           }
           return store.prompt(state, new ShuffleDeckPrompt(player.id), (order: any[]) => {
             player.deck.applyOrder(order);

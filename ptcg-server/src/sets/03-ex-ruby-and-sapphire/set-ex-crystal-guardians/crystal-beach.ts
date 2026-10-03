@@ -9,11 +9,12 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 export class CrystalBeach extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '75';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'CG';
   public name = 'Crystal Beach';
   public fullName = 'Crystal Beach CG';
-  public text = 'Each Special Energy card that provides 2 or more Energy (both yours and your opponent\'s) now provides only 1 [C] Energy. This isn\'t affected by any Poké-Powers or Poké-Bodies.';
+  public text =
+    "Each Special Energy card that provides 2 or more Energy (both yours and your opponent's) now provides only 1 [C] Energy. This isn't affected by any Poké-Powers or Poké-Bodies.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Energies that provide 2 or more provide [C]

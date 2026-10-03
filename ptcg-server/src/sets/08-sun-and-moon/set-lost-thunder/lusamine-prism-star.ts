@@ -11,7 +11,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class LusaminePrismStar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.PRISM_STAR];
   public set: string = 'LOT';
   public setNumber: string = '182';

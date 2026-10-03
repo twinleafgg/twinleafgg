@@ -16,13 +16,11 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import {
-  AFTER_ATTACK,
+import {AFTER_ATTACK,
   BLOCK_IF_GX_ATTACK_USED,
   CONFIRMATION_PROMPT,
   IS_ABILITY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // FLI Greninja-GX 24 (https://limitlesstcg.com/cards/FLI/24)
 export class GreninjaGX extends PokemonCard {
@@ -126,7 +124,7 @@ export class GreninjaGX extends PokemonCard {
       CONFIRMATION_PROMPT(store, state, effect.player, () => {
         const player = effect.player;
         player.active.clearEffects();
-        player.active.moveTo(player.deck);
+        MOVE_CARDS(store, state, player.active, player.deck, { sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
           player.deck.applyOrder(order);

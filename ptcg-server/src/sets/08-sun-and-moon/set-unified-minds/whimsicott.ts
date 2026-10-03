@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, PowerType, ShuffleDeckPrompt, State, StoreLike } from '../../../game';
 import { Effect, PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useProwl(next: Function, store: StoreLike, state: State,
   self: Whimsicott, effect: PlayPokemonEffect): IterableIterator<State> {
@@ -33,7 +33,7 @@ function* useProwl(next: Function, store: StoreLike, state: State,
     { min: 1, max: 1, allowCancel: true }
   ), selected => {
     const cards = selected || [];
-    player.deck.moveCardsTo(cards, player.hand);
+    MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: self });
     next();
   });
 
@@ -80,7 +80,6 @@ export class Whimsicott extends PokemonCard {
       if (IS_ABILITY_BLOCKED(store, state, player, this)) {
         return state;
       }
-
 
       const generator = useProwl(() => generator.next(), store, state, this, effect);
       return generator.next().value;

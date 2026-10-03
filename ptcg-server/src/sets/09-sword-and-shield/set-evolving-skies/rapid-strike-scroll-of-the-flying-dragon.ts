@@ -16,7 +16,7 @@ import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 export class RapidStrikeScrollOfTheFlyingDragon extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.RAPID_STRIKE];
   public regulationMark: string = 'E';
   public set: string = 'EVS';

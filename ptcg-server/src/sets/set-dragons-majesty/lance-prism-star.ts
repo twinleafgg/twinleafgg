@@ -3,17 +3,15 @@ import { CardTag, CardType, TrainerType } from '../../game/store/card/card-types
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { Effect } from '../../game/store/effects/effect';
 import { KnockOutEffect } from '../../game/store/effects/game-effects';
-import {
-  ADD_MARKER,
+import {ADD_MARKER,
   REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN,
-  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH,
-} from '../../game/store/prefabs/prefabs';
+  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
 import { GamePhase, State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 
 export class LancePrismStar extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.PRISM_STAR];
   public set: string = 'DRM';
   public cardImage: string = 'assets/cardback.png';
@@ -43,7 +41,7 @@ export class LancePrismStar extends TrainerCard {
 
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH(
         store,
@@ -53,7 +51,7 @@ export class LancePrismStar extends TrainerCard {
         { min: 0, max: 2, allowCancel: false },
       );
 
-      player.supporter.moveCardTo(this, player.lostzone);
+      MOVE_CARDS(store, state, player.supporter, player.lostzone, { cards: [this], sourceCard: this });
     }
 
     if (effect instanceof KnockOutEffect) {

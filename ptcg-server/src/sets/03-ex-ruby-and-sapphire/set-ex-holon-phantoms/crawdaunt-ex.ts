@@ -19,7 +19,7 @@ import {
   ADD_MARKER,
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   HAS_MARKER,
-  MOVE_CARDS,
+  MOVE_POKEMON_OFF_BOARD,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
   WAS_POWER_USED,
@@ -99,31 +99,10 @@ export class CrawdauntEx extends PokemonCard {
         (selected) => {
           const cardList = selected[0] || [];
           if (cardList) {
-            const pokemons = cardList.getPokemons();
-            const otherCards = cardList.cards.filter(
-              (card) =>
-                !(card instanceof PokemonCard) &&
-                !pokemons.includes(card as PokemonCard) &&
-                (!cardList.tools || !cardList.tools.includes(card)),
-            );
-            const tools = [...cardList.tools];
-
-            // Move other cards to hand
-            if (otherCards.length > 0) {
-              MOVE_CARDS(store, state, cardList, opponent.hand, { cards: otherCards });
-            }
-
-            // Move tools to hand
-            if (tools.length > 0) {
-              for (const tool of tools) {
-                cardList.moveCardTo(tool, opponent.hand);
-              }
-            }
-
-            // Move Pokémon to hand
-            if (pokemons.length > 0) {
-              MOVE_CARDS(store, state, cardList, opponent.hand, { cards: pokemons });
-            }
+            MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+              pokemonDestination: opponent.hand,
+              sourceCard: this,
+            });
           }
         },
       );

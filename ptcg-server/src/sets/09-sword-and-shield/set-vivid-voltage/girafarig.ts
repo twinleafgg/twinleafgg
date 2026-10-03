@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ConfirmPrompt, GameMessage, SlotType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PUT_X_DAMAGE_COUNTERS_IN_ANY_WAY_YOU_LIKE } from '../../../game/store/prefabs/attack-effects';
 
 export class Girafarig extends PokemonCard {
@@ -55,7 +55,7 @@ export class Girafarig extends PokemonCard {
       store.prompt(state, new ConfirmPrompt(player.id, GameMessage.WANT_TO_USE_ABILITY), wantTo => {
         if (wantTo) {
           // Shuffle opponent's hand into their deck
-          opponent.hand.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, opponent);
           // Opponent draws 4 cards
           DRAW_CARDS(store, state, opponent, 4);

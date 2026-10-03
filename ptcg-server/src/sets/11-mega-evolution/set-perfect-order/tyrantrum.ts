@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State, StateUtils, CardList, GameLog, PowerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckHpEffect, CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tyrantrum extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -70,10 +70,10 @@ export class Tyrantrum extends PokemonCard {
           if (result === true) {
             // Heads - discard top card
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 1);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 1, sourceCard: this });
             if (deckTop.cards.length > 0) {
               store.log(s, GameLog.LOG_PLAYER_DISCARDS_CARD, { name: opponent.name, card: deckTop.cards[0].name, effectName: 'Wreak Havoc' });
-              deckTop.moveTo(opponent.discard);
+              MOVE_CARDS(store, state, deckTop, opponent.discard, { sourceCard: this });
             }
             // Continue flipping
             flipCoins(s);

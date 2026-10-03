@@ -10,7 +10,7 @@ import {
   PlayerType,
   SlotType,
 } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Delibird extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -63,7 +63,7 @@ export class Delibird extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, opponent, transfer.to);
-            opponent.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, opponent.hand, target, { cards: [transfer.card], sourceCard: this });
           }
           store.prompt(
             state,
@@ -80,7 +80,7 @@ export class Delibird extends PokemonCard {
               transfersSelf = transfersSelf || [];
               for (const transfer of transfersSelf) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                player.hand.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
               }
             },
           );

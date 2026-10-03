@@ -3,19 +3,39 @@
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { CardType, EnergyType, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import {
+  CardType,
+  EnergyType,
+  Stage,
+  SuperType,
+  TrainerType,
+} from '../../../game/store/card/card-types';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { AttachEnergyPrompt, CardTarget, PlayerType, SlotType, StoreLike, State, StateUtils, GameMessage, GameError, pokemonHasCardType } from '../../../game';
+import {
+  AttachEnergyPrompt,
+  CardTarget,
+  PlayerType,
+  SlotType,
+  StoreLike,
+  State,
+  StateUtils,
+  GameMessage,
+  GameError,
+  pokemonHasCardType,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 export class TheMaskedRoyal extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'CES';
   public setNumber: string = '139';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'The Masked Royal';
   public fullName: string = 'The Masked Royal CES';
-  public text: string = 'Attach a basic Energy card from your hand to one of your Stage 2 Grass, Fire, or Water Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Attach a basic Energy card from your hand to one of your Stage 2 Grass, Fire, or Water Pokémon. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-sword-and-shield/bede.ts (attach basic energy from hand to Pokemon)
@@ -23,8 +43,8 @@ export class TheMaskedRoyal extends TrainerCard {
       const player = effect.player;
 
       // Check if player has basic energy in hand
-      const hasBasicEnergy = player.hand.cards.some(c =>
-        c instanceof EnergyCard && c.energyType === EnergyType.BASIC
+      const hasBasicEnergy = player.hand.cards.some(
+        (c) => c instanceof EnergyCard && c.energyType === EnergyType.BASIC,
       );
 
       // Check if player has a Stage 2 Grass, Fire, or Water Pokemon in play
@@ -32,8 +52,13 @@ export class TheMaskedRoyal extends TrainerCard {
       const blocked: CardTarget[] = [];
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
         const pokemonCard = cardList.getPokemonCard();
-        if (pokemonCard && pokemonCard.stage === Stage.STAGE_2 &&
-          (pokemonHasCardType(pokemonCard, CardType.GRASS) || pokemonHasCardType(pokemonCard, CardType.FIRE) || pokemonHasCardType(pokemonCard, CardType.WATER))) {
+        if (
+          pokemonCard &&
+          pokemonCard.stage === Stage.STAGE_2 &&
+          (pokemonHasCardType(pokemonCard, CardType.GRASS) ||
+            pokemonHasCardType(pokemonCard, CardType.FIRE) ||
+            pokemonHasCardType(pokemonCard, CardType.WATER))
+        ) {
           hasValidTarget = true;
         } else {
           blocked.push(target);
@@ -44,21 +69,28 @@ export class TheMaskedRoyal extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      store.prompt(state, new AttachEnergyPrompt(
-        player.id,
-        GameMessage.ATTACH_ENERGY_CARDS,
-        player.hand,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-        { min: 1, max: 1, allowCancel: false, blockedTo: blocked }
-      ), transfers => {
-        transfers = transfers || [];
-        for (const transfer of transfers) {
-          const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
-        }
-      });
+      store.prompt(
+        state,
+        new AttachEnergyPrompt(
+          player.id,
+          GameMessage.ATTACH_ENERGY_CARDS,
+          player.hand,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+          { min: 1, max: 1, allowCancel: false, blockedTo: blocked },
+        ),
+        (transfers) => {
+          transfers = transfers || [];
+          for (const transfer of transfers) {
+            const target = StateUtils.getTarget(state, player, transfer.to);
+            MOVE_CARDS(store, state, player.hand, target, {
+              cards: [transfer.card],
+              sourceCard: this,
+            });
+          }
+        },
+      );
     }
 
     return state;

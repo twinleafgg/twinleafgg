@@ -12,11 +12,12 @@ export class CrystalCave extends TrainerCard {
   public regulationMark = 'E';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '144';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'EVS';
   public name = 'Crystal Cave';
   public fullName = 'Crystal Cave EVS';
-  public text = 'Once during each player\'s turn, that player may heal 30 damage from each of their [M] Pokémon and [N] Pokémon.';
+  public text =
+    "Once during each player's turn, that player may heal 30 damage from each of their [M] Pokémon and [N] Pokémon.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -24,7 +25,10 @@ export class CrystalCave extends TrainerCard {
 
       const targets: PokemonCardList[] = [];
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
-        if ((pokemonHasCardType(card, CardType.METAL) || pokemonHasCardType(card, CardType.DRAGON)) && cardList.damage > 0) {
+        if (
+          (pokemonHasCardType(card, CardType.METAL) || pokemonHasCardType(card, CardType.DRAGON)) &&
+          cardList.damage > 0
+        ) {
           targets.push(cardList);
         }
       });
@@ -33,7 +37,7 @@ export class CrystalCave extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_USE_STADIUM);
       }
 
-      targets.forEach(target => {
+      targets.forEach((target) => {
         if (IS_STADIUM_EFFECT_BLOCKED(store, state, player, target, this)) {
           return;
         }

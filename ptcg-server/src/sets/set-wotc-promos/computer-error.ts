@@ -4,9 +4,10 @@ import { TrainerCard } from '../../game/store/card/trainer-card';
 import { Effect } from '../../game/store/effects/effect';
 import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class ComputerError extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ROCKETS_SECRET_MACHINE];
   public set: string = 'PR';
   public cardImage: string = 'assets/cardback.png';
@@ -22,7 +23,7 @@ export class ComputerError extends TrainerCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       const maxPlayerDraw = 5;
 
@@ -41,7 +42,7 @@ export class ComputerError extends TrainerCard {
         ),
         (choice) => {
           const numCardsToDraw = options[choice].value;
-          player.deck.moveTo(player.hand, numCardsToDraw);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: numCardsToDraw, sourceCard: this });
 
           const opponentOptions: { message: string; value: number }[] = [];
           for (let i = maxPlayerDraw; i >= 0; i--) {
@@ -58,7 +59,7 @@ export class ComputerError extends TrainerCard {
             ),
             (opponentChoice) => {
               const opponentNumCardsToDraw = opponentOptions[opponentChoice].value;
-              opponent.deck.moveTo(opponent.hand, opponentNumCardsToDraw);
+              MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: opponentNumCardsToDraw, sourceCard: this });
             },
           );
         },

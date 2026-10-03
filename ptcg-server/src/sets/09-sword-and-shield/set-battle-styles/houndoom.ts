@@ -22,7 +22,7 @@ import {
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { ABILITY_USED, SHUFFLE_DECK, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, SHUFFLE_DECK, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Houndoom extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -106,7 +106,7 @@ export class Houndoom extends PokemonCard {
           player.marker.addMarker(this.SINGLE_STRIKE_ROAR_MARKER, this);
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
             SHUFFLE_DECK(store, state, player);
             target.damage += 20;
           }

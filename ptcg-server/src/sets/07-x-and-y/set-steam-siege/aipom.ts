@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { GameMessage } from '../../../game/game-message';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
 
@@ -50,7 +50,7 @@ export class Aipom extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      opponent.deck.moveTo(deckTop, Math.min(3, opponent.deck.cards.length));
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: Math.min(3, opponent.deck.cards.length), sourceCard: this });
 
       return store.prompt(state, new OrderCardsPrompt(
         player.id,

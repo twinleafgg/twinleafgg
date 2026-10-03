@@ -10,11 +10,9 @@ import {
   State,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   IS_ABILITY_BLOCKED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
 export class Masquerain extends PokemonCard {
@@ -88,7 +86,7 @@ export class Masquerain extends PokemonCard {
           const target = targets[0];
           if (target.tools.length > 0) {
             const tool = target.tools[0];
-            target.moveCardTo(tool, player.hand);
+            MOVE_CARDS(store, state, target, player.hand, { cards: [tool], sourceCard: this });
           }
         },
       );

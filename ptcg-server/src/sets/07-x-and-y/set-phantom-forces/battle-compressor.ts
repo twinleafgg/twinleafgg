@@ -25,7 +25,7 @@ function* playCard(
   }
 
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
 
   yield store.prompt(
     state,
@@ -53,7 +53,7 @@ function* playCard(
 }
 
 export class BattleCompressor extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'PHF';
   public name: string = 'Battle Compressor';
   public fullName: string = 'Battle Compressor PHF';

@@ -6,10 +6,9 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class ToolJammer extends TrainerCard {
-
   public regulationMark = 'E';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'BST';
 
@@ -22,7 +21,7 @@ export class ToolJammer extends TrainerCard {
   public fullName: string = 'Tool Jammer BST';
 
   public text: string =
-    'As long as the Pokémon this card is attached to is in the Active Spot, Pokémon Tools attached to your opponent\'s Active Pokémon have no effect, except for Tool Jammer.';
+    "As long as the Pokémon this card is attached to is in the Active Spot, Pokémon Tools attached to your opponent's Active Pokémon have no effect, except for Tool Jammer.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -41,4 +40,3 @@ export class ToolJammer extends TrainerCard {
     return state;
   }
 }
-

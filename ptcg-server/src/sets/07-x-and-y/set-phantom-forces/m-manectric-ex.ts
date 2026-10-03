@@ -22,7 +22,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MManectricEx extends PokemonCard {
   protected _tags = [CardTag.MEGA, CardTag.POKEMON_EX];
@@ -108,7 +108,7 @@ export class MManectricEx extends PokemonCard {
             (selected: Card[]) => {
               const cards = selected || [];
               cards.forEach((card) => {
-                player.discard.moveCardTo(card, target);
+                MOVE_CARDS(store, state, player.discard, target, { cards: [card], sourceCard: this });
               });
             },
           );

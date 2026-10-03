@@ -1,6 +1,6 @@
 import { CardTag, CardType, PokemonCard, Stage, State, StoreLike } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
-import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS } from "../../../game/store/prefabs/prefabs";
+import {WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 import { PREVENT_DAMAGE } from "../../../game/store/prefabs/effect-of-attack-prefabs";
 
 export class VenomothGx extends PokemonCard {
@@ -57,7 +57,7 @@ export class VenomothGx extends PokemonCard {
 
       const cards = player.hand.cards.slice();
       cards.forEach((c) => {
-        player.hand.moveCardTo(c, player.deck);
+        MOVE_CARDS(store, state, player.hand, player.deck, { cards: [c], sourceCard: this });
       });
       SHUFFLE_DECK(store, state, player);
       DRAW_CARDS(store, state, player, 10);

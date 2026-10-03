@@ -4,20 +4,29 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, GameMessage, CardList, ChooseCardsPrompt, ShowCardsPrompt, StateUtils } from '../../../game';
+import {
+  StoreLike,
+  State,
+  GameMessage,
+  CardList,
+  ChooseCardsPrompt,
+  ShowCardsPrompt,
+  StateUtils,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import { SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ToolBox extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark: string = 'F';
   public set: string = 'LOR';
   public setNumber: string = '168';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Tool Box';
   public fullName: string = 'Tool Box LOR 168';
-  public text: string = 'Look at the top 7 cards of your deck. You may reveal any number of Pokémon Tool cards you find there and put them into your hand. Shuffle the other cards back into your deck. You may play any number of Item cards during your turn.';
+  public text: string =
+    'Look at the top 7 cards of your deck. You may reveal any number of Pokémon Tool cards you find there and put them into your hand. Shuffle the other cards back into your deck. You may play any number of Item cards during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-astral-radiance/energy-loto.ts (deckTop pattern - look at top N, choose cards to hand, shuffle rest)
@@ -30,7 +39,7 @@ export class ToolBox extends TrainerCard {
 
       const deckTop = new CardList();
       const count = Math.min(7, player.deck.cards.length);
-      player.deck.moveTo(deckTop, count);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: count, sourceCard: this });
 
       // Find Tool cards in top 7 and build blocked array for non-Tool cards
       const blocked: number[] = [];
@@ -42,40 +51,44 @@ export class ToolBox extends TrainerCard {
       });
 
       const toolCards = deckTop.cards.filter(
-        c => c instanceof TrainerCard && c.trainerType === TrainerType.TOOL
+        (c) => c instanceof TrainerCard && c.trainerType === TrainerType.TOOL,
       );
 
       if (toolCards.length === 0) {
         // No Tool cards found, shuffle all cards back into deck
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
         return SHUFFLE_DECK(store, state, player);
       }
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        deckTop,
-        { superType: SuperType.TRAINER },
-        { min: 0, max: toolCards.length, allowCancel: false, blocked }
-      ), selected => {
-        const cards = selected || [];
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          deckTop,
+          { superType: SuperType.TRAINER },
+          { min: 0, max: toolCards.length, allowCancel: false, blocked },
+        ),
+        (selected) => {
+          const cards = selected || [];
 
-        if (cards.length > 0) {
-          // Reveal selected Tool cards to opponent
-          store.prompt(state, new ShowCardsPrompt(
-            opponent.id,
-            GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-            cards
-          ), () => { });
+          if (cards.length > 0) {
+            // Reveal selected Tool cards to opponent
+            store.prompt(
+              state,
+              new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+              () => {},
+            );
 
-          // Move chosen Tool cards to hand
-          deckTop.moveCardsTo(cards, player.hand);
-        }
+            // Move chosen Tool cards to hand
+            MOVE_CARDS(store, state, deckTop, player.hand, { cards: cards, sourceCard: this });
+          }
 
-        // Shuffle remaining cards back into deck
-        deckTop.moveTo(player.deck);
-        SHUFFLE_DECK(store, state, player);
-      });
+          // Shuffle remaining cards back into deck
+          MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
+          SHUFFLE_DECK(store, state, player);
+        },
+      );
     }
 
     return state;

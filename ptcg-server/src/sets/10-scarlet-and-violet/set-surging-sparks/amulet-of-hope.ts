@@ -8,11 +8,12 @@ import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effec
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt, GameLog, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AmuletofHope extends TrainerCard {
   protected _tags = [CardTag.ACE_SPEC];
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'SSP';
 
@@ -81,7 +82,7 @@ export class AmuletofHope extends TrainerCard {
           ),
           (selected) => {
             cards = selected || [];
-            player.deck.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
           },
         );
 

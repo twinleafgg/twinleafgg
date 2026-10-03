@@ -5,7 +5,7 @@ import { StoreLike, State, GameMessage, AttachEnergyPrompt, EnergyCard, GameErro
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { DiscardEnergyPrompt } from '../../../game/store/prompts/discard-energy-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Groudon extends PokemonCard {
 
@@ -102,7 +102,7 @@ export class Groudon extends PokemonCard {
 
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = player.discard;
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
 
           totalDiscarded = transfers.length;
 

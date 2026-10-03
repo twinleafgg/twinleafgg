@@ -8,7 +8,7 @@ import { EnergyCard, GameMessage, StoreLike, State, StateUtils } from '../../../
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class VikavoltGx extends PokemonCard {
@@ -68,7 +68,7 @@ export class VikavoltGx extends PokemonCard {
           (cards) => {
             cards = cards || [];
             if (cards.length > 0) {
-              player.discard.moveCardsTo(cards, player.active);
+              MOVE_CARDS(store, state, player.discard, player.active, { cards: cards, sourceCard: this });
             }
           },
         );

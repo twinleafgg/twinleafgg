@@ -422,11 +422,21 @@ export function DeckListPage() {
   }
 
   if (loading) {
-    return <div className={styles.loading}>{t('DECK_LIST_LOADING')}</div>;
+    return (
+      <div className={styles.page}>
+        <div className={styles.loading}>{t('DECK_LIST_LOADING')}</div>
+      </div>
+    );
   }
 
   return (
     <div className={styles.page}>
+      <div className={styles.cornerTL} aria-hidden />
+      <div className={styles.cornerBR} aria-hidden />
+      <div className={styles.dots} aria-hidden />
+
+      <div className={styles.scroll}>
+        <div className={styles.content}>
       <div className={styles.toolbar}>
         <h1 className={styles.title}>{t('DECK_TITLE')}</h1>
         {selectedFormat !== 'theme' && (
@@ -492,10 +502,10 @@ export function DeckListPage() {
           </div>
         </div>
         <div className={styles.actions}>
-          <ShellButton variant="plain" onClick={() => void onCreate()}>
+          <ShellButton variant="ghost" onClick={() => void onCreate()}>
             {t('DECK_CREATE')}
           </ShellButton>
-          <ShellButton variant="plain" onClick={() => void onCreateFromClipboard()}>
+          <ShellButton variant="ghost" onClick={() => void onCreateFromClipboard()}>
             {t('DECK_CREATE_FROM_CLIPBOARD')}
           </ShellButton>
         </div>
@@ -715,14 +725,16 @@ export function DeckListPage() {
             ) : (
               <p>{t('DECK_NO_DECKS_FORMAT', { format: getFormatDisplayName(selectedFormat) })}</p>
             )}
-            <ShellButton variant="plain" onClick={() => void onCreate()}>
+            <ShellButton variant="ghost" onClick={() => void onCreate()}>
               {t('DECK_CREATE')}
             </ShellButton>
-            <ShellButton variant="plain" onClick={() => void onCreateFromClipboard()}>
+            <ShellButton variant="ghost" onClick={() => void onCreateFromClipboard()}>
               {t('DECK_CREATE_FROM_CLIPBOARD')}
             </ShellButton>
           </div>
         )}
+      </div>
+        </div>
       </div>
     </div>
   );

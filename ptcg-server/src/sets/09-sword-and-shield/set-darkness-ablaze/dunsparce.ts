@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 
 export class Dunsparce extends PokemonCard {
@@ -55,7 +55,7 @@ export class Dunsparce extends PokemonCard {
       for (let i = 0; i < 2; i++) {
         if (opponent.deck.cards.length > 0) {
           const topCard = opponent.deck.cards[0];
-          opponent.deck.moveCardTo(topCard, opponent.discard);
+          MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [topCard], sourceCard: this });
         }
       }
     }

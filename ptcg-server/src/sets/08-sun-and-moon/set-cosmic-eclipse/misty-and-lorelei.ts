@@ -16,10 +16,10 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MistyAndLorelei extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.TAG_TEAM];
   public set: string = 'CEC';
   public setNumber: string = '199';
@@ -55,7 +55,7 @@ export class MistyAndLorelei extends TrainerCard {
                 (selected) => {
                   const cards = selected || [];
                   cards.forEach((card: Card) => {
-                    player.hand.moveCardTo(card, player.discard);
+                    MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
                   });
                   // Allow Water Pokemon to use GX attacks
                   player.usedGX = false;
@@ -87,7 +87,7 @@ export class MistyAndLorelei extends TrainerCard {
                 new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
                 () => {
                   cards.forEach((card) => {
-                    player.deck.moveCardTo(card, player.hand);
+                    MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
                   });
                   SHUFFLE_DECK(store, state, player);
                 },

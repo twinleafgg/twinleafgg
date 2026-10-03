@@ -4,13 +4,22 @@
 
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { TrainerType } from '../../game/store/card/card-types';
-import { CardTarget, Player, PlayerType, SlotType, StoreLike, State, GameMessage, GameError } from '../../game';
+import {
+  CardTarget,
+  Player,
+  PlayerType,
+  SlotType,
+  StoreLike,
+  State,
+  GameMessage,
+  GameError,
+} from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { MOVE_DAMAGE_COUNTERS } from '../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
 
 export class DamageMover extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'SLG';
   public setNumber: string = '58';
   public cardImage: string = 'assets/cardback.png';
@@ -57,7 +66,7 @@ export class DamageMover extends TrainerCard {
         blockedFrom,
         singleSourceTarget: true,
         singleDestinationTarget: true,
-        damageMultiple: 30
+        damageMultiple: 30,
       });
     }
 

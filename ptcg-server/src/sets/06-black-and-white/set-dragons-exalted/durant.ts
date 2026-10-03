@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, BLOCK_IF_DISCARD_EMPTY } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_DISCARD_EMPTY, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_UNTIL_YOU_GET_TAILS_DO_X_DAMAGE_PER_HEADS } from '../../../game/store/prefabs/attack-effects';
 import { Card } from '../../../game/store/card/card';
 
@@ -52,7 +52,7 @@ export class Durant extends PokemonCard {
       ), (selected: Card[] | null) => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
           // Put on top of deck - moveCardsTo already puts on top
         }
       });

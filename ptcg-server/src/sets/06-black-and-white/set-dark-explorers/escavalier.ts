@@ -1,10 +1,9 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, PlayerType } from '../../../game';
+import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER } from '../../../game/store/prefabs/prefabs';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Escavalier extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -36,8 +35,6 @@ export class Escavalier extends PokemonCard {
   public name: string = 'Escavalier';
   public fullName: string = 'Escavalier DEX';
 
-  public readonly NO_WEAKNESS_MARKER = 'ESCAVALIER_NO_WEAKNESS_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Joust - discard Tool before damage
     if (WAS_ATTACK_USED(effect, 0, this)) {
@@ -55,35 +52,14 @@ export class Escavalier extends PokemonCard {
         ), selected => {
           const cards = selected || [];
           if (cards.length > 0) {
-            opponent.active.moveCardsTo(cards, opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
           }
         });
       }
     }
 
-    // Cavalry Lance - add no weakness marker
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-      ADD_MARKER(this.NO_WEAKNESS_MARKER, player.active, this);
-    }
-
-    // Check weakness - remove if marker present
-    if (effect instanceof CheckPokemonStatsEffect) {
-      const cardList = effect.target;
-
-      if (HAS_MARKER(this.NO_WEAKNESS_MARKER, cardList, this)) {
-        effect.weakness = [];
-      }
-    }
-
-    // Cleanup marker at end of opponent's turn
-    if (effect instanceof EndTurnEffect) {
-      const opponent = StateUtils.getOpponent(state, effect.player);
-
-      // When opponent's turn ends, remove marker from our Pokémon
-      opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
-        REMOVE_MARKER(this.NO_WEAKNESS_MARKER, cardList, this);
-      });
+      return THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     return state;

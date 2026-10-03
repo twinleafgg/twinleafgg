@@ -10,7 +10,7 @@ import {
   PowerType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEBODY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { PUT_X_DAMAGE_COUNTERS_IN_ANY_WAY_YOU_LIKE } from '../../../game/store/prefabs/attack-effects';
@@ -102,7 +102,7 @@ export class Gengar extends PokemonCard {
         ),
         (selected) => {
           cards = selected || [];
-          opponent.hand.moveCardsTo(cards, opponent.lostzone);
+          MOVE_CARDS(store, state, opponent.hand, opponent.lostzone, { cards: cards, sourceCard: this });
         },
       );
     }

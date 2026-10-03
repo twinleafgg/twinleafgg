@@ -9,8 +9,7 @@ import { GameError, GameMessage, Player } from '../../../game';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Katy extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'G';
 
@@ -24,8 +23,7 @@ export class Katy extends TrainerCard {
 
   public fullName: string = 'Katy SVI';
 
-  public text: string =
-    'Shuffle your hand into your deck. Then, draw 8 cards. Your turn ends.';
+  public text: string = 'Shuffle your hand into your deck. Then, draw 8 cards. Your turn ends.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {
@@ -62,5 +60,4 @@ export class Katy extends TrainerCard {
 
     return state;
   }
-
 }

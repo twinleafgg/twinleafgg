@@ -7,10 +7,10 @@ import { StoreLike } from '../../../game/store/store-like';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../..';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Schoolboy extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'E';
 
@@ -36,12 +36,14 @@ export class Schoolboy extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.deck.moveTo(player.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
 
-      if (opponent.getPrizeLeft() === 1 || opponent.getPrizeLeft() === 3 || opponent.getPrizeLeft() === 5) {
-
-        player.deck.moveTo(player.hand, 2);
-
+      if (
+        opponent.getPrizeLeft() === 1 ||
+        opponent.getPrizeLeft() === 3 ||
+        opponent.getPrizeLeft() === 5
+      ) {
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       }
 
       return state;

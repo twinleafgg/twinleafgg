@@ -6,10 +6,15 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { GameError, GameMessage, Player, pokemonHasCardType } from '../../../game';
 import { HealEffect } from '../../../game/store/effects/game-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
-
 
   const activePokemon = player.active.getPokemonCard();
 
@@ -27,13 +32,12 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   const healEffect = new HealEffect(player, player.active, 60);
   store.reduceEffect(state, healEffect);
 
-  player.hand.moveCardTo(effect.trainerCard, player.discard);
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
   return state;
 }
 
 export class DragonsElixir extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark = 'H';
 
@@ -45,10 +49,9 @@ export class DragonsElixir extends TrainerCard {
 
   public name: string = 'Dragon Elixir';
 
-  public fullName: string = 'Dragon\'s Elixir SSP';
+  public fullName: string = "Dragon's Elixir SSP";
 
-  public text: string =
-    'Heal 60 damage from your Active Dragon Pokémon.';
+  public text: string = 'Heal 60 damage from your Active Dragon Pokémon.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     const active = player.active.getPokemonCard();
@@ -58,7 +61,6 @@ export class DragonsElixir extends TrainerCard {
     return true;
   }
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, effect);
@@ -66,5 +68,4 @@ export class DragonsElixir extends TrainerCard {
     }
     return state;
   }
-
 }

@@ -11,8 +11,7 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 export class BlackBelt extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'TM';
 
@@ -26,14 +25,13 @@ export class BlackBelt extends TrainerCard {
 
   public text: string =
     'You may use this card only if you have more Prize cards left than your ' +
-    'opponent. During this turn, each of your Active Pokemon\'s attacks does ' +
-    '40 more damage to your opponent\'s Active Pokemon (before applying ' +
+    "opponent. During this turn, each of your Active Pokemon's attacks does " +
+    "40 more damage to your opponent's Active Pokemon (before applying " +
     'Weakness and Resistance).';
 
   private readonly BLACK_BELT_MARKER = 'BLACK_BELT_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
@@ -44,15 +42,21 @@ export class BlackBelt extends TrainerCard {
       player.marker.addMarker(this.BLACK_BELT_MARKER, this);
     }
 
-    if (effect instanceof DealDamageEffect && effect.player.marker.hasMarker(this.BLACK_BELT_MARKER, this) && effect.damage > 0) {
+    if (
+      effect instanceof DealDamageEffect &&
+      effect.player.marker.hasMarker(this.BLACK_BELT_MARKER, this) &&
+      effect.damage > 0
+    ) {
       effect.damage += 40;
     }
 
-    if (effect instanceof EndTurnEffect && effect.player.marker.hasMarker(this.BLACK_BELT_MARKER, this)) {
+    if (
+      effect instanceof EndTurnEffect &&
+      effect.player.marker.hasMarker(this.BLACK_BELT_MARKER, this)
+    ) {
       effect.player.marker.removeMarker(this.BLACK_BELT_MARKER, this);
     }
 
     return state;
   }
-
 }

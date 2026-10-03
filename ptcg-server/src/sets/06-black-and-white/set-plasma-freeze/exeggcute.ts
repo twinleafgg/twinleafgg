@@ -8,7 +8,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { GameMessage } from '../../../game/game-message';
 import { GameError } from '../../../game/game-error';
 import { DiscardToHandEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Exeggcute extends PokemonCard {
 
@@ -67,7 +67,7 @@ export class Exeggcute extends PokemonCard {
         return state;
       }
 
-      player.discard.moveCardTo(this, player.hand);
+      MOVE_CARDS(store, state, player.discard, player.hand, { cards: [this], sourceCard: this });
       return state;
     }
     return state;

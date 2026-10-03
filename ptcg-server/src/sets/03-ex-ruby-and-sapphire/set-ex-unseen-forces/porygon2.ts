@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, PowerType, CardTarget, PlayerType, SlotType, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, BLOCK_IF_HAS_SPECIAL_CONDITION, DRAW_CARDS_UNTIL_CARDS_IN_HAND, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, BLOCK_IF_HAS_SPECIAL_CONDITION, DRAW_CARDS_UNTIL_CARDS_IN_HAND, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { CardList } from '../../../game/store/state/card-list';
@@ -63,10 +63,10 @@ function* useTearAway(next: Function, store: StoreLike, state: State, effect: Po
       });
 
       if (selected && selected.length > 0) {
-        target.moveCardTo(selected[0], owner.hand);
+        MOVE_CARDS(store, state, target, owner.hand, { cards: [selected[0]], sourceCard: effect.card });
       }
     } else {
-      target.moveCardTo(target.tools[0], owner.hand);
+      MOVE_CARDS(store, state, target, owner.hand, { cards: [target.tools[0]], sourceCard: effect.card });
     }
   }
 

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 
@@ -68,7 +68,7 @@ export class Watchog extends PokemonCard {
           { min: 1, max: 1, allowCancel: false, blocked }
         ), selected => {
           if (selected && selected.length > 0) {
-            opponent.hand.moveCardTo(selected[0], opponent.deck);
+            MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [selected[0]], sourceCard: this });
             SHUFFLE_DECK(store, state, opponent);
           }
         });

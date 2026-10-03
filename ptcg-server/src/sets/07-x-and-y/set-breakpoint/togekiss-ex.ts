@@ -15,7 +15,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TogekissEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -70,7 +70,7 @@ export class TogekissEx extends PokemonCard {
             if (transfers) {
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                player.hand.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
               }
             }
           },

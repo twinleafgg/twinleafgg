@@ -6,7 +6,7 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { SlotType } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Armaldo extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -76,7 +76,7 @@ export class Armaldo extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), targets => {
           if (!targets || targets.length === 0) { return; }
-          opponent.active.moveCardTo(energyCard, targets[0]);
+          MOVE_CARDS(store, state, opponent.active, targets[0], { cards: [energyCard], sourceCard: this });
         });
       });
     }

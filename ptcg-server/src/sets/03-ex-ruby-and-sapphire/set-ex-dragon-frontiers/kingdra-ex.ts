@@ -12,16 +12,12 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import {
-  ADD_MARKER,
   AFTER_ATTACK,
-  HAS_MARKER,
   IS_POKEBODY_BLOCKED,
   MOVE_CARDS,
-  REMOVE_MARKER,
   WAS_ATTACK_USED,
 } from '../../../game/store/prefabs/prefabs';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 
 export class Kingdraex extends PokemonCard {
@@ -61,8 +57,6 @@ export class Kingdraex extends PokemonCard {
   public setNumber: string = '94';
   public name: string = 'Kingdra ex';
   public fullName: string = 'Kingdra ex DF';
-
-  public readonly PROTECTIVE_MARKER = 'PROTECTIVE_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (
@@ -127,27 +121,7 @@ export class Kingdraex extends PokemonCard {
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      ADD_MARKER(this.PROTECTIVE_MARKER, effect.player.active, this);
-    }
-
-    if (
-      effect instanceof CheckPokemonStatsEffect &&
-      HAS_MARKER(this.PROTECTIVE_MARKER, effect.target, this)
-    ) {
-      if (effect.target.getPokemonCard() === this) {
-        effect.weakness = [];
-      }
-    }
-
-    if (effect instanceof EndTurnEffect) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (pokemon) => {
-        if (HAS_MARKER(this.PROTECTIVE_MARKER, pokemon, this)) {
-          REMOVE_MARKER(this.PROTECTIVE_MARKER, pokemon, this);
-        }
-      });
+      return THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     return state;

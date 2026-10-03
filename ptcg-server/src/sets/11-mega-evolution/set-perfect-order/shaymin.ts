@@ -1,6 +1,6 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, AttachEnergyPrompt, GameMessage, ShuffleDeckPrompt, StateUtils, PlayerType, SlotType, SuperType, pokemonHasCardType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shaymin extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -67,7 +67,7 @@ export class Shaymin extends PokemonCard {
         if (validTransfers.length > 0) {
           for (const transfer of validTransfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
         }
 

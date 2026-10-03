@@ -4,7 +4,7 @@ import { State, StateUtils, GameLog, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { DAMAGED_FROM_FULL_HP, IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGED_FROM_FULL_HP, IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // interface PokemonItem {
 //   playerNum: number;
@@ -14,7 +14,7 @@ import { DAMAGED_FROM_FULL_HP, IS_TOOL_BLOCKED } from '../../../game/store/prefa
 export class SurvivalCast extends TrainerCard {
   public regulationMark = 'H';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   protected _tags = [CardTag.ACE_SPEC];
 
@@ -46,7 +46,7 @@ export class SurvivalCast extends TrainerCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, index) => {
         if (cardList.tools && cardList.tools.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         }
       });
     }

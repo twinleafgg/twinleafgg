@@ -2,7 +2,7 @@ import { pokemonHasCardType } from '../../../game';
 import { Player } from '../../../game/store/state/player';
 import { Card } from '../../../game/store/card/card';
 import { GameError } from '../../../game/game-error';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { StateUtils } from '../../../game/store/state-utils';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, EnergyType } from '../../../game/store/card/card-types';
@@ -15,6 +15,7 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { CardType } from '../../../game/store/card/card-types';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -55,23 +56,17 @@ function* playCard(
     },
   );
   if (cards.length > 0) {
-    cards.forEach((card) => {
-      store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, {
-        name: player.name,
-        card: card.name,
-      });
-    });
-    player.discard.moveCardsTo(cards, player.deck);
+    MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: effect.trainerCard });
   }
   const cardList = StateUtils.findCardList(state, effect.trainerCard);
-  if (cardList) cardList.moveCardTo(effect.trainerCard, player.discard);
+  if (cardList) MOVE_CARDS(store, state, cardList, player.discard, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class GreatHaulNet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'CRI';
   public regulationMark = 'J';
   public name: string = 'Great Haul Net';
@@ -100,7 +95,6 @@ export class GreatHaulNet extends TrainerCard {
     }
     return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {

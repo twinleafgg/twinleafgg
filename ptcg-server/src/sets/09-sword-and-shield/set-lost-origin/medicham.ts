@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, GameMessage, PlayerType, SlotType, ShuffleDeckPrompt, AttachEnergyPrompt, StateUtils, EnergyCard } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Medicham extends PokemonCard {
 
@@ -55,7 +55,7 @@ export class Medicham extends PokemonCard {
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
           const energyCard = transfer.card as EnergyCard;
-          player.deck.moveCardTo(energyCard, target);
+          MOVE_CARDS(store, state, player.deck, target, { cards: [energyCard], sourceCard: this });
         }
       });
 

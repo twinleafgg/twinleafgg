@@ -6,14 +6,12 @@ import {
   CheckPokemonTypeEffect,
   CheckProvidedEnergyEffect,
 } from '../../../game/store/effects/check-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   CONFIRMATION_PROMPT,
   IS_POKEPOWER_BLOCKED,
   JUST_EVOLVED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
@@ -95,7 +93,7 @@ export class Typhlosionex extends PokemonCard {
 
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                player.deck.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
               }
 
               SHUFFLE_DECK(store, state, player);

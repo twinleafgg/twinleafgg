@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils, GameMessage } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Skiddo extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -64,7 +64,7 @@ export class Skiddo extends PokemonCard {
         cards = cards || [];
         if (cards.length > 0) {
           const cardList = StateUtils.findCardList(state, this);
-          player.hand.moveCardsTo(cards, cardList);
+          MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
         }
       });
     }

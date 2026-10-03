@@ -4,10 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils } from '../../../game';
-import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ADD_MARKER, CLEAR_MARKER_AND_OPPONENTS_POKEMON_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Seedot extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -15,9 +15,6 @@ export class Seedot extends PokemonCard {
   public hp: number = 40;
   public weakness = [{ type: R }];
   public retreat = [C];
-
-  public readonly HARDEN_MARKER = 'SEEDOT_CES_HARDEN_MARKER';
-  public readonly CLEAR_HARDEN_MARKER = 'SEEDOT_CES_CLEAR_HARDEN_MARKER';
 
   public attacks = [
     {
@@ -41,25 +38,9 @@ export class Seedot extends PokemonCard {
   public fullName: string = 'Seedot CES';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 2: Harden
-    // Ref: set-steam-siege/seedot.ts (Bide - 2-marker pattern for opponent's next turn)
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      ADD_MARKER(this.HARDEN_MARKER, player.active, this);
-      ADD_MARKER(this.CLEAR_HARDEN_MARKER, opponent, this);
+      PREVENT_DAMAGE(store, state, effect, this, { maxDamage: 40 });
     }
-
-    // Prevent damage if 40 or less
-    if (effect instanceof DealDamageEffect
-      && effect.target.marker.hasMarker(this.HARDEN_MARKER, this)
-      && effect.target.getPokemonCard() === this) {
-      if (effect.damage <= 40) {
-        effect.damage = 0;
-      }
-    }
-
-    CLEAR_MARKER_AND_OPPONENTS_POKEMON_MARKER_AT_END_OF_TURN(state, effect, this.CLEAR_HARDEN_MARKER, this.HARDEN_MARKER, this);
 
     return state;
   }

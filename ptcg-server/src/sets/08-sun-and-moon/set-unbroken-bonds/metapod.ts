@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, GameMessage, Card, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameError } from '../../../game/game-error';
@@ -87,7 +87,7 @@ export class Metapod extends PokemonCard {
           if (cards.length > 0) {
             const evolutionCard = cards[0] as PokemonCard;
             const pokemonCardList = StateUtils.findCardList(state, this) as PokemonCardList;
-            player.deck.moveCardTo(evolutionCard, pokemonCardList);
+            MOVE_CARDS(store, state, player.deck, pokemonCardList, { cards: [evolutionCard], sourceCard: this });
             pokemonCardList.clearEffects();
             pokemonCardList.pokemonPlayedTurn = state.turn;
           }

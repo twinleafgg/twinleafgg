@@ -4,7 +4,7 @@ import { GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Stoutland extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -60,7 +60,7 @@ export class Stoutland extends PokemonCard {
           { min: 0, max: maxCards, allowCancel: false }
         ), selected => {
           if (selected && selected.length > 0) {
-            player.discard.moveCardsTo(selected, player.hand);
+            MOVE_CARDS(store, state, player.discard, player.hand, { cards: selected, sourceCard: this });
           }
         });
       });

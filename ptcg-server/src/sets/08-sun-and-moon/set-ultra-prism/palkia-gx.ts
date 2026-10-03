@@ -18,11 +18,9 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   BLOCK_IF_GX_ATTACK_USED,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class PalkiaGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -101,7 +99,7 @@ export class PalkiaGx extends PokemonCard {
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );
@@ -136,7 +134,7 @@ export class PalkiaGx extends PokemonCard {
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
         const energyCards = cardList.cards.filter((c) => c instanceof EnergyCard);
         energyCards.forEach((card) => {
-          cardList.moveCardTo(card, opponent.deck);
+          MOVE_CARDS(store, state, cardList, opponent.deck, { cards: [card], sourceCard: this });
         });
       });
 

@@ -19,7 +19,7 @@ import {
 } from '../../../game';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { CheckPokemonPlayedTurnEffect } from '../../../game/store/effects/check-effects';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useStadium(
   next: Function,
@@ -142,7 +142,7 @@ function* useStadium(
   const evolution = cards[0] as PokemonCard;
 
   // Evolve Pokemon
-  player.deck.moveCardTo(evolution, target);
+  MOVE_CARDS(store, state, player.deck, target, { cards: [evolution], sourceCard: effect.stadium });
   target.clearEffects();
   target.pokemonPlayedTurn = state.turn;
 
@@ -175,7 +175,7 @@ function* useStadium(
 
     if (stage2Cards.length > 0) {
       const stage2Evolution = stage2Cards[0] as PokemonCard;
-      player.deck.moveCardTo(stage2Evolution, target);
+      MOVE_CARDS(store, state, player.deck, target, { cards: [stage2Evolution], sourceCard: effect.stadium });
       target.clearEffects();
       target.pokemonPlayedTurn = state.turn;
     }
@@ -185,7 +185,7 @@ function* useStadium(
 }
 
 export class GreatTree extends TrainerCard {
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
 
   protected _tags = [CardTag.ACE_SPEC];
 

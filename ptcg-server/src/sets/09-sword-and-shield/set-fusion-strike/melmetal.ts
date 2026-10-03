@@ -4,12 +4,11 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PowerType, StoreLike, State, StateUtils, PlayerType } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Melmetal extends PokemonCard {
   protected _tags = [CardTag.SINGLE_STRIKE];
@@ -20,9 +19,6 @@ export class Melmetal extends PokemonCard {
   public weakness = [{ type: R }];
   public resistance = [{ type: G, value: -30 }];
   public retreat = [C, C, C, C];
-
-  public readonly INGOT_SWING_MARKER = 'MELMETAL_FST_INGOT_SWING_MARKER';
-  public readonly CLEAR_INGOT_SWING_MARKER = 'MELMETAL_FST_CLEAR_INGOT_SWING_MARKER';
 
   public attacks = [
     {
@@ -47,40 +43,8 @@ export class Melmetal extends PokemonCard {
   public fullName: string = 'Melmetal FST 189';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Ingot Swing
-    // Ref: set-battle-styles/aegislash-2.ts (Gigaton Bash - prevent damage with 2-marker cleanup)
-    // Ref: set-plasma-freeze/latias-ex.ts (Bright Down - check sourceCard.powers.length)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      player.active.marker.addMarker(this.INGOT_SWING_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_INGOT_SWING_MARKER, this);
-    }
-
-    // Prevent damage from Pokemon with Abilities during opponent's next turn
-    if (
-      (effect instanceof DealDamageEffect || effect instanceof PutDamageEffect) &&
-      effect.target.cards.includes(this) &&
-      effect.target.marker.hasMarker(this.INGOT_SWING_MARKER, this)
-    ) {
-      const sourceCard = effect.source.getPokemonCard();
-      if (sourceCard && sourceCard.powers.some((p) => p.powerType === PowerType.ABILITY)) {
-        effect.preventDefault = true;
-        return state;
-      }
-    }
-
-    // Cleanup markers at end of opponent's turn
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_INGOT_SWING_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_INGOT_SWING_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.INGOT_SWING_MARKER, this);
-      });
+      PREVENT_DAMAGE(store, state, effect, this, { sourceHasAbility: true });
     }
 
     // Attack 2: Blasting Hammer

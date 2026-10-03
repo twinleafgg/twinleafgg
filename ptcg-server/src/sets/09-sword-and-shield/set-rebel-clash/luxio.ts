@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, ConfirmPrompt, GameMessage, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DrewTopdeckEffect } from '../../../game/store/effects/game-phase-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Luxio extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -62,7 +62,7 @@ export class Luxio extends PokemonCard {
       ), wantToUse => {
         if (wantToUse) {
           // Move this card from hand to bench
-          player.hand.moveCardTo(this, slots[0]);
+          MOVE_CARDS(store, state, player.hand, slots[0], { cards: [this], sourceCard: this });
           slots[0].pokemonPlayedTurn = state.turn;
         }
       });

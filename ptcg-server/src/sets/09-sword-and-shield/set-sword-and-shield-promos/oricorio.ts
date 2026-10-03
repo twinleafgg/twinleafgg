@@ -8,13 +8,12 @@ import {
   TrainerCard,
   ChooseCardsPrompt,
   GameMessage,
-  GameLog,
   ShowCardsPrompt,
   ShuffleDeckPrompt,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useMixedCall(
   next: Function,
@@ -62,11 +61,7 @@ function* useMixedCall(
     },
   );
 
-  player.deck.moveCardsTo(cards, player.hand);
-
-  cards.forEach((card, index) => {
-    store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-  });
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: self });
 
   if (cards.length > 0) {
     yield store.prompt(

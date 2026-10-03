@@ -1,8 +1,8 @@
-import { Card, CardType, ChooseCardsPrompt, GameLog, GameMessage, PokemonCard, ShowCardsPrompt, ShuffleDeckPrompt, SpecialCondition, Stage, State, StateUtils, StoreLike, TrainerCard, TrainerType } from '../../../game';
+import { Card, CardType, ChooseCardsPrompt, GameMessage, PokemonCard, ShowCardsPrompt, ShuffleDeckPrompt, SpecialCondition, Stage, State, StateUtils, StoreLike, TrainerCard, TrainerType } from '../../../game';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Chimecho extends PokemonCard {
 
@@ -78,8 +78,7 @@ export class Chimecho extends PokemonCard {
         cards = selected || [];
 
         cards.forEach((card, index) => {
-          player.deck.moveCardTo(card, player.hand);
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
         });
 
         state = store.prompt(state, new ShowCardsPrompt(

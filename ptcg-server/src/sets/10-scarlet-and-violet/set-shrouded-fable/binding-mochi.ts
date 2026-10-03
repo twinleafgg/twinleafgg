@@ -7,10 +7,8 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
-
 export class BindingMochi extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'SFA';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '55';
@@ -19,7 +17,7 @@ export class BindingMochi extends TrainerCard {
   public fullName: string = 'Binding Mochi SFA';
 
   public text: string =
-    'Attacks used by the Poisoned Pokémon this card is attached to do 40 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance).';
+    "Attacks used by the Poisoned Pokémon this card is attached to do 40 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof DealDamageEffect && effect.source.tools.includes(this)) {
@@ -48,5 +46,4 @@ export class BindingMochi extends TrainerCard {
 
     return state;
   }
-
 }

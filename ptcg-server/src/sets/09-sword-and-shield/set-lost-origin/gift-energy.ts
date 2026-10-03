@@ -5,8 +5,7 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State, GamePhase } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
-
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GiftEnergy extends EnergyCard {
 
@@ -65,7 +64,7 @@ export class GiftEnergy extends EnergyCard {
           if (player.deck.cards.length === 0) {
             break;
           }
-          player.deck.moveTo(player.hand, 1);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
         }
         player.marker.removeMarker(this.GIFT_ENERGY_MARKER);
       });

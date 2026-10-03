@@ -4,13 +4,24 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { Card, CardList, CardTarget, ChooseCardsPrompt, ChoosePokemonPrompt, GameError, GameMessage, PlayerType, PokemonCardList, SelectOptionPrompt, SlotType, StateUtils } from '../../../game';
+import {
+  Card,
+  CardList,
+  CardTarget,
+  ChooseCardsPrompt,
+  ChoosePokemonPrompt,
+  GameError,
+  GameMessage,
+  PlayerType,
+  PokemonCardList,
+  SelectOptionPrompt,
+  SlotType,
+  StateUtils,
+} from '../../../game';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-
 export class LostVacuum extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'LOR';
 
@@ -63,84 +74,115 @@ Choose a Pokémon Tool attached to any Pokémon, or any Stadium in play, and put
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
 
       // prepare card list without Junk Arm
       const handTemp = new CardList();
       handTemp.cards = player.hand.cards;
 
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DISCARD,
-        handTemp,
-        {},
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        cards = selected || [];
-        // Operation canceled by the user
-        if (cards.length === 0) {
-          return state;
-        }
-        player.hand.moveCardsTo(cards, player.lostzone);
-      });
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DISCARD,
+          handTemp,
+          {},
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          cards = selected || [];
+          // Operation canceled by the user
+          if (cards.length === 0) {
+            return state;
+          }
+          MOVE_CARDS(store, state, player.hand, player.lostzone, {
+            cards: cards,
+            sourceCard: this,
+          });
+        },
+      );
 
       if (pokemonsWithTool >= 1 && stadiumCard !== undefined) {
-
-        const options: { message: GameMessage, action: () => void }[] = [
+        const options: { message: GameMessage; action: () => void }[] = [
           {
             message: GameMessage.CHOICE_TOOL,
             action: () => {
-
               // We will discard this card after prompt confirmation
               effect.preventDefault = true;
 
               const max = Math.min(1, pokemonsWithTool);
               let targets: PokemonCardList[] = [];
-              return store.prompt(state, new ChoosePokemonPrompt(
-                player.id,
-                GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-                PlayerType.ANY,
-                [SlotType.ACTIVE, SlotType.BENCH],
-                { min: 1, max: max, allowCancel: false, blocked }
-              ), results => {
-                targets = results || [];
+              return store.prompt(
+                state,
+                new ChoosePokemonPrompt(
+                  player.id,
+                  GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+                  PlayerType.ANY,
+                  [SlotType.ACTIVE, SlotType.BENCH],
+                  { min: 1, max: max, allowCancel: false, blocked },
+                ),
+                (results) => {
+                  targets = results || [];
 
-                if (targets.length === 0) {
-                  return state;
-                }
-
-                targets.forEach(target => {
-                  const owner = StateUtils.findOwner(state, target);
-                  if (target.tools.length === 1) {
-                    // Only one tool, move it directly
-                    target.moveCardTo(target.tools[0], owner.lostzone);
-                  } else if (target.tools.length > 1) {
-                    // Multiple tools, prompt to choose one
-                    const toolList = new CardList();
-                    toolList.cards = [...target.tools];
-                    return store.prompt(state, new ChooseCardsPrompt(
-                      player,
-                      GameMessage.CHOOSE_CARD_TO_DISCARD,
-                      toolList,
-                      { trainerType: TrainerType.TOOL },
-                      { min: 1, max: 1, allowCancel: false }
-                    ), selectedTools => {
-                      if (selectedTools && selectedTools.length === 1) {
-                        const tool = selectedTools[0];
-                        target.moveCardTo(tool, owner.lostzone);
-                      }
-                      player.supporter.moveCardTo(this, player.discard);
-                      return state;
-                    });
+                  if (targets.length === 0) {
+                    return state;
                   }
-                  player.supporter.moveCardTo(this, player.discard);
-                  return state;
-                });
 
-                player.supporter.moveCardTo(this, player.discard);
-                return state;
-              });
-            }
+                  targets.forEach((target) => {
+                    const owner = StateUtils.findOwner(state, target);
+                    if (target.tools.length === 1) {
+                      // Only one tool, move it directly
+                      MOVE_CARDS(store, state, target, owner.lostzone, {
+                        cards: [target.tools[0]],
+                        sourceCard: this,
+                      });
+                    } else if (target.tools.length > 1) {
+                      // Multiple tools, prompt to choose one
+                      const toolList = new CardList();
+                      toolList.cards = [...target.tools];
+                      return store.prompt(
+                        state,
+                        new ChooseCardsPrompt(
+                          player,
+                          GameMessage.CHOOSE_CARD_TO_DISCARD,
+                          toolList,
+                          { trainerType: TrainerType.TOOL },
+                          { min: 1, max: 1, allowCancel: false },
+                        ),
+                        (selectedTools) => {
+                          if (selectedTools && selectedTools.length === 1) {
+                            const tool = selectedTools[0];
+                            MOVE_CARDS(store, state, target, owner.lostzone, {
+                              cards: [tool],
+                              sourceCard: this,
+                            });
+                          }
+                          MOVE_CARDS(store, state, player.supporter, player.discard, {
+                            cards: [this],
+                            sourceCard: this,
+                          });
+                          return state;
+                        },
+                      );
+                    }
+                    MOVE_CARDS(store, state, player.supporter, player.discard, {
+                      cards: [this],
+                      sourceCard: this,
+                    });
+                    return state;
+                  });
+
+                  MOVE_CARDS(store, state, player.supporter, player.discard, {
+                    cards: [this],
+                    sourceCard: this,
+                  });
+                  return state;
+                },
+              );
+            },
           },
           {
             message: GameMessage.CHOICE_STADIUM,
@@ -155,27 +197,35 @@ Choose a Pokémon Tool attached to any Pokémon, or any Stadium in play, and put
               const owner = StateUtils.findOwner(state, cardList);
               MOVE_CARDS(store, state, cardList, owner.lostzone, { sourceCard: this });
 
-              player.supporter.moveCardTo(this, player.discard);
+              MOVE_CARDS(store, state, player.supporter, player.discard, {
+                cards: [this],
+                sourceCard: this,
+              });
               return state;
-            }
-
-          }
+            },
+          },
         ];
-        return store.prompt(state, new SelectOptionPrompt(
-          player.id,
-          GameMessage.DISCARD_STADIUM_OR_TOOL,
-          options.map(c => c.message),
-          { allowCancel: false }
-        ), choice => {
-          const option = options[choice];
+        return store.prompt(
+          state,
+          new SelectOptionPrompt(
+            player.id,
+            GameMessage.DISCARD_STADIUM_OR_TOOL,
+            options.map((c) => c.message),
+            { allowCancel: false },
+          ),
+          (choice) => {
+            const option = options[choice];
 
-          if (option.action) {
-            option.action();
-
-          }
-          player.supporter.moveCardTo(this, player.discard);
-          return state;
-        });
+            if (option.action) {
+              option.action();
+            }
+            MOVE_CARDS(store, state, player.supporter, player.discard, {
+              cards: [this],
+              sourceCard: this,
+            });
+            return state;
+          },
+        );
       }
       if (pokemonsWithTool === 0 && stadiumCard !== undefined) {
         const stadiumCard = StateUtils.getStadiumCard(state);
@@ -188,58 +238,80 @@ Choose a Pokémon Tool attached to any Pokémon, or any Stadium in play, and put
         const owner = StateUtils.findOwner(state, cardList);
         MOVE_CARDS(store, state, cardList, owner.discard, { sourceCard: this });
 
-        player.supporter.moveCardTo(this, player.discard);
+        MOVE_CARDS(store, state, player.supporter, player.discard, {
+          cards: [this],
+          sourceCard: this,
+        });
         return state;
       }
 
       if (pokemonsWithTool >= 1 && stadiumCard == undefined) {
-
         // We will discard this card after prompt confirmation
         effect.preventDefault = true;
 
         const max = Math.min(1, pokemonsWithTool);
         let targets: PokemonCardList[] = [];
-        return store.prompt(state, new ChoosePokemonPrompt(
-          player.id,
-          GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-          PlayerType.ANY,
-          [SlotType.ACTIVE, SlotType.BENCH],
-          { min: 1, max: max, allowCancel: false, blocked }
-        ), results => {
-          targets = results || [];
+        return store.prompt(
+          state,
+          new ChoosePokemonPrompt(
+            player.id,
+            GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+            PlayerType.ANY,
+            [SlotType.ACTIVE, SlotType.BENCH],
+            { min: 1, max: max, allowCancel: false, blocked },
+          ),
+          (results) => {
+            targets = results || [];
 
-          if (targets.length === 0) {
-            return state;
-          }
-
-          targets.forEach(target => {
-            const owner = StateUtils.findOwner(state, target);
-            if (target.tools.length === 1) {
-              // Only one tool, move it directly
-              target.moveCardTo(target.tools[0], owner.lostzone);
-            } else if (target.tools.length > 1) {
-              // Multiple tools, prompt to choose one
-              const toolList = new CardList();
-              toolList.cards = [...target.tools];
-              return store.prompt(state, new ChooseCardsPrompt(
-                player,
-                GameMessage.CHOOSE_CARD_TO_DISCARD,
-                toolList,
-                { trainerType: TrainerType.TOOL },
-                { min: 1, max: 1, allowCancel: false }
-              ), selectedTools => {
-                if (selectedTools && selectedTools.length === 1) {
-                  const tool = selectedTools[0];
-                  target.moveCardTo(tool, owner.lostzone);
-                }
-                player.supporter.moveCardTo(this, player.discard);
-                return state;
-              });
+            if (targets.length === 0) {
+              return state;
             }
-            player.supporter.moveCardTo(this, player.discard);
-            return state;
-          });
-        });
+
+            targets.forEach((target) => {
+              const owner = StateUtils.findOwner(state, target);
+              if (target.tools.length === 1) {
+                // Only one tool, move it directly
+                MOVE_CARDS(store, state, target, owner.lostzone, {
+                  cards: [target.tools[0]],
+                  sourceCard: this,
+                });
+              } else if (target.tools.length > 1) {
+                // Multiple tools, prompt to choose one
+                const toolList = new CardList();
+                toolList.cards = [...target.tools];
+                return store.prompt(
+                  state,
+                  new ChooseCardsPrompt(
+                    player,
+                    GameMessage.CHOOSE_CARD_TO_DISCARD,
+                    toolList,
+                    { trainerType: TrainerType.TOOL },
+                    { min: 1, max: 1, allowCancel: false },
+                  ),
+                  (selectedTools) => {
+                    if (selectedTools && selectedTools.length === 1) {
+                      const tool = selectedTools[0];
+                      MOVE_CARDS(store, state, target, owner.lostzone, {
+                        cards: [tool],
+                        sourceCard: this,
+                      });
+                    }
+                    MOVE_CARDS(store, state, player.supporter, player.discard, {
+                      cards: [this],
+                      sourceCard: this,
+                    });
+                    return state;
+                  },
+                );
+              }
+              MOVE_CARDS(store, state, player.supporter, player.discard, {
+                cards: [this],
+                sourceCard: this,
+              });
+              return state;
+            });
+          },
+        );
       }
       return state;
     }

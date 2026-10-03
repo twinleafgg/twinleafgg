@@ -7,7 +7,7 @@ import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 
 export class FullHeal extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS'; // Replace with the appropriate set abbreviation
 
@@ -19,12 +19,11 @@ export class FullHeal extends TrainerCard {
 
   public setNumber: string = '82'; // Replace with the appropriate set number
 
-  public text: string = 'Your Active Pokémon is no longer Asleep, Confused, Paralyzed, or Poisoned.';
+  public text: string =
+    'Your Active Pokémon is no longer Asleep, Confused, Paralyzed, or Poisoned.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
-
       const player = effect.player;
 
       if (player.active.specialConditions.length === 0) {

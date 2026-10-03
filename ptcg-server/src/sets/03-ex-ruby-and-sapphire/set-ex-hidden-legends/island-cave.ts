@@ -9,11 +9,12 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 export class IslandCave extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '89';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'HL';
   public name = 'Island Cave';
   public fullName = 'Island Cave HL';
-  public text = 'Whenever any player attaches an Energy card from his or hand to [W] Pokémon, [F] Pokémon, or [M] Pokémon, remove any Special Conditions from that Pokémon.';
+  public text =
+    'Whenever any player attaches an Energy card from his or hand to [W] Pokémon, [F] Pokémon, or [M] Pokémon, remove any Special Conditions from that Pokémon.';
 
   reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof AttachEnergyEffect && StateUtils.getStadiumCard(state) === this) {
@@ -27,7 +28,7 @@ export class IslandCave extends TrainerCard {
 
       store.reduceEffect(state, checkPokemonType);
 
-      if (islandTypes.some(t => checkPokemonType.cardTypes.includes(t))) {
+      if (islandTypes.some((t) => checkPokemonType.cardTypes.includes(t))) {
         effect.target.clearAllSpecialConditions();
       }
     }

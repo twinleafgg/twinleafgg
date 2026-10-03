@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 
 export class Zebstrika extends PokemonCard {
@@ -50,7 +50,7 @@ export class Zebstrika extends PokemonCard {
           );
 
           lightningEnergies.forEach(card => {
-            player.active.moveCardTo(card, player.discard);
+            MOVE_CARDS(store, state, player.active, player.discard, { cards: [card], sourceCard: this });
           });
         }
       });

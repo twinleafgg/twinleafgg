@@ -9,10 +9,10 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard } from '../../../game/store/card/energy-card';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ScorchedEarth extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'PRC';
   public setNumber: string = '138';
   public name: string = 'Scorched Earth';
@@ -20,7 +20,7 @@ export class ScorchedEarth extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
 
   public text: string =
-    'Once during each player\'s turn, that player may discard a[R] or[F] Energy card from his or her hand.If that player does so, he or she draws 2 cards.';
+    "Once during each player's turn, that player may discard a[R] or[F] Energy card from his or her hand.If that player does so, he or she draws 2 cards.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -55,12 +55,11 @@ export class ScorchedEarth extends TrainerCard {
           player.stadiumUsedTurn = stadiumUsedTurn;
           return;
         }
-        player.hand.moveCardsTo(selected, player.discard);
-        player.deck.moveTo(player.hand, 2);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       });
     }
 
     return state;
   }
-
 }

@@ -3,7 +3,7 @@ import { CardType, Stage, SuperType } from '../../../game/store/card/card-types'
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useFindAFriend(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -23,7 +23,7 @@ function* useFindAFriend(next: Function, store: StoreLike, state: State,
   });
 
   cards.forEach((card, index) => {
-    player.deck.moveCardTo(card, player.hand);
+    MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: effect.source.getPokemonCard()! });
   });
 
   state = store.prompt(state, new ShowCardsPrompt(

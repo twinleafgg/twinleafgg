@@ -6,11 +6,9 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { Card, ChooseCardsPrompt, GameMessage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  IF_OPPONENTS_POKEMON_KO_BY_ATTACK_DAMAGE_TAKE_MORE_PRIZES,
+import {IF_OPPONENTS_POKEMON_KO_BY_ATTACK_DAMAGE_TAKE_MORE_PRIZES,
   DRAW_CARDS,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class UmbreonEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -61,7 +59,7 @@ export class UmbreonEx extends PokemonCard {
             if (cards.length === 0) {
               return;
             }
-            player.hand.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
             DRAW_CARDS(store, state, player, cards.length);
           },
         );

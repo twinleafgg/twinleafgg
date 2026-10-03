@@ -3,25 +3,17 @@ import { CardTag, EnergyType, TrainerType, SuperType } from '../../../game/store
 import { EnergyCard, Player, PokemonCardList, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { MOVE_CARDS, TRAINER_TARGET_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class MegatonBlower extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
-
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ACE_SPEC];
-
   public set: string = 'SSP';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '182';
-
   public regulationMark = 'H';
-
   public name: string = 'Megaton Blower';
-
   public fullName: string = 'Megaton Blower SSP';
-
   public text: string =
     "Discard all Pokémon Tools and Special Energy from all of your opponent's Pokémon, and discard a Stadium in play.";
 
@@ -51,6 +43,9 @@ export class MegatonBlower extends TrainerCard {
 
       // Function to discard special energy and tools from a PokemonCardList
       const discardSpecialEnergyAndTools = (pokemonCardList: PokemonCardList) => {
+        if (TRAINER_TARGET_BLOCKED(store, state, player, this, pokemonCardList)) {
+          return;
+        }
         const cardsToDiscard = pokemonCardList.cards.filter(
           (card) =>
             (card.superType === SuperType.ENERGY &&
@@ -69,12 +64,15 @@ export class MegatonBlower extends TrainerCard {
 
       // Discard from bench Pokémon
       opponent.bench.forEach((benchPokemon) => {
-        discardSpecialEnergyAndTools(benchPokemon);
+        if (benchPokemon.cards.length > 0) {
+          discardSpecialEnergyAndTools(benchPokemon);
+        }
       });
 
       // Move this card to discard pile
       state = MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this] });
     }
+
     return state;
   }
 }

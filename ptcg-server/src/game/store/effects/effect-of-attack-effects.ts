@@ -3,6 +3,7 @@ import { Card } from "../card/card";
 import { Stage, CardType, SpecialCondition } from "../card/card-types";
 import { PokemonCard, getPokemonCardTypes } from "../card/pokemon-card";
 import { PowerType, Attack } from "../card/pokemon-types";
+import { AttackPowerSuppression } from "../state/player";
 import { StateUtils } from "../state-utils";
 import { PendingEndOfTurnEffect } from "../state/pending-end-of-turn-effects";
 import { PreventDamageFilter, PokemonCardList, SurviveOnTenHpOptions, StoredRetaliateOnDamage, NextTurnAttackBaseDamage, RetaliateOnDamageOptions } from "../state/pokemon-card-list";
@@ -18,6 +19,7 @@ import { AttackEffect } from "./game-effects";
 function sourceMatchesPreventFilter(
   sourceCard: PokemonCard,
   filter: PreventDamageFilter,
+  sourceList?: PokemonCardList,
 ): boolean {
   if (filter.sourceStage !== undefined && sourceCard.stage !== filter.sourceStage) {
     return false;
@@ -42,7 +44,47 @@ function sourceMatchesPreventFilter(
     return false;
   }
 
+  if (filter.sourceHasPokePowerOrBody === true
+    && !sourceCard.powers.some(p =>
+      p.powerType === PowerType.POKEPOWER || p.powerType === PowerType.POKEBODY)) {
+    return false;
+  }
+
+  if (filter.sourceHasSpecialCondition !== undefined
+    && !sourceList?.specialConditions.includes(filter.sourceHasSpecialCondition)) {
+    return false;
+  }
+
   return true;
+}
+
+function preventFilterFromOptions(options: PreventDamageOptions): PreventDamageFilter {
+  const filter: PreventDamageFilter = {};
+  if (options.maxDamage !== undefined) {
+    filter.maxDamage = options.maxDamage;
+  }
+  if (options.sourceStage !== undefined) {
+    filter.sourceStage = options.sourceStage;
+  }
+  if (options.sourceIsEvolution !== undefined) {
+    filter.sourceIsEvolution = options.sourceIsEvolution;
+  }
+  if (options.sourceTags !== undefined) {
+    filter.sourceTags = options.sourceTags;
+  }
+  if (options.sourceCardTypes !== undefined) {
+    filter.sourceCardTypes = options.sourceCardTypes;
+  }
+  if (options.sourceHasAbility !== undefined) {
+    filter.sourceHasAbility = options.sourceHasAbility;
+  }
+  if (options.sourceHasSpecialCondition !== undefined) {
+    filter.sourceHasSpecialCondition = options.sourceHasSpecialCondition;
+  }
+  if (options.sourceHasPokePowerOrBody !== undefined) {
+    filter.sourceHasPokePowerOrBody = options.sourceHasPokePowerOrBody;
+  }
+  return filter;
 }
 
 /**
@@ -70,7 +112,7 @@ export function shouldPreventAttackDamage(
     return false;
   }
 
-  return sourceMatchesPreventFilter(sourceCard, filter);
+  return sourceMatchesPreventFilter(sourceCard, filter, source);
 }
 
 /** Whether {@link PokemonCardList.damageReductionNextTurn} should apply for this source. */
@@ -92,7 +134,7 @@ export function shouldApplyDamageReduction(
     return false;
   }
 
-  return sourceMatchesPreventFilter(sourceCard, filter);
+  return sourceMatchesPreventFilter(sourceCard, filter, source);
 }
 
 /**
@@ -129,7 +171,7 @@ export function shouldPreventAttackEffects(state: State, effect: Effect): boolea
     return false;
   }
 
-  return sourceMatchesPreventFilter(sourceCard, filter);
+  return sourceMatchesPreventFilter(sourceCard, filter, effect.source);
 }
 
 export function shouldKnockOutIfDamaged(
@@ -147,7 +189,7 @@ export function shouldKnockOutIfDamaged(
   if (!sourceCard) {
     return false;
   }
-  return sourceMatchesPreventFilter(sourceCard, filter);
+  return sourceMatchesPreventFilter(sourceCard, filter, source);
 }
 
 export function getActiveSurviveOnTenHpOptions(
@@ -277,26 +319,7 @@ export class PreventDamageEffect extends EffectOfAttackEffect {
   }
 
   applyEffect(): void {
-    const filter: PreventDamageFilter = {};
-    if (this.options.maxDamage !== undefined) {
-      filter.maxDamage = this.options.maxDamage;
-    }
-    if (this.options.sourceStage !== undefined) {
-      filter.sourceStage = this.options.sourceStage;
-    }
-    if (this.options.sourceIsEvolution !== undefined) {
-      filter.sourceIsEvolution = this.options.sourceIsEvolution;
-    }
-    if (this.options.sourceTags !== undefined) {
-      filter.sourceTags = this.options.sourceTags;
-    }
-    if (this.options.sourceCardTypes !== undefined) {
-      filter.sourceCardTypes = this.options.sourceCardTypes;
-    }
-    if (this.options.sourceHasAbility !== undefined) {
-      filter.sourceHasAbility = this.options.sourceHasAbility;
-    }
-    this.player.active.preventDamageNextTurnPending = filter;
+    this.player.active.preventDamageNextTurnPending = preventFilterFromOptions(this.options);
   }
 }
 
@@ -324,23 +347,7 @@ export class PreventEffectsOfAttacksEffect extends EffectOfAttackEffect {
   }
 
   applyEffect(): void {
-    const filter: PreventDamageFilter = {};
-    if (this.options.sourceStage !== undefined) {
-      filter.sourceStage = this.options.sourceStage;
-    }
-    if (this.options.sourceIsEvolution !== undefined) {
-      filter.sourceIsEvolution = this.options.sourceIsEvolution;
-    }
-    if (this.options.sourceTags !== undefined) {
-      filter.sourceTags = this.options.sourceTags;
-    }
-    if (this.options.sourceCardTypes !== undefined) {
-      filter.sourceCardTypes = this.options.sourceCardTypes;
-    }
-    if (this.options.sourceHasAbility !== undefined) {
-      filter.sourceHasAbility = this.options.sourceHasAbility;
-    }
-    this.player.active.preventEffectsOfAttacksNextTurnPending = filter;
+    this.player.active.preventEffectsOfAttacksNextTurnPending = preventFilterFromOptions(this.options);
   }
 }
 
@@ -367,31 +374,64 @@ export class PreventDamageAndEffectsToAllYourPokemonEffect extends EffectOfAttac
   }
 
   applyEffect(): void {
-    const filter: PreventDamageFilter = {};
-    if (this.options.sourceStage !== undefined) {
-      filter.sourceStage = this.options.sourceStage;
-    }
-    if (this.options.sourceIsEvolution !== undefined) {
-      filter.sourceIsEvolution = this.options.sourceIsEvolution;
-    }
-    if (this.options.sourceTags !== undefined) {
-      filter.sourceTags = this.options.sourceTags;
-    }
-    if (this.options.sourceCardTypes !== undefined) {
-      filter.sourceCardTypes = this.options.sourceCardTypes;
-    }
-    if (this.options.sourceHasAbility !== undefined) {
-      filter.sourceHasAbility = this.options.sourceHasAbility;
-    }
-    if (this.options.maxDamage !== undefined) {
-      filter.maxDamage = this.options.maxDamage;
-    }
+    const filter = preventFilterFromOptions(this.options);
 
     this.player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
       cardList.preventDamageNextTurnPending = { ...filter };
       cardList.preventEffectsOfAttacksNextTurnPending = { ...filter };
     });
   }
+}
+
+/**
+ * During the opponent's next turn, if attack damage would be done to this Pokémon,
+ * flip a coin. Heads prevents that damage. Other effects of attacks still happen.
+ */
+export class CoinFlipPreventAttackDamageDuringOpponentsNextTurnEffect extends EffectOfAttackEffect {
+  readonly type: string = 'COIN_FLIP_PREVENT_ATTACK_DAMAGE_DURING_OPPONENTS_NEXT_TURN_EFFECT';
+
+  constructor(base: AttackEffect) {
+    super(base);
+    this.target = base.source;
+  }
+
+  applyEffect(): void {
+    this.player.active.coinFlipPreventAttackDamageNextTurnPending = true;
+  }
+}
+
+export function coinFlipPreventAttackDamageDuringOpponentsNextTurnEffect(
+  attackEffect: AttackEffect,
+  source: Card,
+): CoinFlipPreventAttackDamageDuringOpponentsNextTurnEffect {
+  const effect = new CoinFlipPreventAttackDamageDuringOpponentsNextTurnEffect(attackEffect);
+  effect.markerSource = source;
+  return effect;
+}
+
+/**
+ * During the opponent's next turn, this Pokémon can't be affected by Special Conditions.
+ */
+export class CannotBeSpecialConditionedDuringOpponentsNextTurnEffect extends EffectOfAttackEffect {
+  readonly type: string = 'CANNOT_BE_SPECIAL_CONDITIONED_DURING_OPPONENTS_NEXT_TURN_EFFECT';
+
+  constructor(base: AttackEffect) {
+    super(base);
+    this.target = base.source;
+  }
+
+  applyEffect(): void {
+    this.player.active.cannotBeSpecialConditionedNextTurnPending = true;
+  }
+}
+
+export function cannotBeSpecialConditionedDuringOpponentsNextTurnEffect(
+  attackEffect: AttackEffect,
+  source: Card,
+): CannotBeSpecialConditionedDuringOpponentsNextTurnEffect {
+  const effect = new CannotBeSpecialConditionedDuringOpponentsNextTurnEffect(attackEffect);
+  effect.markerSource = source;
+  return effect;
 }
 
 export function preventDamageAndEffectsToAllYourPokemonEffect(
@@ -1437,6 +1477,41 @@ export function yourPokemonCannotAttackDuringYourNextTurnEffect(
 }
 
 /**
+ * During the opponent's next turn, their Pokémon can't attack (including ones
+ * that come into play). Player-level — not Mist-blockable.
+ */
+export class OpponentPokemonCannotAttackDuringTheirNextTurnEffect extends EffectOfAttackEffect {
+  readonly type: string = 'OPPONENT_POKEMON_CANNOT_ATTACK_DURING_THEIR_NEXT_TURN_EFFECT';
+
+  constructor(base: AttackEffect, public readonly maxEnergy: number | null = null) {
+    super(base);
+    this.target = base.source;
+  }
+
+  applyEffect(): void {
+    if (this.maxEnergy === null) {
+      this.opponent.cannotAttackTurnsRemaining = Math.max(this.opponent.cannotAttackTurnsRemaining, 1);
+      return;
+    }
+    this.opponent.cannotAttackMaxEnergy = this.maxEnergy;
+    this.opponent.cannotAttackMaxEnergyTurnsRemaining = Math.max(
+      this.opponent.cannotAttackMaxEnergyTurnsRemaining,
+      1,
+    );
+  }
+}
+
+export function opponentPokemonCannotAttackDuringTheirNextTurnEffect(
+  attackEffect: AttackEffect,
+  source: Card,
+  maxEnergy: number | null = null,
+): OpponentPokemonCannotAttackDuringTheirNextTurnEffect {
+  const effect = new OpponentPokemonCannotAttackDuringTheirNextTurnEffect(attackEffect, maxEnergy);
+  effect.markerSource = source;
+  return effect;
+}
+
+/**
  * During your next turn, ignore all Energy in the attack costs of Pokémon of the given types.
  * Player-level — not Mist-blockable.
  */
@@ -1525,27 +1600,52 @@ export function defendingPokemonHasNoAbilitiesUntilEndOfAttackerNextTurnEffect(
  * Until the end of the opponent's next turn, each of their Pokémon in play, hand,
  * and discard has no Abilities (Greninja Shadow Stitching). Player-level — not Mist-blockable.
  */
+export interface OpponentPowerSuppressionOptions {
+  powerTypes?: PowerType[];
+  mode?: AttackPowerSuppression['mode'];
+}
+
 export class OpponentPokemonHaveNoAbilitiesEffect extends EffectOfAttackEffect {
   readonly type: string = 'OPPONENT_POKEMON_HAVE_NO_ABILITIES_EFFECT';
 
-  constructor(base: AttackEffect) {
+  constructor(
+    base: AttackEffect,
+    public readonly options: OpponentPowerSuppressionOptions = {},
+  ) {
     super(base);
     this.target = base.source;
   }
 
   applyEffect(): void {
-    this.opponent.abilitiesSuppressedTurnsRemaining = Math.max(
-      this.opponent.abilitiesSuppressedTurnsRemaining,
-      1,
-    );
+    const powerTypes = this.options.powerTypes ?? [PowerType.ABILITY];
+    const mode = this.options.mode ?? 'remove';
+    const existing = this.opponent.attackPowerSuppressions.find(suppression =>
+      suppression.mode === mode && samePowerTypes(suppression.powerTypes, powerTypes));
+    if (existing) {
+      existing.turnsRemaining = Math.max(existing.turnsRemaining, 1);
+      return;
+    }
+    this.opponent.attackPowerSuppressions.push({
+      turnsRemaining: 1,
+      powerTypes: [...powerTypes],
+      mode,
+    });
   }
+}
+
+function samePowerTypes(left: PowerType[], right: PowerType[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every(type => right.includes(type));
 }
 
 export function opponentPokemonHaveNoAbilitiesEffect(
   attackEffect: AttackEffect,
   source: Card,
+  options: OpponentPowerSuppressionOptions = {},
 ): OpponentPokemonHaveNoAbilitiesEffect {
-  const effect = new OpponentPokemonHaveNoAbilitiesEffect(attackEffect);
+  const effect = new OpponentPokemonHaveNoAbilitiesEffect(attackEffect, options);
   effect.markerSource = source;
   return effect;
 }

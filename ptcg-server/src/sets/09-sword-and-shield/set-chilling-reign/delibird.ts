@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SEARCH_DECK_FOR_CARDS_TO_HAND, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Delibird extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -54,8 +54,8 @@ export class Delibird extends PokemonCard {
 
       // Move all attached cards and this Pokemon to deck
       const tools = activePokemon.tools.slice();
-      tools.forEach(tool => { activePokemon.moveCardTo(tool, player.deck); });
-      activePokemon.moveTo(player.deck);
+      tools.forEach(tool => { MOVE_CARDS(store, state, activePokemon, player.deck, { cards: [tool], sourceCard: this }); });
+      MOVE_CARDS(store, state, activePokemon, player.deck, { sourceCard: this });
       activePokemon.clearEffects();
 
       // Search deck for a card and put into hand (SEARCH_DECK_FOR_CARDS_TO_HAND shuffles internally)

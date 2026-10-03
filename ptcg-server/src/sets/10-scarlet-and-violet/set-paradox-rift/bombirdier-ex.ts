@@ -16,7 +16,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonFromDeckEffect } from '../../../game/store/effects/play-card-effects';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 function* useCallForFamily(
   next: Function,
@@ -121,11 +121,9 @@ export class Bombirdierex extends PokemonCard {
         new ConfirmPrompt(effect.player.id, GameMessage.WANT_TO_USE_ABILITY),
         (wantToUse) => {
           if (wantToUse) {
-            player.active.moveTo(player.deck);
-            player.active.clearEffects();
-
-            return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
-              player.deck.applyOrder(order);
+            MOVE_POKEMON_OFF_BOARD(store, state, player.active, {
+              pokemonDestination: player.hand,
+              sourceCard: this,
             });
           }
         },

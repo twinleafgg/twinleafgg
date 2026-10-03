@@ -9,16 +9,16 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, CardType, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MaxiesHiddenBallTrick extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'PRC';
 
-  public name: string = 'Maxie\'s Hidden Ball Trick';
+  public name: string = "Maxie's Hidden Ball Trick";
 
-  public fullName: string = 'Maxie\'s Hidden Ball Trick PRC';
+  public fullName: string = "Maxie's Hidden Ball Trick PRC";
 
   public cardImage: string = 'assets/cardback.png';
 
@@ -32,13 +32,13 @@ export class MaxiesHiddenBallTrick extends TrainerCard {
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
-      const cards = player.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
 
-      const hasPokemon = player.discard.cards.some(c => {
+      const hasPokemon = player.discard.cards.some((c) => {
         return c instanceof PokemonCard && pokemonHasCardType(c, CardType.FIGHTING);
       });
 
-      const slot = player.bench.find(b => b.cards.length === 0);
+      const slot = player.bench.find((b) => b.cards.length === 0);
       const hasEffect = (hasPokemon && slot) || player.deck.cards.length > 0;
 
       if (cards.length !== 0 || !hasEffect) {
@@ -48,25 +48,28 @@ export class MaxiesHiddenBallTrick extends TrainerCard {
       // It is not possible to recover Water Pokemon,
       // but we can still draw 5 cards
       if (!hasPokemon || slot === undefined) {
-        player.deck.moveTo(player.hand, 5);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: this });
         return state;
       }
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-        player.discard,
-        { superType: SuperType.POKEMON, cardType: [CardType.FIGHTING] },
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        const cards = selected || [];
-        player.discard.moveCardsTo(cards, slot);
-        slot.pokemonPlayedTurn = state.turn;
-        player.deck.moveTo(player.hand, 5);
-      });
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+          player.discard,
+          { superType: SuperType.POKEMON, cardType: [CardType.FIGHTING] },
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          MOVE_CARDS(store, state, player.discard, slot, { cards: cards, sourceCard: this });
+          slot.pokemonPlayedTurn = state.turn;
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: this });
+        },
+      );
     }
 
     return state;
   }
-
 }

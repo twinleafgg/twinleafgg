@@ -8,13 +8,14 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 export class FirstTicket extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'DRV';
   public setNumber: string = '19';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'First Ticket';
   public fullName: string = 'First Ticket DRV';
-  public text: string = 'Before you flip a coin to decide who goes first in a game, you may play this card. Don\'t flip that coin, and you go first. If both players play First Ticket, flip the coin as normal. (You may play only 1 First Ticket before you flip that coin.)';
+  public text: string =
+    "Before you flip a coin to decide who goes first in a game, you may play this card. Don't flip that coin, and you go first. If both players play First Ticket, flip the coin as normal. (You may play only 1 First Ticket before you flip that coin.)";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // TODO: Implement trainer effect

@@ -4,7 +4,7 @@ import { EffectOfAbilityEffect } from '../../../game/store/effects/game-effects'
 import { Attack } from '../../../game/store/card/pokemon-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { ABILITY_USED, ADD_MARKER, HAS_MARKER, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, HAS_MARKER, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ninetales extends PokemonCard {
 
@@ -93,7 +93,7 @@ export class Ninetales extends PokemonCard {
         ADD_MARKER(this.NINE_TEMPTATIONS_MARKER, player, this);
         ABILITY_USED(player, this);
 
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
       });
     }
     return state;

@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { StoreLike, State, ConfirmPrompt, GameMessage, AttachEnergyPrompt, PlayerType, SlotType, StateUtils, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
-import { IS_ABILITY_BLOCKED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Klinklang extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -70,7 +70,7 @@ export class Klinklang extends PokemonCard {
             }
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.deck.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
             }
             state = store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
               player.deck.applyOrder(order);

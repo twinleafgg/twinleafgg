@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt, PokemonCardList, pokemonHasCardType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class HoOhGx extends PokemonCard {
@@ -108,7 +108,7 @@ export class HoOhGx extends PokemonCard {
           const cards = selected || [];
           cards.forEach((card, index) => {
             if (index < slots.length) {
-              player.discard.moveCardTo(card, slots[index]);
+              MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
               slots[index].pokemonPlayedTurn = state.turn;
             }
           });

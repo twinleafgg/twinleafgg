@@ -17,7 +17,7 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TeamRocketsSpidops extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -106,7 +106,7 @@ export class TeamRocketsSpidops extends PokemonCard {
           cards = cards || [];
           if (cards.length > 0) {
             player.marker.addMarker(this.CHARGE_UP_MARKER, this);
-            player.discard.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.discard, cardList, { cards: cards, sourceCard: this });
           }
         },
       );

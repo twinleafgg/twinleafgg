@@ -7,8 +7,7 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Shauna extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'XY';
 
@@ -20,8 +19,7 @@ export class Shauna extends TrainerCard {
 
   public setNumber: string = '127';
 
-  public text: string =
-    'Shuffle your hand into your deck. Then, draw 5 cards.';
+  public text: string = 'Shuffle your hand into your deck. Then, draw 5 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -33,5 +31,4 @@ export class Shauna extends TrainerCard {
 
     return state;
   }
-
 }

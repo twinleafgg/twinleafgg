@@ -21,11 +21,9 @@ import {
   CheckPokemonPlayedTurnEffect,
   CheckProvidedEnergyEffect,
 } from '../../../game/store/effects/check-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttackEffect, HealEffect } from '../../../game/store/effects/game-effects';
 
 function* useSuperGrowth(
@@ -138,7 +136,7 @@ function* useSuperGrowth(
   const evolution = cards[0] as PokemonCard;
 
   // Evolve Pokemon
-  player.deck.moveCardTo(evolution, target);
+  MOVE_CARDS(store, state, player.deck, target, { cards: [evolution], sourceCard: effect.source.getPokemonCard()! });
   target.clearEffects();
   target.pokemonPlayedTurn = state.turn;
 
@@ -171,7 +169,7 @@ function* useSuperGrowth(
 
     if (stage2Cards.length > 0) {
       const stage2Evolution = stage2Cards[0] as PokemonCard;
-      player.deck.moveCardTo(stage2Evolution, target);
+      MOVE_CARDS(store, state, player.deck, target, { cards: [stage2Evolution], sourceCard: effect.source.getPokemonCard()! });
       target.clearEffects();
       target.pokemonPlayedTurn = state.turn;
     }
@@ -251,7 +249,7 @@ export class RowletAlolanExeggutorGX extends PokemonCard {
           state = store.reduceEffect(state, opponentEnergy);
 
           opponentEnergy.energyMap.forEach((em) => {
-            em.card.cards.moveTo(opponent.deck);
+            MOVE_CARDS(store, state, em.card.cards, opponent.deck, { sourceCard: this });
           });
         });
 

@@ -3,7 +3,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, PowerType, PlayerType, SlotType, GameError, GameMessage, ChoosePokemonPrompt, CardTarget, PokemonCardList, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class Charjabug extends PokemonCard implements EnergyCard {
@@ -107,7 +107,7 @@ export class Charjabug extends PokemonCard implements EnergyCard {
 
         // Moving it onto the pokemon - first to main cards array, then to energies
         effect.preventDefault = true;
-        player.hand.moveCardTo(this, targets[0]);
+        MOVE_CARDS(store, state, player.hand, targets[0], { cards: [this], sourceCard: this });
         if (!targets[0].energies.cards.includes(this)) {
           targets[0].energies.cards.push(this);
         }

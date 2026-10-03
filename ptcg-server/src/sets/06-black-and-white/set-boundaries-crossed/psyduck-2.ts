@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Psyduck2 extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -46,7 +46,7 @@ export class Psyduck2 extends PokemonCard {
       if (fireEnergyCards.length > 0) {
         const cardToDiscard = fireEnergyCards[0];
         if (opponent.active.cards.includes(cardToDiscard)) {
-          opponent.active.moveCardTo(cardToDiscard, opponent.discard);
+          MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [cardToDiscard], sourceCard: this });
         }
       }
     }

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mewtwoex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -55,7 +55,7 @@ export class Mewtwoex extends PokemonCard {
         ),
         (selected) => {
           if (selected && selected.length > 0) {
-            player.discard.moveCardTo(selected[0], player.active);
+            MOVE_CARDS(store, state, player.discard, player.active, { cards: [selected[0]], sourceCard: this });
           }
         },
       );

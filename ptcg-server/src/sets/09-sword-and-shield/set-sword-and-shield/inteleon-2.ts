@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PUT_ENERGY_FROM_OPPONENTS_ACTIVE_INTO_THEIR_HAND } from '../../../game/store/prefabs/attack-effects';
 
 export class Inteleon2 extends PokemonCard {
@@ -48,7 +48,7 @@ export class Inteleon2 extends PokemonCard {
       if (opponent.hand.cards.length > 0) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const card = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(card, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [card], sourceCard: this });
       }
     }
 

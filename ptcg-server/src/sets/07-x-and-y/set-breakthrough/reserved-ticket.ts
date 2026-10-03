@@ -7,25 +7,26 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { Card, CardList, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 
 export class ReservedTicket extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'BKT';
   public setNumber: string = '147';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Reserved Ticket';
   public fullName: string = 'Reserved Ticket BKT';
-  public text: string = 'Flip a coin. If heads, search your deck for a card, shuffle your deck, then put that card on top of it.';
+  public text: string =
+    'Flip a coin. If heads, search your deck for a card, shuffle your deck, then put that card on top of it.';
 
   // Ref: set-silver-tempest/beldum.ts (Magnetic Lift - search deck, shuffle, put on top)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
 
-      COIN_FLIP_PROMPT(store, state, player, result => {
+      COIN_FLIP_PROMPT(store, state, player, (result) => {
         if (result) {
           if (player.deck.cards.length === 0) {
             return;
@@ -34,23 +35,27 @@ export class ReservedTicket extends TrainerCard {
           let cards: Card[] = [];
           const deckTop = new CardList();
 
-          store.prompt(state, new ChooseCardsPrompt(
-            player,
-            GameMessage.CHOOSE_CARDS,
-            player.deck,
-            {},
-            { min: 1, max: 1, allowCancel: false }
-          ), selected => {
-            cards = selected || [];
-            if (cards.length > 0) {
-              player.deck.moveCardsTo(cards, deckTop);
+          store.prompt(
+            state,
+            new ChooseCardsPrompt(
+              player,
+              GameMessage.CHOOSE_CARDS,
+              player.deck,
+              {},
+              { min: 1, max: 1, allowCancel: false },
+            ),
+            (selected) => {
+              cards = selected || [];
+              if (cards.length > 0) {
+                MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: this });
 
-              store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-                player.deck.applyOrder(order);
-                deckTop.moveToTopOfDestination(player.deck);
-              });
-            }
-          });
+                store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+                  player.deck.applyOrder(order);
+                  deckTop.moveToTopOfDestination(player.deck);
+                });
+              }
+            },
+          );
         }
       });
     }

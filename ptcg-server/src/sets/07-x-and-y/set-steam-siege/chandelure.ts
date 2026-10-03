@@ -8,11 +8,9 @@ import { Card, CardList, GameError, GameMessage, PowerType, StoreLike, State } f
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED, WAS_POWER_USED,
+import {WAS_ATTACK_USED, WAS_POWER_USED,
   IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED,
-  REMOVE_MARKER_AT_END_OF_TURN, BLOCK_IF_DECK_EMPTY
-} from '../../../game/store/prefabs/prefabs';
+  REMOVE_MARKER_AT_END_OF_TURN, BLOCK_IF_DECK_EMPTY, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Chandelure extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -63,7 +61,7 @@ export class Chandelure extends PokemonCard {
       ABILITY_USED(player, this);
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(2, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(2, player.deck.cards.length), sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -73,9 +71,9 @@ export class Chandelure extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), (selected: Card[]) => {
         const cards = selected || [];
-        deckTop.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: cards, sourceCard: this });
         // Discard the remaining card
-        deckTop.moveTo(player.discard);
+        MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
       });
     }
 

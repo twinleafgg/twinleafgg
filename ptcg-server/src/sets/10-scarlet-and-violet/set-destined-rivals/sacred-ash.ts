@@ -13,13 +13,18 @@ import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prom
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: SacredAsh, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: SacredAsh,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   let pokemonsInDiscard: number = 0;
   const blocked: number[] = [];
-  player.discard.cards.forEach(c => {
+  player.discard.cards.forEach((c) => {
     if (c instanceof PokemonCard) {
       pokemonsInDiscard += 1;
     }
@@ -35,16 +40,20 @@ function* playCard(next: Function, store: StoreLike, state: State,
 
   const max = Math.min(5, pokemonsInDiscard);
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DECK,
-    player.discard,
-    { superType: SuperType.POKEMON },
-    { min: 1, max, allowCancel: true, blocked }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DECK,
+      player.discard,
+      { superType: SuperType.POKEMON },
+      { min: 1, max, allowCancel: true, blocked },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (cards.length === 0) {
@@ -52,13 +61,13 @@ function* playCard(next: Function, store: StoreLike, state: State,
   }
   MOVE_CARDS(store, state, player.discard, player.deck, { cards, sourceCard: self });
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class SacredAsh extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'DRI';
   public regulationMark = 'I';
   public name: string = 'Sacred Ash';
@@ -69,13 +78,12 @@ export class SacredAsh extends TrainerCard {
   public text: string = 'Shuffle up to 5 Pokémon from your discard pile into your deck.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
-    const pokemonInDiscard = player.discard.cards.filter(c => c instanceof PokemonCard).length;
+    const pokemonInDiscard = player.discard.cards.filter((c) => c instanceof PokemonCard).length;
     if (pokemonInDiscard < 5) {
       return false;
     }
     return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -85,5 +93,4 @@ export class SacredAsh extends TrainerCard {
 
     return state;
   }
-
 }

@@ -23,7 +23,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HoOhV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -84,7 +84,7 @@ export class HoOhV extends PokemonCard {
 
       const cards = player.discard.cards.filter((c) => c === this);
       cards.forEach((card, index) => {
-        player.discard.moveCardTo(card, slots[index]);
+        MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
       });
 
       const hasEnergyInDiscard = player.discard.cards.some((c) => {
@@ -135,7 +135,7 @@ export class HoOhV extends PokemonCard {
 
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.discard.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             }
 
             const endTurnEffect = new EndTurnEffect(player);

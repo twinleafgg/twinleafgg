@@ -21,16 +21,14 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
   REMOVE_MARKER_AT_END_OF_TURN,
   ABILITY_USED,
   BLOCK_IF_GX_ATTACK_USED,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LeafeonGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -161,7 +159,7 @@ export class LeafeonGx extends PokemonCard {
       }
 
       // For each benched Basic, search deck for evolution
-      const generator = useGrandBloom(() => generator.next(), store, state, player, benchBasics);
+      const generator = useGrandBloom(() => generator.next(), store, state, player, benchBasics, this);
       return generator.next().value;
     }
 
@@ -178,6 +176,7 @@ function* useGrandBloom(
   state: State,
   player: Player,
   benchBasics: { list: PokemonCardList; card: PokemonCard }[],
+  sourceCard: Card,
 ): IterableIterator<State> {
   for (const basic of benchBasics) {
     if (player.deck.cards.length === 0) break;
@@ -214,7 +213,7 @@ function* useGrandBloom(
 
     if (cards.length > 0) {
       const evolution = cards[0] as PokemonCard;
-      player.deck.moveCardTo(evolution, basic.list);
+      MOVE_CARDS(store, state, player.deck, basic.list, { cards: [evolution], sourceCard });
       basic.list.clearEffects();
       basic.list.pokemonPlayedTurn = state.turn;
     }

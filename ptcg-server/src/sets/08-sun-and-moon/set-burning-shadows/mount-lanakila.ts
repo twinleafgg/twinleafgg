@@ -7,13 +7,14 @@ import { CheckRetreatCostEffect } from '../../../game/store/effects/check-effect
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class MountLanakila extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'BUS';
   public setNumber: string = '118';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mount Lanakila';
   public fullName: string = 'Mount Lanakila BUS';
-  public text: string = 'The Retreat Cost of each Basic Pokémon in play (both yours and your opponent\'s) is Colorless more.';
+  public text: string =
+    "The Retreat Cost of each Basic Pokémon in play (both yours and your opponent's) is Colorless more.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckRetreatCostEffect && StateUtils.getStadiumCard(state) === this) {

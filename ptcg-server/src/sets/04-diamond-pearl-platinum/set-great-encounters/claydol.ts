@@ -4,7 +4,7 @@ import { StoreLike, State, GameMessage, PlayerType, PowerType, GameError, CardLi
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Claydol extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -71,14 +71,14 @@ export class Claydol extends PokemonCard {
         {},
         { allowCancel: false, min: 1, max: 2 }
       ), selected => {
-        player.hand.moveCardsTo(selected, deckBottom);
-        deckBottom.moveTo(player.deck);
+        MOVE_CARDS(store, state, player.hand, deckBottom, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
 
         while (player.hand.cards.length < 6) {
           if (player.deck.cards.length === 0) {
             break;
           }
-          player.deck.moveTo(player.hand, 1);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
         }
       });
 

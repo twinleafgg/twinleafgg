@@ -10,7 +10,7 @@ import { EvolveEffect } from '../../../game/store/effects/game-effects';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ConfirmPrompt } from '../../../game/store/prompts/confirm-prompt';
-import { ADD_MARKER, HAS_MARKER, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {ADD_MARKER, HAS_MARKER, IS_ABILITY_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eevee extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -106,7 +106,7 @@ export class Eevee extends PokemonCard {
             // Find this Eevee's cardList and evolve it
             player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
               if (cardList.getPokemonCard() === this) {
-                player.deck.moveCardTo(evolutionCard, cardList);
+                MOVE_CARDS(store, state, player.deck, cardList, { cards: [evolutionCard], sourceCard: this });
                 cardList.clearEffects();
                 cardList.pokemonPlayedTurn = state.turn;
               }

@@ -2,7 +2,7 @@ import { BoardEffect, Card, CardList, CardType, ChooseCardsPrompt, GameError, Ga
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { TrainerToDeckEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Florges extends PokemonCard {
@@ -89,7 +89,7 @@ export class Florges extends PokemonCard {
 
           if (cardsToMove.length > 0) {
             cardsToMove.forEach(card => {
-              player.discard.moveCardTo(card, deckTop);
+              MOVE_CARDS(store, state, player.discard, deckTop, { cards: [card], sourceCard: this });
             });
 
             deckTop.moveToTopOfDestination(player.deck);

@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED, DRAW_CARDS, ADD_SLEEP_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import { DEFENDING_POKEMON_WEAKNESS_IS_NOW } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Meowstic extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -17,10 +16,6 @@ export class Meowstic extends PokemonCard {
   public hp: number = 90;
   public weakness = [{ type: P }];
   public retreat = [C];
-
-  public readonly WEAKNESS_MARKER = 'MEOWSTIC_UNB_WEAKNESS';
-  public readonly CLEAR_WEAKNESS_MARKER = 'MEOWSTIC_UNB_CLEAR_WEAKNESS';
-  public readonly WEAKNESS_2_MARKER = 'MEOWSTIC_UNB_WEAKNESS_2';
 
   public attacks = [
     {
@@ -52,37 +47,8 @@ export class Meowstic extends PokemonCard {
       ADD_SLEEP_TO_PLAYER_ACTIVE(store, state, player, this);
     }
 
-    // Attack 2: Perplexing Eyes
-    // Ref: set-phantom-forces/pachirisu.ts (Trick Sticker - weakness override + 2-phase marker)
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      opponent.active.marker.addMarker(this.WEAKNESS_MARKER, this);
-      player.marker.addMarker(this.WEAKNESS_2_MARKER, this);
-    }
-
-    // Modify weakness for marked Pokemon
-    if (effect instanceof CheckPokemonStatsEffect) {
-      if (effect.target.marker.hasMarker(this.WEAKNESS_MARKER, this)) {
-        effect.weakness = [{ type: CardType.PSYCHIC, value: effect.weakness.length > 0 ? effect.weakness[0].value : undefined }];
-      }
-    }
-
-    // 2-phase cleanup: until end of your next turn
-    if (effect instanceof EndTurnEffect) {
-      // Phase 2: clear
-      if (effect.player.marker.hasMarker(this.CLEAR_WEAKNESS_MARKER, this)) {
-        effect.player.marker.removeMarker(this.CLEAR_WEAKNESS_MARKER, this);
-        const opponent = StateUtils.getOpponent(state, effect.player);
-        opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-          cardList.marker.removeMarker(this.WEAKNESS_MARKER, this);
-        });
-      }
-      // Phase 1 -> Phase 2
-      if (effect.player.marker.hasMarker(this.WEAKNESS_2_MARKER, this)) {
-        effect.player.marker.removeMarker(this.WEAKNESS_2_MARKER, this);
-        effect.player.marker.addMarker(this.CLEAR_WEAKNESS_MARKER, this);
-      }
+      return DEFENDING_POKEMON_WEAKNESS_IS_NOW(store, state, effect, this, CardType.PSYCHIC);
     }
 
     return state;

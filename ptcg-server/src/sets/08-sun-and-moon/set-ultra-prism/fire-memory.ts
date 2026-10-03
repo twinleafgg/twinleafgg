@@ -10,7 +10,7 @@ import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effect
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class FireMemory extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'UPR';
   public setNumber: string = '123';
   public cardImage: string = 'assets/cardback.png';

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Wishiwashi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -44,7 +44,7 @@ export class Wishiwashi extends PokemonCard {
       const player = effect.player;
 
       // Shuffle hand into deck
-      player.hand.moveTo(player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: this });
 
       // Shuffle deck, then draw 8
       SHUFFLE_DECK(store, state, player);

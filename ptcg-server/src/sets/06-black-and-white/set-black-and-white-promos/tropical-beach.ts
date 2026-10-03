@@ -8,10 +8,10 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TropicalBeach extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
 
   public set: string = 'BWP';
 
@@ -24,9 +24,9 @@ export class TropicalBeach extends TrainerCard {
   public setNumber: string = '28';
 
   public text: string =
-    'Once during each player\'s turn, that player may draw cards ' +
+    "Once during each player's turn, that player may draw cards " +
     'until he or she has 7 cards in his or her hand. If he or she does, ' +
-    'that player\'s turn ends.';
+    "that player's turn ends.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -40,13 +40,16 @@ export class TropicalBeach extends TrainerCard {
       // Use prefab behavior similar to ASR Jubilife Village: draw via helper
       for (let i = 0; i < cardsToDraw; i++) {
         if (player.deck.cards.length > 0) {
-          player.deck.moveTo(player.hand, 1);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
         }
       }
 
       // Log the message before turn ends.
       effect.preventDefault = true;
-      store.log(state, GameLog.LOG_PLAYER_USES_STADIUM, { name: player.name, stadium: effect.stadium.name });
+      store.log(state, GameLog.LOG_PLAYER_USES_STADIUM, {
+        name: player.name,
+        stadium: effect.stadium.name,
+      });
       player.stadiumUsedTurn = state.turn;
 
       const endTurnEffect = new EndTurnEffect(player);
@@ -55,5 +58,4 @@ export class TropicalBeach extends TrainerCard {
 
     return state;
   }
-
 }

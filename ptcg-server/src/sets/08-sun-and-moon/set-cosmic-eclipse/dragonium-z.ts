@@ -17,7 +17,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class DragoniumZDragonClaw extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CEC';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '190';

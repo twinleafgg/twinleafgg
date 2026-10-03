@@ -5,7 +5,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_POKEPOWER_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEPOWER_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lapras extends PokemonCard {
 
@@ -91,10 +91,7 @@ export class Lapras extends PokemonCard {
                   }
                 });
 
-                cards.forEach((card, index) => {
-                  store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-                });
-                player.deck.moveCardsTo(cards, player.hand);
+                MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
               });
             }
             return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

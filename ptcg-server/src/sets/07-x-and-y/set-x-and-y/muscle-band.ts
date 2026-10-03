@@ -6,8 +6,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class MuscleBand extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'XY';
 
@@ -21,7 +20,7 @@ export class MuscleBand extends TrainerCard {
 
   public text: string =
     'The attacks of the Pokemon this card is attached to do 20 more ' +
-    'damage to our opponent\'s Active Pokemon (before aplying Weakness ' +
+    "damage to our opponent's Active Pokemon (before aplying Weakness " +
     'and Resistance).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -29,5 +28,4 @@ export class MuscleBand extends TrainerCard {
     TOOL_ACTIVE_DAMAGE_BONUS(store, state, effect, this, { damageBonus: 20 });
     return state;
   }
-
 }

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, CardList, ChooseCardsPrompt, GameMessage, PowerType, ShowCardsPrompt, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { BLOCK_IF_DISCARD_EMPTY, IS_ABILITY_BLOCKED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_DISCARD_EMPTY, IS_ABILITY_BLOCKED, WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Munchlax extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -53,7 +53,7 @@ export class Munchlax extends PokemonCard {
           ), selected => {
             cards = selected || [];
 
-            player.discard.moveCardsTo(cards, deckTop);
+            MOVE_CARDS(store, state, player.discard, deckTop, { cards: cards, sourceCard: this });
             deckTop.moveToTopOfDestination(player.deck);
 
             if (cards.length > 0) {
@@ -66,7 +66,7 @@ export class Munchlax extends PokemonCard {
               });
             }
 
-            player.deck.moveCardsTo(cards, deckTop);
+            MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: this });
           });
         }
       });

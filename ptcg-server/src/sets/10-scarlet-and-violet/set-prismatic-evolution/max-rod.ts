@@ -1,6 +1,6 @@
 import { Card } from '../../../game/store/card/card';
 import { GameError } from '../../../game/game-error';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType, EnergyType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
@@ -12,6 +12,7 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { ShowCardsPrompt, StateUtils, SuperType } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -48,7 +49,7 @@ function* playCard(
     state,
     new ChooseCardsPrompt(
       player,
-      GameMessage.CHOOSE_CARD_TO_DECK,
+      GameMessage.CHOOSE_CARD_TO_HAND,
       player.discard,
       {},
       { min: 1, max: 5, allowCancel: false, blocked },
@@ -59,13 +60,6 @@ function* playCard(
     },
   );
 
-  cards.forEach((card, index) => {
-    store.log(state, GameLog.LOG_PLAYER_RETURNS_CARD_TO_HAND, {
-      name: player.name,
-      card: card.name,
-    });
-  });
-
   if (cards.length > 0) {
     yield store.prompt(
       state,
@@ -74,7 +68,7 @@ function* playCard(
     );
   }
 
-  player.discard.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: self });
 }
 
 export class MaxRod extends TrainerCard {
@@ -82,7 +76,7 @@ export class MaxRod extends TrainerCard {
 
   protected _tags = [CardTag.ACE_SPEC];
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'PRE';
 

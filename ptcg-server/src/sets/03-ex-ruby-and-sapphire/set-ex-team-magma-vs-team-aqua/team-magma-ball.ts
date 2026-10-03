@@ -6,14 +6,12 @@ import { State } from '../../../game/store/state/state';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import {
-  COIN_FLIP_PROMPT,
-  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND,
-} from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT,
+  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND,  MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PokemonCard } from '../../../game';
 
 export class TeamMagmaBall extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'MA';
   public name: string = 'Team Magma Ball';
@@ -29,7 +27,7 @@ export class TeamMagmaBall extends TrainerCard {
       const player = effect.player;
 
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       if (player.deck.cards.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -69,7 +67,7 @@ export class TeamMagmaBall extends TrainerCard {
         { min: 0, max: 1, allowCancel: false, blocked },
       );
 
-      player.supporter.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
     }
 
     return state;

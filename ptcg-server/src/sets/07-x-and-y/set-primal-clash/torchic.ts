@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { StoreLike, State, GameMessage, EnergyCard, GameError, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Torchic extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -70,8 +70,8 @@ export class Torchic extends PokemonCard {
         if (selected.length === 0) {
           return;
         }
-        player.hand.moveCardsTo(selected, player.discard);
-        player.deck.moveTo(player.hand, 2);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       });
 
     }

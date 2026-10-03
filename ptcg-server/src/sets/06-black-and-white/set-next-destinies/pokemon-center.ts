@@ -12,13 +12,14 @@ import { CardTarget, PlayerType, SlotType } from '../../../game/store/actions/pl
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 
 export class PokemonCenter extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'NXD';
   public name: string = 'Pokémon Center';
   public fullName: string = 'Pokemon Center NXD';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '90';
-  public text: string = 'Once during each player\'s turn, that player may heal 20 damage from 1 of his or her Benched Pokémon.';
+  public text: string =
+    "Once during each player's turn, that player may heal 20 damage from 1 of his or her Benched Pokémon.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -41,30 +42,34 @@ export class PokemonCenter extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_USE_STADIUM);
       }
 
-      return store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON_TO_HEAL,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.BENCH],
-        { allowCancel: true, blocked }
-      ), results => {
-        const targets = results || [];
+      return store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON_TO_HEAL,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.BENCH],
+          { allowCancel: true, blocked },
+        ),
+        (results) => {
+          const targets = results || [];
 
-        if (targets.length === 0) {
-          return state;
-        }
-
-        targets.forEach(target => {
-          const owner = StateUtils.findOwner(state, target);
-          if (IS_STADIUM_EFFECT_BLOCKED(store, state, owner, target)) {
-            return;
+          if (targets.length === 0) {
+            return state;
           }
 
-          // Heal Pokemon
-          const healEffect = new HealEffect(player, target, 20);
-          store.reduceEffect(state, healEffect);
-        });
-      });
+          targets.forEach((target) => {
+            const owner = StateUtils.findOwner(state, target);
+            if (IS_STADIUM_EFFECT_BLOCKED(store, state, owner, target)) {
+              return;
+            }
+
+            // Heal Pokemon
+            const healEffect = new HealEffect(player, target, 20);
+            store.reduceEffect(state, healEffect);
+          });
+        },
+      );
     }
 
     return state;

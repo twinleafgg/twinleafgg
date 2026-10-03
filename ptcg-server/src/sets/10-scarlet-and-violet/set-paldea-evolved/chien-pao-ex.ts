@@ -21,11 +21,11 @@ import {
 } from '../../../game';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { DISCARD_UP_TO_X_TYPE_ENERGY_FROM_YOUR_POKEMON } from '../../../game/store/prefabs/costs';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ChienPaoex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -107,13 +107,6 @@ export class ChienPaoex extends PokemonCard {
             return state;
           }
 
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-              name: player.name,
-              card: card.name,
-            });
-          });
-
           if (cards.length > 0) {
             state = store.prompt(
               state,
@@ -122,7 +115,7 @@ export class ChienPaoex extends PokemonCard {
             );
           }
 
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
           player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
             if (cardList.getPokemonCard() === this) {

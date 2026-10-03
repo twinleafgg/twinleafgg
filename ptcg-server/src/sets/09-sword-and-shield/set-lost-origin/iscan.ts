@@ -7,17 +7,18 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameError, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Iscan extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'F';
   public set: string = 'LOR';
   public setNumber: string = '158';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Iscan';
   public fullName: string = 'Iscan LOR 158';
-  public text: string = 'Draw 2 cards. If your Active Pokémon has "Hisuian" in its name, draw 2 more cards. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Draw 2 cards. If your Active Pokémon has "Hisuian" in its name, draw 2 more cards. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-astral-radiance/barry.ts (DRAW_CARDS Supporter), set-astral-radiance/choy.ts (WAS_TRAINER_USED),
@@ -29,7 +30,7 @@ export class Iscan extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       // Draw 2 cards
       DRAW_CARDS(store, state, player, 2);
@@ -39,7 +40,6 @@ export class Iscan extends TrainerCard {
       if (activePokemon && activePokemon.name.includes('Hisuian')) {
         DRAW_CARDS(store, state, player, 2);
       }
-
 
     }
 

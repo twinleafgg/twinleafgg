@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, EnergyCard, GameError, GameMessage, PlayerType, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, DRAW_CARDS, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, DRAW_CARDS, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shiftry extends PokemonCard {
   public readonly LEAF_DRAW_MARKER = 'SHIFTRY_LEAF_DRAW_MARKER';
@@ -66,7 +66,7 @@ export class Shiftry extends PokemonCard {
       ), cards => {
         cards = cards || [];
         if (cards.length > 0) {
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
           DRAW_CARDS(store, state, player, 3);
         }
       });

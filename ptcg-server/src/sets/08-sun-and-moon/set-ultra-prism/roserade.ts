@@ -9,7 +9,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Card, CardTarget } from '../../../game';
-import { WAS_ATTACK_USED, GUST_OPPONENT_BENCHED_POKEMON } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, GUST_OPPONENT_BENCHED_POKEMON, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Roserade extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -110,7 +110,7 @@ export class Roserade extends PokemonCard {
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

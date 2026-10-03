@@ -15,16 +15,17 @@ export class FestivalGrounds extends TrainerCard {
   public regulationMark = 'H';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '149';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'TWM';
   public name = 'Festival Grounds';
   public fullName = 'Festival Grounds TWM';
-  public text = 'Each Pokémon that has any Energy attached (both yours and your opponent\'s) recovers from all Special Conditions and can\'t be affected by any Special Conditions.';
+  public text =
+    "Each Pokémon that has any Energy attached (both yours and your opponent's) recovers from all Special Conditions and can't be affected by any Special Conditions.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof CheckTableStateEffect && StateUtils.getStadiumCard(state) === this) {
-      state.players.forEach(player => {
-        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+      state.players.forEach((player) => {
+        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
           if (cardList.specialConditions.length === 0 || cardList.energies.cards.length === 0) {
             return;
           }

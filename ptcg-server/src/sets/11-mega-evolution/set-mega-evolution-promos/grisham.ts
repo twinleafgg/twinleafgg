@@ -6,7 +6,7 @@ import { HealEffect } from '../../../game/store/effects/game-effects';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class Grisham extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'M-P';
   public setNumber: string = '99';
   public regulationMark: string = 'J';
@@ -14,8 +14,7 @@ export class Grisham extends TrainerCard {
   public name: string = 'Grisham';
   public fullName: string = 'Grisham M-P';
 
-  public text: string =
-    'Heal 50 damage from all Pokémon in play (both yours and your opponent\'s).';
+  public text: string = "Heal 50 damage from all Pokémon in play (both yours and your opponent's).";
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     const opponent = StateUtils.getOpponent(state, player);

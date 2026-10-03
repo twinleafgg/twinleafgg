@@ -1,8 +1,8 @@
-import { ChooseCardsPrompt, GameLog, GameMessage, TrainerCard } from '../../../game';
+import { ChooseCardsPrompt, GameMessage, TrainerCard } from '../../../game';
 import { CardType, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
@@ -68,11 +68,10 @@ export class Morpeko extends PokemonCard {
           { min, max, allowCancel: false }
         )], selected => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
 
           cards.forEach((card, index) => {
-            player.deck.moveCardTo(card, player.hand);
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
           });
         });
     }

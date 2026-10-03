@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Litwick extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -51,7 +51,7 @@ export class Litwick extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.deck.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.deck, player.discard, { cards: cards, sourceCard: this });
         }
         SHUFFLE_DECK(store, state, player);
       });

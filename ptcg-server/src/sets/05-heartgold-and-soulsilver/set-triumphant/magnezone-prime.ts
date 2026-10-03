@@ -14,15 +14,13 @@ import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { DiscardEnergyPrompt } from '../../../game/store/prompts/discard-energy-prompt';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   DRAW_CARDS_UNTIL_CARDS_IN_HAND,
   REMOVE_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magnezone extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -119,7 +117,7 @@ export class Magnezone extends PokemonCard {
           // Move all selected energies to lost zone
           transfers.forEach((transfer) => {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.lostzone);
+            MOVE_CARDS(store, state, source, player.lostzone, { cards: [transfer.card], sourceCard: this });
           });
 
           // Set damage based on number of discarded cards

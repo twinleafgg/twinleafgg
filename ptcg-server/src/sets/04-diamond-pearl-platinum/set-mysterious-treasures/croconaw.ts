@@ -1,9 +1,8 @@
-import { CardType, PokemonCard, Stage, PowerType, CardList, EnergyCard, GameMessage, State, StoreLike, SuperType, ShuffleDeckPrompt, StateUtils, ChooseCardsPrompt, GameLog, ShowCardsPrompt } from '../../../game';
+import { CardType, PokemonCard, Stage, PowerType, CardList, EnergyCard, GameMessage, State, StoreLike, SuperType, ShuffleDeckPrompt, StateUtils, ChooseCardsPrompt, ShowCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
-import { IS_POKEPOWER_BLOCKED, JUST_EVOLVED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEPOWER_BLOCKED, JUST_EVOLVED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
-
 
 export class Croconaw extends PokemonCard {
 
@@ -40,7 +39,7 @@ export class Croconaw extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
       const temp = new CardList();
 
-      player.deck.moveTo(temp, 5);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 5, sourceCard: this });
 
       // Check if any cards drawn are basic energy
       const energyCardsDrawn = temp.cards.filter(card => {
@@ -58,20 +57,16 @@ export class Croconaw extends PokemonCard {
         if (chosenCards.length == 0) {
           // No Energy chosen, shuffle all back
           temp.cards.forEach(card => {
-            temp.moveCardTo(card, player.deck);
+            MOVE_CARDS(store, state, temp, player.deck, { cards: [card], sourceCard: this });
           });
         }
 
         if (chosenCards.length > 0) {
           // Move chosen Energy to hand
           const energyCard = chosenCards[0];
-          temp.moveCardTo(energyCard, player.hand);
-          player.supporter.moveCardTo(this, player.discard);
-          temp.moveTo(player.deck);
-
-          chosenCards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-          });
+          MOVE_CARDS(store, state, temp, player.hand, { cards: [energyCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
+          MOVE_CARDS(store, state, temp, player.deck, { sourceCard: this });
 
           if (chosenCards.length > 0) {
             state = store.prompt(state, new ShowCardsPrompt(

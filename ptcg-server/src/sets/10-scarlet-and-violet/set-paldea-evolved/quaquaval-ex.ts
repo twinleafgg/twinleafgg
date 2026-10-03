@@ -16,10 +16,8 @@ import {
 import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  SWITCH_OUT_OPPONENT_ACTIVE_POKEMON,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import {SWITCH_OUT_OPPONENT_ACTIVE_POKEMON,
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Quaquavalex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -106,7 +104,7 @@ export class Quaquavalex extends PokemonCard {
         ),
         (energy) => {
           const cards: Card[] = (energy || []).map((e) => e.card);
-          player.active.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
         },
       );
     }

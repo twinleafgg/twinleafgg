@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ShowCardsPrompt, GameMessage, TrainerCard, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class Rotom extends PokemonCard {
@@ -49,11 +49,11 @@ export class Rotom extends PokemonCard {
       ), () => {
         opponent.hand.cards.forEach(card => {
           if (card instanceof TrainerCard && (card.trainerType === TrainerType.ITEM || card.trainerType === TrainerType.TOOL)) {
-            opponent.hand.moveCardTo(card, escrow);
+            MOVE_CARDS(store, state, opponent.hand, escrow, { cards: [card], sourceCard: this });
           }
         });
 
-        escrow.moveTo(opponent.discard);
+        MOVE_CARDS(store, state, escrow, opponent.discard, { sourceCard: this });
       });
 
     }

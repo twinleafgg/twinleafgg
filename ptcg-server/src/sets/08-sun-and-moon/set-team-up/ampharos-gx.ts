@@ -13,11 +13,9 @@ import {
 import { ChooseCardsPrompt, GameMessage, Card, StoreLike, State } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   BLOCK_IF_GX_ATTACK_USED,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AmpharosGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -64,7 +62,7 @@ export class AmpharosGx extends PokemonCard {
 
       const electropowerCards = player.discard.cards.filter((c) => c.name === 'Electropower');
       electropowerCards.forEach((c) => {
-        player.discard.moveCardTo(c, player.hand);
+        MOVE_CARDS(store, state, player.discard, player.hand, { cards: [c], sourceCard: this });
       });
     }
 
@@ -79,7 +77,7 @@ export class AmpharosGx extends PokemonCard {
           c.provides.includes(CardType.LIGHTNING),
       );
       cards.forEach((c) => {
-        player.active.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
       });
     }
 
@@ -106,7 +104,7 @@ export class AmpharosGx extends PokemonCard {
         (selected) => {
           const cards: Card[] = selected || [];
           cards.forEach((c) => {
-            player.deck.moveCardTo(c, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [c], sourceCard: this });
           });
           return SHUFFLE_DECK(store, state, player);
         },

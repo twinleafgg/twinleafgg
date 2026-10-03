@@ -1,7 +1,7 @@
 import { CardType, PokemonCard, Stage, StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Snubbull extends PokemonCard {
   public stage = Stage.BASIC;
@@ -47,7 +47,7 @@ export class Snubbull extends PokemonCard {
         if (discardCount.length === 0) {
           return state;
         }
-        player.hand.moveCardsTo(discardCount, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: discardCount, sourceCard: this });
         effect.damage = 20 * discardCount.length;
       });
     }

@@ -10,14 +10,15 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class FireResistantGloves extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'CRE';
   public setNumber: string = '138';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Fire-Resistant Gloves';
   public fullName: string = 'Fire-Resistant Gloves CRE';
-  public text: string = 'Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached. The attacks of the Pokémon this card is attached to do 30 more damage to your opponent\'s Active Fire Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn.';
+  public text: string =
+    "Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached. The attacks of the Pokémon this card is attached to do 30 more damage to your opponent's Active Fire Pokémon (before applying Weakness and Resistance). You may play any number of Item cards during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-chilling-reign/justified-gloves.ts (DealDamageEffect + source.tools + type check)

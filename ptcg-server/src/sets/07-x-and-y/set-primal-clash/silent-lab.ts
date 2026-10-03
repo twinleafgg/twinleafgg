@@ -12,16 +12,16 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 
 export class SilentLab extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'PRC';
   public name: string = 'Silent Lab';
   public fullName: string = 'Silent Lab PRC';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '140';
-  public text: string = 'Each Basic Pokemon in play, in each player\'s hand, and in each player\'s discard pile has no Abilities.';
+  public text: string =
+    "Each Basic Pokemon in play, in each player's hand, and in each player's discard pile has no Abilities.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     HANDLE_ABILITY_LOCK(effect, ({ card }) => {
       if (StateUtils.getStadiumCard(state) !== this) {
         return false;

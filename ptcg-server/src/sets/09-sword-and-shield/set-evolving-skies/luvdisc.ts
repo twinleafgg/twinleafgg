@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Luvdisc extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -45,7 +45,7 @@ export class Luvdisc extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       const cardsInOpponentHand = opponent.hand.cards.length;
-      player.hand.moveTo(player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: this });
       SHUFFLE_DECK(store, state, player);
       DRAW_CARDS(store, state, player, cardsInOpponentHand);
     }

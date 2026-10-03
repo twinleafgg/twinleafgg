@@ -11,8 +11,7 @@ import { Player } from '../../../game';
 import { SWITCH_IN_OPPONENT_BENCHED_POKEMON } from '../../../game/store/prefabs/prefabs';
 
 export class CounterCatcher extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'PAR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '160';
@@ -20,8 +19,7 @@ export class CounterCatcher extends TrainerCard {
   public name: string = 'Counter Catcher';
   public fullName: string = 'Counter Catcher PAR';
 
-  public text: string =
-    `You can play this card only if you have more Prize Cards remaining than your opponent.
+  public text: string = `You can play this card only if you have more Prize Cards remaining than your opponent.
 
 Switch in 1 of your opponent's Benched Pokémon to the Active Spot.`;
 
@@ -29,7 +27,7 @@ Switch in 1 of your opponent's Benched Pokémon to the Active Spot.`;
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     const opponent = StateUtils.getOpponent(state, player);
-    const hasBench = opponent.bench.some(b => b.cards.length > 0);
+    const hasBench = opponent.bench.some((b) => b.cards.length > 0);
 
     if (player.getPrizeLeft() <= opponent.getPrizeLeft()) {
       throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -46,7 +44,7 @@ Switch in 1 of your opponent's Benched Pokémon to the Active Spot.`;
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-      const hasBench = opponent.bench.some(b => b.cards.length > 0);
+      const hasBench = opponent.bench.some((b) => b.cards.length > 0);
 
       if (player.getPrizeLeft() <= opponent.getPrizeLeft()) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);

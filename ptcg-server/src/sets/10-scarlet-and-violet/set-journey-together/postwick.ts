@@ -11,7 +11,7 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class Postwick extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'JTG';
   public name: string = 'Postwick';
   public fullName: string = 'Postwick JTG';

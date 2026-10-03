@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { MoveEnergyPrompt } from '../../../game/store/prompts/move-energy-prompt';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
 
@@ -70,7 +70,7 @@ export class Tentacruel extends PokemonCard {
         transfers.forEach(transfer => {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
 
           // Put 3 damage counters on the Pokemon we moved the Energy to
           const damageEffect = new PutCountersEffect(effect, 30);

@@ -12,12 +12,13 @@ import { endGame } from '../../../game/store/effect-reducers/check-effect';
 export class LostWorld extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '81';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'CL';
   public name = 'Lost World';
   public fullName = 'Lost World CL';
 
-  public text = 'Once during each player\'s turn, if that player\'s opponent has 6 or more Pokémon in the Lost Zone, the player may choose to win the game.';
+  public text =
+    "Once during each player's turn, if that player's opponent has 6 or more Pokémon in the Lost Zone, the player may choose to win the game.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -25,7 +26,7 @@ export class LostWorld extends TrainerCard {
       const opponent = StateUtils.getOpponent(state, player);
       const winner = state.activePlayer;
 
-      if (opponent.lostzone.cards.filter(c => c instanceof PokemonCard).length < 6) {
+      if (opponent.lostzone.cards.filter((c) => c instanceof PokemonCard).length < 6) {
         throw new GameError(GameMessage.CANNOT_USE_STADIUM);
       }
 

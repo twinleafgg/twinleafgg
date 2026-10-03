@@ -4,7 +4,7 @@ import { StoreLike, State, Card, ChooseCardsPrompt, EnergyCard, PlayerType, Stat
 
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class FirefighterPikachu extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -65,7 +65,7 @@ export class FirefighterPikachu extends PokemonCard {
 
       if (cards.length > 0) {
         // Discard selected special energy card
-        target.moveCardsTo(cards, opponent.discard);
+        MOVE_CARDS(store, state, target, opponent.discard, { cards: cards, sourceCard: this });
         return state;
       }
     }

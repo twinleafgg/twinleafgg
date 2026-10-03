@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useVoraciousness(next: Function, store: StoreLike, state: State, self: Snorlax, effect: PowerEffect): IterableIterator<State> {
   const player = effect.player;
@@ -37,9 +37,8 @@ function* useVoraciousness(next: Function, store: StoreLike, state: State, self:
     }
   });
 
-  player.discard.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: self });
 }
-
 
 export class Snorlax extends PokemonCard {
 

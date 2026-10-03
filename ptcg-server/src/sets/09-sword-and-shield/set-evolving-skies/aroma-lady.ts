@@ -10,14 +10,15 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AromaLady extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'E';
   public set: string = 'EVS';
   public setNumber: string = '141';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Aroma Lady';
   public fullName: string = 'Aroma Lady EVS';
-  public text: string = 'Draw 2 cards. If you do, your Active Pokémon recovers from all Special Conditions. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Draw 2 cards. If you do, your Active Pokémon recovers from all Special Conditions. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-chilling-reign/doctor.ts (Draw 2 cards), set-base-set/full-heal.ts (clear special conditions)

@@ -1,9 +1,9 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameError, GameMessage, Card, ChooseCardsPrompt, ShowCardsPrompt, ShuffleDeckPrompt, GameLog } from '../../../game';
+import { StoreLike, State, StateUtils, GameError, GameMessage, Card, ChooseCardsPrompt, ShowCardsPrompt, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tynamo extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -54,9 +54,7 @@ export class Tynamo extends PokemonCard {
         cards = selected || [];
 
         cards.forEach((card, index) => {
-          player.deck.moveCardTo(card, player.hand);
-
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
             player.deck.applyOrder(order);

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class Heracross extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -48,12 +48,10 @@ export class Heracross extends PokemonCard {
         return state;
       }
 
-      // Shuffle opponent's active Pokemon and all cards attached into deck
-      // Move tools first
-      const tools = opponent.active.tools.slice();
-      tools.forEach(t => { opponent.active.moveCardTo(t, opponent.deck); });
-      // Move all cards (Pokemon + energy)
-      opponent.active.moveTo(opponent.deck);
+      MOVE_POKEMON_OFF_BOARD(store, state, opponent.active, {
+        pokemonDestination: opponent.deck,
+        sourceCard: this,
+      });
       SHUFFLE_DECK(store, state, opponent);
     }
 

@@ -11,14 +11,12 @@ import { GameMessage } from '../../../game/game-message';
 import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CardList } from '../../../game/store/state/card-list';
 import { State } from '../../../game/store/state/state';
@@ -83,7 +81,7 @@ export class Metagross extends PokemonCard {
 
       const deckBottom = new CardList();
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 4);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 4, sourceCard: this });
 
       return store.prompt(
         state,
@@ -98,9 +96,9 @@ export class Metagross extends PokemonCard {
           ADD_MARKER(this.DELTA_CONTROL_MARKER, player, this);
           ABILITY_USED(player, this);
 
-          deckTop.moveCardsTo(selected, player.hand);
-          deckTop.moveTo(deckBottom);
-          deckBottom.moveTo(player.deck);
+          MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+          MOVE_CARDS(store, state, deckTop, deckBottom, { sourceCard: this });
+          MOVE_CARDS(store, state, deckBottom, player.deck, { sourceCard: this });
           return state;
         },
       );
@@ -137,7 +135,7 @@ export class Metagross extends PokemonCard {
           // Move all selected energies to discard
           transfers.forEach((transfer) => {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.discard);
+            MOVE_CARDS(store, state, source, player.discard, { cards: [transfer.card], sourceCard: this });
           });
 
           // Set damage based on number of discarded cards

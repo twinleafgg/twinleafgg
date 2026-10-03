@@ -5,6 +5,8 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 import {
   PlayerType,
   SlotType,
@@ -66,8 +68,8 @@ function* playCard(
   } // Operation canceled by the user
 
   // Can't cancel next prompt, so now discard things
-  player.hand.moveCardTo(self, player.discard);
-  player.hand.moveCardsTo(discardCards, player.discard);
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: [self], sourceCard: self });
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: discardCards, sourceCard: self });
 
   // Can only gust EX or GX
   const gustBlocked: CardTarget[] = [];
@@ -97,7 +99,7 @@ function* playCard(
 }
 
 export class GreatCatcher extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'CEC';
 

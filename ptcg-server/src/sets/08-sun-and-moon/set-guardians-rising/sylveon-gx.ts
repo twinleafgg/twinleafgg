@@ -13,7 +13,7 @@ import { ChooseCardsPrompt, Card } from '../../../game';
 import { ShuffleDeckPrompt } from '../../../game';
 import { StateUtils } from '../../../game/store/state-utils';
 
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // GRI Sylveon-GX 92 (https://limitlesstcg.com/cards/GRI/92)
 export class SylveonGX extends PokemonCard {
@@ -80,7 +80,7 @@ export class SylveonGX extends PokemonCard {
         ),
         (selected) => {
           cards = selected || [];
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
           store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);
           });
@@ -114,7 +114,7 @@ export class SylveonGX extends PokemonCard {
         ),
         (selection) => {
           selection.forEach((r) => {
-            r.moveTo(opponent.hand);
+            MOVE_CARDS(store, state, r, opponent.hand, { sourceCard: this });
             r.clearEffects();
           });
         },

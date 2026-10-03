@@ -5,7 +5,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { StateUtils } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Larvesta extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -34,7 +34,7 @@ export class Larvesta extends PokemonCard {
       const opponent = StateUtils.getOpponent(state, player);
       const activePokemon = opponent.active;
       if (activePokemon.tools.length > 0) {
-        activePokemon.moveCardsTo([...activePokemon.tools], opponent.discard);
+        MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: [...activePokemon.tools], sourceCard: this });
       }
       return state;
     }

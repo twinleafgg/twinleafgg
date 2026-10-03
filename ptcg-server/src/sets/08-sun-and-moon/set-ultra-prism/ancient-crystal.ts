@@ -10,13 +10,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class AncientCrystal extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'UPR';
   public setNumber: string = '118';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Ancient Crystal';
   public fullName: string = 'Ancient Crystal UPR';
-  public text: string = 'The Regirock, Regice, Registeel, or Regigigas this card is attached to takes 30 less damage from your opponent\'s attacks (after applying Weakness and Resistance).';
+  public text: string =
+    "The Regirock, Regice, Registeel, or Regigigas this card is attached to takes 30 less damage from your opponent's attacks (after applying Weakness and Resistance).";
 
   // Ref: set-x-and-y/hard-charm.ts (Tool damage reduction pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -34,7 +35,7 @@ export class AncientCrystal extends TrainerCard {
       }
 
       const validNames = ['Regirock', 'Regice', 'Registeel', 'Regigigas'];
-      if (!validNames.some(name => pokemonCard.name.startsWith(name))) {
+      if (!validNames.some((name) => pokemonCard.name.startsWith(name))) {
         return state;
       }
 

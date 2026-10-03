@@ -2,7 +2,7 @@ import { CardTarget, CardTransfer, EnergyCard, GameMessage, MoveEnergyPrompt, Pl
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Espurr extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -65,10 +65,9 @@ export class Espurr extends PokemonCard {
         transfers.forEach(transfer => {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         });
       });
-
 
     }
 

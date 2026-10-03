@@ -8,7 +8,7 @@ import { EnergyCard, GameMessage, StoreLike, State } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Meloetta extends PokemonCard {
@@ -71,7 +71,7 @@ export class Meloetta extends PokemonCard {
         ), selected => {
           const cards = selected || [];
           cards.forEach(card => {
-            player.discard.moveCardTo(card, player.active);
+            MOVE_CARDS(store, state, player.discard, player.active, { cards: [card], sourceCard: this });
           });
         });
       }

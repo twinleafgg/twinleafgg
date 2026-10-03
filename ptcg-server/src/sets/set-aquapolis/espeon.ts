@@ -4,7 +4,7 @@ import { StoreLike } from '../../game/store/store-like';
 import { State } from '../../game/store/state/state';
 import { Effect } from '../../game/store/effects/effect';
 import { MOVE_CARDS, WAS_ATTACK_USED, WAS_POWER_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../game/store/prefabs/prefabs';
-import { Card, CardTarget, ChooseEnergyPrompt, ChoosePokemonPrompt, GameError, GameLog, GameMessage, PlayerType, PowerType, SlotType } from '../../game';
+import { Card, CardTarget, ChooseEnergyPrompt, ChoosePokemonPrompt, GameError, GameMessage, PlayerType, PowerType, SlotType } from '../../game';
 import { CheckProvidedEnergyEffect } from '../../game/store/effects/check-effects';
 
 export class Espeon extends PokemonCard {
@@ -105,8 +105,7 @@ export class Espeon extends PokemonCard {
           { allowCancel: false }
         ), energy => {
           const cards: Card[] = (energy || []).map(e => e.card);
-          store.log(state, GameLog.LOG_PLAYER_CHOOSES, { name: player.name, string: '' + cards[0].name });
-          targets[0].moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, targets[0], player.hand, { cards: cards, sourceCard: this });
           MOVE_CARDS(store, state, targets[0], player.hand, { cards, sourceCard: this, sourceEffect: this.powers[0] });
         });
       });

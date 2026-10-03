@@ -13,12 +13,10 @@ import {
   State,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   BLOCK_IF_GX_ATTACK_USED,
   SHOW_CARDS_TO_PLAYER,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class WishiwashiGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -81,7 +79,7 @@ export class WishiwashiGx extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(12, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(12, player.deck.cards.length), sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, deckTop.cards);
 
@@ -94,7 +92,7 @@ export class WishiwashiGx extends PokemonCard {
       ).length;
 
       if (basicCount === 0 || openSlots === 0) {
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
         SHUFFLE_DECK(store, state, player);
         return state;
       }
@@ -115,12 +113,12 @@ export class WishiwashiGx extends PokemonCard {
           cards.forEach((card) => {
             const emptySlot = player.bench.find((b) => b.cards.length === 0);
             if (emptySlot) {
-              deckTop.moveCardTo(card, emptySlot);
+              MOVE_CARDS(store, state, deckTop, emptySlot, { cards: [card], sourceCard: this });
               emptySlot.pokemonPlayedTurn = state.turn;
             }
           });
           // Shuffle remaining cards back into deck
-          deckTop.moveTo(player.deck);
+          MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         },
       );

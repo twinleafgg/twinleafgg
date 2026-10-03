@@ -13,7 +13,7 @@ import {
 } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RegigigasVSTAR extends PokemonCard {
   public stage: Stage = Stage.VSTAR;
@@ -81,7 +81,7 @@ export class RegigigasVSTAR extends PokemonCard {
         (selected) => {
           const targets = selected || [];
           targets.forEach((target) => {
-            target.moveTo(opponent.discard);
+            MOVE_CARDS(store, state, target, opponent.discard, { sourceCard: this });
             player.usedVSTAR = true;
           });
           return state;

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, Card, ShowCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
@@ -68,11 +68,11 @@ export class Volcarona extends PokemonCard {
         () => {
           // Move Team Plasma cards to hand
           teamPlasmaCards.forEach((card) => {
-            player.deck.moveCardTo(card, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
           });
           // Discard the other cards
           otherCards.forEach((card) => {
-            player.deck.moveCardTo(card, player.discard);
+            MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
           });
         },
       );

@@ -641,7 +641,16 @@
     "LOG_PLAYER_HEALS_POKEMON": "{{name}} heals {{pokemon}} for {{healingAmount}}.",
     "LOG_HISUIAN_HEAVY_BALL": "{{name}} has taken {{card}} from their Prize Cards with Hisuian Heavy Ball.",
     "LOG_PLAYER_CHOOSES": "{{name}} chooses {{string}}.",
-    "LOG_SHUFFLE_POKEMON_INTO_DECK": "{{name}} shuffles {{card}} into their deck with the effect of {{effect}}."
+    "LOG_SHUFFLE_POKEMON_INTO_DECK": "{{name}} shuffles {{card}} into their deck with the effect of {{effect}}.",
+    "LOG_TRAINER_TARGET_BLOCKED_BENCH": "{{blocker}} prevented {{card}} from affecting {{name}}'s Benched {{pokemon}}.",
+    "LOG_TRAINER_TARGET_BLOCKED_ACTIVE": "{{blocker}} prevented {{card}} from affecting {{name}}'s Active {{pokemon}}.",
+    "LOG_CARD_PREVENTS_BENCH": "{{blocker}} prevented {{effect}} from affecting {{name}}'s Benched {{pokemon}}.",
+    "LOG_CARD_PREVENTS_ACTIVE": "{{blocker}} prevented {{effect}} from affecting {{name}}'s Active {{pokemon}}.",
+    "LOG_CARD_PREVENTS": "{{blocker}} prevented {{effect}}.",
+    "LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE_FROM_PLAY": "{{name}} puts {{card}} in the Lost Zone.",
+    "LOG_PLAYER_MOVES_CARD": "{{name}} moves {{card}} from {{from}} to {{to}}.",
+    "LOG_PLAYER_POKEMON_SPECIAL_CONDITION": "{{name}}'s {{pokemon}} is now {{condition}}.",
+    "LOG_PLAYER_POKEMON_RECOVERS_SPECIAL_CONDITION": "{{name}}'s {{pokemon}} is no longer {{condition}}."
   },
   "DECK_NO_DECKS_FORMAT": "You don't have any decks legal in {{format}} format.",
   "DECK_NO_DECKS": "You don't have any decks yet.",

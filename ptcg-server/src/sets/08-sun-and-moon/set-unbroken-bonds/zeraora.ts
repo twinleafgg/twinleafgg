@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Zeraora extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -67,7 +67,7 @@ export class Zeraora extends PokemonCard {
           if (cards.length > 0) {
             const discardEnergy = new DiscardCardsEffect(effect, cards);
             discardEnergy.target = opponentActive;
-            opponentActive.moveCardsTo(cards, opponent.discard);
+            MOVE_CARDS(store, state, opponentActive, opponent.discard, { cards: cards, sourceCard: this });
             return state;
           }
           return state;

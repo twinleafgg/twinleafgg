@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sceptile extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -76,7 +76,7 @@ export class Sceptile extends PokemonCard {
 
           //Attaching energy
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
 
           //Heal 30 from target
           const healEffect = new HealEffect(player, target, 30);

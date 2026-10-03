@@ -4,7 +4,7 @@ import { StoreLike, State, AttachEnergyPrompt, PlayerType, SlotType, StateUtils 
 
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Porygon extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -54,7 +54,7 @@ export class Porygon extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              opponent.active.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, opponent.active, target, { cards: [transfer.card], sourceCard: this });
             }
           });
         }

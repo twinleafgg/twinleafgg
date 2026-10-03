@@ -17,10 +17,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { CheckAttackCostEffect } from '../../../game/store/effects/check-effects';
 import { PlayItemEffect } from '../../../game/store/effects/play-card-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HeadRinger extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'PHF';
   public setNumber: string = '97';
   public cardImage: string = 'assets/cardback.png';
@@ -91,7 +91,7 @@ export class HeadRinger extends TrainerCard {
         (targets) => {
           if (targets && targets.length > 0) {
             const target = targets[0];
-            player.hand.moveCardTo(this, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [this], sourceCard: this });
             target.tools.push(this);
           }
         },

@@ -18,7 +18,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Okidogiex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -72,7 +72,7 @@ export class Okidogiex extends PokemonCard {
         (cards) => {
           cards = cards || [];
           if (cards.length > 0) {
-            player.deck.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
 
             const specialConditionEffect = new AddSpecialConditionsEffect(effect, [
               SpecialCondition.POISONED,

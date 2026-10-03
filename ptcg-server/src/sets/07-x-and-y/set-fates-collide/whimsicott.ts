@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, GameMessage, EnergyCard, ChooseCardsPrompt, ChoosePokemonPrompt, PlayerType, SlotType, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Whimsicott extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -79,7 +79,7 @@ export class Whimsicott extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), targets => {
           if (targets && targets.length > 0) {
-            player.active.moveCardTo(cards[0], targets[0]);
+            MOVE_CARDS(store, state, player.active, targets[0], { cards: [cards[0]], sourceCard: this });
           }
         });
       });

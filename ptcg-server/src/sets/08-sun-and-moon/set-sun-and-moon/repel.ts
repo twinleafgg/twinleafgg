@@ -8,19 +8,20 @@ import { SWITCH_OUT_OPPONENT_ACTIVE_POKEMON } from '../../../game/store/prefabs/
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class Repel extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'SUM';
   public name: string = 'Repel';
   public fullName: string = 'Repel SUM';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '130';
-  public text: string = 'Your opponent switches their Active Pokémon with 1 of their Benched Pokémon.';
+  public text: string =
+    'Your opponent switches their Active Pokémon with 1 of their Benched Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-      const opponentHasBench = opponent.bench.some(b => b.cards.length > 0);
+      const opponentHasBench = opponent.bench.some((b) => b.cards.length > 0);
 
       if (!opponentHasBench) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);

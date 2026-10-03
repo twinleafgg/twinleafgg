@@ -11,7 +11,7 @@ import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class IslandChallengeAmulet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CEC';
   public setNumber: string = '194';
   public cardImage: string = 'assets/cardback.png';

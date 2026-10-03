@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, GameMessage, ConfirmPrompt, Ca
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, JUST_EVOLVED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, JUST_EVOLVED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Trumbeak extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -67,7 +67,7 @@ export class Trumbeak extends PokemonCard {
 
         const topCards = new CardList();
         const count = Math.min(3, player.deck.cards.length);
-        player.deck.moveTo(topCards, count);
+        MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
         // Find basic Energy cards in top 3
         const basicEnergyCards = topCards.cards.filter(c =>
@@ -76,7 +76,7 @@ export class Trumbeak extends PokemonCard {
 
         if (basicEnergyCards.length === 0) {
           // No energy found, shuffle back
-          topCards.moveTo(player.deck);
+          MOVE_CARDS(store, state, topCards, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
           return;
         }
@@ -100,7 +100,7 @@ export class Trumbeak extends PokemonCard {
           }
 
           // Shuffle remaining cards back into deck
-          topCards.moveTo(player.deck);
+          MOVE_CARDS(store, state, topCards, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         });
       });

@@ -18,9 +18,10 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Olivia extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'BUS';
   public setNumber: string = '119';
   public cardImage: string = 'assets/cardback.png';
@@ -60,7 +61,7 @@ export class Olivia extends TrainerCard {
 
           if (cards.length > 0) {
             cards.forEach((card) => {
-              player.deck.moveCardTo(card, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this });
             });
 
             store.prompt(

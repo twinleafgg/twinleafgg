@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -47,7 +47,7 @@ export class Exeggutor extends PokemonCard {
     // Ref: set-unbroken-bonds/reshiram-and-charizard-gx.ts (discard hand)
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
-      player.hand.moveTo(player.discard);
+      MOVE_CARDS(store, state, player.hand, player.discard, { sourceCard: this });
     }
 
     return state;

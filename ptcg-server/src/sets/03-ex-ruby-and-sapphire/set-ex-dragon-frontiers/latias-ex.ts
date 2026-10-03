@@ -20,13 +20,11 @@ import {
   CardTarget,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ADD_MARKER,
+import {ADD_MARKER,
   HAS_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { AttackEffect, KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
@@ -109,7 +107,7 @@ export class Latiasex extends PokemonCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
           }
 
           const endTurnEffect = new EndTurnEffect(player);

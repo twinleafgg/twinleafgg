@@ -9,11 +9,9 @@ import {
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  CONFIRMATION_PROMPT,
+import {CONFIRMATION_PROMPT,
   MOVE_CARD_TO,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import {
   Card,
   CardTarget,
@@ -141,7 +139,7 @@ export class Suicuneex extends PokemonCard {
                   const source = StateUtils.getTarget(state, player, transfer.from);
                   const target = StateUtils.getTarget(state, player, transfer.to);
 
-                  source.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
                 }
               },
             );

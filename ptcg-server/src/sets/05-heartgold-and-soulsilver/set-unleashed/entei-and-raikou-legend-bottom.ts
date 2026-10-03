@@ -10,7 +10,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EnteiAndRaikouLegendTop } from './entei-and-raikou-legend-top';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EnteiAndRaikouLegendBottom extends PokemonCard {
   public stage: Stage = Stage.LEGEND;
@@ -79,8 +79,8 @@ export class EnteiAndRaikouLegendBottom extends PokemonCard {
 
       if (topPiece && bottomPiece && topCard && bottomCard) {
         if (slots.length > 0) {
-          player.hand.moveCardTo(bottomCard, slots[0]);
-          player.hand.moveCardTo(topCard, slots[0]);
+          MOVE_CARDS(store, state, player.hand, slots[0], { cards: [bottomCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.hand, slots[0], { cards: [topCard], sourceCard: this });
           slots[0].pokemonPlayedTurn = state.turn;
         }
       } else {

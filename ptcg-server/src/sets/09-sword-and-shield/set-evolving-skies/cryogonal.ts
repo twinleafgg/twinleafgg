@@ -1,6 +1,6 @@
 import { CardType, PokemonCard, Stage, AttachEnergyPrompt, CardList, EnergyCard, EnergyType, GameMessage, PlayerType, SlotType, State, StateUtils, StoreLike, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { SHOW_CARDS_TO_PLAYER, SHUFFLE_CARDS_INTO_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHOW_CARDS_TO_PLAYER, SHUFFLE_CARDS_INTO_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cryogonal extends PokemonCard {
 
@@ -34,7 +34,7 @@ export class Cryogonal extends PokemonCard {
 
       const player = effect.player;
       const temp = new CardList();
-      player.deck.moveTo(temp, 6);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 6, sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, temp.cards);
 
@@ -62,7 +62,7 @@ export class Cryogonal extends PokemonCard {
           if (transfers) {
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              temp.moveCardTo(transfer.card, target); // Move card to target
+              MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this }); // Move card to target
             }
             SHUFFLE_CARDS_INTO_DECK(store, state, player, temp.cards);
           }

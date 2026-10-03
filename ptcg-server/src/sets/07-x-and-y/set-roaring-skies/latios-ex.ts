@@ -4,16 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  AbstractAttackEffect,
-  ApplyWeaknessEffect,
-  DealDamageEffect,
-  PutDamageEffect,
-} from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_EFFECTS_OF_ATTACKS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class LatiosEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -22,9 +16,6 @@ export class LatiosEx extends PokemonCard {
   public hp: number = 170;
   public weakness = [{ type: Y }];
   public retreat = [C, C];
-
-  private readonly PREVENT_EFFECTS_MARKER = 'LATIOS_EX_ROS_PREVENT_EFFECTS_MARKER';
-  private readonly CLEAR_PREVENT_EFFECTS_MARKER = 'LATIOS_EX_ROS_CLEAR_PREVENT_EFFECTS_MARKER';
 
   public attacks = [
     {
@@ -53,48 +44,8 @@ export class LatiosEx extends PokemonCard {
     // Ref: set-lost-thunder/sableye.ts (Quick Hunt - canUseOnFirstTurn flag)
     // No additional logic needed, the canUseOnFirstTurn flag handles this.
 
-    // Attack 2: Light Pulse
-    // Ref: set-steam-siege/magearna-ex.ts (Mystic Heart - prevent effects except damage)
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      player.active.marker.addMarker(this.PREVENT_EFFECTS_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_PREVENT_EFFECTS_MARKER, this);
-    }
-
-    // Prevent effects of attacks (except damage) done to this Pokemon
-    if (
-      effect instanceof AbstractAttackEffect &&
-      effect.target.cards.includes(this) &&
-      effect.target.marker.hasMarker(this.PREVENT_EFFECTS_MARKER, this)
-    ) {
-      // Allow Weakness & Resistance
-      if (effect instanceof ApplyWeaknessEffect) {
-        return state;
-      }
-      // Allow damage
-      if (effect instanceof PutDamageEffect) {
-        return state;
-      }
-      // Allow damage
-      if (effect instanceof DealDamageEffect) {
-        return state;
-      }
-
-      effect.preventDefault = true;
-      return state;
-    }
-
-    // Cleanup
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_PREVENT_EFFECTS_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_PREVENT_EFFECTS_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.PREVENT_EFFECTS_MARKER, this);
-      });
+      PREVENT_EFFECTS_OF_ATTACKS(store, state, effect, this);
     }
 
     return state;

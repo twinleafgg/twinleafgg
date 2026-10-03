@@ -6,7 +6,7 @@ import { SuperType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt } from '../../../game';
 import { CardList } from '../../../game';
 
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Trumbeak extends PokemonCard {
 
@@ -59,14 +59,14 @@ export class Trumbeak extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.hand.moveCardTo(this, player.lostzone);
+      MOVE_CARDS(store, state, player.hand, player.lostzone, { cards: [this], sourceCard: this });
 
       const cards: Card[] = [];
       const card = opponent.deck.cards[0];
       cards.push(card);
 
       const deckTop = new CardList();
-      opponent.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 1, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -77,10 +77,10 @@ export class Trumbeak extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (!cards) {
-          deckTop.moveTo(opponent.deck, 1);
+          MOVE_CARDS(store, state, deckTop, opponent.deck, { count: 1, sourceCard: this });
         }
         if (cards) {
-          deckTop.moveCardsTo(cards, opponent.lostzone);
+          MOVE_CARDS(store, state, deckTop, opponent.lostzone, { cards: cards, sourceCard: this });
         }
       });
 

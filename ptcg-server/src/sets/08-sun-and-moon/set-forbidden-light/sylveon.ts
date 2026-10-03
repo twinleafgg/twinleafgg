@@ -9,7 +9,7 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sylveon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -72,7 +72,7 @@ export class Sylveon extends PokemonCard {
           if (selected && selected.length > 0) {
             const supporterCard = selected[0] as TrainerCard;
             // Discard the supporter from opponent's hand
-            opponent.hand.moveCardTo(supporterCard, opponent.discard);
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [supporterCard], sourceCard: this });
             // Use the effect of the supporter card
             const trainerEffect = new TrainerEffect(player, supporterCard);
             store.reduceEffect(state, trainerEffect);

@@ -3,11 +3,11 @@ import { TrainerType, CardType, SpecialCondition } from '../../../game/store/car
 import { StoreLike, State, StateUtils, Player } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import { ADD_CONFUSION_TO_PLAYER_ACTIVE, TRAINER_TARGET_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class DarkBell extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'PBL';
   public setNumber: string = '75';
   public regulationMark: string = 'J';
@@ -21,13 +21,14 @@ export class DarkBell extends TrainerCard {
     const actives = [player.active, opponent.active];
 
     const bothConfused = actives.every(
-      active => active.cards.length > 0 && active.specialConditions.includes(SpecialCondition.CONFUSED),
+      (active) =>
+        active.cards.length > 0 && active.specialConditions.includes(SpecialCondition.CONFUSED),
     );
     if (bothConfused) {
       return false;
     }
 
-    const bothDark = actives.every(active => {
+    const bothDark = actives.every((active) => {
       if (active.cards.length === 0) {
         return false;
       }
@@ -59,7 +60,9 @@ export class DarkBell extends TrainerCard {
       };
 
       confuseTarget(player, player.active);
-      confuseTarget(opponent, opponent.active);
+      if (!TRAINER_TARGET_BLOCKED(store, state, player, this, opponent.active)) {
+        confuseTarget(opponent, opponent.active);
+      }
     }
 
     return state;

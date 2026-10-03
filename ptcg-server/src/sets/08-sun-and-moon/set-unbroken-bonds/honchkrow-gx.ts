@@ -21,7 +21,7 @@ import {
   AttachPokemonToolEffect,
   PlayStadiumEffect,
 } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HonchkrowGX extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -192,7 +192,7 @@ export class HonchkrowGX extends PokemonCard {
         (cards) => {
           cards = cards || [];
 
-          opponent.hand.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
         },
       );
     }

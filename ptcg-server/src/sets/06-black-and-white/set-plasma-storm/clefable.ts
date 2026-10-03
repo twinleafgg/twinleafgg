@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { GameMessage, PlayerType, PowerType, SlotType, StoreLike, State, CardTarget } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { COIN_FLIP_PROMPT, WAS_POWER_USED, SHUFFLE_DECK, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, WAS_POWER_USED, SHUFFLE_DECK, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
@@ -110,7 +110,7 @@ export class Clefable extends PokemonCard {
             ), targets => {
               if (targets && targets.length > 0) {
                 const target = targets[0];
-                player.deck.moveCardTo(evolutionCard, target);
+                MOVE_CARDS(store, state, player.deck, target, { cards: [evolutionCard], sourceCard: this });
                 target.clearEffects();
                 target.pokemonPlayedTurn = state.turn;
 

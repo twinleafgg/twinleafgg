@@ -2,7 +2,7 @@ import { CardType, Stage, SuperType } from '../../../game/store/card/card-types'
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { State, StateUtils, StoreLike, DiscardEnergyPrompt, GameMessage, PlayerType, SlotType } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TapuKoko extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -41,11 +41,11 @@ export class TapuKoko extends PokemonCard {
 
       // Discard all cards from hand
       const cards = player.hand.cards;
-      player.hand.moveCardsTo(cards, player.discard);
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
       // Draw 5 cards
       if (player.deck.cards.length > 0) {
-        player.deck.moveTo(player.hand, 5);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: this });
       }
     }
 
@@ -73,7 +73,7 @@ export class TapuKoko extends PokemonCard {
           }
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.discard);
+            MOVE_CARDS(store, state, source, player.discard, { cards: [transfer.card], sourceCard: this });
           }
         });
       }

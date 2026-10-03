@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { DAMAGE_OPPONENT_POKEMON, IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGE_OPPONENT_POKEMON, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianArticuno extends PokemonCard {
 
@@ -88,7 +88,7 @@ export class GalarianArticuno extends PokemonCard {
           ), cards => {
             cards = cards || [];
             if (cards.length > 0) {
-              player.hand.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
             }
           });
         }

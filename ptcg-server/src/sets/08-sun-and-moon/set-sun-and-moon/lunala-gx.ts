@@ -21,7 +21,7 @@ import {
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { KNOCK_OUT_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, BLOCK_IF_GX_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_HEALING_ON_DEFENDING_POKEMON_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 function* usePsychicTransfer(
@@ -75,7 +75,7 @@ function* usePsychicTransfer(
       for (const transfer of transfers) {
         const source = StateUtils.getTarget(state, player, transfer.from);
         const target = StateUtils.getTarget(state, player, transfer.to);
-        source.moveCardTo(transfer.card, target);
+        MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: effect.card });
       }
     },
   );

@@ -12,7 +12,7 @@ import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effect
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { PlayerType } from '../../../game';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MysteryEnergy extends EnergyCard {
 
@@ -72,7 +72,7 @@ export class MysteryEnergy extends EnergyCard {
           const checkPokemonType = new CheckPokemonTypeEffect(cardList);
           store.reduceEffect(state, checkPokemonType);
           if (!checkPokemonType.cardTypes.includes(CardType.PSYCHIC)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

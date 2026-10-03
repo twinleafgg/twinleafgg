@@ -4,7 +4,7 @@ import { StoreLike, State, GameMessage, Card, ChooseCardsPrompt, StateUtils } fr
 import { Effect } from '../../game/store/effects/effect';
 
 import { AddSpecialConditionsEffect } from '../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Golduck extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -64,7 +64,7 @@ export class Golduck extends PokemonCard {
       ), selected => {
         card = selected[0];
 
-        opponent.active.moveCardTo(card, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [card], sourceCard: this });
         return state;
       });
     }

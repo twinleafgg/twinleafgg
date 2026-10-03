@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { PowerType, StoreLike, State, GameMessage, PlayerType, SlotType, StateUtils, MoveEnergyPrompt, ConfirmPrompt, CardTarget, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { MOVED_TO_ACTIVE_THIS_TURN } from '../../../game/store/prefabs/prefabs';
+import {MOVED_TO_ACTIVE_THIS_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 
 export class Latios extends PokemonCard {
@@ -77,7 +77,7 @@ export class Latios extends PokemonCard {
                 transfers = transfers || [];
                 for (const transfer of transfers) {
                   const source = StateUtils.getTarget(state, player, transfer.from);
-                  source.moveCardTo(transfer.card, player.active);
+                  MOVE_CARDS(store, state, source, player.active, { cards: [transfer.card], sourceCard: this });
                 }
               });
             }

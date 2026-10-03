@@ -14,7 +14,7 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_UNTIL_YOU_GET_TAILS_DO_X_MORE_DAMAGE_PER_HEADS } from '../../../game/store/prefabs/attack-effects';
 
 export class Meloetta extends PokemonCard {
@@ -93,7 +93,7 @@ export class Meloetta extends PokemonCard {
             // Only allow attaching to TAG TEAM Pokemon
             const targetCard = target.getPokemonCard();
             if (targetCard && targetCard.hasTag(CardTag.TAG_TEAM)) {
-              player.hand.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
             }
           }
         },

@@ -10,7 +10,7 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckAttackCostEffect } from '../../../game/store/effects/check-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MowRotom extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -90,7 +90,7 @@ export class MowRotom extends PokemonCard {
           { min: 1, max: 1, allowCancel: false, blocked }
         ), selected => {
           if (selected && selected.length > 0) {
-            opponent.active.moveCardTo(selected[0], opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [selected[0]], sourceCard: this });
           }
         });
       }

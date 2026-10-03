@@ -12,7 +12,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect, CheckAttackCostEffect } from '../../../game/store/effects/check-effects';
-import { ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_MARKER, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { COPY_ATTACK_FROM_POKEMON_LIST } from '../../../game/store/prefabs/copy-attack-prefabs';
 
 export class Ditto extends PokemonCard {
@@ -90,8 +90,8 @@ export class Ditto extends PokemonCard {
           card: pokemonCard.name,
           effect: effect.power.name,
         });
-        player.deck.moveCardTo(pokemonCard, targetCardList);
-        targetCardList.moveCardTo(this, player.deck);
+        MOVE_CARDS(store, state, player.deck, targetCardList, { cards: [pokemonCard], sourceCard: this });
+        MOVE_CARDS(store, state, targetCardList, player.deck, { cards: [this], sourceCard: this });
 
         SHUFFLE_DECK(store, state, player);
         ADD_MARKER(this.DUPLICATE_MARKER, player, this);

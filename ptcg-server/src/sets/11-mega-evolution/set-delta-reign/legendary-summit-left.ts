@@ -16,7 +16,7 @@ import { KnockOutEffect, TrainerPowerEffect } from '../../../game/store/effects/
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class LegendarySummitLeft extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.DUAL_STADIUM];
   public set: string = 'M6';
   public cardImage: string = 'assets/cardback.png';

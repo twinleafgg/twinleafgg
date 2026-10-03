@@ -10,13 +10,14 @@ import { HealEffect } from '../../../game/store/effects/game-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class GoldPotion extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'BCR';
   public setNumber: string = '140';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Gold Potion';
   public fullName: string = 'Gold Potion BCR';
-  public text: string = 'Heal 90 damage from your Active Pokémon. You can\'t have more than 1 ACE SPEC card in your deck.';
+  public text: string =
+    "Heal 90 damage from your Active Pokémon. You can't have more than 1 ACE SPEC card in your deck.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-fusion-strike/cook.ts (active heal trainer pattern)

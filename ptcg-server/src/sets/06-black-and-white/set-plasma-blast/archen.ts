@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Archen extends PokemonCard {
 
@@ -54,7 +54,7 @@ export class Archen extends PokemonCard {
       }
 
       const card = player.discard.cards.filter(c => c === this)[0];
-      player.discard.moveCardTo(card, player.deck);
+      MOVE_CARDS(store, state, player.discard, player.deck, { cards: [card], sourceCard: this });
 
       store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_ON_BOTTOM_OF_DECK, { name: player.name, card: this.name });
     }

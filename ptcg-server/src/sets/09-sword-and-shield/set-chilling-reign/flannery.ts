@@ -6,19 +6,36 @@ import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { SupporterEffect, TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import {
-  PlayerType, SlotType, StateUtils, CardTarget, GameError, GameMessage,
-  PokemonCardList, ChooseCardsPrompt, Card
+  PlayerType,
+  SlotType,
+  StateUtils,
+  CardTarget,
+  GameError,
+  GameMessage,
+  PokemonCardList,
+  ChooseCardsPrompt,
+  Card,
 } from '../../../game';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect, trainerCard: TrainerCard): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+  trainerCard: TrainerCard,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
   let hasPokemonWithEnergy = false;
   const blocked: CardTarget[] = [];
   opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList, card, target) => {
-    if (cardList.energies.cards.some(c => c.superType === SuperType.ENERGY && c.energyType === EnergyType.SPECIAL)) {
+    if (
+      cardList.energies.cards.some(
+        (c) => c.superType === SuperType.ENERGY && c.energyType === EnergyType.SPECIAL,
+      )
+    ) {
       hasPokemonWithEnergy = true;
     } else {
       blocked.push(target);
@@ -43,16 +60,20 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   effect.preventDefault = true;
 
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-    PlayerType.TOP_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { allowCancel: true, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+      PlayerType.TOP_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { allowCancel: true, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length === 0) {
     return state;
@@ -71,16 +92,20 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   const target = targets[0];
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    target,
-    { superType: SuperType.ENERGY, energyType: EnergyType.SPECIAL },
-    { min: 1, max: 1, allowCancel: true }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      target,
+      { superType: SuperType.ENERGY, energyType: EnergyType.SPECIAL },
+      { min: 1, max: 1, allowCancel: true },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   if (cards.length > 0) {
     // Discard trainer only when user selected a Pokemon
@@ -97,10 +122,9 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   }
 }
 export class Flannery extends TrainerCard {
-
   public regulationMark = 'E';
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CRE';
 
@@ -113,7 +137,7 @@ export class Flannery extends TrainerCard {
   public fullName: string = 'Flannery CRE';
 
   public text: string =
-    'Discard a Special Energy attached to 1 of your opponent\'s Pokémon, and discard a Stadium in play.';
+    "Discard a Special Energy attached to 1 of your opponent's Pokémon, and discard a Stadium in play.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -122,5 +146,4 @@ export class Flannery extends TrainerCard {
     }
     return state;
   }
-
 }

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AlolanMarowak extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -50,7 +50,7 @@ export class AlolanMarowak extends PokemonCard {
       }
 
       const topCard = opponent.deck.cards[0];
-      opponent.deck.moveCardTo(topCard, opponent.discard);
+      MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [topCard], sourceCard: this });
 
       if (topCard instanceof PokemonCard) {
         effect.damage = topCard.hp;

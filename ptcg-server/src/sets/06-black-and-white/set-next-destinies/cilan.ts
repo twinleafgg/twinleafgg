@@ -11,8 +11,7 @@ import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/pr
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class Cilan extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'NXD';
 
@@ -37,43 +36,50 @@ export class Cilan extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       // Count basic energy in deck
       const basicEnergyCount = player.deck.cards.filter(
-        c => c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC
+        (c) => c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC,
       ).length;
 
       if (basicEnergyCount === 0) {
         // Still shuffle deck even if no energy found
-        return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+        return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
           player.deck.applyOrder(order);
         });
       }
 
       const maxToTake = Math.min(3, basicEnergyCount);
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        player.deck,
-        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-        { min: 0, max: maxToTake, allowCancel: false }
-      ), selected => {
-        const selectedCards = selected || [];
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          player.deck,
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+          { min: 0, max: maxToTake, allowCancel: false },
+        ),
+        (selected) => {
+          const selectedCards = selected || [];
 
-        if (selectedCards.length > 0) {
-          // Show cards to opponent
-          SHOW_CARDS_TO_PLAYER(store, state, opponent, selectedCards);
-          // Move cards to hand
-          MOVE_CARDS(store, state, player.deck, player.hand, { cards: selectedCards, sourceCard: this });
-        }
+          if (selectedCards.length > 0) {
+            // Show cards to opponent
+            SHOW_CARDS_TO_PLAYER(store, state, opponent, selectedCards);
+            // Move cards to hand
+            MOVE_CARDS(store, state, player.deck, player.hand, {
+              cards: selectedCards,
+              sourceCard: this,
+            });
+          }
 
-        return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-          player.deck.applyOrder(order);
-        });
-      });
+          return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+            player.deck.applyOrder(order);
+          });
+        },
+      );
     }
 
     return state;

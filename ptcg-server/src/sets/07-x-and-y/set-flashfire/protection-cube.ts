@@ -4,8 +4,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class ProtectionCube extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'FLF';
 
@@ -21,10 +20,14 @@ export class ProtectionCube extends TrainerCard {
     'Prevent all damage done to the Pokémon this card is attached to by attacks it uses.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
-    if (effect instanceof PutDamageEffect && effect.source == effect.player.active && effect.source.tools.includes(this)) {
-
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+    if (
+      effect instanceof PutDamageEffect &&
+      effect.source == effect.player.active &&
+      effect.source.tools.includes(this)
+    ) {
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       if (effect.target == effect.source) {
         effect.preventDefault = true;

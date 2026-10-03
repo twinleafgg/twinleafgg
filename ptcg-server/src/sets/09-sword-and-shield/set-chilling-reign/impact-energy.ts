@@ -16,7 +16,7 @@ import {
 import { GameError, GameMessage, PlayerType, StateUtils } from '../../../game';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ImpactEnergy extends EnergyCard {
   protected _tags = [CardTag.SINGLE_STRIKE];
@@ -77,7 +77,7 @@ export class ImpactEnergy extends EnergyCard {
           cardList.removeSpecialCondition(SpecialCondition.POISONED);
 
           if (!cardList.getPokemonCard()?.hasTag(CardTag.SINGLE_STRIKE)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

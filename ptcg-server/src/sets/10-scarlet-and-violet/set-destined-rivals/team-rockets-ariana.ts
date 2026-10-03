@@ -10,8 +10,10 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { PlayerType } from '../../../game/store/actions/play-card-action';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 export class TeamRocketsAriana extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.TEAM_ROCKET];
   public regulationMark = 'I';
   public set: string = 'DRI';
@@ -40,7 +42,7 @@ export class TeamRocketsAriana extends TrainerCard {
       }
 
       player.rocketSupporter = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       // Check if all Pokémon in play are Team Rocket's Pokémon
@@ -74,7 +76,7 @@ export class TeamRocketsAriana extends TrainerCard {
         if (player.deck.cards.length === 0) {
           break;
         }
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
 
       return state;

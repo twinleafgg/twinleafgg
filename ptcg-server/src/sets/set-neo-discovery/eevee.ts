@@ -5,6 +5,7 @@ import { State, StoreLike, GameMessage, Card, ChooseCardsPrompt, ShuffleDeckProm
 import { Effect } from '../../game/store/effects/effect';
 import { AttachEnergyEffect, CoinFlipEffect } from '../../game/store/effects/play-card-effects';
 import { PowerEffect } from '../../game/store/effects/game-effects';
+import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 // Mapping of CardType to CardType for energy evolution lookup
 const ENERGY_TYPE_MAP: Partial<Record<CardType, CardType>> = {
@@ -87,7 +88,7 @@ export class Eevee extends PokemonCard {
       ), selected => {
         cards = selected || [];
         if (cards.length > 0) {
-          player.deck.moveCardsTo(cards, player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: cards, sourceCard: this });
           player.active.clearEffects();
           player.active.pokemonPlayedTurn = state.turn;
         }

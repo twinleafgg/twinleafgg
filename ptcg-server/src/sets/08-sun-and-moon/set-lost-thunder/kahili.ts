@@ -7,16 +7,17 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Kahili extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'LOT';
   public setNumber: string = '179';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Kahili';
   public fullName: string = 'Kahili LOT';
-  public text: string = 'Draw 2 cards. Then, flip a coin. If heads, if you played this Kahili from your hand, put this card into your hand instead of the discard pile. If you have no cards in your deck, you can\'t play this card. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    "Draw 2 cards. Then, flip a coin. If heads, if you played this Kahili from your hand, put this card into your hand instead of the discard pile. If you have no cards in your deck, you can't play this card. You may play only 1 Supporter card during your turn (before your attack).";
 
   // Ref: set-celestial-storm/life-herb.ts (coin flip with callback)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -29,17 +30,16 @@ export class Kahili extends TrainerCard {
 
       // Prevent default discard so we can control where the card goes
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       DRAW_CARDS(store, state, player, 2);
 
-      COIN_FLIP_PROMPT(store, state, player, result => {
+      COIN_FLIP_PROMPT(store, state, player, (result) => {
         if (result) {
           // Heads: return Kahili to hand
-          player.supporter.moveCardTo(effect.trainerCard, player.hand);
+          MOVE_CARDS(store, state, player.supporter, player.hand, { cards: [effect.trainerCard], sourceCard: this });
         } else {
           // Tails: normal discard
-
         }
       });
     }

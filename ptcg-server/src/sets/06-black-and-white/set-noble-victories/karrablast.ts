@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, GameMessage, PlayerType, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Karrablast extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -71,7 +71,7 @@ export class Karrablast extends PokemonCard {
       ), cards => {
         if (cards && cards.length > 0) {
           const evolutionCard = cards[0] as PokemonCard;
-          player.deck.moveCardTo(evolutionCard, player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: [evolutionCard], sourceCard: this });
           player.active.clearEffects();
           player.active.pokemonPlayedTurn = state.turn;
         }

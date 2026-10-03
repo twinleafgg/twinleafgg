@@ -1,11 +1,11 @@
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, TrainerType, SuperType } from '../../game/store/card/card-types';
-import { StoreLike, State, Card, ChooseEnergyPrompt, GameMessage, StateUtils, TrainerCard, ChooseCardsPrompt, GameLog, ShowCardsPrompt, GameError } from '../../game';
+import { StoreLike, State, Card, ChooseEnergyPrompt, GameMessage, StateUtils, TrainerCard, ChooseCardsPrompt, ShowCardsPrompt, GameError } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { DiscardCardsEffect } from '../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../game/store/effects/check-effects';
 import { HealEffect } from '../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Slowpoke extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -87,10 +87,6 @@ export class Slowpoke extends PokemonCard {
       ), selected => {
         cards = selected || [];
 
-        cards.forEach((card, index) => {
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-        });
-
         if (cards.length > 0) {
           return store.prompt(state, new ShowCardsPrompt(
             opponent.id,
@@ -100,7 +96,7 @@ export class Slowpoke extends PokemonCard {
         }
 
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         }
       });
     }

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Excadrill extends PokemonCard {
 
@@ -46,7 +46,7 @@ export class Excadrill extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
 
-      player.deck.moveTo(player.discard, 4);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 4, sourceCard: this });
     }
 
     return state;

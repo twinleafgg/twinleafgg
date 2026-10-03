@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_POISON_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_POISON_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -53,7 +53,7 @@ export class Garbodor extends PokemonCard {
 
       if (toolCards.length > 0) {
         toolCards.forEach(card => {
-          player.discard.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [card], sourceCard: this });
         });
         SHUFFLE_DECK(store, state, player);
       }

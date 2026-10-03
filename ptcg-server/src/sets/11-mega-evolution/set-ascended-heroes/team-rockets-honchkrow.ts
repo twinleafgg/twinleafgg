@@ -10,7 +10,7 @@ import { StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../../game'
 import { Effect } from '../../../game/store/effects/effect';
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TeamRocketsHonchkrow extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -91,7 +91,7 @@ export class TeamRocketsHonchkrow extends PokemonCard {
           }
 
           // Move selected cards to discard pile
-          player.hand.moveCardsTo(discardCount, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: discardCount, sourceCard: this });
 
           // Calculate damage: 60 per card discarded
           effect.damage = 60 * discardCount.length;

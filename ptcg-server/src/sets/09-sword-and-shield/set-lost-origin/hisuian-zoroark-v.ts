@@ -12,7 +12,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HisuianZoroarkV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -90,7 +90,7 @@ export class HisuianZoroarkV extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.active.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

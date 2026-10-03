@@ -3,7 +3,7 @@ import { CardType, Stage, SuperType } from '../../../game/store/card/card-types'
 import { GameMessage, PowerType, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { ABILITY_USED, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, JUST_EVOLVED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, JUST_EVOLVED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tinkatuff extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -71,7 +71,7 @@ export class Tinkatuff extends PokemonCard {
           ), selected => {
             if (selected && selected.length > 0) {
               const energyCard = selected[0];
-              opponent.active.moveCardTo(energyCard, opponent.discard);
+              MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [energyCard], sourceCard: this });
             }
           });
           ABILITY_USED(player, this);

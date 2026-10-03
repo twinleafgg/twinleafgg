@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, PowerType, GameMessage, ChooseCardsPrompt, Card, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { ADD_POISON_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, IS_POKEBODY_BLOCKED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {ADD_POISON_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, IS_POKEBODY_BLOCKED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Kakuna extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -64,7 +64,7 @@ export class Kakuna extends PokemonCard {
 
             if (cards.length > 0) {
               // Evolve Pokemon
-              player.deck.moveCardsTo(cards, player.active);
+              MOVE_CARDS(store, state, player.deck, player.active, { cards: cards, sourceCard: this });
               player.active.clearEffects();
               player.active.pokemonPlayedTurn = state.turn;
             }

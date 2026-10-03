@@ -7,7 +7,7 @@ import { Stage, CardType, TrainerType } from '../../../game/store/card/card-type
 import { PlayerType, StoreLike, State } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS, CONFIRMATION_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, CONFIRMATION_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { Card } from '../../../game/store/card/card';
 
@@ -73,7 +73,7 @@ export class Whimsicott extends PokemonCard {
         if (result) {
           const toolCount = allTools.length;
           allTools.forEach(({ tool, source }) => {
-            source.moveCardTo(tool, player.discard);
+            MOVE_CARDS(store, state, source, player.discard, { cards: [tool], sourceCard: this });
           });
           effect.damage += 40 * toolCount;
         }

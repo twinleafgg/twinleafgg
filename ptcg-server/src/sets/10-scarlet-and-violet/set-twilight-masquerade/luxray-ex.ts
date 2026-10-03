@@ -6,7 +6,7 @@ import { Card, ChooseCardsPrompt, GameMessage, PokemonCard, StateUtils } from '.
 
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Luxrayex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -74,9 +74,9 @@ export class Luxrayex extends PokemonCard {
             return;
           }
 
-          opponent.hand.moveCardTo(selected[0], opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [selected[0]], sourceCard: this });
 
-          player.supporter.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
         },
       );
     }

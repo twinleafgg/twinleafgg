@@ -1,25 +1,9 @@
-import {
-  CardTag,
-  CardType,
-  GameMessage,
-  PlayerType,
-  PokemonCard,
-  PowerType,
-  Stage,
-  State,
-  StateUtils,
-  StoreLike,
-} from '../../../game';
-import { CheckAttackCostEffect } from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import { HANDLE_ABILITY_BLOCK, POKEPOWER_TYPES } from '../../../game/store/prefabs/ability-lock';
-import {
-  IS_POKEBODY_BLOCKED,
-  WAS_ATTACK_USED,
-  ADD_MARKER,
-  HAS_MARKER,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardTag, CardType, PowerType, StoreLike, State, StateUtils, PlayerType } from "../../../game";
+import { CheckAttackCostEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { POKEPOWER_TYPES } from "../../../game/store/prefabs/ability-lock";
+import { OPPONENT_POKEMON_HAVE_NO_ABILITIES } from "../../../game/store/prefabs/effect-of-attack-prefabs";
+import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
 
 export class Jirachiex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -28,28 +12,24 @@ export class Jirachiex extends PokemonCard {
   public hp: number = 90;
   public retreat = [C];
 
-  public powers = [
-    {
-      name: 'Star Light',
-      powerType: PowerType.POKEBODY,
-      text: 'As long as your opponent has any Pokémon-ex or Stage 2 Evolved Pokémon in play, Jirachi ex pays [C] less Energy to use Shield Beam or Super Psy Bolt.',
-    },
-  ];
+  public powers = [{
+    name: 'Star Light',
+    powerType: PowerType.POKEBODY,
+    text: 'As long as your opponent has any Pokémon-ex or Stage 2 Evolved Pokémon in play, Jirachi ex pays [C] less Energy to use Shield Beam or Super Psy Bolt.',
+  }];
 
-  public attacks = [
-    {
-      name: 'Shield Beam',
-      cost: [P, C],
-      damage: 30,
-      text: "During your opponent's next turn, your opponent can't use any Poké-Powers on his or her Pokémon.",
-    },
-    {
-      name: 'Super Psy Bolt',
-      cost: [P, C, C],
-      damage: 50,
-      text: '',
-    },
-  ];
+  public attacks = [{
+    name: 'Shield Beam',
+    cost: [P, C],
+    damage: 30,
+    text: "During your opponent's next turn, your opponent can't use any Poké-Powers on his or her Pokémon.",
+  },
+  {
+    name: 'Super Psy Bolt',
+    cost: [P, C, C],
+    damage: 50,
+    text: '',
+  }];
 
   public set: string = 'CG';
   public cardImage: string = 'assets/cardback.png';
@@ -57,13 +37,9 @@ export class Jirachiex extends PokemonCard {
   public name: string = 'Jirachi ex';
   public fullName: string = 'Jirachi ex CG';
 
-  public readonly SHIELD_BEAM_MARKER = 'SHIELD_BEAM_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    if (
-      effect instanceof CheckAttackCostEffect &&
-      effect.attack === (this.attacks[0] || this.attacks[1])
-    ) {
+    // Shield Beam
+    if (effect instanceof CheckAttackCostEffect && effect.attack === (this.attacks[0] || this.attacks[1])) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
@@ -90,26 +66,13 @@ export class Jirachiex extends PokemonCard {
         }
       }
     }
-
+    // Super Psy Bolt
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      ADD_MARKER(this.SHIELD_BEAM_MARKER, opponent, this);
-    }
-
-    HANDLE_ABILITY_BLOCK(
-      effect,
-      ({ player }) => {
-        return HAS_MARKER(this.SHIELD_BEAM_MARKER, player, this);
-      },
-      {
+      return OPPONENT_POKEMON_HAVE_NO_ABILITIES(store, state, effect, this, {
         powerTypes: POKEPOWER_TYPES,
-        error: GameMessage.CANNOT_USE_POWER,
-      },
-    );
-
-    REMOVE_MARKER_AT_END_OF_TURN(effect, this.SHIELD_BEAM_MARKER, this);
+        mode: 'block',
+      });
+    }
 
     return state;
   }

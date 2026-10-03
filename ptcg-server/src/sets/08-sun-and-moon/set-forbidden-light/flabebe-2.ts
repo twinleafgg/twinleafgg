@@ -8,7 +8,7 @@ import { StoreLike, State, GameMessage, Card } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Flabebe2 extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -70,7 +70,7 @@ export class Flabebe2 extends PokemonCard {
       ), (selected: Card[]) => {
         const cards = selected || [];
         cards.forEach(card => {
-          player.discard.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [card], sourceCard: this });
         });
         return SHUFFLE_DECK(store, state, player);
       });

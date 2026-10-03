@@ -15,7 +15,7 @@ import {
   SlotType,
   StateUtils,
 } from '../../../game';
-import { SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Miraidon extends PokemonCard {
   protected _tags = [CardTag.FUTURE];
@@ -85,7 +85,7 @@ export class Miraidon extends PokemonCard {
             }
 
             if (target.cards[0].hasTag(CardTag.FUTURE)) {
-              player.deck.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
             }
           }
 

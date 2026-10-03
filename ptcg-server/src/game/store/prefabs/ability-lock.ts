@@ -1,6 +1,7 @@
 import { GameError } from '../../game-error';
 import { GameMessage } from '../../game-message';
 import { Card } from '../card/card';
+import { CardType } from '../card/card-types';
 import { PokemonCard } from '../card/pokemon-card';
 import { Power, PowerType } from '../card/pokemon-types';
 import { CheckPokemonPowersEffect } from '../effects/check-effects';
@@ -256,11 +257,23 @@ export function HANDLE_ABILITY_BLOCK(
  * Enforce attack-sourced ability locks stored on PokemonCardList / Player
  * (Gastro Acid, Shadow Stitching). Call from the store before card handlers.
  */
+export function OPPONENT_WEAKNESS_AURA_POWER(type: CardType): Power {
+  const symbol = type === CardType.PSYCHIC ? '[P]' : '[?]';
+  return {
+    name: 'Star Cipher',
+    powerType: PowerType.ABILITY,
+    text: `The Weakness of each of your opponent's Pokémon in play is now ${symbol}. (The amount of Weakness doesn't change.)`,
+  };
+}
+
 export function APPLY_ATTACK_EFFECT_ABILITY_LOCKS(state: State, effect: Effect): void {
-  HANDLE_ABILITY_LOCK(effect, ({ player, card }) => {
-    if (player.abilitiesSuppressedTurnsRemaining > 0) {
-      return true;
-    }
+  if (effect instanceof CheckPokemonPowersEffect
+    && effect.target.whileInPlayOpponentWeakness !== undefined
+    && StateUtils.isPokemonInPlay(effect.player, effect.target)) {
+    effect.powers.push(OPPONENT_WEAKNESS_AURA_POWER(effect.target.whileInPlayOpponentWeakness));
+  }
+
+  HANDLE_ABILITY_LOCK(effect, ({ card }) => {
     try {
       const cardList = StateUtils.findCardList(state, card);
       return cardList instanceof PokemonCardList && cardList.noAbilities;
@@ -270,6 +283,18 @@ export function APPLY_ATTACK_EFFECT_ABILITY_LOCKS(state: State, effect: Effect):
   }, {
     error: GameMessage.BLOCKED_BY_EFFECT,
   });
+
+  for (const player of state.players) {
+    for (const suppression of player.attackPowerSuppressions) {
+      const handler = suppression.mode === 'block' ? HANDLE_ABILITY_BLOCK : HANDLE_ABILITY_LOCK;
+      handler(effect, ctx => ctx.player === player, {
+        powerTypes: suppression.powerTypes,
+        error: suppression.mode === 'block'
+          ? GameMessage.CANNOT_USE_POWER
+          : GameMessage.BLOCKED_BY_EFFECT,
+      });
+    }
+  }
 }
 
 // =============================================================================

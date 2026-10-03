@@ -7,16 +7,20 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, StoreLike, State, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { LOOK_AT_TOP_X_CARDS_AND_ATTACH_UP_TO_Y_ENERGY } from '../../../game/store/prefabs/prefabs';
+import {
+  LOOK_AT_TOP_X_CARDS_AND_ATTACH_UP_TO_Y_ENERGY,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 
 export class Morgan extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'TEU';
   public setNumber: string = '149';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Morgan';
   public fullName: string = 'Morgan TEU';
-  public text: string = 'You can play this card only if you discard Dana, Evelyn, and Nita from your hand. Look at the top 12 cards of your deck and attach any number of Energy cards you find there to your Pokémon in any way you like. Shuffle the other cards back into your deck. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'You can play this card only if you discard Dana, Evelyn, and Nita from your hand. Look at the top 12 cards of your deck and attach any number of Energy cards you find there to your Pokémon in any way you like. Shuffle the other cards back into your deck. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-scarlet-and-violet/electric-generator.ts (LOOK_AT_TOP_X_CARDS_AND_ATTACH_UP_TO_Y_ENERGY)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -29,40 +33,48 @@ export class Morgan extends TrainerCard {
       }
 
       // Check for Dana, Evelyn, and Nita in hand
-      const hasDana = player.hand.cards.some(c => c.name === 'Dana');
-      const hasEvelyn = player.hand.cards.some(c => c.name === 'Evelyn');
-      const hasNita = player.hand.cards.some(c => c.name === 'Nita');
+      const hasDana = player.hand.cards.some((c) => c.name === 'Dana');
+      const hasEvelyn = player.hand.cards.some((c) => c.name === 'Evelyn');
+      const hasNita = player.hand.cards.some((c) => c.name === 'Nita');
 
       if (!hasDana || !hasEvelyn || !hasNita) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
       // Discard Dana, Evelyn, and Nita
-      const danaCard = player.hand.cards.find(c => c.name === 'Dana');
-      const evelynCard = player.hand.cards.find(c => c.name === 'Evelyn');
-      const nitaCard = player.hand.cards.find(c => c.name === 'Nita');
+      const danaCard = player.hand.cards.find((c) => c.name === 'Dana');
+      const evelynCard = player.hand.cards.find((c) => c.name === 'Evelyn');
+      const nitaCard = player.hand.cards.find((c) => c.name === 'Nita');
 
-      if (danaCard) { player.hand.moveCardTo(danaCard, player.discard); }
-      if (evelynCard) { player.hand.moveCardTo(evelynCard, player.discard); }
-      if (nitaCard) { player.hand.moveCardTo(nitaCard, player.discard); }
+      if (danaCard) {
+        MOVE_CARDS(store, state, player.hand, player.discard, {
+          cards: [danaCard],
+          sourceCard: this,
+        });
+      }
+      if (evelynCard) {
+        MOVE_CARDS(store, state, player.hand, player.discard, {
+          cards: [evelynCard],
+          sourceCard: this,
+        });
+      }
+      if (nitaCard) {
+        MOVE_CARDS(store, state, player.hand, player.discard, {
+          cards: [nitaCard],
+          sourceCard: this,
+        });
+      }
 
       if (player.deck.cards.length === 0) {
         return state;
       }
 
       // Look at top 12 and attach any number of Energy
-      return LOOK_AT_TOP_X_CARDS_AND_ATTACH_UP_TO_Y_ENERGY(
-        store,
-        state,
-        player,
-        12,
-        12,
-        {
-          destinationSlots: [SlotType.ACTIVE, SlotType.BENCH],
-          energyFilter: {},
-          remainderDestination: 'shuffle'
-        }
-      );
+      return LOOK_AT_TOP_X_CARDS_AND_ATTACH_UP_TO_Y_ENERGY(store, state, player, 12, 12, {
+        destinationSlots: [SlotType.ACTIVE, SlotType.BENCH],
+        energyFilter: {},
+        remainderDestination: 'shuffle',
+      });
     }
 
     return state;

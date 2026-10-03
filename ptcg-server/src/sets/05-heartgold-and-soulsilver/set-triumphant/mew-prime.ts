@@ -13,7 +13,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { COPY_ATTACK_VIA_ABILITY } from '../../../game/store/prefabs/copy-attack-prefabs';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mew extends PokemonCard {
   protected _tags = [CardTag.PRIME];
@@ -75,7 +75,7 @@ export class Mew extends PokemonCard {
           cards = selected || [];
 
           cards.forEach((card) => {
-            player.deck.moveCardTo(card, player.lostzone);
+            MOVE_CARDS(store, state, player.deck, player.lostzone, { cards: [card], sourceCard: this });
 
             store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE, {
               name: player.name,

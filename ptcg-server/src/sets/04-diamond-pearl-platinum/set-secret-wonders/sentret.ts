@@ -2,7 +2,7 @@ import { CardList, ChooseCardsPrompt, GameMessage, State, StoreLike } from '../.
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sentret extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -40,7 +40,7 @@ export class Sentret extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 2);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 2, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -49,8 +49,8 @@ export class Sentret extends PokemonCard {
         {},
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
-        deckTop.moveCardsTo(selected, player.hand);
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
       });
     }
 

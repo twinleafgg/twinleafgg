@@ -11,7 +11,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
-import { DRAW_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TalonflameV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -49,7 +49,7 @@ export class TalonflameV extends PokemonCard {
     const player = state.players[state.activePlayer];
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      player.hand.moveTo(player.discard, player.hand.cards.length);
+      MOVE_CARDS(store, state, player.hand, player.discard, { count: player.hand.cards.length, sourceCard: this });
       DRAW_CARDS(store, state, player, 6);
     }
 

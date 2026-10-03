@@ -4,7 +4,6 @@ import {
   StoreLike,
   State,
   GameMessage,
-  GameLog,
   TrainerCard,
   ChooseCardsPrompt,
   Card,
@@ -78,12 +77,6 @@ export class RocketsWobbuffet extends PokemonCard {
               ),
               (selected) => {
                 cards = selected || [];
-                cards.forEach((card, index) => {
-                  store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, {
-                    name: player.name,
-                    card: card.name,
-                  });
-                });
 
                 MOVE_CARDS(store, state, player.discard, player.deck, { cards });
                 SHUFFLE_DECK(store, state, player);
@@ -107,13 +100,6 @@ export class RocketsWobbuffet extends PokemonCard {
               ),
               (selected) => {
                 cards = selected || [];
-
-                cards.forEach((card, index) => {
-                  store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-                    name: player.name,
-                    card: card.name,
-                  });
-                });
 
                 MOVE_CARDS(store, state, player.discard, player.hand, { cards });
               },

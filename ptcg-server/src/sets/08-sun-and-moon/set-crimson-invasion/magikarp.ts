@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, GameMessage, PokemonCardList }
 import { Effect } from '../../../game/store/effects/effect';
 import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Magikarp extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -95,7 +95,7 @@ export class Magikarp extends PokemonCard {
       ), selected => {
         if (selected && selected.length > 0) {
           const evolutionCard = selected[0] as PokemonCard;
-          player.deck.moveCardTo(evolutionCard, cardList);
+          MOVE_CARDS(store, state, player.deck, cardList, { cards: [evolutionCard], sourceCard: this });
           cardList.clearEffects();
           cardList.pokemonPlayedTurn = state.turn;
         }

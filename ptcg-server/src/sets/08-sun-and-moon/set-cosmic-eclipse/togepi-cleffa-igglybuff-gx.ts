@@ -3,7 +3,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, PlayerType, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_GX_ATTACK_USED, WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TogepiCleffaIgglybuffGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX, CardTag.TAG_TEAM];
@@ -64,7 +64,7 @@ export class TogepiCleffaIgglybuffGX extends PokemonCard {
 
       opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
         if (card !== opponent.active.getPokemonCard()) {
-          cardList.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, cardList, opponent.deck, { sourceCard: this });
         }
       });
       store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {

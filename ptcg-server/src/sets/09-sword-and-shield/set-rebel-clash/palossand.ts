@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { CursedShovel } from './cursed-shovel';
 
@@ -51,7 +51,7 @@ export class Palossand extends PokemonCard {
       // Discard top 1 card
       if (opponent.deck.cards.length > 0) {
         const topCard = opponent.deck.cards[0];
-        opponent.deck.moveCardTo(topCard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [topCard], sourceCard: this });
       }
 
       // Check if Cursed Shovel is attached to this Pokemon
@@ -61,7 +61,7 @@ export class Palossand extends PokemonCard {
         for (let i = 0; i < 2; i++) {
           if (opponent.deck.cards.length > 0) {
             const topCard = opponent.deck.cards[0];
-            opponent.deck.moveCardTo(topCard, opponent.discard);
+            MOVE_CARDS(store, state, opponent.deck, opponent.discard, { cards: [topCard], sourceCard: this });
           }
         }
       }

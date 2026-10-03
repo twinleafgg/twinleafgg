@@ -11,7 +11,7 @@ import { StateUtils } from '../../game/store/state-utils';
 import { PlayerType } from '../../game/store/actions/play-card-action';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
 import { AfterDamageEffect, HealTargetEffect } from '../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 function* useKnockOff(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -46,7 +46,7 @@ function* useKnockOff(next: Function, store: StoreLike, state: State,
     next();
   });
 
-  opponent.hand.moveCardsTo(cards, opponent.discard);
+  MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
   return state;
 }
 

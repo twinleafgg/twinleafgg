@@ -8,7 +8,7 @@ import { StoreLike, State, GameMessage, ChooseCardsPrompt, ChoosePokemonPrompt, 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Mandibuzz extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -69,7 +69,7 @@ export class Mandibuzz extends PokemonCard {
         { min: 1, max: 1, allowCancel: false, blocked }
       ), selected => {
         if (selected && selected.length > 0) {
-          player.hand.moveCardTo(selected[0], player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: [selected[0]], sourceCard: this });
 
           store.prompt(state, new ChoosePokemonPrompt(
             player.id,

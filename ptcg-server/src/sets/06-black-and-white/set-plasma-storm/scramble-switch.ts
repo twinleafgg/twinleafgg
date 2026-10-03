@@ -7,6 +7,7 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { PlayerType, SlotType, GameError, PokemonCardList, ChooseCardsPrompt } from '../../../game';
 import { GameMessage } from '../../../game/game-message';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -22,7 +23,7 @@ function* playCard(
   }
 
   // Do not discard the card yet
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
   effect.preventDefault = true;
 
   let targets: PokemonCardList[] = [];
@@ -60,7 +61,7 @@ function* playCard(
       ),
       (selected) => {
         selected = selected || [];
-        player.active.moveCardsTo(selected, target);
+        MOVE_CARDS(store, state, player.active, target, { cards: selected, sourceCard: effect.trainerCard });
         next();
       },
     );
@@ -75,7 +76,7 @@ function* playCard(
 export class ScrambleSwitch extends TrainerCard {
   protected _tags = [CardTag.ACE_SPEC];
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'PLS';
 

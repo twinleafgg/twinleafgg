@@ -27,10 +27,10 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyEffect, TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RedAndBlue extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.TAG_TEAM];
   public set: string = 'CEC';
   public setNumber: string = '202';
@@ -141,7 +141,7 @@ export class RedAndBlue extends TrainerCard {
               const targetSlot = targets[0];
 
               // Evolve
-              player.deck.moveCardTo(evolution, targetSlot);
+              MOVE_CARDS(store, state, player.deck, targetSlot, { cards: [evolution], sourceCard: this });
               targetSlot.clearEffects();
               targetSlot.pokemonPlayedTurn = state.turn;
 
@@ -186,7 +186,7 @@ export class RedAndBlue extends TrainerCard {
                         return;
                       }
 
-                      discardCards.forEach((c) => player.hand.moveCardTo(c, player.discard));
+                      discardCards.forEach((c) => MOVE_CARDS(store, state, player.hand, player.discard, { cards: [c], sourceCard: this }));
 
                       // Search deck for up to 2 basic energy
                       const energyBlocked: number[] = [];
@@ -214,7 +214,7 @@ export class RedAndBlue extends TrainerCard {
                               targetSlot,
                             );
                             store.reduceEffect(state, attachEffect);
-                            player.deck.moveCardTo(energyCard, targetSlot);
+                            MOVE_CARDS(store, state, player.deck, targetSlot, { cards: [energyCard], sourceCard: this });
                           });
 
                           SHOW_CARDS_TO_PLAYER(store, state, opponent, energyCards);

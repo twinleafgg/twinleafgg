@@ -6,7 +6,7 @@ import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-e
 import { PikachuVUNIONTopRight } from './pikachu-v-union-tr';
 import { PikachuVUNIONBottomLeft } from './pikachu-v-union-bl';
 import { PikachuVUNIONBottomRight } from './pikachu-v-union-br';
-import { WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { OPPONENT_CANNOT_PLAY_ITEM_CARDS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class PikachuVUNIONTopLeft extends PokemonCard {
@@ -86,10 +86,10 @@ export class PikachuVUNIONTopLeft extends PokemonCard {
       });
       if (topLeftPiece && topRightPiece && bottomLeftPiece && bottomRightPiece) {
         if (slots.length > 0) {
-          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONTopRight) { player.discard.moveCardTo(card, slots[0]); } });
-          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONBottomLeft) { player.discard.moveCardTo(card, slots[0]); } });
-          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONBottomRight) { player.discard.moveCardTo(card, slots[0]); } });
-          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONTopLeft) { player.discard.moveCardTo(card, slots[0]); } });
+          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONTopRight) { MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this }); } });
+          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONBottomLeft) { MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this }); } });
+          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONBottomRight) { MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this }); } });
+          player.discard.cards.forEach(card => { if (card instanceof PikachuVUNIONTopLeft) { MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this }); } });
           player.assembledVUNIONs.push(this.name);
           slots[0].pokemonPlayedTurn = state.turn;
         }
@@ -129,7 +129,7 @@ export class PikachuVUNIONTopLeft extends PokemonCard {
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
         });
       }

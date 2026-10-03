@@ -24,13 +24,11 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  WAS_POWER_USED,
+import {WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
   ABILITY_USED,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
+  REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Clawitzer extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -123,7 +121,7 @@ export class Clawitzer extends PokemonCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.hand.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
             const attachEnergyEffect = new AttachEnergyEffect(
               player,
               transfer.card as EnergyCard,

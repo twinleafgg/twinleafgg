@@ -11,7 +11,7 @@ import { PokemonCardList } from '../state/pokemon-card-list';
 import { AttachEnergyEffect } from '../effects/play-card-effects';
 import { PendingEndOfTurnEffect, PendingEndOfTurnEffectBase } from '../state/pending-end-of-turn-effects';
 import { Player } from '../state/player';
-import { FLIP_UNTIL_TAILS_AND_COUNT_HEADS, MOVE_CARDS, ADD_MARKER, HAS_MARKER, REMOVE_MARKER } from './prefabs';
+import { FLIP_UNTIL_TAILS_AND_COUNT_HEADS, MOVE_POKEMON_OFF_BOARD, ADD_MARKER, HAS_MARKER, REMOVE_MARKER } from './prefabs';
 import { CoinFlipEffect } from '../effects/play-card-effects';
 import { scheduleDefendingPokemonEndOfTurnEffect, nextTurnAttackDamageBonusEffect, armNextTurnAttackDamageBonus, nextTurnAttackBaseDamageEffect } from '../effects/effect-of-attack-effects';
 import { GameError } from '../../game-error';
@@ -449,36 +449,9 @@ export function SHUFFLE_THIS_POKEMON_AND_ALL_ATTACHED_CARDS_INTO_YOUR_DECK(
   effect: AfterAttackEffect) {
   const player = effect.player;
 
-  // Get all Pokemon cards (including evolutions)
-  const pokemons = player.active.getPokemons();
-
-  // Get other attached cards (energy, etc.) but not Pokemon or tools
-  const otherCards = player.active.cards.filter(card =>
-    !(card instanceof PokemonCard) &&
-    !pokemons.includes(card as PokemonCard) &&
-    (!player.active.tools || !player.active.tools.includes(card))
-  );
-
-  // Get tools separately
-  const tools = [...player.active.tools];
-
-  // Clear effects from the Pokemon
-  player.active.clearEffects();
-
-  // Move other cards (energy) to deck
-  if (otherCards.length > 0) {
-    MOVE_CARDS(store, state, player.active, player.deck, { cards: otherCards });
-  }
-
-  // Move tools to deck explicitly
-  for (const tool of tools) {
-    player.active.moveCardTo(tool, player.deck);
-  }
-
-  // Move Pokemon cards to deck
-  if (pokemons.length > 0) {
-    MOVE_CARDS(store, state, player.active, player.deck, { cards: pokemons });
-  }
+  state = MOVE_POKEMON_OFF_BOARD(store, state, player.active, {
+    pokemonDestination: player.deck,
+  });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
     player.deck.applyOrder(order);
@@ -491,36 +464,9 @@ export function PUT_THIS_POKEMON_AND_ALL_ATTACHED_CARDS_INTO_YOUR_HAND(
   effect: AfterAttackEffect) {
   const player = effect.player;
 
-  // Get all Pokemon cards (including evolutions)
-  const pokemons = player.active.getPokemons();
-
-  // Get other attached cards (energy, etc.) but not Pokemon or tools
-  const otherCards = player.active.cards.filter(card =>
-    !(card instanceof PokemonCard) &&
-    !pokemons.includes(card as PokemonCard) &&
-    (!player.active.tools || !player.active.tools.includes(card))
-  );
-
-  // Get tools separately
-  const tools = [...player.active.tools];
-
-  // Clear effects from the Pokemon
-  player.active.clearEffects();
-
-  // Move other cards (energy) to deck
-  if (otherCards.length > 0) {
-    MOVE_CARDS(store, state, player.active, player.hand, { cards: otherCards });
-  }
-
-  // Move tools to deck explicitly
-  for (const tool of tools) {
-    player.active.moveCardTo(tool, player.hand);
-  }
-
-  // Move Pokemon cards to deck
-  if (pokemons.length > 0) {
-    MOVE_CARDS(store, state, player.active, player.hand, { cards: pokemons });
-  }
+  return MOVE_POKEMON_OFF_BOARD(store, state, player.active, {
+    pokemonDestination: player.hand,
+  });
 }
 
 // =============================================================================

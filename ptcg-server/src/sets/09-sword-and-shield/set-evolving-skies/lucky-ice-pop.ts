@@ -8,10 +8,10 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LuckyIcePop extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark: string = 'E';
 
@@ -21,7 +21,8 @@ export class LuckyIcePop extends TrainerCard {
   public name: string = 'Lucky Ice Pop';
   public fullName: string = 'Lucky Ice Pop EVS';
 
-  public text: string = 'Heal 20 damage from your Active Pokémon. If you healed any damage in this way, flip a coin. If heads, put this Lucky Ice Pop into your hand instead of the discard pile. You may play any number of Item cards during your turn.';
+  public text: string =
+    'Heal 20 damage from your Active Pokémon. If you healed any damage in this way, flip a coin. If heads, put this Lucky Ice Pop into your hand instead of the discard pile. You may play any number of Item cards during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-shining-fates/team-yell-towel.ts (HealEffect pattern)
@@ -42,18 +43,16 @@ export class LuckyIcePop extends TrainerCard {
 
       // Only do the coin flip if we healed damage (active had damage on it)
       if (hadDamage) {
-        COIN_FLIP_PROMPT(store, state, player, result => {
+        COIN_FLIP_PROMPT(store, state, player, (result) => {
           if (result) {
             // Heads: return to hand instead of discard
-            player.supporter.moveCardTo(effect.trainerCard, player.hand);
+            MOVE_CARDS(store, state, player.supporter, player.hand, { cards: [effect.trainerCard], sourceCard: this });
           } else {
             // Tails: discard normally
-
           }
         });
       } else {
         // No damage to heal: discard the card normally
-
       }
     }
 

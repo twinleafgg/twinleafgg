@@ -7,7 +7,7 @@ import { Stage, CardType, BoardEffect } from '../../../game/store/card/card-type
 import { Card, PowerType, StoreLike, State, GameError, GameMessage, PlayerType, ChooseCardsPrompt, ShuffleDeckPrompt, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useBulldoze(next: Function, store: StoreLike, state: State,
   self: Seismitoad, effect: PowerEffect): IterableIterator<State> {
@@ -31,7 +31,7 @@ function* useBulldoze(next: Function, store: StoreLike, state: State,
     next();
   });
 
-  player.deck.moveCardsTo(cards, deckTop);
+  MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: self });
 
   player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
     if (cardList.getPokemonCard() === self) {

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameMessage, PlayerType, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { IS_ABILITY_BLOCKED, JUST_EVOLVED, WAS_ATTACK_USED, DISCARD_A_STADIUM_CARD_IN_PLAY } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, JUST_EVOLVED, WAS_ATTACK_USED, DISCARD_A_STADIUM_CARD_IN_PLAY, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ConfirmPrompt } from '../../../game/store/prompts/confirm-prompt';
 
 export class Salamence extends PokemonCard {
@@ -68,7 +68,7 @@ export class Salamence extends PokemonCard {
         opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
           const tools = cardList.tools.slice();
           tools.forEach(tool => {
-            cardList.moveCardTo(tool, opponent.discard);
+            MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [tool], sourceCard: this });
           });
         });
       });

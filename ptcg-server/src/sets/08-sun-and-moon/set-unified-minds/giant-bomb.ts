@@ -10,15 +10,17 @@ import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GiantBomb extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'UNM';
   public setNumber: string = '196';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Giant Bomb';
   public fullName: string = 'Giant Bomb UNM';
-  public text: string = 'If this card is attached to 1 of your Pokemon, discard it at the end of your opponent\'s turn. If the Pokemon this card is attached to is your Active Pokemon and takes 180 or more damage from an opponent\'s attack (even if this Pokemon is Knocked Out), put 10 damage counters on the Attacking Pokemon.';
+  public text: string =
+    "If this card is attached to 1 of your Pokemon, discard it at the end of your opponent's turn. If the Pokemon this card is attached to is your Active Pokemon and takes 180 or more damage from an opponent's attack (even if this Pokemon is Knocked Out), put 10 damage counters on the Attacking Pokemon.";
 
   // Ref: set-stellar-crown/deluxe-bomb.ts (tool AfterDamageEffect + damage retaliation + discard), set-dragons-majesty/dragon-talon.ts (tool ToolEffect pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -53,7 +55,7 @@ export class GiantBomb extends TrainerCard {
       // Check if this tool is attached to one of the opponent's Pokemon
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
         if (cardList.tools.includes(this)) {
-          cardList.moveCardTo(this, opponent.discard);
+          MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [this], sourceCard: this });
         }
       });
     }

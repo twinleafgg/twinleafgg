@@ -4,12 +4,11 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { DAMAGED_FROM_FULL_HP, IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGED_FROM_FULL_HP, IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 import { State } from '../../../game/store/state/state';
 export class FocusSash extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'FFI';
 
@@ -22,7 +21,7 @@ export class FocusSash extends TrainerCard {
   public fullName = 'Focus Sash FFI';
 
   public text: string =
-    'If the [F] Pokémon this card is attached to has full HP and would be Knocked Out by damage from an opponent\'s attack, that Pokémon is not Knocked Out and its remaining HP becomes 10 instead. Then, discard this card.';
+    "If the [F] Pokémon this card is attached to has full HP and would be Knocked Out by damage from an opponent's attack, that Pokémon is not Knocked Out and its remaining HP becomes 10 instead. Then, discard this card.";
 
   public reduceEffect(store: any, state: State, effect: Effect): State {
     if (effect instanceof PutDamageEffect && effect.target.tools.includes(this)) {
@@ -30,7 +29,8 @@ export class FocusSash extends TrainerCard {
 
       if (
         IS_TOOL_BLOCKED(store, state, player, this) ||
-        !DAMAGED_FROM_FULL_HP(store, state, effect, player, effect.target)) {
+        !DAMAGED_FROM_FULL_HP(store, state, effect, player, effect.target)
+      ) {
         return state;
       }
 
@@ -45,7 +45,7 @@ export class FocusSash extends TrainerCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, index) => {
         if (cardList.tools && cardList.tools.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         }
       });
     }

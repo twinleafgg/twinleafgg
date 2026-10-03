@@ -14,10 +14,8 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import {
-  THIS_ATTACK_DOES_X_DAMAGE_TO_X_OF_YOUR_OPPONENTS_POKEMON,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import {THIS_ATTACK_DOES_X_DAMAGE_TO_X_OF_YOUR_OPPONENTS_POKEMON,
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MagnezoneVSTAR extends PokemonCard {
   public stage: Stage = Stage.VSTAR;
@@ -75,7 +73,7 @@ export class MagnezoneVSTAR extends PokemonCard {
           { min: 0, max: 2, allowCancel: true },
         ),
         (cards) => {
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);

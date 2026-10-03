@@ -8,7 +8,10 @@ import { TrainerType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
-import { PlayPokemonFromDeckEffect, TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import {
+  PlayPokemonFromDeckEffect,
+  TrainerEffect,
+} from '../../../game/store/effects/play-card-effects';
 import { CardList } from '../../../game/store/state/card-list';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { GameError } from '../../../game/game-error';
@@ -17,14 +20,19 @@ import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   if (player.deck.cards.length === 0) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  const slots: PokemonCardList[] = player.bench.filter(b => b.cards.length === 0);
+  const slots: PokemonCardList[] = player.bench.filter((b) => b.cards.length === 0);
   const max = Math.min(slots.length, 1);
 
   const start = player.deck.cards.length < 7 ? 0 : player.deck.cards.length - 7;
@@ -34,38 +42,46 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   deckBottom.cards = player.deck.cards.slice(start, end);
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
-    deckBottom,
-    { superType: SuperType.POKEMON, name: 'Amaura' },
-    { min: 0, max, allowCancel: true }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_PUT_ONTO_BENCH,
+      deckBottom,
+      { superType: SuperType.POKEMON, name: 'Amaura' },
+      { min: 0, max, allowCancel: true },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   if (cards.length > slots.length) {
     cards.length = slots.length;
   }
 
   cards.forEach((card, index) => {
-    store.reduceEffect(state, new PlayPokemonFromDeckEffect(player, card as PokemonCard, slots[index]));
+    store.reduceEffect(
+      state,
+      new PlayPokemonFromDeckEffect(player, card as PokemonCard, slots[index]),
+    );
   });
 
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class SailFossil extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'FFI';
   public setNumber: string = '98';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Sail Fossil';
   public fullName: string = 'Sail Fossil FFI';
-  public text: string = 'Look at the bottom 7 cards of your deck. You may reveal an Amaura you find there and put it onto your Bench. Shuffle the other cards back into your deck.';
+  public text: string =
+    'Look at the bottom 7 cards of your deck. You may reveal an Amaura you find there and put it onto your Bench. Shuffle the other cards back into your deck.';
 
   // Ref: set-noble-victories/cover-fossil.ts (bottom 7 fossil pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

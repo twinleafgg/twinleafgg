@@ -4,7 +4,7 @@ import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game'
 
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lunatone extends PokemonCard {
 
@@ -65,8 +65,8 @@ export class Lunatone extends PokemonCard {
         if (cards.length === 0) {
           return;
         }
-        player.hand.moveCardsTo(cards, player.discard);
-        player.deck.moveTo(player.hand, 3);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
       });
 
       return state;

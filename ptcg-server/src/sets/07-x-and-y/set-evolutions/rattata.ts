@@ -8,6 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, GameMessage, ConfirmPrompt } f
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Rattata extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -68,7 +69,7 @@ export class Rattata extends PokemonCard {
         // Discard all tools from opponent's active
         const tools = opponent.active.tools.slice();
         tools.forEach(tool => {
-          opponent.active.moveCardTo(tool, opponent.discard);
+          MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [tool], sourceCard: this });
         });
       });
     }

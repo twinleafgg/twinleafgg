@@ -10,8 +10,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class FightingFuryBelt extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'BKP';
 
@@ -24,14 +23,15 @@ export class FightingFuryBelt extends TrainerCard {
   public setNumber: string = '99';
 
   public text: string =
-    'The Basic Pokémon this card is attached to gets +40 HP and its attacks do 10 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance).';
+    "The Basic Pokémon this card is attached to gets +40 HP and its attacks do 10 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof DealDamageEffect && effect.source.tools.includes(this)) {
       const opponent = StateUtils.getOpponent(state, effect.player);
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       const attack = effect.attack;
       if (attack && attack.damage > 0 && effect.target === opponent.active) {
@@ -42,7 +42,9 @@ export class FightingFuryBelt extends TrainerCard {
     if (effect instanceof CheckHpEffect && effect.target.tools.includes(this)) {
       const card = effect.target.getPokemonCard();
 
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       if (card === undefined) {
         return state;
@@ -55,5 +57,4 @@ export class FightingFuryBelt extends TrainerCard {
 
     return state;
   }
-
 }

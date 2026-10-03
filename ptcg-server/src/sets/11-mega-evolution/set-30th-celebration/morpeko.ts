@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Morpeko extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -40,7 +40,7 @@ export class Morpeko extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(3, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(3, player.deck.cards.length), sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -49,8 +49,8 @@ export class Morpeko extends PokemonCard {
         {},
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
-        deckTop.moveCardsTo(selected || [], player.hand);
-        deckTop.moveTo(player.discard);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected || [], sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
       });
     }
 

@@ -1,8 +1,6 @@
-import {
-  ADD_SLEEP_TO_PLAYER_ACTIVE,
+import {ADD_SLEEP_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 
 import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
@@ -87,7 +85,7 @@ export class Glalie extends PokemonCard {
             if (transfers && transfers.length > 0) {
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                player.active.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
               }
             }
           },

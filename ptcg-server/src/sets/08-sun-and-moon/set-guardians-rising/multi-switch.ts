@@ -4,12 +4,22 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { GameError, GameMessage, MoveEnergyPrompt, PlayerType, SlotType, StateUtils, StoreLike, State } from '../../../game';
+import {
+  GameError,
+  GameMessage,
+  MoveEnergyPrompt,
+  PlayerType,
+  SlotType,
+  StateUtils,
+  StoreLike,
+  State,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MultiSwitch extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'GRI';
   public setNumber: string = '129';
   public cardImage: string = 'assets/cardback.png';
@@ -24,8 +34,8 @@ export class MultiSwitch extends TrainerCard {
 
       // Check if any benched Pokemon has energy
       let hasEnergy = false;
-      player.bench.forEach(b => {
-        if (b.cards.length > 0 && b.cards.some(c => c.superType === SuperType.ENERGY)) {
+      player.bench.forEach((b) => {
+        if (b.cards.length > 0 && b.cards.some((c) => c.superType === SuperType.ENERGY)) {
           hasEnergy = true;
         }
       });
@@ -35,10 +45,13 @@ export class MultiSwitch extends TrainerCard {
       }
 
       // Block all energy on Active (can't move from Active)
-      const blockedMap: { source: any, blocked: number[] }[] = [];
+      const blockedMap: { source: any; blocked: number[] }[] = [];
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
         if (target.slot === SlotType.ACTIVE) {
-          blockedMap.push({ source: target, blocked: Array.from({ length: cardList.cards.length }, (_, i) => i) });
+          blockedMap.push({
+            source: target,
+            blocked: Array.from({ length: cardList.cards.length }, (_, i) => i),
+          });
         }
       });
 
@@ -50,21 +63,28 @@ export class MultiSwitch extends TrainerCard {
         }
       });
 
-      return store.prompt(state, new MoveEnergyPrompt(
-        player.id,
-        GameMessage.MOVE_ENERGY_CARDS,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.BENCH, SlotType.ACTIVE],
-        { superType: SuperType.ENERGY },
-        { allowCancel: false, min: 1, max: 1, blockedMap, blockedTo }
-      ), transfers => {
-        if (transfers && transfers.length > 0) {
-          for (const transfer of transfers) {
-            const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, player.active);
+      return store.prompt(
+        state,
+        new MoveEnergyPrompt(
+          player.id,
+          GameMessage.MOVE_ENERGY_CARDS,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.BENCH, SlotType.ACTIVE],
+          { superType: SuperType.ENERGY },
+          { allowCancel: false, min: 1, max: 1, blockedMap, blockedTo },
+        ),
+        (transfers) => {
+          if (transfers && transfers.length > 0) {
+            for (const transfer of transfers) {
+              const source = StateUtils.getTarget(state, player, transfer.from);
+              MOVE_CARDS(store, state, source, player.active, {
+                cards: [transfer.card],
+                sourceCard: this,
+              });
+            }
           }
-        }
-      });
+        },
+      );
     }
 
     return state;

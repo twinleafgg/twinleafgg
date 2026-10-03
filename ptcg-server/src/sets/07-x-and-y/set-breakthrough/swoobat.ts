@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { NEXT_TURN_ATTACK_BONUS } from '../../../game/store/prefabs/attack-effects';
 
 export class Swoobat extends PokemonCard {
@@ -72,13 +72,13 @@ export class Swoobat extends PokemonCard {
       // Move tools to hand first (tools are stored separately)
       const tools = cardList.tools.slice();
       tools.forEach(card => {
-        cardList.moveCardTo(card, player.hand);
+        MOVE_CARDS(store, state, cardList, player.hand, { cards: [card], sourceCard: this });
       });
 
       // Move all other cards (Pokemon, energy) to hand
       const cards = cardList.cards.slice();
       cards.forEach(card => {
-        cardList.moveCardTo(card, player.hand);
+        MOVE_CARDS(store, state, cardList, player.hand, { cards: [card], sourceCard: this });
       });
       cardList.clearEffects();
     }

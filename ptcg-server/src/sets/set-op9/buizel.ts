@@ -6,13 +6,13 @@ import { Effect } from '../../game/store/effects/effect';
 import { AttackEffect } from '../../game/store/effects/game-effects';
 
 import { GameMessage } from '../../game/game-message';
-import { DiscardCardsEffect, AbstractAttackEffect } from '../../game/store/effects/attack-effects';
+import { DiscardCardsEffect } from '../../game/store/effects/attack-effects';
 import { StateUtils } from '../../game/store/state-utils';
 import { Card } from '../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
 import { PlayerType } from '../../game/store/actions/play-card-action';
-import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../game/store/prefabs/effect-of-attack-prefabs';
 
 function* useWhirlpool(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -80,9 +80,6 @@ export class Buizel extends PokemonCard {
   public name: string = 'Buizel';
   public fullName: string = 'Buizel OP9';
 
-  public readonly CLEAR_SUPER_FAST_MARKER = 'CLEAR_SUPER_FAST_MARKER';
-  public readonly SUPER_FAST_MARKER = 'SUPER_FAST_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
@@ -101,33 +98,15 @@ export class Buizel extends PokemonCard {
       });
 
       if (isPachirisuInPlay) {
-        const opponent = StateUtils.getOpponent(state, player);
         state = COIN_FLIP_PROMPT(store, state, player, flipResult => {
           if (flipResult) {
-            player.active.marker.addMarker(this.SUPER_FAST_MARKER, this);
-            opponent.marker.addMarker(this.CLEAR_SUPER_FAST_MARKER, this);
+            PREVENT_DAMAGE(store, state, effect, this);
+            PREVENT_EFFECTS_OF_ATTACKS(store, state, effect, this);
           }
         });
       }
 
       return state;
-    }
-
-    if (effect instanceof AbstractAttackEffect
-      && effect.target.marker.hasMarker(this.SUPER_FAST_MARKER)) {
-      effect.preventDefault = true;
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect
-      && effect.player.marker.hasMarker(this.CLEAR_SUPER_FAST_MARKER, this)) {
-
-      effect.player.marker.removeMarker(this.CLEAR_SUPER_FAST_MARKER, this);
-
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.SUPER_FAST_MARKER, this);
-      });
     }
 
     return state;

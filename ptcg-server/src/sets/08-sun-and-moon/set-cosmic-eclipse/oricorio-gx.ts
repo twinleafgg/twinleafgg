@@ -6,16 +6,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { GameError, GameMessage, PowerType, StateUtils } from '../../../game';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   BLOCK_IF_GX_ATTACK_USED,
   HAS_MARKER,
   REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN,
   SWITCH_ACTIVE_WITH_BENCHED,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class OricorioGX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -76,7 +74,7 @@ export class OricorioGX extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.deck.moveTo(player.hand, 3);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
       player.usedTributeDance = true;
 
       ABILITY_USED(player, this);

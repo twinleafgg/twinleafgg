@@ -6,7 +6,7 @@ import { AddSpecialConditionsEffect, PutDamageEffect } from '../../../game/store
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lapras extends PokemonCard {
 
@@ -57,7 +57,7 @@ export class Lapras extends PokemonCard {
       const attachedEnergy = effect.source.cards.filter(c => c instanceof EnergyCard);
 
       for (const energy of attachedEnergy) {
-        player.active.moveCardTo(energy, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: [energy], sourceCard: this });
       }
 
       const opponent = StateUtils.getOpponent(state, player);

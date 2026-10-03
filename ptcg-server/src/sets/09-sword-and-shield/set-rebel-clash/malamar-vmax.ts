@@ -14,7 +14,7 @@ import {
   StateUtils,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MalamarVmax extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VMAX];
@@ -72,7 +72,7 @@ export class MalamarVmax extends PokemonCard {
             (selected: Card[]) => {
               if (selected && selected.length > 0) {
                 // Move to deck first, then reposition to bottom
-                opponent.hand.moveCardsTo(selected, opponent.deck);
+                MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: selected, sourceCard: this });
                 const card = selected[0];
                 const index = opponent.deck.cards.indexOf(card);
                 if (index > -1) {

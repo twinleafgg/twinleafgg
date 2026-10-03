@@ -11,7 +11,7 @@ import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameError, PlayerType, ShuffleDeckPrompt } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Dragonite extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -83,7 +83,7 @@ export class Dragonite extends PokemonCard {
           cards
         )], () => {
           player.marker.addMarker(this.FAST_CALL_MARKER, this);
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
         });
 
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

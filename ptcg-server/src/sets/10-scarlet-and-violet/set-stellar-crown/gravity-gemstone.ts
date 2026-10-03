@@ -8,8 +8,7 @@ import { StateUtils } from '../../../game';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class GravityGemstone extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public regulationMark = 'H';
 
@@ -23,15 +22,17 @@ export class GravityGemstone extends TrainerCard {
 
   public cardImage: string = 'assets/cardback.png';
 
-  public text: string = 'As long as the Pokémon this card is attached to is in the Active Spot, the Retreat Cost of both Active Pokémon is [C] more.';
+  public text: string =
+    'As long as the Pokémon this card is attached to is in the Active Spot, the Retreat Cost of both Active Pokémon is [C] more.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckRetreatCostEffect) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      if (IS_TOOL_BLOCKED(store, state, player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, player, this)) {
+        return state;
+      }
 
       if (player.active.tools.includes(this) || opponent.active.tools.includes(this)) {
         effect.cost.push(CardType.COLORLESS);
@@ -40,5 +41,4 @@ export class GravityGemstone extends TrainerCard {
 
     return state;
   }
-
 }

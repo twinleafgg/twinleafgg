@@ -7,8 +7,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class BuffPadding extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'TEU';
 
@@ -20,10 +19,10 @@ export class BuffPadding extends TrainerCard {
 
   public fullName: string = 'Buff Padding TEU';
 
-  public text: string = 'If the Pokémon this card is attached to has a Retreat Cost of exactly 4, it gets +50 HP.';
+  public text: string =
+    'If the Pokémon this card is attached to has a Retreat Cost of exactly 4, it gets +50 HP.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckHpEffect && effect.target.tools.includes(this)) {
       const sourceCard = effect.target.getPokemonCard();
 
@@ -42,5 +41,4 @@ export class BuffPadding extends TrainerCard {
     }
     return state;
   }
-
 }

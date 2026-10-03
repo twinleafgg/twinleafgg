@@ -26,11 +26,9 @@ import { Effect } from '../../../game/store/effects/effect';
 import { StateUtils } from '../../../game/store/state-utils';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 // LOT Magcargo-GX 44 (https://limitlesstcg.com/cards/LOT/44)
 export class MagcargoGX extends PokemonCard {
@@ -103,7 +101,7 @@ export class MagcargoGX extends PokemonCard {
       }
 
       const topOfTheDeck = new CardList();
-      player.deck.moveTo(topOfTheDeck, 1);
+      MOVE_CARDS(store, state, player.deck, topOfTheDeck, { count: 1, sourceCard: this });
 
       // Check if any cards discarded are basic energy
       const discardedEnergy = topOfTheDeck.cards.filter((card) => {
@@ -112,7 +110,7 @@ export class MagcargoGX extends PokemonCard {
 
       if (discardedEnergy.length == 0) {
         player.marker.addMarker(this.CRUSHING_CHARGE_MARKER, this);
-        topOfTheDeck.moveTo(player.discard);
+        MOVE_CARDS(store, state, topOfTheDeck, player.discard, { sourceCard: this });
       }
 
       if (discardedEnergy.length > 0) {
@@ -132,7 +130,7 @@ export class MagcargoGX extends PokemonCard {
             player.marker.addMarker(this.CRUSHING_CHARGE_MARKER, this);
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              topOfTheDeck.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, topOfTheDeck, target, { cards: [transfer.card], sourceCard: this });
             }
           },
         );
@@ -174,7 +172,7 @@ export class MagcargoGX extends PokemonCard {
       // set GX attack as used for game
       player.usedGX = true;
 
-      opponent.deck.moveTo(opponent.discard, 5);
+      MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: 5, sourceCard: this });
     }
 
     if (effect instanceof EndTurnEffect) {

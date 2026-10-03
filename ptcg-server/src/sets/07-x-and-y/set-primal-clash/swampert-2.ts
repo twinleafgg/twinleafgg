@@ -10,10 +10,8 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { CardList } from '../../../game/store/state/card-list';
 import { Card } from '../../../game/store/card/card';
-import {
-  WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED,
-  USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN
-} from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED,
+  USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Swampert2 extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -78,7 +76,7 @@ export class Swampert2 extends PokemonCard {
         cards = selected || [];
       });
 
-      player.deck.moveCardsTo(cards, deckTop);
+      MOVE_CARDS(store, state, player.deck, deckTop, { cards: cards, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
         player.deck.applyOrder(order);

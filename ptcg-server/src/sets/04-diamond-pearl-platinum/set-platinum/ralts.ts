@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, GameError, CardList, OrderCardsPrompt, SelectPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { COIN_FLIP_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED } from '../../../game/store/prefabs/attack-effects';
 
 export class Ralts extends PokemonCard {
@@ -46,7 +46,7 @@ export class Ralts extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -73,7 +73,7 @@ export class Ralts extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 5);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 5, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,

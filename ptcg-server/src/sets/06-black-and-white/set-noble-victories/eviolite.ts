@@ -6,10 +6,8 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
-
 export class Eviolite extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'NVI';
 
@@ -28,9 +26,10 @@ export class Eviolite extends TrainerCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof PutDamageEffect && effect.target.tools.includes(this)) {
-
       // Try to reduce ToolEffect, to check if something is blocking the tool from working
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       if (effect.target.tools.includes(this) && effect.target.isStage(Stage.BASIC)) {
         effect.damage -= 20;
@@ -39,5 +38,4 @@ export class Eviolite extends TrainerCard {
 
     return state;
   }
-
 }

@@ -8,17 +8,18 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { MoveCardsEffect } from '../../../game/store/effects/game-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { Player, StateUtils } from '../../../game';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EmceesHype extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'DRI';
   public setNumber = '163';
   public cardImage = 'assets/cardback.png';
   public regulationMark: string = 'H';
-  public name: string = 'Emcee\'s Hype';
-  public fullName: string = 'Emcee\'s Hype DRI';
-  public text: string = 'Draw 2 cards. If your opponent has 3 or fewer Prize cards remaining, draw 2 more cards.';
+  public name: string = "Emcee's Hype";
+  public fullName: string = "Emcee's Hype DRI";
+  public text: string =
+    'Draw 2 cards. If your opponent has 3 or fewer Prize cards remaining, draw 2 more cards.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {
@@ -29,7 +30,6 @@ export class EmceesHype extends TrainerCard {
     }
     return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -47,11 +47,10 @@ export class EmceesHype extends TrainerCard {
       }
 
       // Move to supporter pile
-      state = store.reduceEffect(state, new MoveCardsEffect(
-        player.hand,
-        player.supporter,
-        { cards: [effect.trainerCard] }
-      ));
+      state = store.reduceEffect(
+        state,
+        new MoveCardsEffect(player.hand, player.supporter, { cards: [effect.trainerCard] }),
+      );
 
       effect.preventDefault = true;
 
@@ -60,10 +59,9 @@ export class EmceesHype extends TrainerCard {
         DRAW_CARDS(store, state, player, 2);
       }
 
-      player.supporter.moveTo(player.discard);
+      MOVE_CARDS(store, state, player.supporter, player.discard, { sourceCard: this });
     }
 
     return state;
   }
-
 }

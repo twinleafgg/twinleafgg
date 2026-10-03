@@ -9,8 +9,7 @@ import { StateUtils, ShowCardsPrompt, ShuffleDeckPrompt, GameError } from '../..
 import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Lass extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -31,7 +30,7 @@ export class Lass extends TrainerCard {
       const opponent = StateUtils.getOpponent(state, player);
 
       // Exclude Lass itself from hand checks (if needed)
-      const playerHandWithoutLass = player.hand.cards.filter(c => c !== this);
+      const playerHandWithoutLass = player.hand.cards.filter((c) => c !== this);
       const opponentHand = opponent.hand.cards;
 
       // If both hands are empty, do nothing
@@ -49,35 +48,46 @@ export class Lass extends TrainerCard {
       };
 
       // Show both hands (if not empty), then shuffle trainers, then shuffle decks
-      return store.prompt(state, new ShowCardsPrompt(
-        opponent.id,
-        GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-        player.hand.cards
-      ), () => {
-        return store.prompt(state, new ShowCardsPrompt(
-          player.id,
+      return store.prompt(
+        state,
+        new ShowCardsPrompt(
+          opponent.id,
           GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-          opponent.hand.cards
-        ), () => {
-          // Move Trainer cards from both hands to decks
-          state = moveTrainersToDeck(store, state, player.hand, player.deck);
-          state = moveTrainersToDeck(store, state, opponent.hand, opponent.deck);
+          player.hand.cards,
+        ),
+        () => {
+          return store.prompt(
+            state,
+            new ShowCardsPrompt(
+              player.id,
+              GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
+              opponent.hand.cards,
+            ),
+            () => {
+              // Move Trainer cards from both hands to decks
+              state = moveTrainersToDeck(store, state, player.hand, player.deck);
+              state = moveTrainersToDeck(store, state, opponent.hand, opponent.deck);
 
-          // Discard Lass (if needed)
-          if (player.hand.cards.includes(effect.trainerCard)) {
-            state = MOVE_CARDS(store, state, player.hand, player.discard, { cards: [effect.trainerCard], sourceCard: this });
-          }
+              // Discard Lass (if needed)
+              if (player.hand.cards.includes(effect.trainerCard)) {
+                state = MOVE_CARDS(store, state, player.hand, player.discard, {
+                  cards: [effect.trainerCard],
+                  sourceCard: this,
+                });
+              }
 
-          // Shuffle both decks
-          return store.prompt(state, new ShuffleDeckPrompt(player.id), playerOrder => {
-            player.deck.applyOrder(playerOrder);
-            return store.prompt(state, new ShuffleDeckPrompt(opponent.id), opponentOrder => {
-              opponent.deck.applyOrder(opponentOrder);
-              return state;
-            });
-          });
-        });
-      });
+              // Shuffle both decks
+              return store.prompt(state, new ShuffleDeckPrompt(player.id), (playerOrder) => {
+                player.deck.applyOrder(playerOrder);
+                return store.prompt(state, new ShuffleDeckPrompt(opponent.id), (opponentOrder) => {
+                  opponent.deck.applyOrder(opponentOrder);
+                  return state;
+                });
+              });
+            },
+          );
+        },
+      );
     }
     return state;
   }

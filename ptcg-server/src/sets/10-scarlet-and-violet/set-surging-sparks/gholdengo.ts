@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, PokemonCardList, StateUtils, Resistance, ConfirmPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gholdengo extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -50,7 +50,7 @@ export class Gholdengo extends PokemonCard {
       const player = effect.player;
       return store.prompt(state, new ConfirmPrompt(player.id, GameMessage.WANT_TO_USE_ABILITY), wantToUse => {
         if (wantToUse) {
-          player.active.moveTo(player.deck);
+          MOVE_CARDS(store, state, player.active, player.deck, { sourceCard: this });
           player.active.clearEffects();
           return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
             player.deck.applyOrder(order);

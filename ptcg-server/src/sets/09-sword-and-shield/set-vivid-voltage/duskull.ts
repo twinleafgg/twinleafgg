@@ -2,7 +2,7 @@ import { CardList, GameMessage, OrderCardsPrompt, SelectPrompt, State, StateUtil
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Duskull extends PokemonCard {
 
@@ -52,7 +52,7 @@ export class Duskull extends PokemonCard {
           action: () => {
 
             const opponentDeckTop = new CardList();
-            opponent.deck.moveTo(opponentDeckTop, 4);
+            MOVE_CARDS(store, state, opponent.deck, opponentDeckTop, { count: 4, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -76,7 +76,7 @@ export class Duskull extends PokemonCard {
             const player = effect.player;
 
             const playerDeckTop = new CardList();
-            player.deck.moveTo(playerDeckTop, 4);
+            MOVE_CARDS(store, state, player.deck, playerDeckTop, { count: 4, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,

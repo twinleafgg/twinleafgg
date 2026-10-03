@@ -9,6 +9,7 @@ import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-
 import { PlayerType, SlotType } from '../../../game/store/actions/play-card-action';
 import { StateUtils } from '../../../game/store/state-utils';
 import { GameError, PokemonCardList } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -64,7 +65,7 @@ function* playCard(
       if (!hasBench) {
         // No bench for player: discard both Cross Switchers now and finish
         if (second !== undefined) {
-          player.hand.moveCardTo(second, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: [second], sourceCard: effect.trainerCard });
         }
 
         return state;
@@ -93,7 +94,7 @@ function* playCard(
           player.switchPokemon(target[0]);
 
           if (second !== undefined) {
-            player.hand.moveCardTo(second, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: [second], sourceCard: effect.trainerCard });
           }
 
           return state;
@@ -104,7 +105,7 @@ function* playCard(
 }
 
 export class CrossSwitcher extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.FUSION_STRIKE];
   public regulationMark = 'E';
   public cardImage: string = 'assets/cardback.png';

@@ -2,18 +2,23 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PlaceDamageCountersEffect, RetreatEffect, UseStadiumEffect } from '../../../game/store/effects/game-effects';
+import {
+  PlaceDamageCountersEffect,
+  RetreatEffect,
+  UseStadiumEffect,
+} from '../../../game/store/effects/game-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class Spikemuth extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark: string = 'D';
   public set: string = 'DAA';
   public setNumber: string = '170';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Spikemuth';
   public fullName: string = 'Spikemuth DAA';
-  public text: string = 'Whenever a player\'s Active Pokémon moves to the Bench during their turn, put 2 damage counters on that Pokémon.';
+  public text: string =
+    "Whenever a player's Active Pokémon moves to the Bench during their turn, put 2 damage counters on that Pokémon.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

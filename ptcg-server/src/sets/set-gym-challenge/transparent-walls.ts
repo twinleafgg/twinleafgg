@@ -10,18 +10,18 @@ import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 
 export class TransparentWalls extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'G2';
   public setNumber = '125';
   public name: string = 'Transparent Walls';
   public fullName: string = 'Transparent Walls G2';
   public cardImage: string = 'assets/cardback.png';
-  public text: string = 'Until the end of your opponent\'s next turn, prevent all damage from attacks done to your Benched Pokémon. (Any other effects of attacks still happen.)';
+  public text: string =
+    "Until the end of your opponent's next turn, prevent all damage from attacks done to your Benched Pokémon. (Any other effects of attacks still happen.)";
 
   public TRANSPARENT_WALLS_MARKER = 'TRANSPARENT_WALLS_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
 
@@ -57,6 +57,5 @@ export class TransparentWalls extends TrainerCard {
     }
 
     return state;
-
   }
 }

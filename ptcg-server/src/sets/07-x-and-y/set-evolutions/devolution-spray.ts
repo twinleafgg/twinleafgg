@@ -1,4 +1,13 @@
-import { CardTarget, ChoosePokemonPrompt, GameError, GameMessage, GameStoreMessage, PlayerType, SlotType, TrainerCard } from '../../../game';
+import {
+  CardTarget,
+  ChoosePokemonPrompt,
+  GameError,
+  GameMessage,
+  GameStoreMessage,
+  PlayerType,
+  SlotType,
+  TrainerCard,
+} from '../../../game';
 import { SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
@@ -13,9 +22,10 @@ export class DevolutionSpray extends TrainerCard {
   public set = 'EVO';
   public fullName = 'Devolution Spray EVO';
   public superType = SuperType.TRAINER;
-  public trainerType = TrainerType.ITEM;
+  protected _trainerType = TrainerType.ITEM;
 
-  public text = 'Devolve 1 of your evolved Pokémon and put the highest Stage Evolution card on it into your hand. (That Pokémon can\'t evolve this turn.)';
+  public text =
+    "Devolve 1 of your evolved Pokémon and put the highest Stage Evolution card on it into your hand. (That Pokémon can't evolve this turn.)";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -40,14 +50,14 @@ export class DevolutionSpray extends TrainerCard {
           GameMessage.CHOOSE_POKEMON,
           PlayerType.BOTTOM_PLAYER,
           [SlotType.ACTIVE, SlotType.BENCH],
-          { allowCancel: false, min: 1, max: 1, blocked }
+          { allowCancel: false, min: 1, max: 1, blocked },
         ),
         (results) => {
           if (results && results.length > 0) {
             DEVOLVE_POKEMON(store, state, results[0], effect.player.hand);
           }
           return state;
-        }
+        },
       );
     }
 

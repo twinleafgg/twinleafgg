@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ambipom extends PokemonCard {
 
@@ -37,7 +37,7 @@ export class Ambipom extends PokemonCard {
     // Nice-Nice Catch attack - Draw 2 cards
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
-      player.deck.moveTo(player.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       return state;
     }
 
@@ -57,7 +57,7 @@ export class Ambipom extends PokemonCard {
         if (cards.length === 0) {
           return;
         }
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
         // Calculate damage: 60 per card discarded
         const damage = cards.length * 60;

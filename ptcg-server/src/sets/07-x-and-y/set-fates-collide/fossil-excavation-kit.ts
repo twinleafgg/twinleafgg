@@ -4,20 +4,33 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { GameError, GameMessage, ShowCardsPrompt, StoreLike, State, StateUtils } from '../../../game';
+import {
+  GameError,
+  GameMessage,
+  ShowCardsPrompt,
+  StoreLike,
+  State,
+  StateUtils,
+} from '../../../game';
 import { Card } from '../../../game/store/card/card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 const FOSSIL_NAMES = ['Helix Fossil Omanyte', 'Dome Fossil Kabuto', 'Old Amber Aerodactyl'];
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
   // Count fossil cards in discard
-  const fossilCount = player.discard.cards.filter(c => FOSSIL_NAMES.includes(c.name)).length;
+  const fossilCount = player.discard.cards.filter((c) => FOSSIL_NAMES.includes(c.name)).length;
 
   if (fossilCount === 0) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -25,7 +38,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Do not discard the card yet
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
 
   // Discard pile is public knowledge, so enforce exact count when possible
   const max = Math.min(2, fossilCount);
@@ -39,39 +52,43 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   });
 
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.discard,
-    {},
-    { min: max, max, allowCancel: false, blocked }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.discard,
+      {},
+      { min: max, max, allowCancel: false, blocked },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   if (cards.length > 0) {
-    player.discard.moveCardsTo(cards, player.hand);
+    MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: effect.trainerCard });
 
-    state = store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      cards
-    ), () => state);
+    state = store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+      () => state,
+    );
   }
-
 
   return state;
 }
 
 export class FossilExcavationKit extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'FCO';
   public setNumber: string = '101';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Fossil Excavation Kit';
   public fullName: string = 'Fossil Excavation Kit FCO';
-  public text: string = 'Put 2 in any combination of Helix Fossil Omanyte, Dome Fossil Kabuto, or Old Amber Aerodactyl cards from your discard pile into your hand.';
+  public text: string =
+    'Put 2 in any combination of Helix Fossil Omanyte, Dome Fossil Kabuto, or Old Amber Aerodactyl cards from your discard pile into your hand.';
 
   // Ref: set-ancient-origins/eco-arm.ts (retrieve specific cards from discard to hand with generator pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

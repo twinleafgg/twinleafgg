@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Leavanny extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -64,7 +64,7 @@ export class Leavanny extends PokemonCard {
         if (leavannyList) {
           const cardsToShuffle = [...leavannyList.cards];
           cardsToShuffle.forEach(card => {
-            leavannyList.moveCardTo(card, player.deck);
+            MOVE_CARDS(store, state, leavannyList, player.deck, { cards: [card], sourceCard: this });
           });
           leavannyList.clearEffects();
         }

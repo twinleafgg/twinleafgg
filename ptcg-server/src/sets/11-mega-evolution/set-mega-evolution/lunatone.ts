@@ -5,7 +5,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt, GameError, GameMessage, PlayerType, PowerType, StateUtils } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { ABILITY_USED, DRAW_CARDS, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, DRAW_CARDS, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lunatone extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -77,7 +77,7 @@ export class Lunatone extends PokemonCard {
         if (cards.length === 0) {
           return;
         }
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
         DRAW_CARDS(store, state, player, 3);
         player.usedLunarCycle = true;

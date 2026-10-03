@@ -15,11 +15,10 @@ import { PokemonCard,
   EnergyCard,
   CardTarget,
   EnergyType, pokemonHasCardType } from '../../../game';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Archaludonex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex];
@@ -54,9 +53,6 @@ export class Archaludonex extends PokemonCard {
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Archaludon ex';
   public fullName: string = 'Archaludon ex SSP';
-
-  public readonly METAL_DEFENDER_MARKER = 'METAL_DEFENDER_MARKER';
-  public readonly CLEAR_METAL_DEFENDER_MARKER = 'CLEAR_METAL_DEFENDER_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof EvolveEffect && effect.pokemonCard === this) {
@@ -106,7 +102,7 @@ export class Archaludonex extends PokemonCard {
 
                 for (const transfer of transfers) {
                   const target = StateUtils.getTarget(state, player, transfer.to);
-                  player.discard.moveCardTo(transfer.card, target);
+                  MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
                 }
               },
             );
@@ -116,31 +112,9 @@ export class Archaludonex extends PokemonCard {
     }
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      player.active.marker.addMarker(this.METAL_DEFENDER_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_METAL_DEFENDER_MARKER, this);
+      return THIS_POKEMON_HAS_NO_WEAKNESS_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
-    if (effect instanceof CheckPokemonStatsEffect) {
-      const player = StateUtils.findOwner(state, effect.target);
-      if (player.active.marker.hasMarker(this.METAL_DEFENDER_MARKER, this)) {
-        effect.weakness = [];
-        return state;
-      }
-    }
-
-    if (
-      effect instanceof EndTurnEffect &&
-      effect.player.marker.hasMarker(this.CLEAR_METAL_DEFENDER_MARKER, this)
-    ) {
-      effect.player.marker.removeMarker(this.CLEAR_METAL_DEFENDER_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.METAL_DEFENDER_MARKER, this);
-      });
-    }
     return state;
   }
 }

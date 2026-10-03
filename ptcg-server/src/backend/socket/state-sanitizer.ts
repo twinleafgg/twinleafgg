@@ -4,6 +4,7 @@ import { CardList } from '../../game/store/state/card-list';
 import { ChooseCardsPrompt } from '../../game/store/prompts/choose-cards-prompt';
 import { Client } from '../../game/client/client.interface';
 import { GameMessage } from '../../game/game-message';
+import { promptRequiresSelfPlayFocus } from '../../game/core/self-play-focus';
 import { SocketCache } from './socket-cache';
 import { State } from '../../game/store/state/state';
 import { SuperType } from '../../game/store/card/card-types';
@@ -18,6 +19,11 @@ export interface SanitizeOptions {
   trimLogs?: boolean;
   lastLogId?: number;
   onLogsTrimmed?: (lastLogId: number) => void;
+  /**
+   * Self-play has one client for both seats. Keep silent opponent prompts
+   * (animation waits) so that client can resolve them without a seat swap.
+   */
+  selfPlay?: boolean;
 }
 
 export class StateSanitizer {
@@ -47,7 +53,7 @@ export class StateSanitizer {
     options: SanitizeOptions = {}
   ): State {
     let next = deepClone(state, [Card]);
-    next = filterPrompts(next, viewer.playerId);
+    next = filterPrompts(next, viewer.playerId, options.selfPlay === true);
     if (options.trimLogs) {
       next = removeLogs(next, options.lastLogId || 0, options.onLogsTrimmed);
     }
@@ -122,13 +128,17 @@ function getSecretCardLists(state: State, viewer: SanitizeViewer): CardList[] {
   return cardLists;
 }
 
-function filterPrompts(state: State, viewerPlayerId: number): State {
+function filterPrompts(state: State, viewerPlayerId: number, selfPlay: boolean): State {
   state.prompts = state.prompts.filter(prompt => {
     return prompt.result === undefined;
   });
 
   state.prompts = state.prompts.map(prompt => {
     if (prompt.playerId !== viewerPlayerId) {
+      // Deliver silent gates to the single self-play client without flipping seats.
+      if (selfPlay && !promptRequiresSelfPlayFocus(prompt)) {
+        return prompt;
+      }
       return new AlertPrompt(prompt.playerId, GameMessage.NOT_YOUR_TURN);
     }
     return prompt;

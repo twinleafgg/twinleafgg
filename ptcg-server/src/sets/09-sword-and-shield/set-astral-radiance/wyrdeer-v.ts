@@ -17,11 +17,9 @@ import {
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { MovedToActiveEffect, PowerEffect } from '../../../game/store/effects/game-effects';
-import {
-  MOVED_TO_ACTIVE_THIS_TURN,
+import {MOVED_TO_ACTIVE_THIS_TURN,
   REMOVE_MARKER_AT_END_OF_TURN,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class WyrdeerV extends PokemonCard {
   public cardType: CardType[] = [CardType.COLORLESS];
@@ -136,7 +134,7 @@ export class WyrdeerV extends PokemonCard {
           for (const transfer of transfers) {
             const target = player.active;
             const source = StateUtils.getTarget(state, player, transfer.from);
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

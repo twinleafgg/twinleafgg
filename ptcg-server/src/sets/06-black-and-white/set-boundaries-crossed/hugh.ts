@@ -7,10 +7,8 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameError, GameMessage, StateUtils } from '../../..';
 import { DRAW_CARDS_UNTIL_CARDS_IN_HAND, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-
 export class Hugh extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BCR';
 
@@ -46,21 +44,25 @@ export class Hugh extends TrainerCard {
 
       // Opponent discards first
       if (opponent.hand.cards.length > 5) {
-        store.prompt(state, new ChooseCardsPrompt(
-          opponent,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          opponent.hand,
-          {},
-          { min: discardAmount, max: discardAmount, allowCancel: false }
-        ), selected => {
-          const cards = selected || [];
-          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards, sourceCard: this });
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            opponent,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            opponent.hand,
+            {},
+            { min: discardAmount, max: discardAmount, allowCancel: false },
+          ),
+          (selected) => {
+            const cards = selected || [];
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards, sourceCard: this });
+          },
+        );
       } else {
         DRAW_CARDS_UNTIL_CARDS_IN_HAND(opponent, 5);
       }
 
-      const playerCards = player.hand.cards.filter(c => c !== this);
+      const playerCards = player.hand.cards.filter((c) => c !== this);
       // Get player's hand length
       const playerHandLength = playerCards.length;
 
@@ -69,22 +71,25 @@ export class Hugh extends TrainerCard {
 
       // Player discards next
       if (player.hand.cards.length > 5) {
-        store.prompt(state, new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          player.hand,
-          {},
-          { min: playerDiscardAmount, max: playerDiscardAmount, allowCancel: false }
-        ), selected => {
-          const cards = selected || [];
-          MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: this });
-        });
+        store.prompt(
+          state,
+          new ChooseCardsPrompt(
+            player,
+            GameMessage.CHOOSE_CARD_TO_DISCARD,
+            player.hand,
+            {},
+            { min: playerDiscardAmount, max: playerDiscardAmount, allowCancel: false },
+          ),
+          (selected) => {
+            const cards = selected || [];
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards, sourceCard: this });
+          },
+        );
       } else {
         DRAW_CARDS_UNTIL_CARDS_IN_HAND(player, 5);
       }
       return state;
     }
     return state;
-
   }
 }

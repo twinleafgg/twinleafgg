@@ -21,7 +21,7 @@ import {
   AFTER_ATTACK,
   CONFIRMATION_PROMPT,
   IS_ABILITY_BLOCKED,
-  MOVE_CARDS,
+  MOVE_POKEMON_OFF_BOARD,
   SEARCH_DECK_FOR_CARDS_TO_HAND,
 } from '../../../game/store/prefabs/prefabs';
 
@@ -105,30 +105,10 @@ export class LumineonV extends PokemonCard {
 
     if (AFTER_ATTACK(effect, 0, this)) {
       const player = effect.player;
-      const pokemons = player.active.getPokemons();
-      const otherCards = player.active.cards.filter(
-        (card) =>
-          !(card instanceof PokemonCard) &&
-          !pokemons.includes(card as PokemonCard) &&
-          (!player.active.tools || !player.active.tools.includes(card)),
-      );
-      const tools = [...player.active.tools];
-      player.active.clearEffects();
-
-      // Move other cards to deck
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, player.active, player.deck, { cards: otherCards });
-      }
-
-      // Move tools to deck explicitly
-      for (const tool of tools) {
-        player.active.moveCardTo(tool, player.deck);
-      }
-
-      // Move Pokémon to deck
-      if (pokemons.length > 0) {
-        MOVE_CARDS(store, state, player.active, player.deck, { cards: pokemons });
-      }
+      MOVE_POKEMON_OFF_BOARD(store, state, player.active, {
+        pokemonDestination: player.deck,
+        sourceCard: this,
+      });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
         player.deck.applyOrder(order);

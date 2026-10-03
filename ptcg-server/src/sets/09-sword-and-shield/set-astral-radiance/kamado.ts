@@ -8,10 +8,15 @@ import { StoreLike, State, GameMessage, Card, ChooseCardsPrompt } from '../../..
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { GameError } from '../../../game/game-error';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Kamado, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Kamado,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   // Need at least 2 cards in hand (the Kamado card + 1 other to keep)
@@ -22,25 +27,29 @@ function* playCard(next: Function, store: StoreLike, state: State,
 
   // Player chooses 1 card from hand to keep
   let keptCard: Card | undefined;
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARDS,
-    player.hand,
-    {},
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    keptCard = selected && selected.length > 0 ? selected[0] : undefined;
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARDS,
+      player.hand,
+      {},
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      keptCard = selected && selected.length > 0 ? selected[0] : undefined;
+      next();
+    },
+  );
 
   if (!keptCard) {
     return state;
   }
 
   // Discard all other cards from hand
-  const cardsToDiscard = player.hand.cards.filter(c => c !== keptCard);
-  cardsToDiscard.forEach(card => {
-    player.hand.moveCardTo(card, player.discard);
+  const cardsToDiscard = player.hand.cards.filter((c) => c !== keptCard);
+  cardsToDiscard.forEach((card) => {
+    MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: self });
   });
 
   // Draw 4 cards
@@ -49,14 +58,15 @@ function* playCard(next: Function, store: StoreLike, state: State,
 }
 
 export class Kamado extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'F';
   public set: string = 'ASR';
   public setNumber: string = '149';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Kamado';
   public fullName: string = 'Kamado ASR 149';
-  public text: string = 'Choose a card in your hand, and discard the other cards. If you do, draw 4 cards. (If you have no other cards in your hand, you can\'t use this card.) You may play only 1 Supporter card during your turn.';
+  public text: string =
+    "Choose a card in your hand, and discard the other cards. If you do, draw 4 cards. (If you have no other cards in your hand, you can't use this card.) You may play only 1 Supporter card during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-astral-radiance/adaman.ts (generator pattern), set-battle-styles/sordward-and-shielbert.ts (choose card from hand)
@@ -65,12 +75,18 @@ export class Kamado extends TrainerCard {
 
       // Must have other cards (not just Kamado) to use this card
       // After move to supporter, check remaining hand cards
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       effect.preventDefault = true;
 
       if (player.hand.cards.length === 0) {
         // No other cards in hand - can't use
-        player.supporter.moveCardTo(effect.trainerCard, player.hand);
+        MOVE_CARDS(store, state, player.supporter, player.hand, {
+          cards: [effect.trainerCard],
+          sourceCard: this,
+        });
         effect.preventDefault = false;
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }

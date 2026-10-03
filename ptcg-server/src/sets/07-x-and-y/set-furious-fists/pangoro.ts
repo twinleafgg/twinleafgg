@@ -66,7 +66,7 @@ export class Pangoro extends PokemonCard {
           { min: 0, max: 1, allowCancel: true, blocked }
         ), selected => {
           if (selected && selected.length > 0) {
-            player.hand.moveCardTo(selected[0], player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: [selected[0]], sourceCard: this });
             effect.damage += 40;
           }
         });

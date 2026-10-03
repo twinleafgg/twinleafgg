@@ -9,13 +9,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN } from '../../../game/store/prefabs/tool-prefabs';
 
 export class ScizorSpiritLink extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'BKP';
   public setNumber: string = '111';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Scizor Spirit Link';
   public fullName: string = 'Scizor Spirit Link BKP';
-  public text: string = 'Your turn does not end if the Pokémon this card is attached to becomes M Scizor-EX.';
+  public text: string =
+    'Your turn does not end if the Pokémon this card is attached to becomes M Scizor-EX.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     SPIRIT_LINK_SKIP_MEGA_EVOLUTION_END_TURN(store, state, effect, this, 'M Scizor-EX');

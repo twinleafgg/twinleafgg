@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State, StateUtils, GameMessage, EnergyCard, ChoosePokemonPrompt, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Kingdra extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -52,7 +52,7 @@ export class Kingdra extends PokemonCard {
       // Shuffle all of those cards back into deck
       if (matchingEnergy.length > 0) {
         matchingEnergy.forEach(card => {
-          player.discard.moveCardTo(card, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [card], sourceCard: this });
         });
         SHUFFLE_DECK(store, state, player);
       }

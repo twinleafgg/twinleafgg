@@ -1,4 +1,4 @@
-import { Card, ChooseCardsPrompt, GameLog, GameMessage, ShowCardsPrompt, ShuffleDeckPrompt, State, StateUtils, StoreLike } from '../../../game';
+import { Card, ChooseCardsPrompt, GameMessage, ShowCardsPrompt, ShuffleDeckPrompt, State, StateUtils, StoreLike } from '../../../game';
 import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Attack } from '../../../game/store/card/pokemon-types';
@@ -63,7 +63,6 @@ export class Ponyta extends PokemonCard {
         cards.forEach((card, index) => {
           MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: this, sourceEffect: this.attacks[0] });
 
-          store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
         });
 
         state = store.prompt(state, new ShowCardsPrompt(

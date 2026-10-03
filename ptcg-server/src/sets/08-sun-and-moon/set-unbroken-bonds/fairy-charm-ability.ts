@@ -13,7 +13,7 @@ import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 
 export class FairyCharmAbility extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'UNB';
   public setNumber: string = '171';
   public cardImage: string = 'assets/cardback.png';

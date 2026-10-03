@@ -145,7 +145,7 @@ export class DragoniteEX extends PokemonCard {
         (selected) => {
           card = selected[0];
 
-          opponent.active.moveCardTo(card, opponent.discard);
+          MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [card], sourceCard: this });
           return state;
         },
       );

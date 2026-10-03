@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Glaceon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -40,37 +39,9 @@ export class Glaceon extends PokemonCard {
   public name: string = 'Glaceon';
   public fullName: string = 'Glaceon ASR 38';
 
-  public readonly PREVENT_DAMAGE_MARKER = 'GLACEON_ASR_PREVENT_DAMAGE';
-  public readonly CLEAR_PREVENT_DAMAGE_MARKER = 'GLACEON_ASR_CLEAR_PREVENT_DAMAGE';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Frost Wall
-    // Ref: set-evolutions/chansey.ts (Scrunch - 2-marker pattern for prevent damage during opponent's next turn)
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      player.active.marker.addMarker(this.PREVENT_DAMAGE_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_PREVENT_DAMAGE_MARKER, this);
-    }
-
-    // Prevent damage from Evolution Pokemon during opponent's next turn
-    if ((effect instanceof DealDamageEffect || effect instanceof PutDamageEffect)
-      && effect.target.marker.hasMarker(this.PREVENT_DAMAGE_MARKER, this)) {
-      const sourceCard = effect.source.getPokemonCard();
-      // Only prevent damage from Evolution Pokemon (any non-Basic stage)
-      if (sourceCard && sourceCard.stage !== Stage.BASIC) {
-        effect.preventDefault = true;
-        return state;
-      }
-    }
-
-    if (effect instanceof EndTurnEffect && effect.player.marker.hasMarker(this.CLEAR_PREVENT_DAMAGE_MARKER, this)) {
-      effect.player.marker.removeMarker(this.CLEAR_PREVENT_DAMAGE_MARKER, this);
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.PREVENT_DAMAGE_MARKER, this);
-      });
+      PREVENT_DAMAGE(store, state, effect, this, { sourceIsEvolution: true });
     }
 
     return state;

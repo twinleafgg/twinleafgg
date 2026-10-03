@@ -40,7 +40,6 @@ export class Skitty extends PokemonCard {
         return state;
       }
 
-
       store.prompt(state, new ChooseCardsPrompt(
         player,
         GameMessage.CHOOSE_CARD_TO_HAND,

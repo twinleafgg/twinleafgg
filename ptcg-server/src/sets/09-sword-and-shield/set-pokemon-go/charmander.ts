@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State, ChooseCardsPrompt, GameMessage, StateUtils, ShuffleDeckPrompt } from '../../../game';
 
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Charmander extends PokemonCard {
 
@@ -56,7 +56,7 @@ export class Charmander extends PokemonCard {
       ), cards => {
         cards = cards || [];
         if (cards.length > 0) {
-          player.deck.moveCardsTo(cards, cardList);
+          MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
         }
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);

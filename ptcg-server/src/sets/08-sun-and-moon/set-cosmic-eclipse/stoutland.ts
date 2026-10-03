@@ -7,7 +7,7 @@ import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { DAMAGE_OPPONENT_POKEMON, IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGE_OPPONENT_POKEMON, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Stoutland extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -66,10 +66,9 @@ export class Stoutland extends PokemonCard {
       ), energy => {
 
         const cards: Card[] = (energy || []).map(e => e.card);
-        opponent.active.moveCardsTo(cards, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
       });
     }
-
 
     if ((effect instanceof DealDamageEffect || effect instanceof PutDamageEffect) &&
       effect.target.cards.includes(this)) {
@@ -108,7 +107,7 @@ export class Stoutland extends PokemonCard {
       ), energy => {
 
         const cards: Card[] = (energy || []).map(e => e.card);
-        opponent.active.moveCardsTo(cards, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: cards, sourceCard: this });
       });
 
     }

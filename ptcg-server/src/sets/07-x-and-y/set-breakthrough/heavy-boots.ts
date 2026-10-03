@@ -6,18 +6,23 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { SpecialCondition, TrainerType } from '../../../game/store/card/card-types';
 import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
-import { CheckHpEffect, CheckTableStateEffect, AddSpecialConditionsPowerEffect } from '../../../game/store/effects/check-effects';
+import {
+  CheckHpEffect,
+  CheckTableStateEffect,
+  AddSpecialConditionsPowerEffect,
+} from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class HeavyBoots extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'BKT';
   public setNumber: string = '141';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Heavy Boots';
   public fullName: string = 'Heavy Boots BKT';
-  public text: string = 'If the Retreat Cost of the Pokémon this card is attached to is 3 or more, that Pokémon gets +20 HP and can\'t be Confused. (If that Pokémon is currently Confused, remove that Special Condition.)';
+  public text: string =
+    "If the Retreat Cost of the Pokémon this card is attached to is 3 or more, that Pokémon gets +20 HP and can't be Confused. (If that Pokémon is currently Confused, remove that Special Condition.)";
 
   private isToolActive(store: StoreLike, state: State, target: any): boolean {
     const sourceCard = target.getPokemonCard();
@@ -48,23 +53,29 @@ export class HeavyBoots extends TrainerCard {
     // Prevent Confused from being applied
     if (effect instanceof AddSpecialConditionsEffect && effect.target.tools.includes(this)) {
       if (this.isToolActive(store, state, effect.target)) {
-        effect.specialConditions = effect.specialConditions.filter(sc => sc !== SpecialCondition.CONFUSED);
+        effect.specialConditions = effect.specialConditions.filter(
+          (sc) => sc !== SpecialCondition.CONFUSED,
+        );
       }
     }
 
     if (effect instanceof AddSpecialConditionsPowerEffect && effect.target.tools.includes(this)) {
       if (this.isToolActive(store, state, effect.target)) {
-        effect.specialConditions = effect.specialConditions.filter(sc => sc !== SpecialCondition.CONFUSED);
+        effect.specialConditions = effect.specialConditions.filter(
+          (sc) => sc !== SpecialCondition.CONFUSED,
+        );
       }
     }
 
     // Clear existing Confused during table state check
     if (effect instanceof CheckTableStateEffect) {
-      state.players.forEach(player => {
-        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
-          if (cardList.tools.includes(this)
-            && cardList.specialConditions.includes(SpecialCondition.CONFUSED)
-            && this.isToolActive(store, state, cardList)) {
+      state.players.forEach((player) => {
+        player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
+          if (
+            cardList.tools.includes(this) &&
+            cardList.specialConditions.includes(SpecialCondition.CONFUSED) &&
+            this.isToolActive(store, state, cardList)
+          ) {
             cardList.removeSpecialCondition(SpecialCondition.CONFUSED);
           }
         });

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, EnergyCard } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Garchomp extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -61,7 +61,7 @@ export class Garchomp extends PokemonCard {
           { min: 1, max: 1, allowCancel: false, blocked }
         ), selected => {
           if (selected && selected.length > 0) {
-            opponent.active.moveCardTo(selected[0], opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [selected[0]], sourceCard: this });
           }
         });
       }

@@ -10,11 +10,12 @@ import { ATTACK_COIN_REFLIP_REDUCE_EFFECT } from '../../../game/store/prefabs/at
 export class GlimwoodTangle extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '162';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'DAA';
   public name = 'Glimwood Tangle';
   public fullName = 'Glimwood Tangle DAA';
-  public text = 'Once during each player\'s turn, after that player flips any coins for an attack, they may ignore all results of those coin flips and begin flipping those coins again.';
+  public text =
+    "Once during each player's turn, after that player flips any coins for an attack, they may ignore all results of those coin flips and begin flipping those coins again.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     return ATTACK_COIN_REFLIP_REDUCE_EFFECT(store, state, effect, {

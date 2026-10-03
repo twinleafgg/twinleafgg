@@ -12,11 +12,12 @@ import { StoreLike } from '../../../game/store/store-like';
 export class DevouredField extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '93';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'CIN';
   public name = 'Devoured Field';
   public fullName = 'Devoured Field CIN';
-  public text = 'The attacks of [D] Pokémon and [N] Pokémon (both yours and your opponent\'s) do 10 more damage to the opponent\'s Active Pokémon (before applying Weakness and Resistance).';
+  public text =
+    "The attacks of [D] Pokémon and [N] Pokémon (both yours and your opponent's) do 10 more damage to the opponent's Active Pokémon (before applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -35,8 +36,10 @@ export class DevouredField extends TrainerCard {
 
       store.reduceEffect(state, checkPokemonType);
 
-      if (!checkPokemonType.cardTypes.includes(CardType.DRAGON) &&
-        !checkPokemonType.cardTypes.includes(CardType.DARK)) {
+      if (
+        !checkPokemonType.cardTypes.includes(CardType.DRAGON) &&
+        !checkPokemonType.cardTypes.includes(CardType.DARK)
+      ) {
         return state;
       }
 

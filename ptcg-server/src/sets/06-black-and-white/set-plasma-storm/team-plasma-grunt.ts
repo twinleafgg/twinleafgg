@@ -7,11 +7,11 @@ import { TrainerType, CardTag } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class TeamPlasmaGrunt extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.TEAM_PLASMA];
   public set: string = 'PLS';
   public setNumber: string = '125';
@@ -40,7 +40,7 @@ export class TeamPlasmaGrunt extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       const blocked: number[] = [];
@@ -62,10 +62,10 @@ export class TeamPlasmaGrunt extends TrainerCard {
         (selected) => {
           selected = selected || [];
           if (selected.length > 0) {
-            player.hand.moveCardsTo(selected, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected, sourceCard: this });
             DRAW_CARDS(store, state, player, 4);
           }
-          player.supporter.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
         },
       );
     }

@@ -9,8 +9,7 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { DRAW_CARDS, MOVE_HAND_TO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Marnie extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'SSH';
 
@@ -34,7 +33,7 @@ export class Marnie extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      const playerCards = player.hand.cards.filter(c => c !== this);
+      const playerCards = player.hand.cards.filter((c) => c !== this);
       const opponentCards = [...opponent.hand.cards];
 
       if (playerCards.length === 0 && player.deck.cards.length === 0) {

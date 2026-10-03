@@ -6,17 +6,23 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AbstractAttackEffect, ApplyWeaknessEffect, DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
+import {
+  AbstractAttackEffect,
+  ApplyWeaknessEffect,
+  DealDamageEffect,
+  PutDamageEffect,
+} from '../../../game/store/effects/attack-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class BentSpoon extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'FCO';
   public setNumber: string = '93';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Bent Spoon';
   public fullName: string = 'Bent Spoon FCO';
-  public text: string = 'Prevent all effects of your opponent\'s attacks, except damage, done to the Pokémon this card is attached to. (Existing effects are not removed.)';
+  public text: string =
+    "Prevent all effects of your opponent's attacks, except damage, done to the Pokémon this card is attached to. (Existing effects are not removed.)";
 
   // Ref: set-steam-siege/magearna-ex.ts (Mystic Heart - prevent attack effects except damage)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

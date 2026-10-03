@@ -20,7 +20,7 @@ import { HealEffect } from '../../../game/store/effects/game-effects';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
 
 export class Siebold extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.RAPID_STRIKE];
   public regulationMark: string = 'E';
   public set: string = 'CRE';

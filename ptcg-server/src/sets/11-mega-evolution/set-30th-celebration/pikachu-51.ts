@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, EnergyCard } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON } from "../../../game/store/prefabs/attack-effects";
-import { WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import {WAS_ATTACK_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 /** #51 — Lightning Crash */
 export class Pikachu51 extends PokemonCard {
@@ -30,7 +30,7 @@ export class Pikachu51 extends PokemonCard {
       const cards = player.active.cards.filter(
         c => c instanceof EnergyCard && c.provides.includes(CardType.LIGHTNING),
       );
-      cards.forEach(c => { player.active.moveCardTo(c, player.discard); });
+      cards.forEach(c => { MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this }); });
       THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON(90, effect, store, state);
     }
     return state;

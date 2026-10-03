@@ -9,7 +9,7 @@ import { GameMessage } from '../../../game/game-message';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { GameError } from '../../../game/game-error';
 import { ChoosePokemonPrompt, PlayerType, PokemonCardList, SlotType } from '../../..';
-import { DAMAGE_OPPONENT_POKEMON, DRAW_CARDS, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {DAMAGE_OPPONENT_POKEMON, DRAW_CARDS, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Empoleon extends PokemonCard {
 
@@ -83,7 +83,7 @@ export class Empoleon extends PokemonCard {
 
       const cards = player.discard.cards.filter(c => c === this);
       cards.forEach(card => {
-        player.discard.moveCardTo(card, slots[0]); // Move to Bench
+        MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this }); // Move to Bench
         DRAW_CARDS(store, state, player, 3);
       });
 

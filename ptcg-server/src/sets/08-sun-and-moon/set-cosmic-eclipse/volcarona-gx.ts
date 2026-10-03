@@ -26,15 +26,13 @@ import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
   ABILITY_USED,
   REMOVE_MARKER_AT_END_OF_TURN,
-  BLOCK_IF_GX_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class VolcaronaGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -115,7 +113,7 @@ export class VolcaronaGx extends PokemonCard {
         (cards) => {
           cards = cards || [];
           if (cards.length > 0) {
-            player.hand.moveCardsTo(cards, player.discard);
+            MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
             // Put 2 damage counters on 1 of opponent's Pokemon
             store.prompt(
@@ -157,7 +155,7 @@ export class VolcaronaGx extends PokemonCard {
       if (fireEnergy.length > 0) {
         const toMove = fireEnergy.slice(0, 2);
         toMove.forEach((card) => {
-          cardList.moveCardTo(card, player.hand);
+          MOVE_CARDS(store, state, cardList, player.hand, { cards: [card], sourceCard: this });
         });
       }
     }
@@ -182,7 +180,7 @@ export class VolcaronaGx extends PokemonCard {
 
       pokemonWithEnergy.forEach(({ cardList, energyCards }) => {
         if (energyCards.length === 1) {
-          cardList.moveCardTo(energyCards[0], opponent.discard);
+          MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [energyCards[0]], sourceCard: this });
         } else {
           store.prompt(
             state,
@@ -196,7 +194,7 @@ export class VolcaronaGx extends PokemonCard {
             (selected: Card[]) => {
               const cards = selected || [];
               cards.forEach((card: Card) => {
-                cardList.moveCardTo(card, opponent.discard);
+                MOVE_CARDS(store, state, cardList, opponent.discard, { cards: [card], sourceCard: this });
               });
             },
           );

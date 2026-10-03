@@ -5,7 +5,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { AfterDamageEffect, ApplyWeaknessEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GreatTuskex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -54,7 +54,7 @@ export class GreatTuskex extends PokemonCard {
       }
 
       if (player.active.getPokemonCard() === this) {
-        player.deck.moveTo(player.discard, 5);
+        MOVE_CARDS(store, state, player.deck, player.discard, { count: 5, sourceCard: this });
       }
     }
 

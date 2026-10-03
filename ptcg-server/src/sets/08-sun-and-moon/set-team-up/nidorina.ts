@@ -6,7 +6,7 @@ import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { SuperType } from '../../../game/store/card/card-types';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useFamilyRescue(
   next: Function,
@@ -45,7 +45,7 @@ function* useFamilyRescue(
       next();
     },
   );
-  player.discard.moveCardsTo(cards, player.deck);
+  MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
   if (cards.length > 0) {
     yield store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
       player.deck.applyOrder(order);

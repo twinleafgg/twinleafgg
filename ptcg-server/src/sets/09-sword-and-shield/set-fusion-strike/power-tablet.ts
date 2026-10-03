@@ -9,7 +9,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 
 export class PowerTablet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'FST';
 

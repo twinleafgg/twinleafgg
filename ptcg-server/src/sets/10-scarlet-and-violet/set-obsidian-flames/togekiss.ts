@@ -4,7 +4,7 @@ import { StoreLike, State, StateUtils, PowerType, EnergyCard, AttachEnergyPrompt
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Togekiss extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -69,7 +69,7 @@ export class Togekiss extends PokemonCard {
           store.log(state, GameLog.LOG_PLAYER_USES_ABILITY, { name: player.name, card: 'Togekiss' });
 
           while (player.hand.cards.length < 8 && player.deck.cards.length > 0) {
-            player.deck.moveTo(player.hand, 1);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
           }
         }
       });
@@ -100,7 +100,7 @@ export class Togekiss extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

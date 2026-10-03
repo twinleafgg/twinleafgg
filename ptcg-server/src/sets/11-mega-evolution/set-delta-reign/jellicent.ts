@@ -1,6 +1,6 @@
 import { CardType, ChooseCardsPrompt, GameError, GameMessage, PokemonCard, PowerType, Stage, State, StoreLike, WaitPrompt } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, DRAW_CARDS, REMOVE_MARKER_AT_END_OF_TURN } from "../../../game/store/prefabs/prefabs";
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, DRAW_CARDS, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 /** Keep in sync with board draw flight (~0.7s deck→stage + ~0.3s stage→hand). */
 const DRAW_ANIMATION_WAIT_MS = 1100;
@@ -63,7 +63,7 @@ export class Jellicent extends PokemonCard {
         ), selected => {
           const cards = selected || [];
           if (cards.length > 0) {
-            player.hand.moveCardTo(cards[0], player.deck);
+            MOVE_CARDS(store, state, player.hand, player.deck, { cards: [cards[0]], sourceCard: this });
           }
         });
       });

@@ -10,14 +10,15 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LeagueStaff extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'VIV';
   public setNumber: string = '153';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'League Staff';
   public fullName: string = 'League Staff VIV';
-  public text: string = 'Draw 2 cards. If Wyndon Stadium is in play, draw 2 more cards. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Draw 2 cards. If Wyndon Stadium is in play, draw 2 more cards. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: AGENTS-patterns.md (simple supporter draw), AGENTS-patterns.md (StateUtils.getStadiumCard)

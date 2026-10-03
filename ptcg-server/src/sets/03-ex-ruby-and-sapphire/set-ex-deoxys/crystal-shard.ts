@@ -5,24 +5,30 @@ import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effect
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { ADD_MARKER, HAS_MARKER, IS_TOOL_BLOCKED, MOVE_CARDS, REMOVE_MARKER } from '../../../game/store/prefabs/prefabs';
+import {
+  ADD_MARKER,
+  HAS_MARKER,
+  IS_TOOL_BLOCKED,
+  MOVE_CARDS,
+  REMOVE_MARKER,
+} from '../../../game/store/prefabs/prefabs';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class CrystalShard extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'DX';
   public name: string = 'Crystal Shard';
   public fullName: string = 'Crystal Shard DX';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '85';
 
-  public text: string = 'As long as this card is attached to a Pokémon, that Pokémon\'s type is [C]. If that Pokémon attacks, discard this card at the end of the turn.';
+  public text: string =
+    "As long as this card is attached to a Pokémon, that Pokémon's type is [C]. If that Pokémon attacks, discard this card at the end of the turn.";
 
   public readonly ATTACKED_MARKER = 'ATTACKED_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckPokemonTypeEffect && effect.target.tools.includes(this)) {
       const player = StateUtils.findOwner(state, effect.target);
       if (!IS_TOOL_BLOCKED(store, state, player, this)) {

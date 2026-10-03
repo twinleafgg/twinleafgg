@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, ChooseEnergyPrompt, ConfirmPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class Lapras extends PokemonCard {
@@ -61,7 +61,7 @@ export class Lapras extends PokemonCard {
           ), energy => {
             const cards: Card[] = (energy || []).slice(0, count).map(e => e.card);
             if (cards.length > 0) {
-              opponent.active.moveCardsTo(cards, opponent.hand);
+              MOVE_CARDS(store, state, opponent.active, opponent.hand, { cards: cards, sourceCard: this });
             }
           });
         }

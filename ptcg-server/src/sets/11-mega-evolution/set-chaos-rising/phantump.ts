@@ -8,13 +8,11 @@ import { GameMessage } from '../../../game/game-message';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import {
-  WAS_POWER_USED,
+import {WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   USE_ABILITY_ONCE_PER_TURN,
   ABILITY_USED,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
+  REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Phantump extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -98,7 +96,7 @@ export class Phantump extends PokemonCard {
           ABILITY_USED(player, this);
 
           const evolutionCard = selected[0];
-          player.hand.moveCardTo(evolutionCard, cardList);
+          MOVE_CARDS(store, state, player.hand, cardList, { cards: [evolutionCard], sourceCard: this });
           cardList.clearEffects();
           cardList.pokemonPlayedTurn = state.turn;
 

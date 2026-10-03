@@ -21,7 +21,7 @@ import {
 
 import { Effect } from '../../../game/store/effects/effect';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RegidragoV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -66,7 +66,7 @@ export class RegidragoV extends PokemonCard {
       const player = effect.player;
       const temp = new CardList();
 
-      player.deck.moveTo(temp, 3);
+      MOVE_CARDS(store, state, player.deck, temp, { count: 3, sourceCard: this });
 
       // Check if any cards drawn are basic energy
       const energyCardsDrawn = temp.cards.filter((card) => {
@@ -76,7 +76,7 @@ export class RegidragoV extends PokemonCard {
       // If no energy cards were drawn, move all cards to hand
       if (energyCardsDrawn.length == 0) {
         temp.cards.slice(0, 3).forEach((card) => {
-          temp.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, temp, player.discard, { cards: [card], sourceCard: this });
         });
       } else {
         // Prompt to attach energy if any were drawn
@@ -96,10 +96,10 @@ export class RegidragoV extends PokemonCard {
             if (transfers) {
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                temp.moveCardTo(transfer.card, target); // Move card to target
+                MOVE_CARDS(store, state, temp, target, { cards: [transfer.card], sourceCard: this }); // Move card to target
               }
               temp.cards.forEach((card) => {
-                temp.moveCardTo(card, player.discard); // Move card to discard
+                MOVE_CARDS(store, state, temp, player.discard, { cards: [card], sourceCard: this }); // Move card to discard
               });
             }
           },

@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types
 import { StoreLike, State, StateUtils } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, DISCARD_TOP_X_CARDS_FROM_YOUR_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Avalugg extends PokemonCard {
@@ -62,7 +62,7 @@ export class Avalugg extends PokemonCard {
         if (card instanceof EnergyCard && card.energyType === EnergyType.BASIC && card.provides.includes(CardType.WATER)) {
           waterEnergyCount++;
         }
-        player.deck.moveCardTo(card, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
       }
 
       // For each Water Energy discarded, discard top 3 of opponent's deck

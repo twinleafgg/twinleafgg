@@ -22,8 +22,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  WAS_POWER_USED,
+import {WAS_POWER_USED,
   BLOCK_EFFECT_IF_MARKER,
   ADD_MARKER,
   ABILITY_USED,
@@ -32,8 +31,7 @@ import {
   DISCARD_TOP_X_OF_OPPONENTS_DECK,
   AFTER_ATTACK,
   MOVE_CARD_TO,
-  THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN,
-} from '../../../game/store/prefabs/prefabs';
+  THIS_POKEMON_CANNOT_USE_THIS_ATTACK_NEXT_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RegigigasLVX extends PokemonCard {
   public stage = Stage.LV_X;
@@ -107,8 +105,8 @@ export class RegigigasLVX extends PokemonCard {
           );
           const tools = chosenCardList.tools.slice();
 
-          attachedCards.forEach((c) => chosenCardList.moveCardTo(c, player.discard));
-          tools.forEach((c) => chosenCardList.moveCardTo(c, player.discard));
+          attachedCards.forEach((c) => MOVE_CARDS(store, state, chosenCardList, player.discard, { cards: [c], sourceCard: this }));
+          tools.forEach((c) => MOVE_CARDS(store, state, chosenCardList, player.discard, { cards: [c], sourceCard: this }));
 
           // Mark chosen Pokémon for KO
           chosenCardList.damage += 999;
@@ -137,7 +135,7 @@ export class RegigigasLVX extends PokemonCard {
             (cards) => {
               cards = cards || [];
               cards.forEach((card) => {
-                player.discard.moveCardTo(card, regigigasCardList);
+                MOVE_CARDS(store, state, player.discard, regigigasCardList, { cards: [card], sourceCard: this });
               });
 
               // Remove 8 damage counters from Regigigas

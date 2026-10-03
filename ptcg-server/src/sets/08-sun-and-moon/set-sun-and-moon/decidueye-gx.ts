@@ -16,12 +16,10 @@ import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  BLOCK_IF_DISCARD_EMPTY,
+import {BLOCK_IF_DISCARD_EMPTY,
   BLOCK_IF_GX_ATTACK_USED,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class DecidueyeGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -152,7 +150,7 @@ export class DecidueyeGX extends PokemonCard {
         ],
         (selected) => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
         },
       );
     }

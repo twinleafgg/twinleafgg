@@ -8,15 +8,17 @@ import { GameMessage, ShowCardsPrompt, StoreLike, State, StateUtils } from '../.
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TormentingSpray extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'BUS';
   public setNumber: string = '125';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Tormenting Spray';
   public fullName: string = 'Tormenting Spray BUS';
-  public text: string = 'Choose a random card from your opponent\'s hand. Your opponent reveals that card. If it\'s a Supporter card, discard it.';
+  public text: string =
+    "Choose a random card from your opponent's hand. Your opponent reveals that card. If it's a Supporter card, discard it.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-sun-and-moon/zubat.ts (Astonish - random card from opponent's hand)
@@ -29,30 +31,37 @@ export class TormentingSpray extends TrainerCard {
       }
 
       // Choose a random card from opponent's hand (isSecret = true means random)
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DISCARD,
-        opponent.hand,
-        {},
-        { allowCancel: false, min: 1, max: 1, isSecret: true }
-      ), cards => {
-        cards = cards || [];
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DISCARD,
+          opponent.hand,
+          {},
+          { allowCancel: false, min: 1, max: 1, isSecret: true },
+        ),
+        (cards) => {
+          cards = cards || [];
 
-        if (cards.length > 0) {
-          // Reveal the card
-          store.prompt(state, new ShowCardsPrompt(
-            player.id,
-            GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-            cards
-          ), () => { });
+          if (cards.length > 0) {
+            // Reveal the card
+            store.prompt(
+              state,
+              new ShowCardsPrompt(player.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+              () => {},
+            );
 
-          // If it's a Supporter card, discard it
-          const card = cards[0];
-          if (card instanceof TrainerCard && card.trainerType === TrainerType.SUPPORTER) {
-            opponent.hand.moveCardTo(card, opponent.discard);
+            // If it's a Supporter card, discard it
+            const card = cards[0];
+            if (card instanceof TrainerCard && card.trainerType === TrainerType.SUPPORTER) {
+              MOVE_CARDS(store, state, opponent.hand, opponent.discard, {
+                cards: [card],
+                sourceCard: this,
+              });
+            }
           }
-        }
-      });
+        },
+      );
     }
 
     return state;

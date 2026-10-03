@@ -8,7 +8,7 @@ import { Card, EnergyCard, GameMessage, PlayerType, SlotType, StoreLike, State }
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Rayquaza extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -90,7 +90,7 @@ export class Rayquaza extends PokemonCard {
         ), (selected: Card[]) => {
           const cards = selected || [];
           cards.forEach(card => {
-            player.discard.moveCardTo(card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [card], sourceCard: this });
           });
         });
       });

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChoosePokemonPrompt, GameMessage, PlayerType, PowerType, SlotType, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Starmie extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -55,7 +55,7 @@ export class Starmie extends PokemonCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
         if (cardList.getPokemonCard() === this) {
-          cardList.moveTo(player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
           cardList.clearEffects();
         }
       });

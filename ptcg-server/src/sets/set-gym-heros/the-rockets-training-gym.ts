@@ -8,12 +8,12 @@ import { StateUtils } from '../../game/store/state-utils';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../game/store/prefabs/stadium-effect';
 
 export class TheRocketsTrainingGym extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'G1';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '104';
-  public name: string = 'The Rocket\'s Training Gym';
-  public fullName: string = 'The Rocket\'s Training Gym G1';
+  public name: string = "The Rocket's Training Gym";
+  public fullName: string = "The Rocket's Training Gym G1";
   public text: string = 'Each player pays [C] more to retreat his or her Active Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

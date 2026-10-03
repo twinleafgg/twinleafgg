@@ -5,7 +5,7 @@ import { StoreLike, State, StateUtils, ChoosePokemonPrompt, PlayerType, SlotType
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Donphan extends PokemonCard {
 
@@ -89,7 +89,7 @@ export class Donphan extends PokemonCard {
         // Discard Stadium
         const cardList = StateUtils.findCardList(state, stadiumCard);
         const player = StateUtils.findOwner(state, cardList);
-        cardList.moveTo(player.discard);
+        MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
       }
     }
 

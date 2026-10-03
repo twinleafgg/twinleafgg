@@ -4,12 +4,14 @@ import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {
+  REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 import { GamePhase, State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 export class CynthiasAmbition extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public regulationMark = 'F';
 
@@ -19,18 +21,17 @@ export class CynthiasAmbition extends TrainerCard {
 
   public setNumber: string = '138';
 
-  public name: string = 'Cynthia\'s Ambition';
+  public name: string = "Cynthia's Ambition";
 
-  public fullName: string = 'Cynthia\'s Ambition BRS';
+  public fullName: string = "Cynthia's Ambition BRS";
 
   public readonly CYNTHIAS_AMBITION_MARKER = 'CYNTHIAS_AMBITION_MARKER';
 
   public text: string =
-    'Draw cards until you have 5 cards in your hand. If any of your Pokémon were Knocked Out during your opponent\'s last turn, draw cards until you have 8 cards in your hand instead.';
+    "Draw cards until you have 5 cards in your hand. If any of your Pokémon were Knocked Out during your opponent's last turn, draw cards until you have 8 cards in your hand instead.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
-
       const player = effect.player;
 
       if (player.deck.cards.length === 0) {
@@ -43,22 +44,29 @@ export class CynthiasAmbition extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
       // No Pokemon KO last turn
       if (!player.marker.hasMarker(this.CYNTHIAS_AMBITION_MARKER)) {
-        const cards = player.hand.cards.filter(c => c !== this);
+        const cards = player.hand.cards.filter((c) => c !== this);
         const cardsToDraw = Math.max(0, 5 - cards.length);
-        player.deck.moveTo(player.hand, cardsToDraw);
+        MOVE_CARDS(store, state, player.deck, player.hand, {
+          count: cardsToDraw,
+          sourceCard: this,
+        });
       } else {
-        const cards = player.hand.cards.filter(c => c !== this);
+        const cards = player.hand.cards.filter((c) => c !== this);
         const cardsToDraw = Math.max(0, 8 - cards.length);
-        player.deck.moveTo(player.hand, cardsToDraw);
+        MOVE_CARDS(store, state, player.deck, player.hand, {
+          count: cardsToDraw,
+          sourceCard: this,
+        });
       }
-
-
     }
 
     if (effect instanceof KnockOutEffect) {

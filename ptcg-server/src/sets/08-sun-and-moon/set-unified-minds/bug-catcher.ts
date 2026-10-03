@@ -4,10 +4,10 @@ import { StoreLike, State, GameMessage, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class BugCatcher extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'UNM';
   public setNumber: string = '189';
@@ -26,14 +26,16 @@ export class BugCatcher extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       // Draw 2 cards
-      player.deck.moveTo(player.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       // Flip a coin for 2 more
-      state = COIN_FLIP_PROMPT(store, state, player, result => {
+      state = COIN_FLIP_PROMPT(store, state, player, (result) => {
         if (result) {
-          player.deck.moveTo(player.hand, 2);
-
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
         }
       });
 

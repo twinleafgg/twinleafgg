@@ -2,7 +2,7 @@ import { PokemonCard, Stage, CardType, StoreLike, State, PowerType, ChooseCardsP
 import { Effect } from '../../../game/store/effects/effect';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class FanRotom extends PokemonCard {
 
@@ -105,7 +105,7 @@ export class FanRotom extends PokemonCard {
               cards
             )], () => {
 
-              player.deck.moveCardsTo(cards, player.hand);
+              MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
               player.usedFanCall = true;
             });
           }

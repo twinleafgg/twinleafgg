@@ -4,7 +4,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { AttachEnergyPrompt, Card, CardTarget, GameMessage, PlayerType, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { COIN_FLIP_PROMPT, CONFIRMATION_PROMPT, HAS_CARD_IN_DISCARD, IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, CONFIRMATION_PROMPT, HAS_CARD_IN_DISCARD, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
@@ -88,7 +88,7 @@ export class Moltres extends PokemonCard {
               transfers = transfers || [];
               for (const transfer of transfers) {
                 const target = StateUtils.getTarget(state, player, transfer.to);
-                player.discard.moveCardTo(transfer.card, target);
+                MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
               }
             });
           });

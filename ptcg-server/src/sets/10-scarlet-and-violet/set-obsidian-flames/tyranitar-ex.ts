@@ -4,7 +4,7 @@ import { StoreLike, State, PlayerType, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tyranitarex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -43,7 +43,7 @@ export class Tyranitarex extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
 
-      player.deck.moveTo(player.discard, 2);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 2, sourceCard: this });
     }
 
     // Lightning Rampage

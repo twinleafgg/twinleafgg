@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 
 export class Goodra extends PokemonCard {
@@ -71,7 +71,7 @@ export class Goodra extends PokemonCard {
       COIN_FLIP_PROMPT(store, state, opponent, result => {
         if (!result) {
           // Tails - discard the energy and restore energy attachment allowance
-          target.moveCardTo(energyCard, opponent.discard);
+          MOVE_CARDS(store, state, target, opponent.discard, { cards: [energyCard], sourceCard: this });
           if (target.energies.cards.includes(energyCard)) {
             target.energies.cards.splice(target.energies.cards.indexOf(energyCard), 1);
           }

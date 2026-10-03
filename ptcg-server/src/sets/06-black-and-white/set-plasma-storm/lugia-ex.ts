@@ -12,10 +12,8 @@ import { Effect } from '../../../game/store/effects/effect';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { GameMessage, ChooseCardsPrompt } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  IF_OPPONENTS_POKEMON_KO_BY_ATTACK_DAMAGE_TAKE_MORE_PRIZES,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import {IF_OPPONENTS_POKEMON_KO_BY_ATTACK_DAMAGE_TAKE_MORE_PRIZES,
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class LugiaEx extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -89,7 +87,7 @@ export class LugiaEx extends PokemonCard {
             return;
           }
           // Move the selected Plasma Energy to discard
-          player.active.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.active, player.discard, { cards: cards, sourceCard: this });
         },
       );
     }

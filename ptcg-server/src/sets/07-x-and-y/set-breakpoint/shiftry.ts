@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils, GameMessage, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, SEARCH_DISCARD_PILE_FOR_CARDS_TO_HAND, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shiftry extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -67,7 +67,7 @@ export class Shiftry extends PokemonCard {
             ), (selected: Card[]) => {
               if (selected && selected.length > 0) {
                 selected.forEach(card => {
-                  opponent.hand.moveCardTo(card, opponent.discard);
+                  MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [card], sourceCard: this });
                 });
               }
             });

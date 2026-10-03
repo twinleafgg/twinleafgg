@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, GameError, CardList, OrderCardsPrompt, SelectPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Porygon extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -48,7 +48,7 @@ export class Porygon extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, 4);
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: 4, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -75,7 +75,7 @@ export class Porygon extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, 4);
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 4, sourceCard: this });
 
             return store.prompt(state, new OrderCardsPrompt(
               player.id,

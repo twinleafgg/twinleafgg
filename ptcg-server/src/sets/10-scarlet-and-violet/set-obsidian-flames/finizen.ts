@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
-import { SWITCH_ACTIVE_WITH_BENCHED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SWITCH_ACTIVE_WITH_BENCHED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 
 // function* useAscension(next: Function, store: StoreLike, state: State,
@@ -50,10 +50,9 @@ import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/ga
 //       next();
 //     });
 
-
 //     if (cards.length > 0) {
 //       // Evolve Pokemon
-//       player.deck.moveCardsTo(cards, player.bench[benchIndex]);
+//       MOVE_CARDS(store, state, player.deck, player.bench[benchIndex], { cards: cards, sourceCard: effect.source.getPokemonCard()! });
 //       player.bench[benchIndex].clearEffects();
 //       player.bench[benchIndex].pokemonPlayedTurn = state.turn;
 //     }
@@ -146,7 +145,7 @@ export class Finizen extends PokemonCard {
         }
 
         // Move the evolution card from deck to bench first
-        player.deck.moveCardTo(cards[0], player.bench[finizensNewBenchIndex]);
+        MOVE_CARDS(store, state, player.deck, player.bench[finizensNewBenchIndex], { cards: [cards[0]], sourceCard: this });
 
         const evolveEffect = new EvolveEffect(player, player.bench[finizensNewBenchIndex], cards[0]);
         store.reduceEffect(state, evolveEffect);

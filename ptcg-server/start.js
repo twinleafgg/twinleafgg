@@ -3,6 +3,7 @@ require('./config');
 const { App } = require('./output/backend/app');
 const { BotManager } = require('./output/game/bots/bot-manager');
 const { SimpleBot } = require('./output/simple-bot/simple-bot');
+const { AdvancedBot } = require('./output/advanced-bot/advanced-bot');
 const { CardManager } = require('./output/game/cards/card-manager');
 const { StateSerializer } = require('./output/game/serializer/state-serializer');
 const { config } = require('./output/config');
@@ -237,6 +238,8 @@ if (process.argv.includes('--backfill')) {
 }
 
 const botManager = BotManager.getInstance();
+// Hedrick Worlds 2026 Crushing Hammer Dragapult (Standard)
+// botManager.registerBot(new AdvancedBot('Hedrick Dragapult'));
 // botManager.registerBot(new SimpleBot('Gardevoir'));
 // botManager.registerBot(new SimpleBot('Charizard'));
 // botManager.registerBot(new SimpleBot('LostBox'));

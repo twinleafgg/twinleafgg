@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shinx2 extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,7 +58,7 @@ export class Shinx2 extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         cards.forEach(card => {
-          player.deck.moveCardTo(card, player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
         });
         SHUFFLE_DECK(store, state, player);
       });

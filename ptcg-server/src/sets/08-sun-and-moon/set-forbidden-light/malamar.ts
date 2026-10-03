@@ -13,7 +13,7 @@ import { PlayerType, SlotType } from '../../../game/store/actions/play-card-acti
 import { StateUtils } from '../../../game/store/state-utils';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Malamar extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -93,7 +93,7 @@ export class Malamar extends PokemonCard {
         player.marker.addMarker(this.PSYCHIC_RECHARGE_MARKER, this);
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
 

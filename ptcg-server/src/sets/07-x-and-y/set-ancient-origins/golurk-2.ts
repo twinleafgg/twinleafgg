@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Golurk2 extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -43,10 +43,10 @@ export class Golurk2 extends PokemonCard {
       const player = effect.player;
       if (player.deck.cards.length > 0) {
         const topCard = player.deck.cards[0];
-        player.deck.moveCardTo(topCard, player.discard);
+        MOVE_CARDS(store, state, player.deck, player.discard, { cards: [topCard], sourceCard: this });
         // If it's a Fighting Energy card, attach it to this Pokemon
         if (topCard instanceof EnergyCard && topCard.provides.includes(CardType.FIGHTING)) {
-          player.discard.moveCardTo(topCard, player.active);
+          MOVE_CARDS(store, state, player.discard, player.active, { cards: [topCard], sourceCard: this });
         }
       }
     }

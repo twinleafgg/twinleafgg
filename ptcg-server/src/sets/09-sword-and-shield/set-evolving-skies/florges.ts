@@ -2,12 +2,10 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import {
-  ADD_CONFUSION_TO_PLAYER_ACTIVE,
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   IS_ABILITY_BLOCKED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { GameMessage } from '../../../game/game-message';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
@@ -113,7 +111,7 @@ export class Florges extends PokemonCard {
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
             const targetSlot = StateUtils.getTarget(state, player, transfer.to);
-            source.moveCardTo(transfer.card, targetSlot);
+            MOVE_CARDS(store, state, source, targetSlot, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

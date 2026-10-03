@@ -105,7 +105,7 @@ export class Gyarados extends PokemonCard {
           if (cards.length > 0) {
             // Discard selected special energy card
             cards.forEach(card => {
-              target.moveCardTo(card, opponent.discard);
+              MOVE_CARDS(store, state, target, opponent.discard, { cards: [card], sourceCard: this });
             });
           }
         }

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameError, GameMessage, StateUtils, CardList, PowerType, Player } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { ABILITY_USED, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Vivillon extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -54,9 +54,9 @@ export class Vivillon extends PokemonCard {
       this.shufflePlayerHand(opponent);
 
       const deckBottom = new CardList();
-      opponent.hand.moveTo(deckBottom);
-      deckBottom.moveTo(opponent.deck);
-      opponent.deck.moveTo(opponent.hand, 4);
+      MOVE_CARDS(store, state, opponent.hand, deckBottom, { sourceCard: this });
+      MOVE_CARDS(store, state, deckBottom, opponent.deck, { sourceCard: this });
+      MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: 4, sourceCard: this });
 
       ABILITY_USED(player, this);
       player.marker.addMarker(this.BIG_WINGS_MARKER, this);

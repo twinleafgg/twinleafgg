@@ -23,13 +23,13 @@ import {
   YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED,
   YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED,
 } from '../../game/store/prefabs/attack-effects';
-import { SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../game/store/prefabs/prefabs';
+import {SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
 import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 
 export class MysteryPlateAlpha extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.TECHNICAL_MACHINE];
   public set: string = 'SK';
   public cardImage: string = 'assets/cardback.png';
@@ -63,7 +63,7 @@ export class MysteryPlateAlpha extends TrainerCard {
           { min: 1, max: 1, allowCancel: false },
         ),
         (transfers) => {
-          player.supporter.moveCardTo(effect.trainerCard, transfers[0]);
+          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
         },
       );
     }
@@ -73,7 +73,7 @@ export class MysteryPlateAlpha extends TrainerCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, index) => {
         if (cardList.cards.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
         }
       });
     }
@@ -116,7 +116,7 @@ export class MysteryPlateAlpha extends TrainerCard {
           ),
           (selected) => {
             cards = selected || [];
-            player.deck.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
             SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
             SHUFFLE_DECK(store, state, player);
           },

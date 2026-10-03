@@ -53,7 +53,7 @@ export class Rhyperior extends PokemonCard {
 
       // Discard the top card of deck
       const topCard = player.deck.cards[0];
-      player.deck.moveCardTo(topCard, player.discard);
+      MOVE_CARDS(store, state, player.deck, player.discard, { cards: [topCard], sourceCard: this });
 
       // If it's an Energy card, +100 damage and attach it to this Pokemon
       if (topCard.superType === SuperType.ENERGY) {

@@ -3,9 +3,9 @@ import { Stage, CardType, SpecialCondition } from '../../game/store/card/card-ty
 import { StoreLike, State, StateUtils, PokemonCardList } from '../../game';
 
 import { Effect } from '../../game/store/effects/effect';
-import { DealDamageEffect, AddSpecialConditionsEffect } from '../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
+import { AddSpecialConditionsEffect } from '../../game/store/effects/attack-effects';
 import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import { DEFENDING_POKEMON_DOES_LESS_DAMAGE } from '../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Pikachu extends PokemonCard {
 
@@ -45,14 +45,9 @@ export class Pikachu extends PokemonCard {
 
   public fullName: string = 'Pikachu OP9';
 
-  public readonly GROWL_MARKER = 'GROWL_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      opponent.active.marker.addMarker(this.GROWL_MARKER, this);
+      DEFENDING_POKEMON_DOES_LESS_DAMAGE(store, state, effect, this, 20);
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {
@@ -65,16 +60,6 @@ export class Pikachu extends PokemonCard {
         store.reduceEffect(state, specialCondition);
       }
       return state;
-    }
-
-    if (effect instanceof DealDamageEffect && effect.source.marker.hasMarker(this.GROWL_MARKER, this)) {
-      const reducedDamage = Math.max(0, effect.damage - 20);
-      effect.damage = reducedDamage;
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect) {
-      effect.player.active.marker.removeMarker(this.GROWL_MARKER);
     }
 
     return state;

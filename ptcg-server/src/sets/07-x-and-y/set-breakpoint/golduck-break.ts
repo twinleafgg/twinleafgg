@@ -24,12 +24,10 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_POWER_USED,
+import {WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   ABILITY_USED,
-  BREAK_RULE,
-} from '../../../game/store/prefabs/prefabs';
+  BREAK_RULE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GolduckBreak extends PokemonCard {
   protected _tags = [CardTag.BREAK];
@@ -96,7 +94,7 @@ export class GolduckBreak extends PokemonCard {
             for (const transfer of transfers) {
               const source = StateUtils.getTarget(state, player, transfer.from);
               const target = StateUtils.getTarget(state, player, transfer.to);
-              source.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
             }
             ABILITY_USED(player, this);
           }

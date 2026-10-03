@@ -9,13 +9,14 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class SingleStrikeStyleMustard extends TrainerCard {
   public regulationMark = 'E';
 
   protected _tags = [CardTag.SINGLE_STRIKE];
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BST';
 
@@ -41,7 +42,7 @@ Search your deck for a Single Strike Pokémon and put it onto your Bench. Then, 
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -72,13 +73,13 @@ Search your deck for a Single Strike Pokémon and put it onto your Bench. Then, 
         ),
         (selected) => {
           const cards = selected || [];
-          player.deck.moveCardsTo(cards, slot!);
+          MOVE_CARDS(store, state, player.deck, slot!, { cards: cards, sourceCard: this });
           slot!.pokemonPlayedTurn = state.turn;
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);
 
-            player.deck.moveTo(player.hand, 5);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: this });
           });
         },
       );

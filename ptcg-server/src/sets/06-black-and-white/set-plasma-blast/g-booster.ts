@@ -31,7 +31,7 @@ function* playCard(
 }
 
 export class GBooster extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.ACE_SPEC, CardTag.TEAM_PLASMA];
   public set: string = 'PLB';
   public cardImage: string = 'assets/cardback.png';

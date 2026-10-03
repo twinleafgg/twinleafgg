@@ -6,11 +6,11 @@ import { State } from '../../../game/store/state/state';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { BLOCK_IF_NO_SLOTS, GET_PLAYER_BENCH_SLOTS } from '../../../game/store/prefabs/prefabs';
+import { BLOCK_IF_NO_SLOTS, GET_PLAYER_BENCH_SLOTS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt, PokemonCard, SelectOptionPrompt } from '../../../game';
 
 export class Maxie extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'MA';
   public name: string = 'Maxie';
   public fullName: string = 'Maxie MA';
@@ -25,7 +25,7 @@ export class Maxie extends TrainerCard {
       const player = effect.player;
 
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       if (player.supporterTurn > 0) {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
@@ -76,7 +76,7 @@ export class Maxie extends TrainerCard {
               (selected) => {
                 const cards = selected || [];
                 cards.forEach((card, index) => {
-                  player.hand.moveCardTo(card, slots[index]);
+                  MOVE_CARDS(store, state, player.hand, slots[index], { cards: [card], sourceCard: this });
                   slots[index].pokemonPlayedTurn = state.turn;
 
                   if (slots[index].getPokemonCard()?.stage === Stage.STAGE_2) {
@@ -105,7 +105,7 @@ export class Maxie extends TrainerCard {
               (selected) => {
                 const cards = selected || [];
                 cards.forEach((card, index) => {
-                  player.discard.moveCardTo(card, slots[index]);
+                  MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
                   slots[index].pokemonPlayedTurn = state.turn;
 
                   if (slots[index].getPokemonCard()?.stage === Stage.STAGE_2) {

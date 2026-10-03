@@ -14,11 +14,9 @@ import { ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game'
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   FLIP_UNTIL_TAILS_AND_COUNT_HEADS,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+  SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GyaradosEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX];
@@ -100,7 +98,7 @@ export class GyaradosEx extends PokemonCard {
           (selected) => {
             const cards = selected || [];
             cards.forEach((card) => {
-              player.deck.moveCardTo(card, player.active);
+              MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
             });
             SHUFFLE_DECK(store, state, player);
           },

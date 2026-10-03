@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Spiritomb extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -54,7 +54,7 @@ export class Spiritomb extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         cards.forEach(c => {
-          player.deck.moveCardTo(c, player.discard);
+          MOVE_CARDS(store, state, player.deck, player.discard, { cards: [c], sourceCard: this });
         });
 
         SHUFFLE_DECK(store, state, player);

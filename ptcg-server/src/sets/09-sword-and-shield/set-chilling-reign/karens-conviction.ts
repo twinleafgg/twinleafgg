@@ -9,8 +9,7 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { StateUtils } from '../../..';
 
 export class KarensConviction extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'CRE';
 
@@ -20,12 +19,12 @@ export class KarensConviction extends TrainerCard {
 
   public regulationMark = 'E';
 
-  public name: string = 'Karen\'s Conviction';
+  public name: string = "Karen's Conviction";
 
-  public fullName: string = 'Karen\'s Conviction CRE';
+  public fullName: string = "Karen's Conviction CRE";
 
   public text: string =
-    'During this turn, your Single Strike Pokémon\'s attacks do 20 more damage to your opponent\'s Active Pokémon for each Prize card your opponent has taken (before applying Weakness and Resistance).';
+    "During this turn, your Single Strike Pokémon's attacks do 20 more damage to your opponent's Active Pokémon for each Prize card your opponent has taken (before applying Weakness and Resistance).";
 
   private readonly KARENS_CONVICTION_MARKER = 'KARENS_CONVICTION_MARKER';
 
@@ -44,7 +43,10 @@ export class KarensConviction extends TrainerCard {
         return state;
       }
 
-      if (effect instanceof EndTurnEffect && effect.player.marker.hasMarker(this.KARENS_CONVICTION_MARKER, this)) {
+      if (
+        effect instanceof EndTurnEffect &&
+        effect.player.marker.hasMarker(this.KARENS_CONVICTION_MARKER, this)
+      ) {
         effect.player.marker.removeMarker(this.KARENS_CONVICTION_MARKER, this);
         return state;
       }
@@ -52,6 +54,5 @@ export class KarensConviction extends TrainerCard {
       return state;
     }
     return state;
-
   }
 }

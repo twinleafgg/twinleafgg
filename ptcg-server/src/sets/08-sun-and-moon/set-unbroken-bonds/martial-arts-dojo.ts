@@ -11,7 +11,7 @@ import { StoreLike } from '../../../game/store/store-like';
 export class MartialArtsDojo extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '179';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'UNB';
   public name = 'Martial Arts Dojo';
   public fullName = 'Martial Arts Dojo UNB';

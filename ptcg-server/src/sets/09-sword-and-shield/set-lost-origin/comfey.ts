@@ -9,7 +9,7 @@ import { GameError, PlayerType, PokemonCard, PowerType } from '../../../game';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Comfey extends PokemonCard {
 
@@ -77,7 +77,7 @@ export class Comfey extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 2);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 2, sourceCard: this });
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
         if (cardList.getPokemonCard() === this) {
@@ -93,8 +93,8 @@ export class Comfey extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         player.marker.addMarker(this.FLOWER_SELECTING_MARKER, this);
-        deckTop.moveCardsTo(selected, player.hand);
-        deckTop.moveTo(player.lostzone);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, player.lostzone, { sourceCard: this });
         return state;
       });
     }

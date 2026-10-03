@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { CardList, ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Zangoose extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -47,14 +47,14 @@ export class Zangoose extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, Math.min(6, player.deck.cards.length));
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(6, player.deck.cards.length), sourceCard: this });
 
       SHOW_CARDS_TO_PLAYER(store, state, player, deckTop.cards);
 
       const pokemonCount = deckTop.cards.filter(c => c instanceof PokemonCard).length;
 
       if (pokemonCount === 0) {
-        deckTop.moveTo(player.discard);
+        MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
         return state;
       }
 
@@ -66,9 +66,9 @@ export class Zangoose extends PokemonCard {
         { min: 0, max: pokemonCount, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          deckTop.moveCardsTo(selected, player.hand);
+          MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
         }
-        deckTop.moveTo(player.discard);
+        MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
       });
     }
 

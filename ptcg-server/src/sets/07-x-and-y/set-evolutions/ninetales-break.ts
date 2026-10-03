@@ -7,7 +7,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { BREAK_RULE, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BREAK_RULE, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class NinetalesBreak extends PokemonCard {
   protected _tags = [CardTag.BREAK];
@@ -43,7 +43,7 @@ export class NinetalesBreak extends PokemonCard {
       );
       const discardCount = fireEnergy.length;
       fireEnergy.forEach((c) => {
-        player.active.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
       });
       effect.damage += 60 * discardCount;
     }

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State, StateUtils, GameError, GameMessage, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { DRAW_CARDS, MOVE_CARDS, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_POKEMON_OFF_BOARD, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Unown extends PokemonCard {
 
@@ -60,28 +60,10 @@ export class Unown extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      const monCardList = player.bench[benchIndex];
-      const pokemons = monCardList.getPokemons();
-      const otherCards = monCardList.cards.filter(card =>
-        !(card instanceof PokemonCard) &&
-        !pokemons.includes(card as PokemonCard) &&
-        (!monCardList.tools || !monCardList.tools.includes(card))
-      );
-      const tools = [...monCardList.tools];
-      // Move Pokémon cards to the discard
-      if (pokemons.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.discard, { cards: pokemons });
-      }
-      // Move other cards (tools, energies, etc.) to the discard
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-      }
-      // Move tools to the discard
-      if (tools.length > 0) {
-        for (const tool of tools) {
-          cardList.moveCardTo(tool, player.discard);
-        }
-      }
+      MOVE_POKEMON_OFF_BOARD(store, state, player.bench[benchIndex], {
+        pokemonDestination: player.discard,
+        sourceCard: this,
+      });
 
       DRAW_CARDS(store, state, player, 1);
       return state;

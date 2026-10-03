@@ -35,11 +35,9 @@ import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 import { MewtwoVUNIONTopRight } from './mewtwo-v-union-tr';
 import { MewtwoVUNIONBottomLeft } from './mewtwo-v-union-bl';
 import { MewtwoVUNIONBottomRight } from './mewtwo-v-union-br';
-import {
-  IS_ABILITY_BLOCKED,
+import {IS_ABILITY_BLOCKED,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MewtwoVUNIONTopLeft extends PokemonCard {
   public stage: Stage = Stage.VUNION;
@@ -137,23 +135,23 @@ export class MewtwoVUNIONTopLeft extends PokemonCard {
         if (slots.length > 0) {
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONTopRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONBottomLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONBottomRight) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           // gotta make sure the actual mon ends up on top
           player.discard.cards.forEach((card) => {
             if (card instanceof MewtwoVUNIONTopLeft) {
-              player.discard.moveCardTo(card, slots[0]);
+              MOVE_CARDS(store, state, player.discard, slots[0], { cards: [card], sourceCard: this });
             }
           });
           player.assembledVUNIONs.push(this.name);
@@ -237,7 +235,7 @@ export class MewtwoVUNIONTopLeft extends PokemonCard {
             }
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.discard.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
             }
           },
         );

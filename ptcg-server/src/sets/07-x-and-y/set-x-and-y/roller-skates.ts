@@ -9,7 +9,7 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { COIN_FLIP_PROMPT, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RollerSkates extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'XY';
   public cardImage: string = 'assets/cardback.png';
@@ -17,8 +17,7 @@ export class RollerSkates extends TrainerCard {
   public name: string = 'Roller Skates';
   public fullName: string = 'Roller Skates XY';
 
-  public text: string =
-    'Flip a coin. If heads, draw 3 cards.';
+  public text: string = 'Flip a coin. If heads, draw 3 cards.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
@@ -28,17 +27,14 @@ export class RollerSkates extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      COIN_FLIP_PROMPT(store, state, effect.player, result => {
+      COIN_FLIP_PROMPT(store, state, effect.player, (result) => {
         if (result) {
           const player = effect.player;
           DRAW_CARDS(store, state, player, 3);
         }
       });
-
-
     }
 
     return state;
   }
-
 }

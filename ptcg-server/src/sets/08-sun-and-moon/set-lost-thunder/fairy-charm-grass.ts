@@ -11,7 +11,7 @@ import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 
 export class FairyCharmGrass extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'LOT';
   public setNumber: string = '174';
   public cardImage: string = 'assets/cardback.png';

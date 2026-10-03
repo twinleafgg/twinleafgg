@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, CardTag } from '../../game/store/card/card
 import { StoreLike, State, EnergyCard, ShuffleDeckPrompt, Card } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class VictiniPrismStar extends PokemonCard {
   protected _tags = [CardTag.PRISM_STAR];
@@ -40,7 +40,7 @@ export class VictiniPrismStar extends PokemonCard {
         }
       });
       effect.damage = 20 * shuffleList.length;
-      player.discard.moveCardsTo(shuffleList, player.deck);
+      MOVE_CARDS(store, state, player.discard, player.deck, { cards: shuffleList, sourceCard: this });
       return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
         player.deck.applyOrder(order);
       });

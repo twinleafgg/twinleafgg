@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class Gigalith extends PokemonCard {
@@ -43,9 +43,9 @@ export class Gigalith extends PokemonCard {
 
       cardsToDiscard.forEach(card => {
         if (card.superType === SuperType.ENERGY && card.energyType === EnergyType.BASIC && card.name === 'Fighting Energy') {
-          player.deck.moveCardTo(card, player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
         } else {
-          player.deck.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, player.deck, player.discard, { cards: [card], sourceCard: this });
         }
       });
     }

@@ -7,12 +7,10 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
-
 export class PanicMask extends TrainerCard {
-
   public regulationMark = 'F';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'LOR';
 
@@ -25,10 +23,9 @@ export class PanicMask extends TrainerCard {
   public fullName = 'Panic Mask LOR';
 
   public text: string =
-    'Prevent all damage done to the Pokémon this card is attached to by attacks from your opponent\'s Pokémon that have 40 HP or less remaining.';
+    "Prevent all damage done to the Pokémon this card is attached to by attacks from your opponent's Pokémon that have 40 HP or less remaining.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof DealDamageEffect && effect.target.tools.includes(this)) {
       const player = effect.player;
       const targetPlayer = StateUtils.findOwner(state, effect.target);

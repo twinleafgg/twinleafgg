@@ -7,17 +7,18 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameError, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Milo extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'RCL';
   public setNumber: string = '161';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Milo';
   public fullName: string = 'Milo RCL';
-  public text: string = 'Discard up to 2 cards from your hand, and draw 2 cards for each card you discarded in this way. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Discard up to 2 cards from your hand, and draw 2 cards for each card you discarded in this way. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-ex-team-rocket-returns/magmar.ts (discard up to 2, draw 2 per discarded)
@@ -28,29 +29,42 @@ export class Milo extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(this, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [this], sourceCard: this });
       effect.preventDefault = true;
 
       const otherCards = player.hand.cards.slice();
       if (otherCards.length === 0) {
-        player.supporter.moveCardTo(this, player.discard);
+        MOVE_CARDS(store, state, player.supporter, player.discard, {
+          cards: [this],
+          sourceCard: this,
+        });
         return state;
       }
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DISCARD,
-        player.hand,
-        {},
-        { allowCancel: false, min: 0, max: 2 }
-      ), cards => {
-        cards = cards || [];
-        if (cards.length > 0) {
-          player.hand.moveCardsTo(cards, player.discard);
-          DRAW_CARDS(store, state, player, cards.length * 2);
-        }
-        player.supporter.moveCardTo(this, player.discard);
-      });
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DISCARD,
+          player.hand,
+          {},
+          { allowCancel: false, min: 0, max: 2 },
+        ),
+        (cards) => {
+          cards = cards || [];
+          if (cards.length > 0) {
+            MOVE_CARDS(store, state, player.hand, player.discard, {
+              cards: cards,
+              sourceCard: this,
+            });
+            DRAW_CARDS(store, state, player, cards.length * 2);
+          }
+          MOVE_CARDS(store, state, player.supporter, player.discard, {
+            cards: [this],
+            sourceCard: this,
+          });
+        },
+      );
     }
 
     return state;

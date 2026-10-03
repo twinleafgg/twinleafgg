@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, ChoosePokemonPrompt, PlayerType, SlotType, GameMessage, ChooseCardsPrompt, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Hippowdon extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -81,7 +81,7 @@ export class Hippowdon extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), targets => {
           if (targets && targets.length > 0) {
-            player.active.moveCardTo(cards[0], targets[0]);
+            MOVE_CARDS(store, state, player.active, targets[0], { cards: [cards[0]], sourceCard: this });
           }
         });
       });

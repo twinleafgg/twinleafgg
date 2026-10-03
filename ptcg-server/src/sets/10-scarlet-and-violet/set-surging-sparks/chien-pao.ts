@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { PowerType, StoreLike, State, ConfirmPrompt, GameMessage, StateUtils, ChooseEnergyPrompt, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class ChienPao extends PokemonCard {
@@ -62,7 +62,7 @@ export class ChienPao extends PokemonCard {
             // Discard Stadium
             const cardList = StateUtils.findCardList(state, stadiumCard);
             const player = StateUtils.findOwner(state, cardList);
-            cardList.moveTo(player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
             return state;
           }
           return state;
@@ -88,7 +88,7 @@ export class ChienPao extends PokemonCard {
         { allowCancel: false }
       ), energy => {
         const cards: Card[] = (energy || []).map(e => e.card);
-        player.active.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
       });
     }
 

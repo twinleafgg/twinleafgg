@@ -6,13 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
-  ADD_MARKER,
-  HAS_MARKER,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
-import { HealEffect } from '../../../game/store/effects/game-effects';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class GardevoirV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -45,21 +39,11 @@ export class GardevoirV extends PokemonCard {
   public name: string = 'Gardevoir V';
   public fullName: string = 'Gardevoir V CPA';
 
-  public readonly HEALED_THIS_TURN_MARKER = 'GARDEVOIR_V_HEALED_THIS_TURN_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Track when this Pokemon is healed this turn
-    // Ref: set-forbidden-light/goodra.ts (Soaking Horn - HealEffect marker tracking)
-    if (effect instanceof HealEffect && effect.target.getPokemonCard() === this) {
-      ADD_MARKER(this.HEALED_THIS_TURN_MARKER, effect.player, this);
-    }
-
-    REMOVE_MARKER_AT_END_OF_TURN(effect, this.HEALED_THIS_TURN_MARKER, this);
-
     // Attack 2: Swelling Pulse
-    // Ref: set-forbidden-light/goodra.ts (Soaking Horn - HAS_MARKER for healed this turn)
+    // Ref: set-fates-collide/altaria-ex.ts (Powerful Gain — healedThisTurn)
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      if (HAS_MARKER(this.HEALED_THIS_TURN_MARKER, effect.player, this)) {
+      if (effect.player.active.healedThisTurn) {
         effect.damage += 80;
       }
     }

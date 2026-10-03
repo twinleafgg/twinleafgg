@@ -10,7 +10,7 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
 
 export class Colress extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   protected _tags = [CardTag.TEAM_PLASMA];
 

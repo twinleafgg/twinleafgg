@@ -5,7 +5,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_POKEPOWER_BLOCKED, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_POKEPOWER_BLOCKED, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 
 export class Tauros extends PokemonCard {
@@ -61,7 +61,7 @@ export class Tauros extends PokemonCard {
             // Discard Stadium
             const cardList = StateUtils.findCardList(state, stadiumCard);
             const player = StateUtils.findOwner(state, cardList);
-            cardList.moveTo(player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
             return state;
           }
           return state;

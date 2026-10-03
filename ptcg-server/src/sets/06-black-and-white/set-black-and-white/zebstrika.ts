@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, ADD_PARALYZED_TO_PLAYER_ACTIVE, AFTER_ATTACK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Zebstrika extends PokemonCard {
@@ -45,7 +45,7 @@ export class Zebstrika extends PokemonCard {
       ), cards => {
         cards = cards || [];
         if (cards.length > 0) {
-          player.deck.moveCardsTo(cards, player.active);
+          MOVE_CARDS(store, state, player.deck, player.active, { cards: cards, sourceCard: this });
         }
         SHUFFLE_DECK(store, state, player);
       });

@@ -9,13 +9,14 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 export class Will extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'CEC';
   public setNumber: string = '208';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Will';
   public fullName: string = 'Will CEC';
-  public text: string = 'The next time you flip any number of coins for the effect of an attack, Ability, or Trainer card this turn, choose heads or tails for the first coin flip. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'The next time you flip any number of coins for the effect of an attack, Ability, or Trainer card this turn, choose heads or tails for the first coin flip. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // TODO: Will's effect ("choose heads or tails for the first coin flip") requires

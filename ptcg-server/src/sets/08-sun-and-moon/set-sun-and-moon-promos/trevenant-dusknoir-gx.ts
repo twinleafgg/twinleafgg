@@ -8,7 +8,7 @@ import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import {
   KNOCK_OUT_DEFENDING_POKEMON_AT_END_OF_OPPONENTS_NEXT_TURN,
 } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TrevenantDusknoirGX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -66,7 +66,7 @@ export class TrevenantDusknoirGX extends PokemonCard {
           cards
         ), () => []);
 
-        opponent.hand.moveCardsTo(cards, opponent.deck);
+        MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: cards, sourceCard: this });
 
         return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
           opponent.deck.applyOrder(order);

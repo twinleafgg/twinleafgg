@@ -50,24 +50,18 @@ export class Gengar extends PokemonCard {
         const pokemonCard = target.getPokemonCard();
 
         if (pokemonCard && !IS_ABILITY_BLOCKED(store, state, player, this)) {
-          // Get all cards attached
-          const allCards = [...target.cards];
+          // Discard attached cards (energy, tools, etc.) before KO; Pokémon stay for KO handling
+          const pokemons = target.getPokemons();
+          const tools = [...target.tools];
+          const otherCards = target.cards.filter(
+            card => !pokemons.includes(card as PokemonCardType) && !tools.includes(card),
+          );
 
-          // Separate Pokemon cards from other cards
-          const pokemonCards: PokemonCardType[] = [];
-          const otherCards: Card[] = [];
-
-          allCards.forEach(card => {
-            if (card instanceof PokemonCardType && card !== pokemonCard) {
-              pokemonCards.push(card);
-            } else if (card !== pokemonCard) {
-              otherCards.push(card);
-            }
-          });
-
-          // Discard non-Pokemon cards before KO
           if (otherCards.length > 0) {
-            target.moveCardsTo(otherCards, player.discard);
+            MOVE_CARDS(store, state, target, player.discard, { cards: otherCards, sourceCard: this });
+          }
+          for (const tool of tools) {
+            MOVE_CARDS(store, state, target, player.discard, { cards: [tool], sourceCard: this });
           }
 
           // Add marker to track that this Gengar should be returned to hand

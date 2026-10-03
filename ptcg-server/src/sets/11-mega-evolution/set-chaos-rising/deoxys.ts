@@ -3,7 +3,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { Card, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 
@@ -67,7 +67,7 @@ export class Deoxys extends PokemonCard {
           if (cards.length > 0) {
             const cardList = StateUtils.findCardList(state, this);
             if (cardList) {
-              player.deck.moveCardsTo(cards, cardList);
+              MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
             }
           }
           SHUFFLE_DECK(store, state, player);

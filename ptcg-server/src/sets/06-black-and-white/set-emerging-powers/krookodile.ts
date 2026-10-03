@@ -5,7 +5,7 @@ import { StoreLike, State, StateUtils, GameMessage, GameError, SuperType } from 
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT, IS_ABILITY_BLOCKED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Krookodile extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -61,7 +61,7 @@ export class Krookodile extends PokemonCard {
         if (result) {
           const energyCards = opponent.active.cards.filter(c => c.superType === SuperType.ENERGY);
           if (energyCards.length > 0) {
-            opponent.active.moveCardTo(energyCards[0], opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [energyCards[0]], sourceCard: this });
           }
         }
       });

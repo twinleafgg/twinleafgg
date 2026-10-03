@@ -106,7 +106,7 @@ export class RayquazaGX extends PokemonCard {
           (wantToUse) => {
             if (wantToUse) {
               // Discard top 3 cards from the deck
-              player.deck.moveTo(player.discard, 3);
+              MOVE_CARDS(store, state, player.deck, player.discard, { count: 3, sourceCard: this });
 
               const blockedTo: CardTarget[] = [];
               player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
@@ -190,8 +190,8 @@ export class RayquazaGX extends PokemonCard {
       }
 
       const cards = player.hand.cards.filter((c) => c !== this);
-      player.hand.moveCardsTo(cards, player.discard);
-      player.deck.moveTo(player.hand, 10);
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 10, sourceCard: this });
     }
     return state;
   }

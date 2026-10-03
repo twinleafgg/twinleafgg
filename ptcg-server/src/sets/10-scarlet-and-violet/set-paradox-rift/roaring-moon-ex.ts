@@ -6,10 +6,8 @@ import { StoreLike } from '../../../game/store/store-like';
 import { Effect } from '../../../game/store/effects/effect';
 import { ConfirmPrompt, GameMessage, StateUtils } from '../../../game';
 import { KnockOutOpponentEffect } from '../../../game/store/effects/attack-effects';
-import {
-  THIS_POKEMON_DOES_DAMAGE_TO_ITSELF,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import {THIS_POKEMON_DOES_DAMAGE_TO_ITSELF,
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RoaringMoonex extends PokemonCard {
   public regulationMark = 'G';
@@ -82,7 +80,7 @@ export class RoaringMoonex extends PokemonCard {
               const cardList = StateUtils.findCardList(state, stadiumCard);
               if (cardList) {
                 const player = StateUtils.findOwner(state, cardList);
-                cardList.moveTo(player.discard);
+                MOVE_CARDS(store, state, cardList, player.discard, { sourceCard: this });
               }
               effect.damage += 120;
               return state;

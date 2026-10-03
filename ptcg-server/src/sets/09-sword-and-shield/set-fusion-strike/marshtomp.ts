@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Marshtomp extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -53,7 +53,7 @@ export class Marshtomp extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          player.active.moveCardTo(cards[0], player.hand);
+          MOVE_CARDS(store, state, player.active, player.hand, { cards: [cards[0]], sourceCard: this });
         }
       });
     }

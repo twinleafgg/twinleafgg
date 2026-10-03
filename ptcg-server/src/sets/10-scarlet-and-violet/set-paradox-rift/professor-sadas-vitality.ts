@@ -8,9 +8,10 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { AttachEnergyPrompt, EnergyCard, GameError, Player, StateUtils } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ProfessorSadasVitality extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   protected _tags = [CardTag.ANCIENT];
 
@@ -66,7 +67,7 @@ export class ProfessorSadasVitality extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -129,11 +130,11 @@ export class ProfessorSadasVitality extends TrainerCard {
 
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.discard.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
           }
 
           if (transfers.length > 0) {
-            player.deck.moveTo(player.hand, 3);
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 3, sourceCard: this });
           }
           return state;
         },

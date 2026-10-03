@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, GameError, GameMessage, PlayerType, EnergyCard, EnergyType, StateUtils, PokemonCardList, ChooseCardsPrompt, SuperType } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from "../../../game/store/prefabs/costs";
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class Moltres extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -82,7 +82,7 @@ export class Moltres extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), cards => {
         if (cards && cards.length > 0) {
-          player.hand.moveCardsTo(cards, cardList);
+          MOVE_CARDS(store, state, player.hand, cardList, { cards: cards, sourceCard: this });
         }
       });
     }

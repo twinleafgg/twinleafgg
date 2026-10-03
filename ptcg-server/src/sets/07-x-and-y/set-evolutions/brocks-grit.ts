@@ -1,6 +1,6 @@
 import { Card } from '../../../game/store/card/card';
 import { GameError } from '../../../game/game-error';
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { EnergyType, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
@@ -13,11 +13,10 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class BrocksGrit extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'EVO';
-  public name: string = 'Brock\'s Grit';
-  public fullName: string = 'Brock\'s Grit EVO';
+  public name: string = "Brock's Grit";
+  public fullName: string = "Brock's Grit EVO";
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '74';
 
@@ -25,7 +24,6 @@ export class BrocksGrit extends TrainerCard {
     'Shuffle 6 in any combination of Pokémon and basic Energy cards from your discard pile into your deck.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
       const supporterTurn = player.supporterTurn;
@@ -52,26 +50,26 @@ export class BrocksGrit extends TrainerCard {
       }
 
       let cards: Card[] = [];
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DECK,
-        player.discard,
-        {},
-        { min: 1, max: 6, allowCancel: false, blocked }
-      ), selected => {
-        cards = selected || [];
-        cards.forEach((card) => {
-          store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, { name: player.name, card: card.name });
-        });
-        MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DECK,
+          player.discard,
+          {},
+          { min: 1, max: 6, allowCancel: false, blocked },
+        ),
+        (selected) => {
+          cards = selected || [];
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: cards, sourceCard: this });
 
-        return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
-          player.deck.applyOrder(order);
-        });
-      });
+          return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
+            player.deck.applyOrder(order);
+          });
+        },
+      );
     }
 
     return state;
   }
-
 }

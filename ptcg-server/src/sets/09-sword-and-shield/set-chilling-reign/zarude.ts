@@ -6,7 +6,6 @@ import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
-
 function* usePackCall(next: Function, store: StoreLike, state: State, effect: AttackEffect, self: Card): IterableIterator<State> {
   const turn = state.turn;
   let max = 1;
@@ -92,6 +91,5 @@ export class Zarude extends PokemonCard {
 
     return state;
   }
-
 
 }

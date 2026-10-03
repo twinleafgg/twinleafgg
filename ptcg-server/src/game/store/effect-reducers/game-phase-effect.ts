@@ -279,6 +279,10 @@ export function gamePhaseReducer(store: StoreLike, state: State, effect: Effect)
       cardList.preventDamageNextTurnPending = null;
       cardList.preventEffectsOfAttacksNextTurn = null;
       cardList.preventEffectsOfAttacksNextTurnPending = null;
+      cardList.coinFlipPreventAttackDamageNextTurn = false;
+      cardList.coinFlipPreventAttackDamageNextTurnPending = false;
+      cardList.cannotBeSpecialConditionedNextTurn = false;
+      cardList.cannotBeSpecialConditionedNextTurnPending = false;
       cardList.surviveOnTenHpNextTurn = null;
       cardList.retaliateOnDamageNextTurn = null;
       cardList.noWeaknessNextTurn = false;
@@ -302,6 +306,14 @@ export function gamePhaseReducer(store: StoreLike, state: State, effect: Effect)
       if (cardList.retaliateOnDamageNextTurnPending !== null) {
         cardList.retaliateOnDamageNextTurn = cardList.retaliateOnDamageNextTurnPending;
         cardList.retaliateOnDamageNextTurnPending = null;
+      }
+      if (cardList.coinFlipPreventAttackDamageNextTurnPending) {
+        cardList.coinFlipPreventAttackDamageNextTurn = true;
+        cardList.coinFlipPreventAttackDamageNextTurnPending = false;
+      }
+      if (cardList.cannotBeSpecialConditionedNextTurnPending) {
+        cardList.cannotBeSpecialConditionedNextTurn = true;
+        cardList.cannotBeSpecialConditionedNextTurnPending = false;
       }
       if (cardList.noWeaknessNextTurnPending) {
         cardList.noWeaknessNextTurn = true;
@@ -374,6 +386,10 @@ export function gamePhaseReducer(store: StoreLike, state: State, effect: Effect)
       cardList.nextTurnAttackDamageBonusPending = null;
       cardList.nextTurnAttackBaseDamage = cardList.nextTurnAttackBaseDamagePending;
       cardList.nextTurnAttackBaseDamagePending = null;
+      cardList.outgoingAttackDamageBonusNextTurn = cardList.outgoingAttackDamageBonusNextTurnPending;
+      cardList.outgoingAttackDamageBonusNextTurnPending = 0;
+      cardList.nextTurnCoinFlipCount = cardList.nextTurnCoinFlipCountPending;
+      cardList.nextTurnCoinFlipCountPending = null;
     });
 
     // Clear active defending Pokemon extra damage at end of the attacking player's turn
@@ -485,6 +501,9 @@ export function gamePhaseReducer(store: StoreLike, state: State, effect: Effect)
       }
       if (cardList.cannotEvolveNextTurn) {
         cardList.cannotEvolveNextTurn = false;
+      }
+      if (cardList.canEvolveThisTurn) {
+        cardList.canEvolveThisTurn = false;
       }
       if (cardList.cannotBeHealedNextTurn) {
         cardList.cannotBeHealedNextTurn = false;

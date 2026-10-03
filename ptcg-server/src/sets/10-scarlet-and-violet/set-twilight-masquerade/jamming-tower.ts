@@ -13,14 +13,15 @@ import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class JammingTower extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'H';
   public set: string = 'TWM';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '153';
   public name: string = 'Jamming Tower';
   public fullName: string = 'Jamming Tower TWM';
-  public text: string = 'Pokémon Tools attached to each Pokémon (both yours and your opponent\'s) have no effect.';
+  public text: string =
+    "Pokémon Tools attached to each Pokémon (both yours and your opponent's) have no effect.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

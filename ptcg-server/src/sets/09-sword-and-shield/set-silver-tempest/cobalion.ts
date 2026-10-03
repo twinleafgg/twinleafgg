@@ -4,7 +4,7 @@ import { CardList, ChooseCardsPrompt, GameMessage, PowerType, ShuffleDeckPrompt,
 import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Cobalion extends PokemonCard {
 
@@ -70,7 +70,7 @@ export class Cobalion extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         for (const card of cards) {
-          player.deck.moveCardTo(card, basicPokemon as unknown as CardList);
+          MOVE_CARDS(store, state, player.deck, basicPokemon as unknown as CardList, { cards: [card], sourceCard: this });
         }
         return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
           player.deck.applyOrder(order);

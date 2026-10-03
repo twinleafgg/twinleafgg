@@ -12,6 +12,7 @@ import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { CardList, EnergyCard, Player, pokemonHasCardType } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* playCard(
   next: Function,
@@ -24,7 +25,7 @@ function* playCard(
   const opponent = StateUtils.getOpponent(state, player);
   let cards: Card[] = [];
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
   // We will discard this card after prompt confirmation
   effect.preventDefault = true;
 
@@ -44,7 +45,7 @@ function* playCard(
   const maxGrassPokemonOrEnergyCount = Math.min(grassPokemonOrEnergyCount, 2);
 
   const deckTop = new CardList();
-  player.deck.moveTo(deckTop, 7);
+  MOVE_CARDS(store, state, player.deck, deckTop, { count: 7, sourceCard: self });
 
   yield store.prompt(
     state,
@@ -62,12 +63,12 @@ function* playCard(
   );
 
   if (cards.length === 0) {
-    deckTop.moveTo(player.deck);
+    MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: self });
 
     return state;
   }
-  deckTop.moveCardsTo(cards, player.hand);
-  deckTop.moveTo(player.deck);
+  MOVE_CARDS(store, state, deckTop, player.hand, { cards: cards, sourceCard: self });
+  MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: self });
 
   if (cards.length > 0) {
     yield store.prompt(
@@ -83,7 +84,7 @@ function* playCard(
 }
 
 export class BugCatchingSet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark = 'H';
   public set: string = 'TWM';
   public cardImage: string = 'assets/cardback.png';
@@ -94,9 +95,9 @@ export class BugCatchingSet extends TrainerCard {
   public text: string =
     'Look at the top 7 cards of your deck. You may reveal up to 2 in any combination of [G] Pokémon and Basic [G] Energy cards you find there and put them into your hand. Shuffle the other cards back into your deck.';
 
-  public canPlay(store: StoreLike, state: State, player: Player): boolean {    return true;
+  public canPlay(store: StoreLike, state: State, player: Player): boolean {
+    return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {

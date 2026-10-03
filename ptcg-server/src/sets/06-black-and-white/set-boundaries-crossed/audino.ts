@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PowerType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect, PowerEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DEFENDING_POKEMON_FLIPS_COIN_TO_ATTACK } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Audino extends PokemonCard {
@@ -47,7 +47,7 @@ export class Audino extends PokemonCard {
       const healEffect = new HealEffect(player, player.active, 10);
       store.reduceEffect(state, healEffect);
       player.active.clearAllSpecialConditions();
-      player.hand.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards: [this], sourceCard: this });
     }
     // Hip Bump
     if (WAS_ATTACK_USED(effect, 0, this)) {

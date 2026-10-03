@@ -3,7 +3,7 @@ import { Stage, CardType, TrainerType, SuperType } from '../../../game/store/car
 import { StoreLike, State, TrainerCard, ChooseCardsPrompt, GameMessage, GameError } from '../../../game';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PlayPokemonEffect, CoinFlipSequenceEffect } from '../../../game/store/effects/play-card-effects';
@@ -79,7 +79,7 @@ export class Conkeldurr2 extends PokemonCard {
           SHOW_CARDS_TO_PLAYER(store, state, opponent, selected);
 
           // Put on top of deck
-          player.discard.moveCardTo(selected[0], player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [selected[0]], sourceCard: this });
         }
       });
     }
@@ -97,7 +97,7 @@ export class Conkeldurr2 extends PokemonCard {
       const sequenceEffect = new CoinFlipSequenceEffect(player, 'untilTails', (results: boolean[]) => {
         for (const isHeads of results) {
           if (isHeads && opponent.deck.cards.length > 0) {
-            opponent.deck.moveTo(opponent.discard, 1);
+            MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: 1, sourceCard: this });
           }
         }
       });

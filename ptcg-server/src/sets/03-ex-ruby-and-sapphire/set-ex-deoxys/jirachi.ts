@@ -5,7 +5,7 @@ import { StoreLike, State, GameError, GameMessage, StateUtils, CardList, ChooseC
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { CheckPokemonPowersEffect } from '../../../game/store/effects/check-effects';
-import { ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, HAS_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Jirachi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -81,7 +81,7 @@ export class Jirachi extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 5, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -91,8 +91,8 @@ export class Jirachi extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         ADD_MARKER(this.WISHING_STAR_MARKER, player, this);
-        deckTop.moveCardsTo(selected, player.hand);
-        deckTop.moveTo(player.deck);
+        MOVE_CARDS(store, state, deckTop, player.hand, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, player.deck, { sourceCard: this });
 
         ABILITY_USED(player, this);
 

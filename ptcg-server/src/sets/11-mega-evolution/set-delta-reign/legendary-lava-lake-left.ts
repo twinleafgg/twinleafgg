@@ -9,7 +9,7 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 import { PokemonCardList } from '../../../game/store/state/pokemon-card-list';
 
 export class LegendaryLavaLakeLeft extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.DUAL_STADIUM];
   public regulationMark: string = 'J';
   public set: string = 'M6';

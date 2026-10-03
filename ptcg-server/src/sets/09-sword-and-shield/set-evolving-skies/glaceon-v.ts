@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_A_STADIUM_CARD_IN_PLAY } from '../../../game/store/prefabs/attack-effects';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
@@ -83,7 +83,7 @@ export class GlaceonV extends PokemonCard {
           const pokemonCard = cards[0] as PokemonCard;
 
           // Move card to hand temporarily for EvolveEffect
-          player.deck.moveCardTo(pokemonCard, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: [pokemonCard], sourceCard: this });
 
           // Evolve this Pokemon using EvolveEffect
           const evolveEffect = new EvolveEffect(player, player.active, pokemonCard);

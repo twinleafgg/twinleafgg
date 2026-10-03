@@ -8,13 +8,14 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RapidStrikeStyleMustard extends TrainerCard {
   public regulationMark = 'E';
 
   protected _tags = [CardTag.RAPID_STRIKE];
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BST';
 
@@ -64,9 +65,9 @@ Put a Rapid Strike Pokémon from your discard pile onto your Bench. If you do, d
         ),
         (selected) => {
           const cards = selected || [];
-          player.discard.moveCardsTo(cards, slot!);
+          MOVE_CARDS(store, state, player.discard, slot!, { cards: cards, sourceCard: this });
           slot!.pokemonPlayedTurn = state.turn;
-          player.deck.moveTo(player.hand, 5);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 5, sourceCard: this });
         },
       );
     }

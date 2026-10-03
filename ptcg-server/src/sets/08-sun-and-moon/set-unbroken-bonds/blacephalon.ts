@@ -14,7 +14,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Blacephalon extends PokemonCard {
   protected _tags = [CardTag.ULTRA_BEAST];
@@ -84,7 +84,7 @@ export class Blacephalon extends PokemonCard {
         ),
         (selected) => {
           effect.damage += 50 * selected.length;
-          player.hand.moveCardsTo(selected, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected, sourceCard: this });
         },
       );
     }

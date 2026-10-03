@@ -22,7 +22,7 @@ import {
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_ASLEEP } from '../../../game/store/prefabs/attack-effects';
 
 export class DarkraiPrismStar extends PokemonCard {
@@ -116,7 +116,7 @@ export class DarkraiPrismStar extends PokemonCard {
                 // Find the card list where this Pokemon will be placed
                 const pokemonList = StateUtils.findCardList(state, this);
                 cards.forEach((card) => {
-                  player.hand.moveCardTo(card, pokemonList);
+                  MOVE_CARDS(store, state, player.hand, pokemonList, { cards: [card], sourceCard: this });
                 });
               },
             );

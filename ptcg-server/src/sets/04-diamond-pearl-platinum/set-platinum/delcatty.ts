@@ -1,10 +1,10 @@
-import { CardList, ChooseCardsPrompt, ConfirmPrompt, EnergyCard, GameError, GameLog, GameMessage, PlayerType, ShowCardsPrompt, State, StateUtils, StoreLike, OrderCardsPrompt } from '../../../game';
+import { CardList, ChooseCardsPrompt, ConfirmPrompt, EnergyCard, GameError, GameMessage, PlayerType, ShowCardsPrompt, State, StateUtils, StoreLike, OrderCardsPrompt } from '../../../game';
 import { BoardEffect, CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
-import { ADD_MARKER, HAS_MARKER, IS_POKEPOWER_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_MARKER, HAS_MARKER, IS_POKEPOWER_BLOCKED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Delcatty extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -85,8 +85,7 @@ export class Delcatty extends PokemonCard {
             if (selected.length === 0) return;
 
             selected.forEach(card => {
-              store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, { name: player.name, card: card.name });
-              player.discard.moveCardTo(card, deckTop);
+              MOVE_CARDS(store, state, player.discard, deckTop, { cards: [card], sourceCard: this });
             });
 
             store.prompt(state, new OrderCardsPrompt(

@@ -10,13 +10,14 @@ import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class Whitney extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'LOT';
   public setNumber: string = '193';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Whitney';
   public fullName: string = 'Whitney LOT';
-  public text: string = 'Draw a card. Then, draw 2 cards for each other Whitney in your discard pile. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Draw a card. Then, draw 2 cards for each other Whitney in your discard pile. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-paldean-fates/students-in-paldea.ts (count same card in discard pile)
@@ -24,10 +25,10 @@ export class Whitney extends TrainerCard {
       const player = effect.player;
 
       // Count other Whitney cards in discard pile
-      const whitneyCount = player.discard.cards.filter(c => c.name === 'Whitney').length;
+      const whitneyCount = player.discard.cards.filter((c) => c.name === 'Whitney').length;
 
       // Draw 1 + 2 per Whitney in discard
-      const totalDraw = 1 + (2 * whitneyCount);
+      const totalDraw = 1 + 2 * whitneyCount;
       DRAW_CARDS(store, state, player, totalDraw);
     }
 

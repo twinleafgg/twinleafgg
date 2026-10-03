@@ -21,12 +21,10 @@ import {
 } from '../../../game';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   SEARCH_DECK_FOR_CARDS_TO_HAND,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useTrinityNova(
   next: Function,
@@ -62,7 +60,7 @@ function* useTrinityNova(
       transfers = transfers || [];
       for (const transfer of transfers) {
         const target = StateUtils.getTarget(state, player, transfer.to);
-        player.deck.moveCardTo(transfer.card, target);
+        MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: effect.source.getPokemonCard()! });
         next();
       }
     },
@@ -178,7 +176,7 @@ export class ArceusVSTAR extends PokemonCard {
     //               target.cards[0].hasTag(CardTag.POKEMON_VSTAR) ||
     //               target.cards[0].hasTag(CardTag.POKEMON_VMAX)) {
 
-    //             player.deck.moveCardTo(transfer.card, target);
+    //             MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
     //           }
 
     //         }

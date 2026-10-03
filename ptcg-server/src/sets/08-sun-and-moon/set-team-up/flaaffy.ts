@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types
 import { StoreLike, State } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Flaaffy extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -45,7 +45,7 @@ export class Flaaffy extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
       const cards = player.active.cards.filter(c => c instanceof EnergyCard && c.energyType === EnergyType.BASIC && c.provides.includes(CardType.LIGHTNING));
-      cards.forEach(c => { player.active.moveCardTo(c, player.discard); });
+      cards.forEach(c => { MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this }); });
     }
 
     return state;

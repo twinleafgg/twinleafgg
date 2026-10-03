@@ -1,6 +1,6 @@
 import { CardType, EnergyCard, PokemonCard, Stage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { COIN_FLIP_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Togedemaru extends PokemonCard {
@@ -47,7 +47,7 @@ export class Togedemaru extends PokemonCard {
         c instanceof EnergyCard && c.provides.includes(CardType.LIGHTNING)
       );
       const discardCount = cards.length;
-      cards.forEach(c => { player.active.moveCardTo(c, player.discard); });
+      cards.forEach(c => { MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this }); });
       effect.damage = 30 * discardCount;
     }
 

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, PowerType, StoreLike, State, StateUtils, ChooseCardsPrompt, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
@@ -24,7 +24,7 @@ function* useAbility(next: Function, store: StoreLike, state: State, effect: Att
       { min: 1, max: 1, allowCancel: false }
     ), (selected: Card[] | null) => {
       const cards = selected || [];
-      opponent.hand.moveCardsTo(cards, opponent.discard);
+      MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
       next();
     });
   }
@@ -39,7 +39,7 @@ function* useAbility(next: Function, store: StoreLike, state: State, effect: Att
       { min: 1, max: 1, allowCancel: false }
     ), (selected: Card[] | null) => {
       const cards = selected || [];
-      player.hand.moveCardsTo(cards, player.discard);
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
       next();
     });
   }

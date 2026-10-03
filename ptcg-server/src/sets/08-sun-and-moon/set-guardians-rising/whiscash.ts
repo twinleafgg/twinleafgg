@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardList } from '../../../game/store/state/card-list';
 
 import { CardType, Stage } from '../../../game/store/card/card-types';
@@ -52,11 +52,11 @@ export class Whiscash extends PokemonCard {
       const player = effect.player;
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 3);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 3, sourceCard: this });
 
       const energyCount = deckTop.cards.filter(c => c instanceof EnergyCard).length;
 
-      deckTop.moveTo(player.discard, deckTop.cards.length);
+      MOVE_CARDS(store, state, deckTop, player.discard, { count: deckTop.cards.length, sourceCard: this });
 
       effect.damage = 100 * energyCount;
     }

@@ -4,17 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State } from '../../../game';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  WAS_ATTACK_USED,
-  ADD_MARKER,
-  HAS_MARKER,
-  REMOVE_MARKER,
-  BREAK_RULE,
-} from '../../../game/store/prefabs/prefabs';
+import { BREAK_RULE } from '../../../game/store/prefabs/prefabs';
+import { NEXT_TURN_ATTACK_BONUS_ALL_ATTACKS } from '../../../game/store/prefabs/attack-effects';
 
 export class MachampBreak extends PokemonCard {
   protected _tags = [CardTag.BREAK];
@@ -39,37 +32,12 @@ export class MachampBreak extends PokemonCard {
   public name: string = 'Machamp BREAK';
   public fullName: string = 'Machamp BREAK EVO';
 
-  public readonly BOOMERANG_MARKER = 'MACHAMP_BREAK_EVO_BOOMERANG';
-  public readonly CLEAR_BOOMERANG_MARKER = 'MACHAMP_BREAK_EVO_CLEAR_BOOMERANG';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Check for Boomerang bonus on ANY attack from this Pokemon
-    // Ref: set-fates-collide/serperior.ts (Coil - next turn all attacks bonus)
-    if (effect instanceof AttackEffect && effect.player.active.getPokemonCard() === this) {
-      if (HAS_MARKER(this.BOOMERANG_MARKER, effect.player.active, this)) {
-        effect.damage += 100;
-      }
-    }
-
-    // Attack 1: Boomerang Lariat - set marker for next turn bonus
-    // Ref: set-fates-collide/serperior.ts (Coil - next turn all attacks bonus)
-    if (WAS_ATTACK_USED(effect, 0, this)) {
-      ADD_MARKER(this.BOOMERANG_MARKER, effect.player.active, this);
-    }
-
-    // Two-marker pattern: persists through our next turn, then cleared
-    if (effect instanceof EndTurnEffect) {
-      effect.player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
-        if (cardList.getPokemonCard() === this) {
-          if (HAS_MARKER(this.CLEAR_BOOMERANG_MARKER, cardList, this)) {
-            REMOVE_MARKER(this.BOOMERANG_MARKER, cardList, this);
-            REMOVE_MARKER(this.CLEAR_BOOMERANG_MARKER, cardList, this);
-          } else if (HAS_MARKER(this.BOOMERANG_MARKER, cardList, this)) {
-            ADD_MARKER(this.CLEAR_BOOMERANG_MARKER, cardList, this);
-          }
-        }
-      });
-    }
+    NEXT_TURN_ATTACK_BONUS_ALL_ATTACKS(effect, {
+      source: this,
+      bonusDamage: 100,
+      setupAttack: this.attacks[0],
+    });
 
     BREAK_RULE(effect, state, this);
 

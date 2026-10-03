@@ -60,7 +60,7 @@ export class Moltres extends PokemonCard {
         store.reduceEffect(state, discardEnergy);
 
         state = MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: energy.length });
-        // opponent.deck.moveTo(opponent.discard, energy.length);
+        // MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: energy.length, sourceCard: this });
       });
     }
 

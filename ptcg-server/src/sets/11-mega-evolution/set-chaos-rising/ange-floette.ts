@@ -12,7 +12,7 @@ import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class AngeFloette extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'CRI';
   public setNumber: string = '75';
   public name: string = 'Ange Floette';

@@ -5,7 +5,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerType } from '../../../game/store/card/pokemon-types';
 import { CardList, ConfirmPrompt, GameError, GameMessage, ShowCardsPrompt, StateUtils } from '../../../game';
-import { SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Lanturn extends PokemonCard {
 
@@ -48,7 +48,7 @@ export class Lanturn extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      opponent.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 1, sourceCard: this });
 
       state = store.prompt(state, new ShowCardsPrompt(
         player.id,
@@ -56,7 +56,7 @@ export class Lanturn extends PokemonCard {
         deckTop.cards,
       ), () => {
         // Move the card back to the top of the deck
-        deckTop.moveTo(opponent.deck, 0); // Ensure the card is placed back on top of the deck
+        MOVE_CARDS(store, state, deckTop, opponent.deck, { count: 0, sourceCard: this }); // Ensure the card is placed back on top of the deck
         opponent.deck.cards = deckTop.cards.concat(opponent.deck.cards);
       });
     }

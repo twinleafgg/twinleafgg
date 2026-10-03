@@ -4,14 +4,29 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { CardType, TrainerType } from '../../../game/store/card/card-types';
-import { CardTarget, GameError, GameMessage, PlayerType, PokemonCardList, SlotType, StoreLike, State } from '../../../game';
+import {
+  CardTarget,
+  GameError,
+  GameMessage,
+  PlayerType,
+  PokemonCardList,
+  SlotType,
+  StoreLike,
+  State,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   // Find Pokemon with damage AND Fairy energy attached
@@ -26,9 +41,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
     const checkEnergy = new CheckProvidedEnergyEffect(player, cardList);
     store.reduceEffect(state, checkEnergy);
-    const hasFairyEnergy = checkEnergy.energyMap.some(em =>
-      em.provides.includes(CardType.FAIRY)
-    );
+    const hasFairyEnergy = checkEnergy.energyMap.some((em) => em.provides.includes(CardType.FAIRY));
 
     if (!hasFairyEnergy) {
       blocked.push(target);
@@ -44,37 +57,41 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
 
   // Do not discard the card yet
   effect.preventDefault = true;
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: effect.trainerCard });
 
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_HEAL,
-    PlayerType.BOTTOM_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { min: 1, max: 1, allowCancel: false, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_HEAL,
+      PlayerType.BOTTOM_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { min: 1, max: 1, allowCancel: false, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length > 0) {
     const healEffect = new HealEffect(player, targets[0], 50);
     store.reduceEffect(state, healEffect);
   }
 
-
   return state;
 }
 
 export class FairyDrop extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'FCO';
   public setNumber: string = '99';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Fairy Drop';
   public fullName: string = 'Fairy Drop FCO';
-  public text: string = 'Heal 50 damage from 1 of your Pokémon that has any [Y] Energy attached to it.';
+  public text: string =
+    'Heal 50 damage from 1 of your Pokémon that has any [Y] Energy attached to it.';
 
   // Ref: set-champions-path/hyper-potion.ts (heal with energy requirement), set-x-and-y/slurpuff.ts (Fairy energy check)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

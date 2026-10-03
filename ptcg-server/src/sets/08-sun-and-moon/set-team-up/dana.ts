@@ -10,13 +10,14 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
 
 export class Dana extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'TEU';
   public setNumber: string = '137';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Dana';
   public fullName: string = 'Dana TEU';
-  public text: string = 'You can play this card only if your opponent\'s Active Pokémon is a Stage 2 Pokémon. Search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    "You can play this card only if your opponent's Active Pokémon is a Stage 2 Pokémon. Search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck. You may play only 1 Supporter card during your turn (before your attack).";
 
   // Ref: set-celestial-storm/mawile.ts (SEARCH_DECK_FOR_CARDS_TO_HAND)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -30,9 +31,13 @@ export class Dana extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      SEARCH_DECK_FOR_CARDS_TO_HAND(store, state, player, this,
+      SEARCH_DECK_FOR_CARDS_TO_HAND(
+        store,
+        state,
+        player,
+        this,
         {},
-        { min: 0, max: 2, allowCancel: true }
+        { min: 0, max: 2, allowCancel: true },
       );
     }
 

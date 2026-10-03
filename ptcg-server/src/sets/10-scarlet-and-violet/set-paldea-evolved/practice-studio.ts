@@ -11,17 +11,17 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class PracticeStudio extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public regulationMark = 'G';
   public set: string = 'PAL';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '186';
   public name: string = 'Practice Studio';
   public fullName: string = 'Practice Studio PAL';
-  public text: string = 'The attacks of Stage 1 Pokémon (both yours and your opponent\'s) do 10 more damage to the opponent\'s Active Pokémon (before applying Weakness and Resistance).';
+  public text: string =
+    "The attacks of Stage 1 Pokémon (both yours and your opponent's) do 10 more damage to the opponent's Active Pokémon (before applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof PutDamageEffect && StateUtils.getStadiumCard(state) === this) {
       const owner = StateUtils.findOwner(state, effect.target);
       const pokemonCard = effect.source.getPokemonCard();
@@ -33,7 +33,13 @@ export class PracticeStudio extends TrainerCard {
         return state;
       }
 
-      if (attack && attack.damage > 0 && effect.target === opponent.active && pokemonCard && pokemonCard.stage === Stage.STAGE_1) {
+      if (
+        attack &&
+        attack.damage > 0 &&
+        effect.target === opponent.active &&
+        pokemonCard &&
+        pokemonCard.stage === Stage.STAGE_1
+      ) {
         effect.damage += 10;
       }
     }

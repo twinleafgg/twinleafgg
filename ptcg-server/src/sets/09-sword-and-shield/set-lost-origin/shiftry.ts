@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ConfirmPrompt, GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shiftry extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -78,10 +78,10 @@ export class Shiftry extends PokemonCard {
 
       // Move tools first (moveTo doesn't move tools)
       const tools = player.active.tools.slice();
-      tools.forEach(t => { player.active.moveCardTo(t, player.lostzone); });
+      tools.forEach(t => { MOVE_CARDS(store, state, player.active, player.lostzone, { cards: [t], sourceCard: this }); });
 
       // Move all cards (Pokemon + energy)
-      player.active.moveTo(player.lostzone);
+      MOVE_CARDS(store, state, player.active, player.lostzone, { sourceCard: this });
     }
 
     if (effect instanceof EndTurnEffect) {

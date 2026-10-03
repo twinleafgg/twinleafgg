@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card
 import { StoreLike, State, GameMessage, ChooseCardsPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Butterfree extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -66,7 +66,7 @@ export class Butterfree extends PokemonCard {
         if (cards.length > 0) {
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           cards.forEach(card => {
-            player.deck.moveCardTo(card, player.active);
+            MOVE_CARDS(store, state, player.deck, player.active, { cards: [card], sourceCard: this });
           });
 
           // Heal 40 damage since we attached energy

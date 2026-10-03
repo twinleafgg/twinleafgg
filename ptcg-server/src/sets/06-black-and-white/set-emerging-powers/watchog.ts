@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
 
 export class Watchog extends PokemonCard {
@@ -43,7 +43,7 @@ export class Watchog extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      opponent.deck.moveTo(deckTop, 5);
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 5, sourceCard: this });
 
       return store.prompt(state, new OrderCardsPrompt(
         player.id,

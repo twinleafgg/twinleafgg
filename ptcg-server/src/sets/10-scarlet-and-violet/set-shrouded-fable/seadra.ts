@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, Card, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useCallForBackup(next: Function, store: StoreLike, state: State,
   effect: AttackEffect): IterableIterator<State> {
@@ -26,7 +26,7 @@ function* useCallForBackup(next: Function, store: StoreLike, state: State,
   }
 
   cards.forEach((card, index) => {
-    player.deck.moveCardTo(card, player.hand);
+    MOVE_CARDS(store, state, player.deck, player.hand, { cards: [card], sourceCard: effect.source.getPokemonCard()! });
   });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {

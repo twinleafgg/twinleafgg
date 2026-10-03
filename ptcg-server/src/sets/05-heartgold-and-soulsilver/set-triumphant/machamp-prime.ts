@@ -19,11 +19,9 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  THIS_ATTACK_DOES_X_MORE_DAMAGE,
+import {THIS_ATTACK_DOES_X_MORE_DAMAGE,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 
 export class Machamp extends PokemonCard {
@@ -109,7 +107,7 @@ export class Machamp extends PokemonCard {
 
       // Remove the cards from the active and add to Machamp on the bench
       cardsToMove.forEach((transfer) => {
-        source.moveCardTo(transfer, machampBenchSlot);
+        MOVE_CARDS(store, state, source, machampBenchSlot, { cards: [transfer], sourceCard: this });
       });
 
       player.switchPokemon(player.bench[machampBenchIndex]);

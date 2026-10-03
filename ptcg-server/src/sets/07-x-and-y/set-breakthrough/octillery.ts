@@ -8,7 +8,7 @@ import { PowerType } from '../../../game/store/card/pokemon-types';
 import { GameError, GameMessage } from '../../../game';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, ABILITY_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, ABILITY_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Octillery extends PokemonCard {
@@ -71,7 +71,7 @@ export class Octillery extends PokemonCard {
         if (player.deck.cards.length === 0) {
           break;
         }
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
       player.marker.addMarker(this.ABYSSAL_HAND_MARKER, this);
       ABILITY_USED(player, this);

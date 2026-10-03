@@ -10,15 +10,17 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AetherFoundationEmployee extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'LOT';
   public setNumber: string = '168';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Aether Foundation Employee';
   public fullName: string = 'Aether Foundation Employee LOT';
-  public text: string = 'Put 3 Pok\u00e9mon that have "Alolan" in their names from your discard pile into your hand. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Put 3 Pok\u00e9mon that have "Alolan" in their names from your discard pile into your hand. You may play only 1 Supporter card during your turn (before your attack).';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-paradox-rift/tulip.ts (discard pile card selection with blocked indices)
@@ -42,26 +44,30 @@ export class AetherFoundationEmployee extends TrainerCard {
 
       const maxCards = Math.min(3, alolanCount);
 
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        player.discard,
-        { superType: SuperType.POKEMON },
-        { min: 1, max: maxCards, allowCancel: false, blocked }
-      ), selected => {
-        const cards = selected || [];
-        cards.forEach(c => {
-          player.discard.moveCardTo(c, player.hand);
-        });
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          player.discard,
+          { superType: SuperType.POKEMON },
+          { min: 1, max: maxCards, allowCancel: false, blocked },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          cards.forEach((c) => {
+            MOVE_CARDS(store, state, player.discard, player.hand, { cards: [c], sourceCard: this });
+          });
 
-        if (cards.length > 0) {
-          store.prompt(state, new ShowCardsPrompt(
-            opponent.id,
-            GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-            cards
-          ), () => { });
-        }
-      });
+          if (cards.length > 0) {
+            store.prompt(
+              state,
+              new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+              () => {},
+            );
+          }
+        },
+      );
     }
 
     return state;

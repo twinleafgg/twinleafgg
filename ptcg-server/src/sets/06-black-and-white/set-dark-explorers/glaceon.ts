@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, ChooseCardsPrompt, ChoosePokemonPrompt, PlayerType, SlotType, Card } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { AFTER_ATTACK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {AFTER_ATTACK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 
 export class Glaceon extends PokemonCard {
@@ -87,7 +87,7 @@ export class Glaceon extends PokemonCard {
           { min: 1, max: 1, allowCancel: false }
         ), targets => {
           if (targets && targets.length > 0) {
-            player.active.moveCardTo(cards[0], targets[0]);
+            MOVE_CARDS(store, state, player.active, targets[0], { cards: [cards[0]], sourceCard: this });
           }
         });
       });

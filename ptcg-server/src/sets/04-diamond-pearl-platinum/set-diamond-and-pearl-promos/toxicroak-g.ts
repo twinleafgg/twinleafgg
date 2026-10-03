@@ -16,7 +16,7 @@ import {
   BLOCK_IF_HAS_SPECIAL_CONDITION,
   COIN_FLIP_PROMPT,
   HAS_MARKER,
-  MOVE_CARDS,
+  MOVE_POKEMON_OFF_BOARD,
   REMOVE_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
   WAS_POWER_USED,
@@ -84,36 +84,15 @@ export class ToxicroakG extends PokemonCard {
       COIN_FLIP_PROMPT(store, state, player, (result) => {
         if (result) {
           const pokemonCardList = cardList as PokemonCardList;
-          const tentacoolCard = pokemonCardList.getPokemonCard();
-          if (!tentacoolCard) {
+          if (!pokemonCardList.getPokemonCard()) {
             return state;
           }
 
-          const pokemons = pokemonCardList.getPokemons();
-          const otherCards = cardList.cards.filter(
-            (card) =>
-              !(card instanceof PokemonCard) &&
-              !pokemons.includes(card as PokemonCard) &&
-              (!pokemonCardList.tools || !pokemonCardList.tools.includes(card)),
-          );
-          const tools = [...pokemonCardList.tools];
-
-          // Move tools to discard first
-          if (tools.length > 0) {
-            for (const tool of tools) {
-              pokemonCardList.moveCardTo(tool, player.discard);
-            }
-          }
-
-          // Move other cards to discard
-          if (otherCards.length > 0) {
-            MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-          }
-
-          // Move Pokémon to hand
-          if (pokemons.length > 0) {
-            MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons });
-          }
+          MOVE_POKEMON_OFF_BOARD(store, state, pokemonCardList, {
+            pokemonDestination: player.hand,
+            attachedDestination: player.discard,
+            sourceCard: this,
+          });
         }
       });
     }

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ShuffleDeckPrompt } from '../../../game/store/prompts/shuffle-prompt';
 
 export class Darmanitan extends PokemonCard {
@@ -42,7 +42,7 @@ export class Darmanitan extends PokemonCard {
 
       // Shuffle hand into deck
       const cardsToShuffle = player.hand.cards.slice();
-      player.hand.moveCardsTo(cardsToShuffle, player.deck);
+      MOVE_CARDS(store, state, player.hand, player.deck, { cards: cardsToShuffle, sourceCard: this });
 
       return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
         player.deck.applyOrder(order);

@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { ConfirmCardsPrompt } from '../../../game/store/prompts/confirm-cards-prompt';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Morpeko extends PokemonCard {
 
@@ -79,7 +79,7 @@ export class Morpeko extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
       player.marker.addMarker(this.SNACK_SEARCH_MARKER, this);
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
@@ -97,7 +97,7 @@ export class Morpeko extends PokemonCard {
 
         if (selected !== null) {
           // Discard card
-          deckTop.moveCardsTo(deckTop.cards, player.discard);
+          MOVE_CARDS(store, state, deckTop, player.discard, { cards: deckTop.cards, sourceCard: this });
         } else {
 
           // Move back to the top of your deck
@@ -135,7 +135,7 @@ export class Morpeko extends PokemonCard {
 
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
 

@@ -8,6 +8,7 @@ import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effec
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class IgnitionEnergy extends EnergyCard {
   public provides: CardType[] = [CardType.COLORLESS];
@@ -47,7 +48,7 @@ If this card is attached to an Evolution Pokémon, it provides [C][C][C] Energy 
       const player = effect.player;
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
         if (cardList.cards.includes(this)) {
-          cardList.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           effect.player.marker.removeMarker(this.IGNITION_ENERGY_MARKER, this);
         }
       });

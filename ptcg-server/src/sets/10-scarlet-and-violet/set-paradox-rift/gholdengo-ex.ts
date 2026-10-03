@@ -21,7 +21,7 @@ import { GameMessage } from '../../../game/game-message';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gholdengoex extends PokemonCard {
   public regulationMark = 'G';
@@ -97,9 +97,9 @@ export class Gholdengoex extends PokemonCard {
       const isActive = player.active.getPokemonCard() === this;
 
       if (isActive) {
-        player.deck.moveTo(player.hand, 2);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       } else {
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
 
       player.marker.addMarker(this.MAKE_IT_RAIN_MARKER, this);
@@ -135,7 +135,7 @@ export class Gholdengoex extends PokemonCard {
           const discardEnergy = new DiscardCardsEffect(effect, cards);
           discardEnergy.target = player.active;
           store.reduceEffect(state, discardEnergy);
-          player.hand.moveCardsTo(cards, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
           // Calculate damage
           effect.damage = cards.length * 50;

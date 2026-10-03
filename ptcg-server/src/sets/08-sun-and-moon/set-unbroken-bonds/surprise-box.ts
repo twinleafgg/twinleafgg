@@ -8,15 +8,16 @@ import { StoreLike, State, StateUtils, GameError, GameMessage } from '../../../g
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class SurpriseBox extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'UNB';
   public setNumber: string = '187';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Surprise Box';
   public fullName: string = 'Surprise Box UNB';
-  public text: string = 'Put a card from your opponent\'s discard pile into their hand.';
+  public text: string = "Put a card from your opponent's discard pile into their hand.";
 
   // Ref: set-team-up/return-label.ts (choose from opponent's discard)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -28,18 +29,25 @@ export class SurpriseBox extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        opponent.discard,
-        {},
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        const cards = selected || [];
-        if (cards.length > 0) {
-          opponent.discard.moveCardTo(cards[0], opponent.hand);
-        }
-      });
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          opponent.discard,
+          {},
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          if (cards.length > 0) {
+            MOVE_CARDS(store, state, opponent.discard, opponent.hand, {
+              cards: [cards[0]],
+              sourceCard: this,
+            });
+          }
+        },
+      );
     }
 
     return state;

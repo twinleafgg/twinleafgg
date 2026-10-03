@@ -3,10 +3,8 @@ import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
-
 export class Cook extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'FST';
 
@@ -29,5 +27,4 @@ export class Cook extends TrainerCard {
     }
     return state;
   }
-
 }

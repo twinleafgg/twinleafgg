@@ -8,7 +8,7 @@ import { StoreLike, State, StateUtils } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { CardList } from '../../../game/store/state/card-list';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CoalossalVmax extends PokemonCard {
   protected _tags = [CardTag.POKEMON_VMAX];
@@ -53,7 +53,7 @@ export class CoalossalVmax extends PokemonCard {
       }
 
       const topCard = new CardList();
-      player.deck.moveTo(topCard, 1);
+      MOVE_CARDS(store, state, player.deck, topCard, { count: 1, sourceCard: this });
 
       const isEnergyCard = topCard.cards.length > 0 && topCard.cards[0] instanceof EnergyCard;
 
@@ -61,13 +61,13 @@ export class CoalossalVmax extends PokemonCard {
         // Attach the energy card to this Pokemon
         const cardList = StateUtils.findCardList(state, this);
         if (cardList) {
-          topCard.moveCardTo(topCard.cards[0], cardList);
+          MOVE_CARDS(store, state, topCard, cardList, { cards: [topCard.cards[0]], sourceCard: this });
         } else {
-          topCard.moveTo(player.discard);
+          MOVE_CARDS(store, state, topCard, player.discard, { sourceCard: this });
         }
         effect.damage += 90;
       } else {
-        topCard.moveTo(player.discard);
+        MOVE_CARDS(store, state, topCard, player.discard, { sourceCard: this });
       }
     }
 

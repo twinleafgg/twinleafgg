@@ -9,7 +9,7 @@ import { GamePhase, State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class PotHelmet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark = 'F';
   public set: string = 'BRS';
   public cardImage: string = 'assets/cardback.png';

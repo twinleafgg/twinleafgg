@@ -12,7 +12,7 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class FightingStadium extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'FFI';
   public name: string = 'Fighting Stadium';
   public fullName: string = 'Fighting Stadium FFI';

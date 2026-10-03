@@ -4,13 +4,25 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { StateUtils, CardTarget, PlayerType, GameError, GameMessage, Player, PokemonCardList, ChoosePokemonPrompt, SlotType, Card, ChooseCardsPrompt } from '../../../game';
+import {
+  StateUtils,
+  CardTarget,
+  PlayerType,
+  GameError,
+  GameMessage,
+  Player,
+  PokemonCardList,
+  ChoosePokemonPrompt,
+  SlotType,
+  Card,
+  ChooseCardsPrompt,
+} from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Giacomo extends TrainerCard {
-
   public regulationMark = 'G';
 
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'PAL';
 
@@ -22,8 +34,7 @@ export class Giacomo extends TrainerCard {
 
   public fullName: string = 'Giacomo PAL';
 
-  public text: string =
-    'Discard a Special Energy from each of your opponent\'s Pokémon.';
+  public text: string = "Discard a Special Energy from each of your opponent's Pokémon.";
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {
@@ -33,7 +44,11 @@ export class Giacomo extends TrainerCard {
     const opponent = StateUtils.getOpponent(state, player);
     let hasPokemonWithSpecialEnergy = false;
     opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-      if (cardList.energies.cards.some(c => c.superType === SuperType.ENERGY && c.energyType === EnergyType.SPECIAL)) {
+      if (
+        cardList.energies.cards.some(
+          (c) => c.superType === SuperType.ENERGY && c.energyType === EnergyType.SPECIAL,
+        )
+      ) {
         hasPokemonWithSpecialEnergy = true;
       }
     });
@@ -42,16 +57,18 @@ export class Giacomo extends TrainerCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
-
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-
 
       let oppSpecialPokemon = 0;
       let hasPokemonWithEnergy = false;
       const blocked: CardTarget[] = [];
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList, card, target) => {
-        if (cardList.energies.cards.some(c => c.superType === SuperType.ENERGY && c.energyType === EnergyType.SPECIAL)) {
+        if (
+          cardList.energies.cards.some(
+            (c) => c.superType === SuperType.ENERGY && c.energyType === EnergyType.SPECIAL,
+          )
+        ) {
           hasPokemonWithEnergy = true;
           oppSpecialPokemon++;
         } else {
@@ -69,20 +86,27 @@ export class Giacomo extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
       let targets: PokemonCardList[] = [];
-      store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-        PlayerType.TOP_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { min: oppSpecialPokemon, max: oppSpecialPokemon, allowCancel: false, blocked }
-      ), results => {
-        targets = results || [];
-      });
+      store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+          PlayerType.TOP_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { min: oppSpecialPokemon, max: oppSpecialPokemon, allowCancel: false, blocked },
+        ),
+        (results) => {
+          targets = results || [];
+        },
+      );
 
       if (targets.length === 0) {
         return state;
@@ -90,25 +114,26 @@ export class Giacomo extends TrainerCard {
 
       const target = targets[0];
       let cards: Card[] = [];
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_DISCARD,
-        target,
-        { superType: SuperType.ENERGY, energyType: EnergyType.SPECIAL },
-        { min: 1, max: 1, allowCancel: false }
-      ), selected => {
-        cards = selected || [];
-      });
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_DISCARD,
+          target,
+          { superType: SuperType.ENERGY, energyType: EnergyType.SPECIAL },
+          { min: 1, max: 1, allowCancel: false },
+        ),
+        (selected) => {
+          cards = selected || [];
+        },
+      );
 
       if (cards.length > 0) {
         // Discard selected special energy card
-        cards.forEach(card => {
-          target.moveCardTo(card, opponent.discard);
+        cards.forEach((card) => {
+          MOVE_CARDS(store, state, target, opponent.discard, { cards: [card], sourceCard: this });
         });
       }
-
-
-
 
       return state;
     }

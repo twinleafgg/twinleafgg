@@ -8,7 +8,7 @@ import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 
 export class TeamPlasmaBadge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   protected _tags = [CardTag.TEAM_PLASMA];
   public set: string = 'PLF';
   public setNumber: string = '104';

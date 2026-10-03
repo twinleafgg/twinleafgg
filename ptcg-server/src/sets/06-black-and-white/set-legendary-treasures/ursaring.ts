@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage, Card, GameError } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Ursaring extends PokemonCard {
@@ -69,7 +69,7 @@ export class Ursaring extends PokemonCard {
       ), selected => {
         cards = selected || [];
         if (cards.length > 0) {
-          player.discard.moveCardsTo(cards, slot);
+          MOVE_CARDS(store, state, player.discard, slot, { cards: cards, sourceCard: this });
           slot.pokemonPlayedTurn = state.turn;
 
           // Now attach an energy card from discard to that Teddiursa
@@ -91,7 +91,7 @@ export class Ursaring extends PokemonCard {
             ), energySelected => {
               energySelected = energySelected || [];
               if (energySelected.length > 0) {
-                player.discard.moveCardsTo(energySelected, slot);
+                MOVE_CARDS(store, state, player.discard, slot, { cards: energySelected, sourceCard: this });
               }
             });
           }

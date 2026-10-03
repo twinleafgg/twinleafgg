@@ -5,7 +5,7 @@ import { StoreLike, State, GameError, GameMessage, CardList, PlayerType, ShowCar
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { OPPONENTS_POKEMON_CANNOT_USE_THAT_ATTACK } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Sableye extends PokemonCard {
@@ -49,7 +49,7 @@ export class Sableye extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
       player.marker.addMarker(this.EXCAVATE_MARKER, this);
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
@@ -68,7 +68,7 @@ export class Sableye extends PokemonCard {
           GameMessage.WANT_TO_USE_ABILITY,
         ), wantToUse => {
           if (wantToUse) {
-            deckTop.moveTo(player.discard);
+            MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
           } else {
             deckTop.moveToTopOfDestination(player.deck);
           }

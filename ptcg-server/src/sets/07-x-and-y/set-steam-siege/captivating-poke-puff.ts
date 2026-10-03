@@ -14,22 +14,24 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class CaptivatingPokePuff extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'STS';
   public setNumber: string = '99';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Captivating Pok\u00e9 Puff';
   public fullName: string = 'Captivating Pok\u00e9 Puff STS';
-  public text: string = 'Your opponent reveals his or her hand. Put any number of Basic Pok\u00e9mon you find there onto your opponent\'s Bench.';
+  public text: string =
+    "Your opponent reveals his or her hand. Put any number of Basic Pok\u00e9mon you find there onto your opponent's Bench.";
 
   // Ref: set-steam-siege/captivating-pokepuff.ts (same card, existing implementation)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-      const slots: PokemonCardList[] = opponent.bench.filter(b => b.cards.length === 0);
+      const slots: PokemonCardList[] = opponent.bench.filter((b) => b.cards.length === 0);
 
       if (slots.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -40,33 +42,39 @@ export class CaptivatingPokePuff extends TrainerCard {
       }
 
       const max = Math.min(
-        opponent.hand.cards.filter(card => card instanceof PokemonCard && card.stage === Stage.BASIC).length,
-        slots.length
+        opponent.hand.cards.filter(
+          (card) => card instanceof PokemonCard && card.stage === Stage.BASIC,
+        ).length,
+        slots.length,
       );
 
       effect.preventDefault = true;
 
-      store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        opponent.hand,
-        { superType: SuperType.POKEMON, stage: Stage.BASIC },
-        { min: 0, max, allowCancel: true }
-      ), selected => {
-        const cards = selected || [];
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          opponent.hand,
+          { superType: SuperType.POKEMON, stage: Stage.BASIC },
+          { min: 0, max, allowCancel: true },
+        ),
+        (selected) => {
+          const cards = selected || [];
 
-        if (cards.length === 0) {
+          if (cards.length === 0) {
+            return;
+          }
 
-          return;
-        }
-
-        cards.forEach((card, index) => {
-          opponent.hand.moveCardTo(card, slots[index]);
-          slots[index].pokemonPlayedTurn = state.turn;
-        });
-
-
-      });
+          cards.forEach((card, index) => {
+            MOVE_CARDS(store, state, opponent.hand, slots[index], {
+              cards: [card],
+              sourceCard: this,
+            });
+            slots[index].pokemonPlayedTurn = state.turn;
+          });
+        },
+      );
     }
 
     return state;

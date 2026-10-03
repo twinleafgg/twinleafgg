@@ -7,7 +7,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { StoreLike, State, GameMessage, Card, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
 
@@ -33,7 +33,7 @@ function* useAscension(next: Function, store: StoreLike, state: State,
 
   if (cards.length > 0) {
     const pokemonCardList = StateUtils.findCardList(state, self) as PokemonCardList;
-    player.deck.moveCardsTo(cards, pokemonCardList);
+    MOVE_CARDS(store, state, player.deck, pokemonCardList, { cards: cards, sourceCard: self });
     pokemonCardList.clearEffects();
     pokemonCardList.pokemonPlayedTurn = state.turn;
   }

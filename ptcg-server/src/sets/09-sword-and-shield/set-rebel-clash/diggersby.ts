@@ -7,7 +7,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { Card, CardList, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Diggersby extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -54,7 +54,7 @@ export class Diggersby extends PokemonCard {
       // Move up to 6 top cards to a temp list
       const temp = new CardList();
       const count = Math.min(6, player.deck.cards.length);
-      player.deck.moveTo(temp, count);
+      MOVE_CARDS(store, state, player.deck, temp, { count: count, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -64,7 +64,7 @@ export class Diggersby extends PokemonCard {
         { min: 0, max: count, allowCancel: false }
       ), (selected: Card[] | null) => {
         const cards = selected || [];
-        cards.forEach(c => temp.moveCardTo(c, player.discard));
+        cards.forEach(c => MOVE_CARDS(store, state, temp, player.discard, { cards: [c], sourceCard: this }));
         // Return remaining cards to TOP of deck (preserve original order)
         const remaining = temp.cards.splice(0);
         player.deck.cards.unshift(...remaining);

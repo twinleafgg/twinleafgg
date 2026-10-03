@@ -8,24 +8,25 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { DRAW_CARDS_UNTIL_CARDS_IN_HAND } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS_UNTIL_CARDS_IN_HAND, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RotomBike extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark: string = 'D';
   public set: string = 'SSH';
   public setNumber: string = '181';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Rotom Bike';
   public fullName: string = 'Rotom Bike SSH';
-  public text: string = 'Draw cards until you have 6 cards in your hand. Your turn ends. You may play any number of Item cards during your turn.';
+  public text: string =
+    'Draw cards until you have 6 cards in your hand. Your turn ends. You may play any number of Item cards during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-temporal-forces/delivery-box.ts (EndTurnEffect pattern for items)
     // Ref: AGENTS-patterns.md (DRAW_CARDS_UNTIL_CARDS_IN_HAND)
     if (WAS_TRAINER_USED(effect, this)) {
       const player = effect.player;
-      player.hand.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards: [this], sourceCard: this });
       effect.preventDefault = true;
 
       DRAW_CARDS_UNTIL_CARDS_IN_HAND(player, 6);

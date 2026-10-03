@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, StateUtils, GameMessage, PlayerType, SlotT
 import { Effect } from '../../../game/store/effects/effect';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyPrompt } from '../../../game/store/prompts/attach-energy-prompt';
 import { GamePhase } from '../../../game/store/state/state';
 import { CardList } from '../../../game/store/state/card-list';
@@ -121,7 +121,7 @@ export class Kingdra extends PokemonCard {
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
           // Cards have been moved to discard by KO; move from discard to target
-          player.discard.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

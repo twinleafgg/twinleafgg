@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, PowerType, StoreLike, State, StateUtils, CardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
 
@@ -63,7 +63,7 @@ export class Orbeetle extends PokemonCard {
       ABILITY_USED(player, this);
 
       const deckTop = new CardList();
-      opponent.deck.moveTo(deckTop, Math.min(3, opponent.deck.cards.length));
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: Math.min(3, opponent.deck.cards.length), sourceCard: this });
 
       store.prompt(state, new OrderCardsPrompt(
         player.id,

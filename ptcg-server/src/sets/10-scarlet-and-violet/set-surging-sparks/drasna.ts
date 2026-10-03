@@ -5,10 +5,14 @@ import { StoreLike } from '../../../game/store/store-like';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { Player } from '../../../game';
-import { COIN_FLIP_PROMPT, DRAW_CARDS, SHUFFLE_HAND_INTO_DECK_THEN_DRAW } from '../../../game/store/prefabs/prefabs';
+import {
+  COIN_FLIP_PROMPT,
+  DRAW_CARDS,
+  SHUFFLE_HAND_INTO_DECK_THEN_DRAW,
+} from '../../../game/store/prefabs/prefabs';
 
 export class Drasna extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'SSP';
   public setNumber = '173';
@@ -34,7 +38,7 @@ export class Drasna extends TrainerCard {
       return SHUFFLE_HAND_INTO_DECK_THEN_DRAW(store, state, effect.player, {
         excludeCard: this,
         resolveDraw: (store, state, player) => {
-          COIN_FLIP_PROMPT(store, state, player, result => {
+          COIN_FLIP_PROMPT(store, state, player, (result) => {
             DRAW_CARDS(store, state, player, result ? 8 : 3);
           });
         },
@@ -43,5 +47,4 @@ export class Drasna extends TrainerCard {
 
     return state;
   }
-
 }

@@ -1,12 +1,12 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, BoardEffect } from '../../../game/store/card/card-types';
 import { PowerType } from '../../../game/store/card/pokemon-types';
-import { StoreLike, State, StateUtils, Card, GameError, GameMessage, ChooseCardsPrompt, GameLog, ShuffleDeckPrompt, ShowCardsPrompt, PlayerType } from '../../../game';
+import { StoreLike, State, StateUtils, Card, GameError, GameMessage, ChooseCardsPrompt, ShuffleDeckPrompt, ShowCardsPrompt, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GalarianMeowth extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -80,11 +80,7 @@ export class GalarianMeowth extends PokemonCard {
       ), selected => {
         cards = selected || [];
 
-        cards.forEach((card, index) => {
-          store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, { name: player.name, card: card.name });
-        });
-
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
 
         store.prompt(state, new ChooseCardsPrompt(
           player,
@@ -94,7 +90,7 @@ export class GalarianMeowth extends PokemonCard {
           { min: 1, max: 1, allowCancel: true }
         ), selected => {
           cards = selected || [];
-          player.deck.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
 
           store.prompt(state, new ShowCardsPrompt(
             opponent.id,

@@ -9,8 +9,7 @@ import { HealEffect } from '../../game/store/effects/game-effects';
 import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class PokemonCenter extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'BS';
 
@@ -22,7 +21,8 @@ export class PokemonCenter extends TrainerCard {
 
   public fullName: string = 'Pokémon Center BS';
 
-  public text: string = 'Remove all damage counters from all of your own Pokémon with damage counters on them, then discard all Energy cards attached to those Pokémon.';
+  public text: string =
+    'Remove all damage counters from all of your own Pokémon with damage counters on them, then discard all Energy cards attached to those Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -36,7 +36,7 @@ export class PokemonCenter extends TrainerCard {
 
           // Only discard energy if healing occurred
           if (healAmount > 0) {
-            const cards = cardList.cards.filter(c => c.superType === SuperType.ENERGY);
+            const cards = cardList.cards.filter((c) => c.superType === SuperType.ENERGY);
             MOVE_CARDS(store, state, cardList, player.discard, { cards, sourceCard: this });
           }
         }

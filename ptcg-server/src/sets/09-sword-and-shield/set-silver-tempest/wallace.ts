@@ -10,14 +10,15 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { DRAW_CARDS, CONFIRMATION_PROMPT } from '../../../game/store/prefabs/prefabs';
 
 export class Wallace extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'F';
   public set: string = 'SIT';
   public setNumber: string = '166';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Wallace';
   public fullName: string = 'Wallace SIT 166';
-  public text: string = 'Draw 3 cards. Your opponent may draw a card. If they do, draw 1 more card. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Draw 3 cards. Your opponent may draw a card. If they do, draw 1 more card. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-call-of-legends/cheerleaders-cheer.ts (Draw cards, opponent may draw a card)
@@ -30,12 +31,18 @@ export class Wallace extends TrainerCard {
 
       // Opponent may draw a card; if they do, draw 1 more
       if (opponent.deck.cards.length > 0) {
-        CONFIRMATION_PROMPT(store, state, opponent, result => {
-          if (result) {
-            DRAW_CARDS(store, state, opponent, 1);
-            DRAW_CARDS(store, state, player, 1);
-          }
-        }, GameMessage.WANT_TO_DRAW_CARDS);
+        CONFIRMATION_PROMPT(
+          store,
+          state,
+          opponent,
+          (result) => {
+            if (result) {
+              DRAW_CARDS(store, state, opponent, 1);
+              DRAW_CARDS(store, state, player, 1);
+            }
+          },
+          GameMessage.WANT_TO_DRAW_CARDS,
+        );
       }
     }
 

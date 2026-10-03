@@ -1,4 +1,4 @@
-import { Card, ChooseCardsPrompt, EnergyCard, GameLog, GameMessage, State, StateUtils, StoreLike } from '../../../game';
+import { Card, ChooseCardsPrompt, EnergyCard, GameMessage, State, StateUtils, StoreLike } from '../../../game';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -57,9 +57,6 @@ export class Onix extends PokemonCard {
         cards = selected || [];
 
         if (cards.length > 0) {
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
-          });
 
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards });

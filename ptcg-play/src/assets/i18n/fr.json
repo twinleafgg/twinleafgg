@@ -600,7 +600,16 @@
     "LOG_PLAYER_DEALS_DAMAGE": "{{name}} deals {{damage}} damage to {{target}} with {{effect}}.",
     "LOG_PLAYER_RETURNS_CARD_TO_HAND": "{{name}} returns {{card}} to their hand.",
     "LOG_PLAYER_CHOOSES": "{{name}} chooses {{string}}.",
-    "LOG_SHUFFLE_POKEMON_INTO_DECK": "{{name}} shuffles {{card}} into their deck with the effect of {{effect}}."
+    "LOG_SHUFFLE_POKEMON_INTO_DECK": "{{name}} shuffles {{card}} into their deck with the effect of {{effect}}.",
+    "LOG_TRAINER_TARGET_BLOCKED_BENCH": "{{blocker}} a empêché {{card}} d'affecter le {{pokemon}} sur le Banc de {{name}}.",
+    "LOG_TRAINER_TARGET_BLOCKED_ACTIVE": "{{blocker}} a empêché {{card}} d'affecter le {{pokemon}} Actif de {{name}}.",
+    "LOG_CARD_PREVENTS_BENCH": "{{blocker}} a empêché {{effect}} d'affecter le {{pokemon}} sur le Banc de {{name}}.",
+    "LOG_CARD_PREVENTS_ACTIVE": "{{blocker}} a empêché {{effect}} d'affecter le {{pokemon}} Actif de {{name}}.",
+    "LOG_CARD_PREVENTS": "{{blocker}} a empêché {{effect}}.",
+    "LOG_PLAYER_PUTS_CARD_IN_LOST_ZONE_FROM_PLAY": "{{name}} place {{card}} dans la Zone Perdue.",
+    "LOG_PLAYER_MOVES_CARD": "{{name}} déplace {{card}} de {{from}} vers {{to}}.",
+    "LOG_PLAYER_POKEMON_SPECIAL_CONDITION": "Le {{pokemon}} de {{name}} est maintenant {{condition}}.",
+    "LOG_PLAYER_POKEMON_RECOVERS_SPECIAL_CONDITION": "Le {{pokemon}} de {{name}} n'est plus {{condition}}."
   },
   "PROFILE_BAN_USER": "Bannir l'utilisateur",
   "PROFILE_BAN_SUCCESS": "L'utilisateur a été banni avec succès",

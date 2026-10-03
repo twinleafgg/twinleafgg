@@ -10,14 +10,15 @@ import { DRAW_CARDS, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/pr
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class Choy extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'F';
   public set: string = 'ASR';
   public setNumber: string = '137';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Choy';
   public fullName: string = 'Choy ASR 137';
-  public text: string = 'Each player reveals their hand. Draw 3 cards. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    'Each player reveals their hand. Draw 3 cards. You may play only 1 Supporter card during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-breakpoint/psychics-third-eye.ts (show opponent hand), AGENTS-patterns.md (draw cards)

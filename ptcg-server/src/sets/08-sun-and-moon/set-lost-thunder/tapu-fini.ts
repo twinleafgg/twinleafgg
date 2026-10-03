@@ -2,7 +2,14 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, COIN_FLIP_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {
+  ADD_CONFUSION_TO_PLAYER_ACTIVE,
+  AFTER_ATTACK,
+  COIN_FLIP_PROMPT,
+  SHUFFLE_DECK,
+  WAS_ATTACK_USED,
+  MOVE_POKEMON_OFF_BOARD,
+} from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -54,12 +61,10 @@ export class TapuFini extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      // Move tools first
-      const tools = opponent.active.tools.slice();
-      tools.forEach(t => { opponent.active.moveCardTo(t, opponent.deck); });
-      // Move all cards to deck
-      opponent.active.moveTo(opponent.deck);
-      opponent.active.clearEffects();
+      MOVE_POKEMON_OFF_BOARD(store, state, opponent.active, {
+        pokemonDestination: opponent.deck,
+        sourceCard: this,
+      });
       SHUFFLE_DECK(store, state, opponent);
     }
 

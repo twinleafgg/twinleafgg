@@ -3,7 +3,7 @@ import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Arbokex extends PokemonCard {
@@ -47,7 +47,7 @@ export class Arbokex extends PokemonCard {
 
       if (opponent.hand.cards.length <= 2) {
         const cards = opponent.hand.cards;
-        opponent.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, opponent.hand, player.discard, { cards: cards, sourceCard: this });
         return state;
       }
 
@@ -62,7 +62,7 @@ export class Arbokex extends PokemonCard {
         ),
         (selected) => {
           const cards = selected || [];
-          opponent.hand.moveCardsTo(cards, opponent.discard);
+          MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: cards, sourceCard: this });
         },
       );
       return state;

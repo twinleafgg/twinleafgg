@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { MOVE_CARD_TO, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {MOVE_CARD_TO, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Melmetal extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -45,7 +45,7 @@ export class Melmetal extends PokemonCard {
       if (activePokemon.tools.length > 0) {
         MOVE_CARD_TO(state, activePokemon.tools[0], opponent.discard);
         if (activePokemon.tools.length > 1) {
-          activePokemon.moveCardsTo(activePokemon.tools.slice(1), opponent.discard);
+          MOVE_CARDS(store, state, activePokemon, opponent.discard, { cards: activePokemon.tools.slice(1), sourceCard: this });
         }
         effect.damage = 250; // Set damage to 250 if a tool was discarded
       }

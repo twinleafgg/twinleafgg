@@ -1,7 +1,7 @@
 import { Card, CardType, ChooseCardsPrompt, GameMessage, PokemonCard, Stage, State, StoreLike, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Crocalor extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -42,7 +42,7 @@ export class Crocalor extends PokemonCard {
       ), selected => {
         card = selected[0];
 
-        player.active.moveCardTo(card, player.hand);
+        MOVE_CARDS(store, state, player.active, player.hand, { cards: [card], sourceCard: this });
         return state;
       });
     }

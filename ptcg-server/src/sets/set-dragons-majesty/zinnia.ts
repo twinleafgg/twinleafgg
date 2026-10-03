@@ -4,17 +4,35 @@
 
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { CardType, EnergyType, SuperType, TrainerType } from '../../game/store/card/card-types';
-import { StoreLike, State, GameError, GameMessage, PlayerType, SlotType, StateUtils, EnergyCard, CardTarget } from '../../game';
+import {
+  StoreLike,
+  State,
+  GameError,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  StateUtils,
+  EnergyCard,
+  CardTarget,
+} from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { TrainerEffect } from '../../game/store/effects/play-card-effects';
 import { AttachEnergyPrompt } from '../../game/store/prompts/attach-energy-prompt';
 import { CheckPokemonTypeEffect } from '../../game/store/effects/check-effects';
 import { KnockOutEffect } from '../../game/store/effects/game-effects';
 import { GamePhase } from '../../game/store/state/state';
-import { REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN } from '../../game/store/prefabs/prefabs';
+import {
+  REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN,
+  MOVE_CARDS,
+} from '../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State,
-  self: Zinnia, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Zinnia,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   // Check if KO marker is set
@@ -23,8 +41,8 @@ function* playCard(next: Function, store: StoreLike, state: State,
   }
 
   // Check if there are basic energy in hand (other than this card)
-  const hasBasicEnergy = player.hand.cards.some(c =>
-    c instanceof EnergyCard && c.energyType === EnergyType.BASIC && c !== (self as any)
+  const hasBasicEnergy = player.hand.cards.some(
+    (c) => c instanceof EnergyCard && c.energyType === EnergyType.BASIC && c !== (self as any),
   );
 
   // Check if there is a Dragon Pokemon in play
@@ -42,7 +60,10 @@ function* playCard(next: Function, store: StoreLike, state: State,
   }
 
   // Move to supporter zone
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   effect.preventDefault = true;
 
   // Filter slots that don't have Dragon Pokemon
@@ -55,35 +76,39 @@ function* playCard(next: Function, store: StoreLike, state: State,
     }
   });
 
-  yield store.prompt(state, new AttachEnergyPrompt(
-    player.id,
-    GameMessage.ATTACH_ENERGY_CARDS,
-    player.hand,
-    PlayerType.BOTTOM_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-    { allowCancel: false, min: 0, max: 2, sameTarget: true, blockedTo }
-  ), transfers => {
-    transfers = transfers || [];
-    for (const transfer of transfers) {
-      const target = StateUtils.getTarget(state, player, transfer.to);
-      player.hand.moveCardTo(transfer.card, target);
-    }
-    next();
-  });
-
+  yield store.prompt(
+    state,
+    new AttachEnergyPrompt(
+      player.id,
+      GameMessage.ATTACH_ENERGY_CARDS,
+      player.hand,
+      PlayerType.BOTTOM_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+      { allowCancel: false, min: 0, max: 2, sameTarget: true, blockedTo },
+    ),
+    (transfers) => {
+      transfers = transfers || [];
+      for (const transfer of transfers) {
+        const target = StateUtils.getTarget(state, player, transfer.to);
+        MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: self });
+      }
+      next();
+    },
+  );
 
   return state;
 }
 
 export class Zinnia extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'DRM';
   public setNumber: string = '64';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Zinnia';
   public fullName: string = 'Zinnia DRM';
-  public text: string = 'You can play this card only if 1 of your Pokémon was Knocked Out during your opponent\'s last turn.\n\nAttach up to 2 basic Energy cards from your hand to 1 of your Dragon Pokémon.';
+  public text: string =
+    "You can play this card only if 1 of your Pokémon was Knocked Out during your opponent's last turn.\n\nAttach up to 2 basic Energy cards from your hand to 1 of your Dragon Pokémon.";
 
   public readonly ZINNIA_MARKER = 'ZINNIA_MARKER';
 

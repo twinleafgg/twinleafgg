@@ -7,12 +7,10 @@ import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { StateUtils } from '../../../game/store/state-utils';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
-
 export class RockyHelmet extends TrainerCard {
-
   public regulationMark = 'G';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'SVI';
 
@@ -26,7 +24,7 @@ export class RockyHelmet extends TrainerCard {
 
   public text: string =
     'If the Pokemon this card is attached to is your Active Pokemon and is ' +
-    'damaged by an opponent\'s attack (even if that Pokemon is Knocked Out), ' +
+    "damaged by an opponent's attack (even if that Pokemon is Knocked Out), " +
     'put 2 damage counters on the Attacking Pokemon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -53,5 +51,4 @@ export class RockyHelmet extends TrainerCard {
 
     return state;
   }
-
 }

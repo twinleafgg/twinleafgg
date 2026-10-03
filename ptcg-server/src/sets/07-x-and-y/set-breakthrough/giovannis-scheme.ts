@@ -12,20 +12,24 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { DRAW_CARDS_UNTIL_CARDS_IN_HAND } from '../../../game/store/prefabs/prefabs';
 
 export class GiovannisScheme extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'BKT';
   public setNumber: string = '138';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Giovanni\'s Scheme';
-  public fullName: string = 'Giovanni\'s Scheme BKT';
-  public text: string = 'Choose 1:\n• Draw cards until you have 5 cards in your hand.\n• During this turn, your Pokémon\'s attacks do 20 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance). You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Giovanni's Scheme";
+  public fullName: string = "Giovanni's Scheme BKT";
+  public text: string =
+    "Choose 1:\n• Draw cards until you have 5 cards in your hand.\n• During this turn, your Pokémon's attacks do 20 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance). You may play only 1 Supporter card during your turn (before your attack).";
 
   private readonly GIOVANNIS_SCHEME_MARKER = 'GIOVANNIS_SCHEME_MARKER';
 
   // Refs: set-twilight-masquerade/kieran.ts (choose option + damage boost marker), set-ancient-origins/baltoy-2.ts (SelectPrompt pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Clean up marker at end of turn
-    if (effect instanceof EndTurnEffect && effect.player.marker.hasMarker(this.GIOVANNIS_SCHEME_MARKER, this)) {
+    if (
+      effect instanceof EndTurnEffect &&
+      effect.player.marker.hasMarker(this.GIOVANNIS_SCHEME_MARKER, this)
+    ) {
       effect.player.marker.removeMarker(this.GIOVANNIS_SCHEME_MARKER, this);
       return state;
     }
@@ -44,30 +48,34 @@ export class GiovannisScheme extends TrainerCard {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
 
-      const options: { message: GameMessage, action: () => void }[] = [
+      const options: { message: GameMessage; action: () => void }[] = [
         {
           message: GameMessage.WANT_TO_DRAW_CARDS,
           action: () => {
             DRAW_CARDS_UNTIL_CARDS_IN_HAND(player, 5);
-          }
+          },
         },
         {
           message: GameMessage.WANT_TO_DEAL_MORE_DAMAGE,
           action: () => {
             player.marker.addMarker(this.GIOVANNIS_SCHEME_MARKER, this);
-          }
-        }
+          },
+        },
       ];
 
-      return store.prompt(state, new SelectPrompt(
-        player.id,
-        GameMessage.CHOOSE_OPTION,
-        options.map(opt => opt.message),
-        { allowCancel: false }
-      ), choice => {
-        const option = options[choice];
-        option.action();
-      });
+      return store.prompt(
+        state,
+        new SelectPrompt(
+          player.id,
+          GameMessage.CHOOSE_OPTION,
+          options.map((opt) => opt.message),
+          { allowCancel: false },
+        ),
+        (choice) => {
+          const option = options[choice];
+          option.action();
+        },
+      );
     }
 
     return state;

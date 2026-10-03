@@ -13,7 +13,7 @@ import {
 import { GameMessage, PokemonCardList, StoreLike, State, StateUtils, pokemonHasCardType } from '../../../game';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, ATTACH_ENERGY_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PlayerType, SlotType } from '../../../game/store/actions/play-card-action';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 
@@ -89,7 +89,7 @@ export class VaporeonVmax extends PokemonCard {
 
           // Put chosen Pokemon onto bench
           const benchSlot = openSlots[0];
-          player.discard.moveCardTo(cards[0], benchSlot);
+          MOVE_CARDS(store, state, player.discard, benchSlot, { cards: [cards[0]], sourceCard: this });
           (benchSlot as PokemonCardList).pokemonPlayedTurn = state.turn;
 
           // Attach up to 3 W energy from discard to that Pokemon

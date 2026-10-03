@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, StoreLike, State, ChooseCardsPrompt, GameMessage, ShuffleDeckPrompt, ShowCardsPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PokemonCard as PokemonCardType } from '../../../game/store/card/pokemon-card';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Fletchling extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -69,7 +69,7 @@ export class Fletchling extends PokemonCard {
         { min: 0, max: maxToTake, allowCancel: false, blocked }
       ), selected => {
         const selectedCards = selected || [];
-        player.deck.moveCardsTo(selectedCards, player.hand);
+        MOVE_CARDS(store, state, player.deck, player.hand, { cards: selectedCards, sourceCard: this });
 
         // Show cards to opponent
         if (selectedCards.length > 0) {

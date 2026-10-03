@@ -9,12 +9,10 @@ import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { PokemonCard, PokemonCardList } from '../../../game';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
-
 export class EmergencyJelly extends TrainerCard {
-
   public regulationMark = 'F';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'SIT';
 
@@ -31,7 +29,6 @@ export class EmergencyJelly extends TrainerCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof AfterDamageEffect && effect.target.tools.includes(this)) {
-
       if (effect instanceof EndTurnEffect && effect.target.tools.includes(this)) {
         const targetPokemon = effect.target.getPokemonCard();
 
@@ -45,7 +42,8 @@ export class EmergencyJelly extends TrainerCard {
 
         if (targetPokemon && (targetPokemon as PokemonCard).hp <= 30) {
           const healTargetEffect = new HealTargetEffect(effect as unknown as AttackEffect, 30);
-          (healTargetEffect.target as PokemonCardList) = targetPokemon as unknown as PokemonCardList;
+          (healTargetEffect.target as PokemonCardList) =
+            targetPokemon as unknown as PokemonCardList;
           state = store.reduceEffect(state, healTargetEffect);
         }
         return state;
@@ -55,5 +53,3 @@ export class EmergencyJelly extends TrainerCard {
     return state;
   }
 }
-
-

@@ -1,4 +1,4 @@
-import { ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_CONFUSION_TO_PLAYER_ACTIVE, AFTER_ATTACK, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
@@ -50,7 +50,7 @@ export class Umbreon2 extends PokemonCard {
             c.superType === SuperType.ENERGY
           );
           energyCards.forEach(card => {
-            opponent.active.moveCardTo(card, opponent.discard);
+            MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [card], sourceCard: this });
           });
         }
       });

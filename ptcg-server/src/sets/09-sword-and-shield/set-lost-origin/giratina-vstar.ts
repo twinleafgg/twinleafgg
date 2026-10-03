@@ -7,7 +7,7 @@ import { GameError, PlayerType, PokemonCard, SlotType, StateUtils } from '../../
 
 import { KNOCK_OUT_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 import { DiscardEnergyPrompt } from '../../../game/store/prompts/discard-energy-prompt';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class GiratinaVSTAR extends PokemonCard {
   public stage: Stage = Stage.VSTAR;
@@ -62,7 +62,7 @@ export class GiratinaVSTAR extends PokemonCard {
           for (const transfer of transfers) {
             const source = StateUtils.getTarget(state, player, transfer.from);
             const target = player.lostzone;
-            source.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
           }
         },
       );

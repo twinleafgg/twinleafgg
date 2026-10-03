@@ -7,13 +7,14 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../game/store/prefabs/stadium-effe
 import { UseStadiumEffect } from '../../game/store/effects/game-effects';
 
 export class WelaVolcanoPark extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'DRM';
   public setNumber: string = '63';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Wela Volcano Park';
   public fullName: string = 'Wela Volcano Park DRM';
-  public text: string = 'Whenever a player flips a coin for the Special Condition Burned between turns, that Special Condition isn\'t removed even if the result is heads.';
+  public text: string =
+    "Whenever a player flips a coin for the Special Condition Burned between turns, that Special Condition isn't removed even if the result is heads.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof BetweenTurnsEffect && StateUtils.getStadiumCard(state) === this) {

@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card
 import { StoreLike, State, GameMessage, ChooseCardsPrompt, Card } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 import { DISCARD_AN_ENERGY_FROM_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
@@ -68,7 +68,7 @@ export class Torkoal extends PokemonCard {
         { min: count, max: count, allowCancel: false }
       ), selected => {
         const cards: Card[] = selected || [];
-        cards.forEach(c => { player.discard.moveCardTo(c, player.hand); });
+        cards.forEach(c => { MOVE_CARDS(store, state, player.discard, player.hand, { cards: [c], sourceCard: this }); });
       });
     }
 

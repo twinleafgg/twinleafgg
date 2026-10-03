@@ -10,8 +10,14 @@ import { PlayerType, SlotType } from '../../../game/store/actions/play-card-acti
 import { MoveEnergyPrompt, CardTransfer } from '../../../game/store/prompts/move-energy-prompt';
 import { StateUtils } from '../../../game/store/state-utils';
 import { Player } from '../../../game';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
 
   // Player has no Basic Energy in the discard pile
@@ -19,7 +25,7 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   let pokemonCount = 0;
   player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
     pokemonCount += 1;
-    const basicEnergyAttached = cardList.cards.some(c => {
+    const basicEnergyAttached = cardList.cards.some((c) => {
       return c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC;
     });
     hasBasicEnergy = hasBasicEnergy || basicEnergyAttached;
@@ -33,30 +39,35 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
   effect.preventDefault = true;
 
   let transfers: CardTransfer[] = [];
-  yield store.prompt(state, new MoveEnergyPrompt(
-    player.id,
-    GameMessage.MOVE_ENERGY_CARDS,
-    PlayerType.BOTTOM_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-    { min: 1, max: 1, allowCancel: false }
-  ), result => {
-    transfers = result || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new MoveEnergyPrompt(
+      player.id,
+      GameMessage.MOVE_ENERGY_CARDS,
+      PlayerType.BOTTOM_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (result) => {
+      transfers = result || [];
+      next();
+    },
+  );
 
-
-  transfers.forEach(transfer => {
+  transfers.forEach((transfer) => {
     const source = StateUtils.getTarget(state, player, transfer.from);
     const target = StateUtils.getTarget(state, player, transfer.to);
-    source.moveCardTo(transfer.card, target);
+    MOVE_CARDS(store, state, source, target, {
+      cards: [transfer.card],
+      sourceCard: effect.trainerCard,
+    });
   });
   return state;
 }
 
 export class EnergySwitch extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'SVI';
 
@@ -70,8 +81,7 @@ export class EnergySwitch extends TrainerCard {
 
   public fullName: string = 'Energy Switch SVI';
 
-  public text: string =
-    'Move a basic Energy from 1 of your Pokemon to another of your Pokemon.';
+  public text: string = 'Move a basic Energy from 1 of your Pokemon to another of your Pokemon.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     // Player has no Basic Energy in the discard pile
@@ -79,7 +89,7 @@ export class EnergySwitch extends TrainerCard {
     let pokemonCount = 0;
     player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
       pokemonCount += 1;
-      const basicEnergyAttached = cardList.cards.some(c => {
+      const basicEnergyAttached = cardList.cards.some((c) => {
         return c.superType === SuperType.ENERGY && c.energyType === EnergyType.BASIC;
       });
       hasBasicEnergy = hasBasicEnergy || basicEnergyAttached;
@@ -99,5 +109,4 @@ export class EnergySwitch extends TrainerCard {
 
     return state;
   }
-
 }

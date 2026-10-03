@@ -6,7 +6,10 @@ import { Attack, GameError, GameMessage } from '../../../game';
 import { CardType, TrainerType } from '../../../game/store/card/card-types';
 import { ColorlessCostReducer } from '../../../game/store/card/pokemon-interface';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { CheckAttackCostEffect, CheckPokemonAttacksEffect } from '../../../game/store/effects/check-effects';
+import {
+  CheckAttackCostEffect,
+  CheckPokemonAttacksEffect,
+} from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
@@ -16,28 +19,33 @@ import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 // Ref: set-plasma-blast/g-booster.ts (tool-provided attack pattern)
 export class PowerMemory extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'FCO';
   public setNumber: string = '108';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Power Memory';
   public fullName: string = 'Power Memory FCO';
 
-  public attacks: Attack[] = [{
-    name: 'All Cells Burn',
-    cost: [F, F, C],
-    damage: 200,
-    text: 'Discard 3 Energy attached to this Pokémon.'
-  }];
+  public attacks: Attack[] = [
+    {
+      name: 'All Cells Burn',
+      cost: [F, F, C],
+      damage: 200,
+      text: 'Discard 3 Energy attached to this Pokémon.',
+    },
+  ];
 
-  public text: string = 'The Zygarde-EX this card is attached to can also use the attack on this card. (You still need the necessary Energy to use this attack.)';
+  public text: string =
+    'The Zygarde-EX this card is attached to can also use the attack on this card. (You still need the necessary Energy to use this attack.)';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Add attack to Zygarde-EX when this tool is attached
-    if (effect instanceof CheckPokemonAttacksEffect
-      && effect.player.active.getPokemonCard()?.name === 'Zygarde-EX'
-      && effect.player.active.getPokemonCard()?.tools.includes(this)
-      && !effect.attacks.includes(this.attacks[0])) {
+    if (
+      effect instanceof CheckPokemonAttacksEffect &&
+      effect.player.active.getPokemonCard()?.name === 'Zygarde-EX' &&
+      effect.player.active.getPokemonCard()?.tools.includes(this) &&
+      !effect.attacks.includes(this.attacks[0])
+    ) {
       effect.attacks.push(this.attacks[0]);
     }
 
@@ -49,7 +57,9 @@ export class PowerMemory extends TrainerCard {
       }
 
       if (pokemonCard && 'getColorlessReduction' in pokemonCard) {
-        const colorlessReduction = (pokemonCard as ColorlessCostReducer).getColorlessReduction(state);
+        const colorlessReduction = (pokemonCard as ColorlessCostReducer).getColorlessReduction(
+          state,
+        );
         for (let i = 0; i < colorlessReduction && effect.cost.includes(CardType.COLORLESS); i++) {
           const index = effect.cost.indexOf(CardType.COLORLESS);
           if (index !== -1) {

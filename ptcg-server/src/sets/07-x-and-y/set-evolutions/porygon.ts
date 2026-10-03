@@ -4,11 +4,10 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PlayerType, StoreLike, State, StateUtils } from '../../../game';
-import { CheckPokemonStatsEffect } from '../../../game/store/effects/check-effects';
+import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, SELECT_PROMPT, REPLACE_MARKER_AT_END_OF_TURN } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, SELECT_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { DEFENDING_POKEMON_WEAKNESS_IS_NOW } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Porygon extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -16,11 +15,6 @@ export class Porygon extends PokemonCard {
   public hp: number = 60;
   public weakness = [{ type: F }];
   public retreat = [C];
-
-  public readonly CONVERSION_MARKER = 'PORYGON_EVO_CONVERSION';
-  public readonly CLEAR_CONVERSION_MARKER = 'PORYGON_EVO_CLEAR_CONVERSION';
-
-  private chosenType: CardType | null = null;
 
   public attacks = [
     {
@@ -38,12 +32,8 @@ export class Porygon extends PokemonCard {
   public fullName: string = 'Porygon EVO';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Conversion 3
-    // Ref: set-phantom-forces/pachirisu.ts (Trick Sticker - weakness override + 2-phase marker)
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
       const typeNames = ['Grass', 'Fire', 'Water', 'Lightning', 'Psychic', 'Fighting', 'Darkness', 'Metal', 'Fairy', 'Dragon'];
 
       SELECT_PROMPT(store, state, player, typeNames, choice => {
@@ -59,33 +49,8 @@ export class Porygon extends PokemonCard {
           'Fairy': CardType.FAIRY,
           'Dragon': CardType.DRAGON,
         };
-        this.chosenType = typeMap[choice] || CardType.COLORLESS;
-        opponent.active.marker.addMarker(this.CONVERSION_MARKER, this);
-        player.marker.addMarker(this.CONVERSION_MARKER, this);
+        DEFENDING_POKEMON_WEAKNESS_IS_NOW(store, state, effect, this, typeMap[choice] || CardType.COLORLESS);
       });
-    }
-
-    // Override weakness for marked Pokemon
-    if (effect instanceof CheckPokemonStatsEffect) {
-      if (effect.target.marker.hasMarker(this.CONVERSION_MARKER, this) && this.chosenType !== null) {
-        const existingValue = effect.weakness.length > 0 ? effect.weakness[0].value : undefined;
-        effect.weakness = [{ type: this.chosenType, value: existingValue }];
-      }
-    }
-
-    // 2-phase cleanup: until end of your next turn
-    if (effect instanceof EndTurnEffect) {
-      // Phase 2: clear
-      if (effect.player.marker.hasMarker(this.CLEAR_CONVERSION_MARKER, this)) {
-        effect.player.marker.removeMarker(this.CLEAR_CONVERSION_MARKER, this);
-        const opponent = StateUtils.getOpponent(state, effect.player);
-        opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-          cardList.marker.removeMarker(this.CONVERSION_MARKER, this);
-        });
-        this.chosenType = null;
-      }
-      // Phase 1 -> Phase 2
-      REPLACE_MARKER_AT_END_OF_TURN(effect, this.CONVERSION_MARKER, this.CLEAR_CONVERSION_MARKER, this);
     }
 
     return state;

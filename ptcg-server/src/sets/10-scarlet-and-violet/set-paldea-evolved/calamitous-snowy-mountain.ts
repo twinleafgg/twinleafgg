@@ -11,11 +11,12 @@ export class CalamitousSnowyMountain extends TrainerCard {
   public regulationMark = 'G';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '174';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'PAL';
   public name = 'Calamitous Snowy Mountain';
   public fullName = 'Calamitous Snowy Mountain PAL';
-  public text = 'Whenever any player attaches an Energy card from their hand to 1 of their Basic non-[W] Pokémon, put 2 damage counters on that Pokémon.';
+  public text =
+    'Whenever any player attaches an Energy card from their hand to 1 of their Basic non-[W] Pokémon, put 2 damage counters on that Pokémon.';
 
   reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
@@ -32,11 +33,19 @@ export class CalamitousSnowyMountain extends TrainerCard {
 
       store.reduceEffect(state, checkPokemonTypeEffect);
 
-      if (!effect.target.isStage(Stage.BASIC) || checkPokemonTypeEffect.cardTypes.includes(CardType.WATER)) {
+      if (
+        !effect.target.isStage(Stage.BASIC) ||
+        checkPokemonTypeEffect.cardTypes.includes(CardType.WATER)
+      ) {
         return state;
       }
 
-      store.log(state, GameLog.LOG_PLAYER_PLACES_DAMAGE_COUNTERS, { name: owner.name, damage: 20, target: effect.target.getPokemonCard()!.name, effect: this.name });
+      store.log(state, GameLog.LOG_PLAYER_PLACES_DAMAGE_COUNTERS, {
+        name: owner.name,
+        damage: 20,
+        target: effect.target.getPokemonCard()!.name,
+        effect: this.name,
+      });
       effect.target.damage += 20;
     }
 

@@ -4,11 +4,8 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { StateUtils } from '../../../game/store/state-utils';
-import { PlayerType } from '../../../game/store/actions/play-card-action';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Wartortle extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -37,38 +34,9 @@ export class Wartortle extends PokemonCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '30';
 
-  public readonly CLEAR_WITHDRAW_MARKER = 'CLEAR_WITHDRAW_MARKER';
-  public readonly WITHDRAW_MARKER = 'WITHDRAW_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      return COIN_FLIP_PROMPT(store, state, player, flipResult => {
-        if (flipResult) {
-          player.active.marker.addMarker(this.WITHDRAW_MARKER, this);
-          opponent.marker.addMarker(this.CLEAR_WITHDRAW_MARKER, this);
-        }
-      });
-    }
-
-    if (effect instanceof PutDamageEffect
-      && effect.target.marker.hasMarker(this.WITHDRAW_MARKER)) {
-      effect.preventDefault = true;
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect
-      && effect.player.marker.hasMarker(this.CLEAR_WITHDRAW_MARKER, this)) {
-
-      effect.player.marker.removeMarker(this.CLEAR_WITHDRAW_MARKER, this);
-
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.WITHDRAW_MARKER, this);
-      });
+      return FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     return state;

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
 import { Card, StoreLike, State, GameMessage, ChooseEnergyPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class GrimmsnarlV extends PokemonCard {
@@ -71,7 +71,7 @@ export class GrimmsnarlV extends PokemonCard {
         (energy) => {
           const cards: Card[] = (energy || []).slice(0, count).map((e) => e.card);
           if (cards.length > 0) {
-            player.active.moveCardsTo(cards, player.hand);
+            MOVE_CARDS(store, state, player.active, player.hand, { cards: cards, sourceCard: this });
           }
         },
       );

@@ -1,7 +1,7 @@
 import { CardType, PokemonCard, Stage, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DISCARD_A_STADIUM_CARD_IN_PLAY } from '../../../game/store/prefabs/attack-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Purugly extends PokemonCard {
@@ -48,7 +48,7 @@ export class Purugly extends PokemonCard {
       while (opponent.hand.cards.length > 3) {
         const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
         const cardToDiscard = opponent.hand.cards[randomIndex];
-        opponent.hand.moveCardTo(cardToDiscard, opponent.discard);
+        MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [cardToDiscard], sourceCard: this });
       }
     }
 

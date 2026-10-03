@@ -9,7 +9,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { BLOCK_TRAINER_TARGET, IS_TRAINER_TARGET } from '../../../game/store/prefabs/prefabs';
 
 export class MoonAndSunBadge extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'EVS';
   public setNumber: string = '151';

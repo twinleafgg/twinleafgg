@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, EnergyType } from '../../../game/store/card/card-types';
 import { EnergyCard, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ConfirmPrompt } from '../../../game/store/prompts/confirm-prompt';
 
 export class PikachuV extends PokemonCard {
@@ -58,7 +58,7 @@ export class PikachuV extends PokemonCard {
         (wantToDiscard) => {
           if (wantToDiscard) {
             lightningEnergies.forEach((c) => {
-              player.active.moveCardTo(c, player.discard);
+              MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
             });
             effect.damage += 120;
           }

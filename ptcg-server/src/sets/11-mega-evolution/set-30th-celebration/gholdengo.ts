@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, TAKE_X_PRIZES, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, TAKE_X_PRIZES, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Gholdengo extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -40,7 +40,7 @@ export class Gholdengo extends PokemonCard {
       const player = effect.player;
       if (player.hand.cards.length === 30) {
         return TAKE_X_PRIZES(store, state, player, 2, {}, () => {
-          player.hand.moveTo(player.deck);
+          MOVE_CARDS(store, state, player.hand, player.deck, { sourceCard: this });
           SHUFFLE_DECK(store, state, player);
         });
       }

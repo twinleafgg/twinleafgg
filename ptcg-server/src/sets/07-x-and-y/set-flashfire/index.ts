@@ -11,6 +11,7 @@ import { Caterpie } from './caterpie';
 import { CharizardEx } from './charizard-ex';
 import { CharizardEx2 } from './charizard-ex-2';
 import { Dragalge } from './dragalge';
+import { Druddigon } from './druddigon';
 import { Durant } from './durant';
 import { Dusclops } from './dusclops';
 import { Dusknoir } from './dusknoir';
@@ -106,8 +107,6 @@ import {
   MCharizardEX4FLF,
   MKangaskhanEX2FLF,
   Blacksmith2FLF,
-  DruddigonFLF,
-  PokemonFanClubFLF94,
   CharizardEx3,
   MagnezoneEx2,
   PokemonCenterLady2,
@@ -128,6 +127,7 @@ export const setFlashfire: Card[] = [
   new CharizardEx(),
   new CharizardEx2(),
   new Dragalge(),
+  new Druddigon(),
   new Durant(),
   new Dusclops(),
   new Dusknoir(),
@@ -225,8 +225,6 @@ export const setFlashfire: Card[] = [
   new MCharizardEX4FLF(),
   new MKangaskhanEX2FLF(),
   new Blacksmith2FLF(),
-  new DruddigonFLF(),
-  new PokemonFanClubFLF94(),
   new CharizardEx3(),
   new MagnezoneEx2(),
   new PokemonCenterLady2(),

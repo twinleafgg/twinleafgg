@@ -7,14 +7,12 @@ import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { CardType, Stage, TrainerType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   IS_ABILITY_BLOCKED,
   SHUFFLE_DECK,
   SHOW_CARDS_TO_PLAYER,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChooseEnergyPrompt } from '../../../game/store/prompts/choose-energy-prompt';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
@@ -113,7 +111,7 @@ export class Silvally extends PokemonCard {
           const sel = picked || [];
           if (sel.length > 0) {
             SHOW_CARDS_TO_PLAYER(store, state, opponent, sel);
-            player.deck.moveCardsTo(sel, player.hand);
+            MOVE_CARDS(store, state, player.deck, player.hand, { cards: sel, sourceCard: this });
           }
           SHUFFLE_DECK(store, state, player);
         },

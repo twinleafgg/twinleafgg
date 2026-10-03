@@ -1,4 +1,4 @@
-import { CardType, ChooseCardsPrompt, ConfirmPrompt, GameLog, GameMessage, PokemonCard, PowerType, ShowCardsPrompt, Stage, State, StateUtils, StoreLike, SuperType, TrainerCard, TrainerType } from '../../../game';
+import { CardType, ChooseCardsPrompt, ConfirmPrompt, GameMessage, PokemonCard, PowerType, ShowCardsPrompt, Stage, State, StateUtils, StoreLike, SuperType, TrainerCard, TrainerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DiscardToHandEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
@@ -91,10 +91,6 @@ export class Delcatty extends PokemonCard {
               cards
             )], () => {
               MOVE_CARDS(store, state, player.discard, player.hand, { cards, sourceCard: this, sourceEffect: this.powers[0] });
-            });
-
-            cards.forEach(card => {
-              store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, { name: player.name, card: card.name });
             });
 
             return state;

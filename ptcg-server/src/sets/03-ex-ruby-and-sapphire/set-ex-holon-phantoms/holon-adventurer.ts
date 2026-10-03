@@ -1,4 +1,4 @@
-import { ChooseCardsPrompt, GameError, GameLog, GameMessage, PokemonCard } from '../../../game';
+import { ChooseCardsPrompt, GameError, GameMessage, PokemonCard } from '../../../game';
 import { CardTag, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -8,7 +8,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class HolonAdventurer extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   protected _tags = [CardTag.DELTA_SPECIES];
   public set: string = 'HP';
   public cardImage: string = 'assets/cardback.png';
@@ -36,7 +36,7 @@ export class HolonAdventurer extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
       effect.preventDefault = true;
 
       state = store.prompt(
@@ -60,12 +60,6 @@ export class HolonAdventurer extends TrainerCard {
           }
 
           MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, {
-              name: player.name,
-              card: card.name,
-            });
-          });
 
           DRAW_CARDS(store, state, player, cardsToDraw);
         },

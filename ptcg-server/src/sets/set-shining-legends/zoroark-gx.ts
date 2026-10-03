@@ -13,11 +13,9 @@ import { Effect } from '../../game/store/effects/effect';
 import { AttackEffect } from '../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { COPY_OPPONENT_ACTIVE_AND_BENCH_ATTACK } from '../../game/store/prefabs/copy-attack-prefabs';
 
 export class ZoroarkGX extends PokemonCard {
@@ -110,8 +108,8 @@ export class ZoroarkGX extends PokemonCard {
           });
 
           player.marker.addMarker(this.TRADE_MARKER, this);
-          player.hand.moveCardsTo(cards, player.discard);
-          player.deck.moveTo(player.hand, 2);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
         },
       );
       return state;

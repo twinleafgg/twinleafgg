@@ -9,14 +9,14 @@ import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-e
 export class MagneticStorm extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '91';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'HL';
   public name = 'Magnetic Storm';
   public fullName = 'Magnetic Storm HL';
-  public text = 'Any damage done by attacks from [P] Pokémon and [F] Pokémon (both yours and your opponent\'s) is not affected by Resistance.';
+  public text =
+    "Any damage done by attacks from [P] Pokémon and [F] Pokémon (both yours and your opponent's) is not affected by Resistance.";
 
   reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof AttackEffect && StateUtils.getStadiumCard(state) === this) {
       const owner = StateUtils.findOwner(state, effect.source);
       const checkPokemonType = new CheckPokemonTypeEffect(effect.source);
@@ -27,7 +27,9 @@ export class MagneticStorm extends TrainerCard {
 
       store.reduceEffect(state, checkPokemonType);
 
-      if ([CardType.PSYCHIC, CardType.FIGHTING].some(t => checkPokemonType.cardTypes.includes(t))) {
+      if (
+        [CardType.PSYCHIC, CardType.FIGHTING].some((t) => checkPokemonType.cardTypes.includes(t))
+      ) {
         effect.ignoreResistance = true;
       }
     }

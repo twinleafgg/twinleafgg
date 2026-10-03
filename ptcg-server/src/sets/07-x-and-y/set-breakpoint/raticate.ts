@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { PlayerType, PowerType, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, PREVENT_AND_CLEAR_SPECIAL_CONDITIONS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, IS_ABILITY_BLOCKED, PREVENT_AND_CLEAR_SPECIAL_CONDITIONS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED } from '../../../game/store/prefabs/attack-effects';
 
 export class Raticate extends PokemonCard {
@@ -77,7 +77,7 @@ export class Raticate extends PokemonCard {
       // Discard all Pokemon Tool cards attached to opponent's active
       const tools = opponent.active.tools.slice();
       tools.forEach(tool => {
-        opponent.active.moveCardTo(tool, opponent.discard);
+        MOVE_CARDS(store, state, opponent.active, opponent.discard, { cards: [tool], sourceCard: this });
       });
     }
 

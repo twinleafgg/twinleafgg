@@ -8,9 +8,10 @@ import { CardList } from '../../../game/store/state/card-list';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { ConfirmCardsPrompt } from '../../../game/store/prompts/confirm-cards-prompt';
-export class TrekkingShoes extends TrainerCard {
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-  public trainerType: TrainerType = TrainerType.ITEM;
+export class TrekkingShoes extends TrainerCard {
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'ASR';
 
@@ -25,10 +26,9 @@ export class TrekkingShoes extends TrainerCard {
   public fullName: string = 'Trekking Shoes ASR';
 
   public text: string =
-    'Look at the top card of your deck. You may put that card into your hand. If you don\'t, discard that card and draw a card.';
+    "Look at the top card of your deck. You may put that card into your hand. If you don't, discard that card and draw a card.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
 
@@ -40,27 +40,32 @@ export class TrekkingShoes extends TrainerCard {
       effect.preventDefault = true;
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
 
-      return store.prompt(state, new ConfirmCardsPrompt(
-        player.id,
-        GameMessage.TREKKING_SHOES,
-        deckTop.cards, // Fix error by changing toArray() to cards
-        { allowCancel: true },
-      ), selected => {
+      return store.prompt(
+        state,
+        new ConfirmCardsPrompt(
+          player.id,
+          GameMessage.TREKKING_SHOES,
+          deckTop.cards, // Fix error by changing toArray() to cards
+          { allowCancel: true },
+        ),
+        (selected) => {
+          if (selected !== null) {
+            // Add card to hand
+            MOVE_CARDS(store, state, deckTop, player.hand, {
+              cards: deckTop.cards,
+              sourceCard: this,
+            });
+          } else {
+            // Discard card
+            MOVE_CARDS(store, state, deckTop, player.discard, { sourceCard: this });
 
-        if (selected !== null) {
-          // Add card to hand
-          deckTop.moveCardsTo(deckTop.cards, player.hand);
-        } else {
-
-          // Discard card
-          deckTop.moveTo(player.discard);
-
-          // Draw a card
-          player.deck.moveTo(player.hand, 1);
-        }
-      });
+            // Draw a card
+            MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
+          }
+        },
+      );
     }
     return state;
   }

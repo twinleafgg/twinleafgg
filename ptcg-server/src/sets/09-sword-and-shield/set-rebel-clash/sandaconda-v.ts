@@ -12,7 +12,7 @@ import {
 } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, EnergyCard, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class SandacondaV extends PokemonCard {
@@ -73,7 +73,7 @@ export class SandacondaV extends PokemonCard {
         ),
         (selected) => {
           if (selected && selected.length > 0) {
-            player.discard.moveCardTo(selected[0], player.active);
+            MOVE_CARDS(store, state, player.discard, player.active, { cards: [selected[0]], sourceCard: this });
           }
         },
       );

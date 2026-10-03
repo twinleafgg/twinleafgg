@@ -13,7 +13,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class EnteiV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -88,7 +88,7 @@ export class EnteiV extends PokemonCard {
         return state; // Not active
       }
       // Draw a card
-      player.deck.moveTo(player.hand, 1);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       player.marker.addMarker(this.FLEET_FOOTED_MARKER, this);
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {

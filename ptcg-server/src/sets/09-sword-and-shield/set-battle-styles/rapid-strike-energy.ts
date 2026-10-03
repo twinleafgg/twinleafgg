@@ -9,7 +9,7 @@ import {
 } from '../../../game/store/effects/check-effects';
 import { PlayerType } from '../../../game';
 import { EnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class RapidStrikeEnergy extends EnergyCard {
   protected _tags = [CardTag.RAPID_STRIKE];
@@ -52,7 +52,7 @@ As long as this card is attached to a Pokémon, it provides 2 in any combination
           }
 
           if (!cardList.getPokemonCard()?.hasTag(CardTag.RAPID_STRIKE)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });

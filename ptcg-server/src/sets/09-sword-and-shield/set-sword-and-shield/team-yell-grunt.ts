@@ -4,12 +4,32 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameError, GameMessage, Card, CardTarget, PokemonCardList, ChooseCardsPrompt, ChoosePokemonPrompt, PlayerType, SlotType } from '../../../game';
+import {
+  StoreLike,
+  State,
+  StateUtils,
+  GameError,
+  GameMessage,
+  Card,
+  CardTarget,
+  PokemonCardList,
+  ChooseCardsPrompt,
+  ChoosePokemonPrompt,
+  PlayerType,
+  SlotType,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, self: TeamYellGrunt, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: TeamYellGrunt,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -32,59 +52,74 @@ function* playCard(next: Function, store: StoreLike, state: State, self: TeamYel
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: self });
   effect.preventDefault = true;
 
   // Player chooses which of opponent's Pokemon to take energy from
   let targets: PokemonCardList[] = [];
-  yield store.prompt(state, new ChoosePokemonPrompt(
-    player.id,
-    GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
-    PlayerType.TOP_PLAYER,
-    [SlotType.ACTIVE, SlotType.BENCH],
-    { allowCancel: false, blocked }
-  ), results => {
-    targets = results || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChoosePokemonPrompt(
+      player.id,
+      GameMessage.CHOOSE_POKEMON_TO_DISCARD_CARDS,
+      PlayerType.TOP_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { allowCancel: false, blocked },
+    ),
+    (results) => {
+      targets = results || [];
+      next();
+    },
+  );
 
   if (targets.length === 0) {
-    player.supporter.moveCardTo(self, player.discard);
+    MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [self], sourceCard: self });
     return state;
   }
 
   const target = targets[0];
   let cards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    target.energies,
-    {},
-    { min: 1, max: 1, allowCancel: false }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      target.energies,
+      {},
+      { min: 1, max: 1, allowCancel: false },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
-  target.moveCardsTo(cards, opponent.hand);
-  player.supporter.moveCardTo(self, player.discard);
+  MOVE_CARDS(store, state, target, opponent.hand, { cards: cards, sourceCard: self });
+  MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [self], sourceCard: self });
   return state;
 }
 
 export class TeamYellGrunt extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'D';
   public set: string = 'SSH';
   public setNumber: string = '184';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Team Yell Grunt';
   public fullName: string = 'Team Yell Grunt SSH';
-  public text: string = 'Put an Energy attached to 1 of your opponent\'s Pokémon into their hand. You may play only 1 Supporter card during your turn.';
+  public text: string =
+    "Put an Energy attached to 1 of your opponent's Pokémon into their hand. You may play only 1 Supporter card during your turn.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-surging-sparks/chill-teaser-toy.ts (energy retrieval generator pattern)
     if (WAS_TRAINER_USED(effect, this)) {
-      const generator = playCard(() => generator.next(), store, state, this, effect as TrainerEffect);
+      const generator = playCard(
+        () => generator.next(),
+        store,
+        state,
+        this,
+        effect as TrainerEffect,
+      );
       return generator.next().value;
     }
 

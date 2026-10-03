@@ -13,7 +13,7 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 import { ADD_MARKER, HAS_MARKER, REMOVE_MARKER } from '../../../game/store/prefabs/prefabs';
 
 export class UltraForestKartenvoy extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNB';
   public setNumber: string = '188';
   public cardImage: string = 'assets/cardback.png';

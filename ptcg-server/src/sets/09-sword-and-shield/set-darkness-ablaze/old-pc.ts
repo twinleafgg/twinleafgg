@@ -10,43 +10,54 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   let coin1Result = false;
   let coin2Result = false;
 
   effect.preventDefault = true;
 
-  yield COIN_FLIP_PROMPT(store, state, player, result => {
+  yield COIN_FLIP_PROMPT(store, state, player, (result) => {
     coin1Result = result;
     next();
   });
-  yield COIN_FLIP_PROMPT(store, state, player, result => {
+  yield COIN_FLIP_PROMPT(store, state, player, (result) => {
     coin2Result = result;
     next();
   });
 
   if (coin1Result && coin2Result && player.discard.cards.length > 0) {
     let cards: any[] = [];
-    yield store.prompt(state, new ChooseCardsPrompt(
-      player,
-      GameMessage.CHOOSE_CARD_TO_HAND,
-      player.discard,
-      {},
-      { min: 1, max: 1, allowCancel: false }
-    ), (selected: any[]) => {
-      cards = selected || [];
-      next();
+    yield store.prompt(
+      state,
+      new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_HAND,
+        player.discard,
+        {},
+        { min: 1, max: 1, allowCancel: false },
+      ),
+      (selected: any[]) => {
+        cards = selected || [];
+        next();
+      },
+    );
+    MOVE_CARDS(store, state, player.discard, player.hand, {
+      cards: cards,
+      sourceCard: effect.trainerCard,
     });
-    player.discard.moveCardsTo(cards, player.hand);
   }
-
 }
 
 export class OldPc extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public regulationMark: string = 'D';
 
@@ -56,7 +67,8 @@ export class OldPc extends TrainerCard {
   public name: string = 'Old PC';
   public fullName: string = 'Old PC DAA';
 
-  public text: string = 'Flip 2 coins. If both are heads, put a card from your discard pile into your hand. You may play any number of Item cards during your turn.';
+  public text: string =
+    'Flip 2 coins. If both are heads, put a card from your discard pile into your hand. You may play any number of Item cards during your turn.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-paldea-evolved/delivery-drone.ts (2 coin flip generator pattern, get card from discard/deck)

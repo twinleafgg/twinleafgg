@@ -7,13 +7,14 @@ import { AttackEffect, UseStadiumEffect } from '../../../game/store/effects/game
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class BlizzardTown extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'UNM';
   public setNumber: string = '187';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Blizzard Town';
   public fullName: string = 'Blizzard Town UNM';
-  public text: string = 'Pokémon with 40 HP or less remaining (both yours and your opponent\'s) can\'t attack.';
+  public text: string =
+    "Pokémon with 40 HP or less remaining (both yours and your opponent's) can't attack.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

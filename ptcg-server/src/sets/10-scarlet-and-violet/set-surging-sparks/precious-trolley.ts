@@ -4,7 +4,6 @@ import {
   Card,
   ChooseCardsPrompt,
   GameError,
-  GameLog,
   GameMessage,
   Player,
   PokemonCardList,
@@ -13,13 +12,15 @@ import {
   StoreLike,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 import {
   PlayPokemonFromDeckEffect,
   TrainerEffect,
 } from '../../../game/store/effects/play-card-effects';
 
 export class PreciousTrolley extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ACE_SPEC];
   public set: string = 'SSP';
   public cardImage: string = 'assets/cardback.png';
@@ -46,7 +47,7 @@ export class PreciousTrolley extends TrainerCard {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
 
       // Allow player to search deck and choose up to 2 Basic Pokemon
       const slots: PokemonCardList[] = player.bench.filter((b) => b.cards.length === 0);
@@ -80,13 +81,6 @@ export class PreciousTrolley extends TrainerCard {
         (selectedCards) => {
           cards = selectedCards || [];
 
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_PLAYS_BASIC_POKEMON, {
-              name: player.name,
-              card: card.name,
-            });
-          });
-
           // Use the new PlayPokemonFromDeckEffect for each selected card
           cards.forEach((card, index) => {
             const playPokemonFromDeckEffect = new PlayPokemonFromDeckEffect(
@@ -97,7 +91,7 @@ export class PreciousTrolley extends TrainerCard {
             store.reduceEffect(state, playPokemonFromDeckEffect);
           });
 
-          player.supporter.moveCardTo(this, player.discard);
+          MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
 
           return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
             player.deck.applyOrder(order);

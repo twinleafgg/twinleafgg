@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType } from '../../game/store/card/card-types';
 import { StoreLike, State, ChooseCardsPrompt, Card, ShuffleDeckPrompt, ShowCardsPrompt, StateUtils, PowerType, GameError, GameMessage, PokemonCardList } from '../../game';
 import { AttackEffect, PowerEffect, EvolveEffect } from '../../game/store/effects/game-effects';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 function* useBabyEvolution(next: Function, store: StoreLike, state: State,
   self: Pichu, effect: PowerEffect): IterableIterator<State> {
@@ -76,7 +76,7 @@ function* useFindAFriend(next: Function, store: StoreLike, state: State,
     ), () => next());
   }
 
-  player.deck.moveCardsTo(cards, player.hand);
+  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: effect.source.getPokemonCard()! });
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
     player.deck.applyOrder(order);

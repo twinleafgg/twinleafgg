@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types';
 import { EnergyCard, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Eelektrik extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -46,7 +46,7 @@ export class Eelektrik extends PokemonCard {
       effect.damage = 30 * lightningEnergy.length;
 
       lightningEnergy.forEach(c => {
-        player.active.moveCardTo(c, player.discard);
+        MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
       });
     }
 

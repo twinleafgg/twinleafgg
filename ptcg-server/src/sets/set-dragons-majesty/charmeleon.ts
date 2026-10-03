@@ -7,7 +7,7 @@ import { Stage, CardType, EnergyType } from '../../game/store/card/card-types';
 import { PowerType, StoreLike, State, ConfirmPrompt, GameMessage, StateUtils } from '../../game';
 import { EnergyCard } from '../../game/store/card/energy-card';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_ATTACK_USED, JUST_EVOLVED, IS_ABILITY_BLOCKED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, JUST_EVOLVED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../game/store/prefabs/costs';
 
 export class Charmeleon extends PokemonCard {
@@ -67,11 +67,11 @@ export class Charmeleon extends PokemonCard {
           });
 
           // Move all 5 cards to discard first
-          player.deck.moveTo(player.discard, Math.min(5, player.deck.cards.length));
+          MOVE_CARDS(store, state, player.deck, player.discard, { count: Math.min(5, player.deck.cards.length), sourceCard: this });
 
           // Attach fire energies from discard to this Pokemon
           fireEnergies.forEach(energy => {
-            player.discard.moveCardTo(energy, cardList);
+            MOVE_CARDS(store, state, player.discard, cardList, { cards: [energy], sourceCard: this });
           });
         }
       });

@@ -8,7 +8,7 @@ import { GameMessage, PokemonCardList, StoreLike, State, StateUtils } from '../.
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SWITCH_ACTIVE_WITH_BENCHED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Grumpig extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -65,7 +65,7 @@ export class Grumpig extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         if (selected && selected.length > 0) {
-          opponent.discard.moveCardTo(selected[0], slots[0]);
+          MOVE_CARDS(store, state, opponent.discard, slots[0], { cards: [selected[0]], sourceCard: this });
           slots[0].pokemonPlayedTurn = state.turn;
           slots[0].damage = 30;
         }

@@ -8,8 +8,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class WeaknessPolicy extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'PRC';
   public name: string = 'Weakness Policy';
   public fullName: string = 'Weakness Policy PRC';
@@ -19,7 +18,6 @@ export class WeaknessPolicy extends TrainerCard {
   public text: string = 'The Pokémon this card is attached to has no Weakness.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof CheckPokemonStatsEffect && effect.target.tools.includes(this)) {
       const player = StateUtils.findOwner(state, effect.target);
       if (!IS_TOOL_BLOCKED(store, state, player, this)) {

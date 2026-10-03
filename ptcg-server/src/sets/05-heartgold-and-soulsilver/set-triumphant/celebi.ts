@@ -5,9 +5,9 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { PowerType, StoreLike, State, PlayerType, SlotType, StateUtils, PokemonCardList, EnergyCard, GameError, AttachEnergyPrompt } from '../../../game';
 
-import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { ABILITY_USED, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Celebi extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -39,8 +39,6 @@ export class Celebi extends PokemonCard {
   public fullName: string = 'Celebi TM';
 
   public readonly FOREST_BREATH_MARKER: string = 'FOREST_BREATH_MARKER';
-  public readonly TIME_CIRCLE_MARKER: string = 'TIME_CIRCLE_MARKER';
-  public readonly CLEAR_TIME_CIRCLE_MARKER: string = 'CLEAR_TIME_CIRCLE_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
@@ -90,42 +88,18 @@ export class Celebi extends PokemonCard {
 
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.hand.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [transfer.card], sourceCard: this });
         }
 
       });
     }
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      player.active.marker.addMarker(this.TIME_CIRCLE_MARKER, this);
-      opponent.marker.addMarker(this.CLEAR_TIME_CIRCLE_MARKER, this);
-      return state;
-    }
-
-    if (effect instanceof PutDamageEffect
-      && effect.target.marker.hasMarker(this.TIME_CIRCLE_MARKER)) {
-      const card = effect.source.getPokemonCard();
-      const stage = card !== undefined ? card.stage : undefined;
-
-      if (stage === Stage.STAGE_1 || stage === Stage.STAGE_2) {
-        effect.preventDefault = true;
-      }
-
-      return state;
+      PREVENT_DAMAGE(store, state, effect, this, { sourceIsEvolution: true });
     }
 
     if (effect instanceof EndTurnEffect) {
       effect.player.marker.removeMarker(this.FOREST_BREATH_MARKER, this);
-
-      if (effect.player.marker.hasMarker(this.CLEAR_TIME_CIRCLE_MARKER, this)) {
-        effect.player.marker.removeMarker(this.CLEAR_TIME_CIRCLE_MARKER, this);
-        const opponent = StateUtils.getOpponent(state, effect.player);
-        opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-          cardList.marker.removeMarker(this.TIME_CIRCLE_MARKER, this);
-        });
-      }
     }
 
     return state;

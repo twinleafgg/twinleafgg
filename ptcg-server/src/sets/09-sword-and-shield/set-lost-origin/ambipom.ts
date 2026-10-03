@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS, SEARCH_DECK_FOR_CARDS_TO_HAND, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS, SEARCH_DECK_FOR_CARDS_TO_HAND, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Ambipom extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -69,7 +69,7 @@ export class Ambipom extends PokemonCard {
       // Pick a random card from opponent's hand
       const randomIndex = Math.floor(Math.random() * opponent.hand.cards.length);
       const randomCard = opponent.hand.cards[randomIndex];
-      opponent.hand.moveCardTo(randomCard, opponent.discard);
+      MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [randomCard], sourceCard: this });
     }
 
     return state;

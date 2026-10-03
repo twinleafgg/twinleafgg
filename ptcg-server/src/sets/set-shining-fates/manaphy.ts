@@ -6,7 +6,7 @@ import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType } from '../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameError, GameMessage, PowerType, StoreLike, State, StateUtils, PokemonCardList, CardList } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER } from '../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, SHOW_CARDS_TO_PLAYER, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Manaphy extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -67,7 +67,7 @@ export class Manaphy extends PokemonCard {
       // Look at top 6 cards
       const topCards = new CardList();
       const count = Math.min(6, player.deck.cards.length);
-      player.deck.moveTo(topCards, count);
+      MOVE_CARDS(store, state, player.deck, topCards, { count: count, sourceCard: this });
 
       const opponent = StateUtils.getOpponent(state, player);
 
@@ -85,11 +85,11 @@ export class Manaphy extends PokemonCard {
           // Reveal the chosen Pokemon to the opponent
           SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
           // Put chosen Pokemon into hand
-          topCards.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, topCards, player.hand, { cards: cards, sourceCard: this });
         }
 
         // Shuffle remaining cards back into deck
-        topCards.moveTo(player.deck);
+        MOVE_CARDS(store, state, topCards, player.deck, { sourceCard: this });
         SHUFFLE_DECK(store, state, player);
       });
     }

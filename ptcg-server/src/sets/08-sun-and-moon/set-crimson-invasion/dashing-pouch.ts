@@ -10,19 +10,21 @@ import { RetreatEffect } from '../../../game/store/effects/game-effects';
 import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 
 export class DashingPouch extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'CIN';
   public setNumber: string = '92';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Dashing Pouch';
   public fullName: string = 'Dashing Pouch CIN';
-  public text: string = 'If the Pokémon this card is attached to discards Energy for its Retreat Cost, put that Energy into your hand instead of the discard pile.';
+  public text: string =
+    'If the Pokémon this card is attached to discards Energy for its Retreat Cost, put that Energy into your hand instead of the discard pile.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-fusion-strike/skaters-park.ts (redirect retreat energy to hand)
     if (effect instanceof RetreatEffect && effect.player.active.tools.includes(this)) {
-
-      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) { return state; }
+      if (IS_TOOL_BLOCKED(store, state, effect.player, this)) {
+        return state;
+      }
 
       effect.moveRetreatCostTo = effect.player.hand;
     }

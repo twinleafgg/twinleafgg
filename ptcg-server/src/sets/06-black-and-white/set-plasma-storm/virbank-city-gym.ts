@@ -11,13 +11,14 @@ import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effec
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class VirbankCityGym extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'PLS';
   public name: string = 'Virbank City Gym';
   public fullName: string = 'Virbank City Gym PLS';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '126';
-  public text: string = 'Put 2 more damage counters on Poisoned Pokémon (both yours and your opponent\'s) between turns.';
+  public text: string =
+    "Put 2 more damage counters on Poisoned Pokémon (both yours and your opponent's) between turns.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof BetweenTurnsEffect && StateUtils.getStadiumCard(state) === this) {

@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../game/store/card/card-types';
 import { StoreLike, State } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class Croconaw extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -40,7 +40,7 @@ export class Croconaw extends PokemonCard {
       const player = effect.player;
 
       // Discard 3 cards from your deck 
-      player.deck.moveTo(player.discard, 3);
+      MOVE_CARDS(store, state, player.deck, player.discard, { count: 3, sourceCard: this });
       return state;
     }
 

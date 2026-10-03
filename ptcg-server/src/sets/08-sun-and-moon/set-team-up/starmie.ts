@@ -8,7 +8,7 @@ import { StoreLike, State, GameMessage, PlayerType, SlotType, EnergyCard } from 
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Starmie extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -74,7 +74,7 @@ export class Starmie extends PokemonCard {
         ), (cards) => {
           cards = cards || [];
           cards.forEach(card => {
-            player.deck.moveCardTo(card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [card], sourceCard: this });
           });
           return SHUFFLE_DECK(store, state, player);
         });

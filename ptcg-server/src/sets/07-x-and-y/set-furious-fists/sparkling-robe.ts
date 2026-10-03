@@ -7,21 +7,29 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, PokemonCardList } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_TOOL_BLOCKED, PREVENT_AND_CLEAR_SPECIAL_CONDITIONS } from '../../../game/store/prefabs/prefabs';
+import {
+  IS_TOOL_BLOCKED,
+  PREVENT_AND_CLEAR_SPECIAL_CONDITIONS,
+} from '../../../game/store/prefabs/prefabs';
 
 export class SparklingRobe extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'FFI';
   public setNumber: string = '99';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Sparkling Robe';
   public fullName: string = 'Sparkling Robe FFI';
-  public text: string = 'The Pok\u00e9mon this card is attached to can\'t be affected by any Special Conditions. (Remove any Special Conditions affecting that Pok\u00e9mon.)';
+  public text: string =
+    "The Pok\u00e9mon this card is attached to can't be affected by any Special Conditions. (Remove any Special Conditions affecting that Pok\u00e9mon.)";
 
   // Ref: set-paradox-rift/ancient-booster-energy-capsule.ts (PREVENT_AND_CLEAR_SPECIAL_CONDITIONS)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Clear special conditions when tool is attached
-    if (effect instanceof TrainerEffect && effect.trainerCard === this && effect.target instanceof PokemonCardList) {
+    if (
+      effect instanceof TrainerEffect &&
+      effect.trainerCard === this &&
+      effect.target instanceof PokemonCardList
+    ) {
       const cardList = effect.target;
       if (cardList.specialConditions.length > 0) {
         cardList.specialConditions = [];
@@ -31,9 +39,8 @@ export class SparklingRobe extends TrainerCard {
     // Prevent and clear special conditions for the attached Pokemon
     PREVENT_AND_CLEAR_SPECIAL_CONDITIONS(state, effect, {
       shouldApply: (target, owner) => {
-        return target.tools.includes(this)
-          && !IS_TOOL_BLOCKED(store, state, owner, this);
-      }
+        return target.tools.includes(this) && !IS_TOOL_BLOCKED(store, state, owner, this);
+      },
     });
 
     return state;

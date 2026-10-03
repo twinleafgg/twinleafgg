@@ -10,7 +10,7 @@ import { PlayerType } from '../../../game/store/actions/play-card-action';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Beautifly extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -70,7 +70,7 @@ export class Beautifly extends PokemonCard {
         if (player.deck.cards.length === 0) {
           break;
         }
-        player.deck.moveTo(player.hand, 1);
+        MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
       }
       player.marker.addMarker(this.STOKED_STRAW_MARKER, this);
 

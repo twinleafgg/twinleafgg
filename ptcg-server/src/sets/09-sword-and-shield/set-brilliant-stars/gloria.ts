@@ -12,12 +12,14 @@ import {
 import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+
 import {
   PlayPokemonFromDeckEffect,
   TrainerEffect,
 } from '../../../game/store/effects/play-card-effects';
 export class Gloria extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'BRS';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '141';
@@ -57,7 +59,7 @@ export class Gloria extends TrainerCard {
           }
         });
 
-        player.hand.moveCardTo(effect.trainerCard, player.supporter);
+        MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
         // We will discard this card after prompt confirmation
         effect.preventDefault = true;
 

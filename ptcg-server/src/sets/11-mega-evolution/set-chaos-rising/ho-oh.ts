@@ -8,7 +8,7 @@ import {
   GameMessage,
   PokemonCardList,
 } from '../../../game';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { DISCARD_X_ENERGY_FROM_THIS_POKEMON } from '../../../game/store/prefabs/costs';
 
 export class HoOh extends PokemonCard {
@@ -73,7 +73,7 @@ export class HoOh extends PokemonCard {
           const cards = selected || [];
           cards.forEach((card, index) => {
             if (index < slots.length) {
-              player.discard.moveCardTo(card, slots[index]);
+              MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: this });
               slots[index].pokemonPlayedTurn = state.turn;
             }
           });

@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, SuperType, EnergyType } from '../../../game/store/card/card-types';
 import { ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Relicanth extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -61,7 +61,7 @@ export class Relicanth extends PokemonCard {
         { min: 0, max: count, allowCancel: false }
       ), selected => {
         const cards = selected || [];
-        player.discard.moveCardsTo(cards, player.hand);
+        MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
       });
     }
 

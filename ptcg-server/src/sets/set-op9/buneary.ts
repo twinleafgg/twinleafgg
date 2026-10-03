@@ -4,11 +4,8 @@ import { StoreLike } from '../../game/store/store-like';
 import { State } from '../../game/store/state/state';
 import { Effect } from '../../game/store/effects/effect';
 
-import { PutDamageEffect } from '../../game/store/effects/attack-effects';
-import { StateUtils } from '../../game/store/state-utils';
-import { PlayerType } from '../../game/store/actions/play-card-action';
-import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, MULTIPLE_COIN_FLIPS_PROMPT } from '../../game/store/prefabs/prefabs';
+import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../game/store/prefabs/prefabs';
+import { FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN } from '../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Buneary extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -37,9 +34,6 @@ export class Buneary extends PokemonCard {
   public name: string = 'Buneary';
   public fullName: string = 'Buneary OP9';
 
-  public readonly CLEAR_DEFENSE_CURL_MARKER = 'CLEAR_DEFENSE_CURL_MARKER';
-  public readonly DEFENSE_CURL_MARKER = 'DEFENSE_CURL_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
@@ -52,31 +46,7 @@ export class Buneary extends PokemonCard {
     }
 
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-      return COIN_FLIP_PROMPT(store, state, player, flipResult => {
-        if (flipResult) {
-          player.active.marker.addMarker(this.DEFENSE_CURL_MARKER, this);
-          opponent.marker.addMarker(this.CLEAR_DEFENSE_CURL_MARKER, this);
-        }
-      });
-    }
-
-    if (effect instanceof PutDamageEffect
-      && effect.target.marker.hasMarker(this.DEFENSE_CURL_MARKER)) {
-      effect.preventDefault = true;
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect
-      && effect.player.marker.hasMarker(this.CLEAR_DEFENSE_CURL_MARKER, this)) {
-
-      effect.player.marker.removeMarker(this.CLEAR_DEFENSE_CURL_MARKER, this);
-
-      const opponent = StateUtils.getOpponent(state, effect.player);
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
-        cardList.marker.removeMarker(this.DEFENSE_CURL_MARKER, this);
-      });
+      return FLIP_COIN_TO_PREVENT_DAMAGE_DURING_OPPONENTS_NEXT_TURN(store, state, effect, this);
     }
 
     return state;

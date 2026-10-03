@@ -5,8 +5,7 @@ import { Stage, CardType, SuperType } from '../../../game/store/card/card-types'
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { PowerType, StoreLike, State, PlayerType, SlotType, MoveEnergyPrompt, StateUtils, PokemonCardList } from '../../../game';
 import { HealTargetEffect } from '../../../game/store/effects/attack-effects';
-import { IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-
+import {IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shaymin extends PokemonCard {
 
@@ -74,7 +73,7 @@ export class Shaymin extends PokemonCard {
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

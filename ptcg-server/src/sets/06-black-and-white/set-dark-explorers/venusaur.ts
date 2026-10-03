@@ -1,5 +1,5 @@
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { ADD_POISON_TO_PLAYER_ACTIVE, AFTER_ATTACK, IS_ABILITY_BLOCKED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_POISON_TO_PLAYER_ACTIVE, AFTER_ATTACK, IS_ABILITY_BLOCKED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
@@ -91,7 +91,7 @@ export class Venusaur extends PokemonCard {
         chosen = selected || [];
 
         if (chosen.length > 0) {
-          player.deck.moveCardsTo(chosen, player.hand);
+          MOVE_CARDS(store, state, player.deck, player.hand, { cards: chosen, sourceCard: this });
           store.prompt(state, new ShowCardsPrompt(
             StateUtils.getOpponent(state, player).id,
             GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,

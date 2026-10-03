@@ -7,7 +7,7 @@ import { Stage, CardType, BoardEffect } from '../../../game/store/card/card-type
 import { PowerType, StoreLike, State, StateUtils, GameMessage, ConfirmPrompt, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect } from '../../../game/store/effects/game-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Chandelure extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -67,7 +67,7 @@ export class Chandelure extends PokemonCard {
           });
 
           const discardCount = Math.min(3, opponent.deck.cards.length);
-          opponent.deck.moveTo(opponent.discard, discardCount);
+          MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: discardCount, sourceCard: this });
         }
       });
     }

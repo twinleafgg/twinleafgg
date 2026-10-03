@@ -5,11 +5,11 @@ import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChoosePokemonPrompt, PlayerType, SlotType } from '../../../game';
 
 export class VentureBomb extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   protected _tags = [CardTag.ROCKETS_SECRET_MACHINE];
 
@@ -66,7 +66,7 @@ export class VentureBomb extends TrainerCard {
         }
       });
 
-      player.supporter.moveTo(player.discard);
+      MOVE_CARDS(store, state, player.supporter, player.discard, { sourceCard: this });
 
       return state;
     }

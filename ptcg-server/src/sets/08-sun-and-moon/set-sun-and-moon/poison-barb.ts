@@ -11,13 +11,14 @@ import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 import { AddSpecialConditionsPowerEffect } from '../../../game/store/effects/check-effects';
 
 export class PoisonBarb extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'SUM';
   public setNumber: string = '124';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Poison Barb';
   public fullName: string = 'Poison Barb SUM';
-  public text: string = 'If the Pokémon this card is attached to is your Active Pokémon and is damaged by an opponent\'s attack (even if this Pokémon is Knocked Out), the Attacking Pokémon is now Poisoned.';
+  public text: string =
+    "If the Pokémon this card is attached to is your Active Pokémon and is damaged by an opponent's attack (even if this Pokémon is Knocked Out), the Attacking Pokémon is now Poisoned.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-scarlet-and-violet/rocky-helmet.ts (Rocky Helmet - tool damage after attack)
@@ -40,7 +41,9 @@ export class PoisonBarb extends TrainerCard {
 
       if (state.phase === GamePhase.ATTACK) {
         // Poison the attacking Pokemon
-        const poisonEffect = new AddSpecialConditionsPowerEffect(player, this, effect.source, [SpecialCondition.POISONED]);
+        const poisonEffect = new AddSpecialConditionsPowerEffect(player, this, effect.source, [
+          SpecialCondition.POISONED,
+        ]);
         store.reduceEffect(state, poisonEffect);
       }
     }

@@ -16,7 +16,7 @@ import {
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { HealEffect } from '../../../game/store/effects/game-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
 
 export class Smoochum extends PokemonCard {
@@ -89,7 +89,7 @@ export class Smoochum extends PokemonCard {
           const target = StateUtils.findCardList(state, this);
 
           // Evolve Pokemon
-          player.hand.moveCardTo(evolution, target);
+          MOVE_CARDS(store, state, player.hand, target, { cards: [evolution], sourceCard: this });
           const pokemonTarget = target as PokemonCardList;
           pokemonTarget.clearEffects();
           pokemonTarget.pokemonPlayedTurn = state.turn;

@@ -1,11 +1,9 @@
 import { PokemonCard } from '../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../game/store/card/card-types';
-import { StoreLike, State, StateUtils } from '../../game';
+import { StoreLike, State } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import { AttackEffect } from '../../game/store/effects/game-effects';
-import { DealDamageEffect } from '../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
 import { WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
+import { PREVENT_DAMAGE } from '../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Graveler extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -34,34 +32,10 @@ export class Graveler extends PokemonCard {
   public name: string = 'Graveler';
   public fullName: string = 'Graveler FO';
 
-  public readonly HARDEN_MARKER = 'HARDEN_MARKER';
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
-
-      opponent.marker.addMarker(this.HARDEN_MARKER, this);
+      PREVENT_DAMAGE(store, state, effect, this, { maxDamage: 30 });
     }
-
-    if (effect instanceof AttackEffect && effect.player.active.marker.hasMarker(this.HARDEN_MARKER, this)) {
-      const damageBeingDealt = effect.damage;
-
-      if (damageBeingDealt <= 30) {
-        const damageEffect = new DealDamageEffect(effect, 0);
-        damageEffect.target = effect.target;
-
-        state = store.reduceEffect(state, damageEffect);
-      }
-
-      return state;
-    }
-
-    if (effect instanceof EndTurnEffect && effect.player.active.marker.hasMarker(this.HARDEN_MARKER, this)) {
-      effect.player.active.marker.removeMarker(this.HARDEN_MARKER, this);
-    }
-
 
     return state;
   }

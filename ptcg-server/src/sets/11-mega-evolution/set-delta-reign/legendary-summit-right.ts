@@ -6,7 +6,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { TrainerPowerEffect } from '../../../game/store/effects/game-effects';
 
 export class LegendarySummitRight extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.DUAL_STADIUM];
   public set: string = 'M6';
   public cardImage: string = 'assets/cardback.png';

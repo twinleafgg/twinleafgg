@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardTag, CardType, PowerType, StoreLike, State, CardList, StateUtils, CardTarget, PlayerType, EnergyCard, AttachEnergyPrompt, GameMessage, SuperType } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
 import { EndTurnEffect } from "../../../game/store/effects/game-phase-effects";
-import { WAS_POWER_USED, WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN } from "../../../game/store/prefabs/prefabs";
+import {WAS_POWER_USED, WAS_ATTACK_USED, THIS_POKEMON_CANNOT_ATTACK_NEXT_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class ZacianV extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -43,7 +43,7 @@ export class ZacianV extends PokemonCard {
       const player = effect.player;
 
       const topdecks = new CardList();
-      player.deck.moveTo(topdecks, 3);
+      MOVE_CARDS(store, state, player.deck, topdecks, { count: 3, sourceCard: this });
 
       // Find the slot for this Zacian V using the new system
       const zacianSlot = StateUtils.findPokemonSlot(state, this);
@@ -73,7 +73,7 @@ export class ZacianV extends PokemonCard {
       const metals = metalEnergies.length;
 
       if (metals === 0) {
-        topdecks.moveTo(player.hand);
+        MOVE_CARDS(store, state, topdecks, player.hand, { sourceCard: this });
       } else {
         // Only allow attaching to this Zacian V
         state = store.prompt(
@@ -98,14 +98,11 @@ export class ZacianV extends PokemonCard {
                 transfer.to.slot === zacianTarget!.slot &&
                 transfer.to.index === zacianTarget!.index
               ) {
-                topdecks.moveCardTo(
-                  transfer.card,
-                  StateUtils.getTarget(state, player, transfer.to),
-                );
+                MOVE_CARDS(store, state, topdecks, StateUtils.getTarget(state, player, transfer.to), { cards: [transfer.card], sourceCard: this });
               }
             }
             // Move the rest to hand
-            topdecks.moveTo(player.hand);
+            MOVE_CARDS(store, state, topdecks, player.hand, { sourceCard: this });
           },
         );
       }

@@ -2,7 +2,7 @@
 // Card effects were implemented by an agent.
 // If you have any questions or feedback, reach out to @C4 in the discord.
 
-import { ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {ADD_SLEEP_TO_PLAYER_ACTIVE, AFTER_ATTACK, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 
@@ -79,7 +79,7 @@ export class Relicanth extends PokemonCard {
       ), selected => {
         const cards = selected || [];
         if (cards.length > 0) {
-          cards.forEach(c => player.discard.moveCardTo(c, player.deck));
+          cards.forEach(c => MOVE_CARDS(store, state, player.discard, player.deck, { cards: [c], sourceCard: this }));
         }
         SHUFFLE_DECK(store, state, player);
       });

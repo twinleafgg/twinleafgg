@@ -7,13 +7,14 @@ import { GamePhase } from '../../../game/store/state/state';
 
 export class HabanBerry extends TrainerCard {
   public regulationMark = 'H';
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public set: string = 'PRE';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '111';
   public name = 'Haban Berry';
   public fullName = 'Haban Berry PRE';
-  public text: string = 'If the Pokémon this card is attached to is damaged by an attack from your opponent\'s [N] Pokémon, it takes 60 less damage (after applying Weakness and Resistance), and discard this card.';
+  public text: string =
+    "If the Pokémon this card is attached to is damaged by an attack from your opponent's [N] Pokémon, it takes 60 less damage (after applying Weakness and Resistance), and discard this card.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof PutDamageEffect && effect.target.tools.includes(this)) {

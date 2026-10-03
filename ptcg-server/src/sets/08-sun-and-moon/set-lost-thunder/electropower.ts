@@ -9,8 +9,7 @@ import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class Electropower extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'LOT';
 
@@ -23,7 +22,7 @@ export class Electropower extends TrainerCard {
   public fullName: string = 'Electropower LOT';
 
   public text: string =
-    'During this turn, your [L] Pokémon\'s attacks do 30 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance).';
+    "During this turn, your [L] Pokémon's attacks do 30 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance).";
 
   private readonly ELECTROPOWER_MARKER = 'ELECTROPOWER_MARKER';
 
@@ -31,13 +30,19 @@ export class Electropower extends TrainerCard {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
       player.marker.addMarker(this.ELECTROPOWER_MARKER, this);
-
     }
 
-    if (effect instanceof DealDamageEffect && pokemonHasCardTypeOptional(effect.player.active.getPokemonCard(), CardType.LIGHTNING)) {
+    if (
+      effect instanceof DealDamageEffect &&
+      pokemonHasCardTypeOptional(effect.player.active.getPokemonCard(), CardType.LIGHTNING)
+    ) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-      if (player.marker.hasMarker(this.ELECTROPOWER_MARKER, this) && effect.damage > 0 && effect.target === opponent.active) {
+      if (
+        player.marker.hasMarker(this.ELECTROPOWER_MARKER, this) &&
+        effect.damage > 0 &&
+        effect.target === opponent.active
+      ) {
         effect.damage += 30;
       }
     }
@@ -49,5 +54,4 @@ export class Electropower extends TrainerCard {
 
     return state;
   }
-
 }

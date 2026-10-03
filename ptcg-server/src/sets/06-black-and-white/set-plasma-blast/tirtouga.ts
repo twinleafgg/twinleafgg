@@ -3,7 +3,7 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, PowerType, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Tirtouga extends PokemonCard {
   public stage: Stage = Stage.RESTORED;
@@ -54,7 +54,7 @@ export class Tirtouga extends PokemonCard {
       ABILITY_USED(player, this);
 
       // Move to bottom of deck
-      player.discard.moveCardTo(this, player.deck);
+      MOVE_CARDS(store, state, player.discard, player.deck, { cards: [this], sourceCard: this });
       const index = player.deck.cards.indexOf(this);
       if (index !== -1) {
         player.deck.cards.splice(index, 1);

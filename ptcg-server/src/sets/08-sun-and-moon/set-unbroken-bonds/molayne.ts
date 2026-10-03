@@ -10,54 +10,75 @@ import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
 import { Card } from '../../../game/store/card/card';
-import { SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import { SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, self: Molayne, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: Molayne,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
   // Check if player has at least 2 Metal Energy cards in hand (excluding this card)
-  const metalEnergyInHand = player.hand.cards.filter(c =>
-    c !== self && c instanceof EnergyCard && c.energyType === EnergyType.BASIC && c.provides.includes(CardType.METAL)
+  const metalEnergyInHand = player.hand.cards.filter(
+    (c) =>
+      c !== self &&
+      c instanceof EnergyCard &&
+      c.energyType === EnergyType.BASIC &&
+      c.provides.includes(CardType.METAL),
   );
   if (metalEnergyInHand.length < 2) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
   // Check if there is a Trainer card in the discard pile
-  const trainerInDiscard = player.discard.cards.some(c =>
-    c.superType === SuperType.TRAINER
-  );
+  const trainerInDiscard = player.discard.cards.some((c) => c.superType === SuperType.TRAINER);
   if (!trainerInDiscard) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
   // Move to supporter zone, prevent default discard
-  player.hand.moveCardTo(effect.trainerCard, player.supporter);
+  MOVE_CARDS(store, state, player.hand, player.supporter, {
+    cards: [effect.trainerCard],
+    sourceCard: self,
+  });
   effect.preventDefault = true;
 
   // Step 1: Discard 2 Metal Energy cards from hand
   const blocked: number[] = [];
   player.hand.cards.forEach((c, index) => {
-    if (!(c instanceof EnergyCard && c.energyType === EnergyType.BASIC && c.provides.includes(CardType.METAL))) {
+    if (
+      !(
+        c instanceof EnergyCard &&
+        c.energyType === EnergyType.BASIC &&
+        c.provides.includes(CardType.METAL)
+      )
+    ) {
       blocked.push(index);
     }
   });
 
   let discardedCards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    player.hand,
-    { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
-    { min: 2, max: 2, allowCancel: false, blocked }
-  ), selected => {
-    discardedCards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      player.hand,
+      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+      { min: 2, max: 2, allowCancel: false, blocked },
+    ),
+    (selected) => {
+      discardedCards = selected || [];
+      next();
+    },
+  );
 
-  discardedCards.forEach(c => {
-    player.hand.moveCardTo(c, player.discard);
+  discardedCards.forEach((c) => {
+    MOVE_CARDS(store, state, player.hand, player.discard, { cards: [c], sourceCard: self });
   });
 
   // Step 2: Choose a Trainer card from discard pile to shuffle into deck
@@ -69,42 +90,46 @@ function* playCard(next: Function, store: StoreLike, state: State, self: Molayne
   });
 
   let chosenCards: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DECK,
-    player.discard,
-    { superType: SuperType.TRAINER },
-    { min: 1, max: 1, allowCancel: false, blocked: blockedDiscard }
-  ), selected => {
-    chosenCards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DECK,
+      player.discard,
+      { superType: SuperType.TRAINER },
+      { min: 1, max: 1, allowCancel: false, blocked: blockedDiscard },
+    ),
+    (selected) => {
+      chosenCards = selected || [];
+      next();
+    },
+  );
 
   if (chosenCards.length > 0) {
     // Show to opponent
-    yield store.prompt(state, new ShowCardsPrompt(
-      opponent.id,
-      GameMessage.CARDS_SHOWED_BY_THE_OPPONENT,
-      chosenCards
-    ), () => next());
+    yield store.prompt(
+      state,
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, chosenCards),
+      () => next(),
+    );
 
-    chosenCards.forEach(c => {
-      player.discard.moveCardTo(c, player.deck);
+    chosenCards.forEach((c) => {
+      MOVE_CARDS(store, state, player.discard, player.deck, { cards: [c], sourceCard: self });
     });
   }
-
 
   return SHUFFLE_DECK(store, state, player);
 }
 
 export class Molayne extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNB';
   public setNumber: string = '181';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Molayne';
   public fullName: string = 'Molayne UNB';
-  public text: string = 'You can play this card only if you discard 2 [M] Energy cards from your hand. Shuffle a Trainer card from your discard pile into your deck. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'You can play this card only if you discard 2 [M] Energy cards from your hand. Shuffle a Trainer card from your discard pile into your deck. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-sword-and-shield/ordinary-rod.ts (generator pattern for multi-step trainer)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {

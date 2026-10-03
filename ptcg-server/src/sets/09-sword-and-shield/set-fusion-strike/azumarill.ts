@@ -3,7 +3,7 @@ import { Stage, CardType, TrainerType } from '../../../game/store/card/card-type
 import { StoreLike, State, TrainerCard, Card, ChooseCardsPrompt, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Azumarill extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -67,7 +67,7 @@ export class Azumarill extends PokemonCard {
         ), selected => {
           cards = selected || [];
 
-          player.discard.moveCardsTo(cards, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: cards, sourceCard: this });
 
         });
       }

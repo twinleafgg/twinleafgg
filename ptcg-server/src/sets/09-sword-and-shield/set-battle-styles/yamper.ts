@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, GameMessage, ConfirmPrompt } from '../../.
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Yamper extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -69,10 +69,10 @@ export class Yamper extends PokemonCard {
         }
 
         if (pokeBall) {
-          player.discard.moveCardTo(pokeBall, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: [pokeBall], sourceCard: this });
         }
         if (greatBall) {
-          player.discard.moveCardTo(greatBall, player.hand);
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards: [greatBall], sourceCard: this });
         }
       });
     }

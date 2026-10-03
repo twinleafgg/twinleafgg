@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { CardList, GameMessage, StoreLike, State, StateUtils, SelectPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { OrderCardsPrompt } from '../../../game/store/prompts/order-cards-prompt';
 
@@ -55,7 +55,7 @@ export class Lunatone extends PokemonCard {
             if (player.deck.cards.length === 0) { return; }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, Math.min(4, player.deck.cards.length));
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(4, player.deck.cards.length), sourceCard: this });
 
             store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -76,7 +76,7 @@ export class Lunatone extends PokemonCard {
             if (opponent.deck.cards.length === 0) { return; }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, Math.min(4, opponent.deck.cards.length));
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: Math.min(4, opponent.deck.cards.length), sourceCard: this });
 
             store.prompt(state, new OrderCardsPrompt(
               player.id,

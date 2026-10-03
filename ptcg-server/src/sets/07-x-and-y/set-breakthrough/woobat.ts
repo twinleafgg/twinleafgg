@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameMessage, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 
 export class Woobat extends PokemonCard {
@@ -52,7 +52,7 @@ export class Woobat extends PokemonCard {
               { min: 1, max: 1, allowCancel: false }
             ), selected => {
               if (selected && selected.length > 0) {
-                player.discard.moveCardTo(selected[0], player.hand);
+                MOVE_CARDS(store, state, player.discard, player.hand, { cards: [selected[0]], sourceCard: this });
               }
             });
           }

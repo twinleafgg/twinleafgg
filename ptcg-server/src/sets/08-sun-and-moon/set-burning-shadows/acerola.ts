@@ -1,17 +1,16 @@
-import { GameError, PokemonCard } from '../../../game';
+import { GameError } from '../../../game';
 import { GameMessage } from '../../../game/game-message';
 import { CardTarget, PlayerType, SlotType } from '../../../game/store/actions/play-card-action';
 import { TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { MOVE_CARDS, MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 export class Acerola extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
 
   public set: string = 'BUS';
 
@@ -36,7 +35,10 @@ export class Acerola extends TrainerCard {
         throw new GameError(GameMessage.SUPPORTER_ALREADY_PLAYED);
       }
 
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       // We will discard this card after prompt confirmation
       effect.preventDefault = true;
 
@@ -55,39 +57,25 @@ export class Acerola extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      return store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON_TO_PICK_UP,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.ACTIVE, SlotType.BENCH],
-        { allowCancel: false, blocked }
-      ), result => {
-        const cardList = result.length > 0 ? result[0] : null;
-        if (cardList !== null) {
-          const pokemons = cardList.getPokemons();
-          const otherCards = cardList.cards.filter(card =>
-            !(card instanceof PokemonCard) &&
-            !pokemons.includes(card as PokemonCard) &&
-            (!cardList.tools || !cardList.tools.includes(card))
-          );
-          const tools = [...cardList.tools];
-
-          // Move other cards to hand
-          if (otherCards.length > 0) {
-            MOVE_CARDS(store, state, cardList, player.hand, { cards: otherCards });
+      return store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON_TO_PICK_UP,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.ACTIVE, SlotType.BENCH],
+          { allowCancel: false, blocked },
+        ),
+        (result) => {
+          const cardList = result.length > 0 ? result[0] : null;
+          if (cardList !== null) {
+            MOVE_POKEMON_OFF_BOARD(store, state, cardList, {
+              pokemonDestination: player.hand,
+              sourceCard: this,
+            });
           }
-
-          // Move tools to hand explicitly
-          for (const tool of tools) {
-            cardList.moveCardTo(tool, player.hand);
-          }
-
-          // Move Pokémon to hand
-          if (pokemons.length > 0) {
-            MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons });
-          }
-        }
-      });
+        },
+      );
     }
     return state;
   }

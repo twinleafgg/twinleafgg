@@ -11,7 +11,7 @@ import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects
 
 import { CardTag } from '../../../game/store/card/card-types';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import { WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, COIN_FLIP_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class KricketuneV extends PokemonCard {
   protected _tags = [CardTag.POKEMON_V];
@@ -74,14 +74,14 @@ export class KricketuneV extends PokemonCard {
           if (player.deck.cards.length === 0) {
             break;
           }
-          player.deck.moveTo(player.hand, 1);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
         }
       } else {
         while (player.hand.cards.length < 3) {
           if (player.deck.cards.length === 0) {
             break;
           }
-          player.deck.moveTo(player.hand, 1);
+          MOVE_CARDS(store, state, player.deck, player.hand, { count: 1, sourceCard: this });
         }
       }
 

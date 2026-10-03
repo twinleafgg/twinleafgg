@@ -7,7 +7,7 @@ import { Stage, CardType, TrainerType } from '../../../game/store/card/card-type
 import { ChooseCardsPrompt, GameMessage, StoreLike, State } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { Bea } from './bea';
@@ -71,7 +71,7 @@ export class Hitmontop extends PokemonCard {
         { min: 1, max: 1, allowCancel: false }
       ), selected => {
         const cards = selected || [];
-        cards.forEach(card => player.hand.moveCardTo(card, player.discard));
+        cards.forEach(card => MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this }));
 
         if (cards.length > 0) {
           DRAW_CARDS(store, state, player, 3);

@@ -13,7 +13,7 @@ import {
   SlotType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { MOVE_POKEMON_OFF_BOARD, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { MEGA_EVOLUTION_END_TURN } from '../../../game/store/prefabs/tool-prefabs';
 
 export class MGardevoirEx extends PokemonCard {
@@ -69,34 +69,10 @@ export class MGardevoirEx extends PokemonCard {
           // Discard all selected Pokemon
           for (let i = player.bench.length - 1; i >= 0; i--) {
             if (results.includes(player.bench[i])) {
-              const cardList = player.bench[i];
-              const pokemons = cardList.getPokemons();
-              const otherCards = cardList.cards.filter(
-                (card) =>
-                  !(card instanceof PokemonCard) &&
-                  !pokemons.includes(card as PokemonCard) &&
-                  (!cardList.tools || !cardList.tools.includes(card)),
-              );
-              const tools = [...cardList.tools];
-
-              // Move other cards (tools, energy, etc.) to discard
-              if (otherCards.length > 0) {
-                MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-              }
-
-              // Move tools to discard
-              if (tools.length > 0) {
-                for (const tool of tools) {
-                  cardList.moveCardTo(tool, player.discard);
-                }
-              }
-
-              // Move Pokémon to discard and clear their effects
-              if (pokemons.length > 0) {
-                cardList.damage = 0;
-                cardList.clearEffects();
-                MOVE_CARDS(store, state, cardList, player.discard, { cards: pokemons });
-              }
+              MOVE_POKEMON_OFF_BOARD(store, state, player.bench[i], {
+                pokemonDestination: player.discard,
+                sourceCard: this,
+              });
               discardCount++;
             }
           }

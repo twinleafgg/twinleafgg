@@ -3,7 +3,7 @@ import { Stage, CardType, BoardEffect } from '../../../game/store/card/card-type
 import { StoreLike, State, CardList, GameMessage, PlayerType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { ConfirmCardsPrompt } from '../../../game/store/prompts/confirm-cards-prompt';
-import { BLOCK_IF_DECK_EMPTY, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {BLOCK_IF_DECK_EMPTY, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Rockruff extends PokemonCard {
 
@@ -38,7 +38,7 @@ export class Rockruff extends PokemonCard {
       BLOCK_IF_DECK_EMPTY(player);
 
       const deckTop = new CardList();
-      player.deck.moveTo(deckTop, 1);
+      MOVE_CARDS(store, state, player.deck, deckTop, { count: 1, sourceCard: this });
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
         if (cardList.getPokemonCard() === this) {
@@ -55,7 +55,7 @@ export class Rockruff extends PokemonCard {
 
         if (selected !== null) {
           // Discard card
-          deckTop.moveCardsTo(deckTop.cards, player.discard);
+          MOVE_CARDS(store, state, deckTop, player.discard, { cards: deckTop.cards, sourceCard: this });
         } else {
           // Move back to the top of your deck
           deckTop.moveToTopOfDestination(player.deck);

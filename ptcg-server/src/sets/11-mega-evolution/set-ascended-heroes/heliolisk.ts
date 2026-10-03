@@ -4,7 +4,7 @@ import { Card, ChooseCardsPrompt, GameError, GameMessage, PowerType, State, Stat
 import { Effect } from '../../../game/store/effects/effect';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { ABILITY_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, MULTIPLE_COIN_FLIPS_PROMPT, SHUFFLE_DECK, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 
 export class Heliolisk extends PokemonCard {
@@ -77,7 +77,7 @@ export class Heliolisk extends PokemonCard {
         (cards: Card[]) => {
           cards = cards || [];
           if (cards.length > 0) {
-            player.deck.moveCardsTo(cards, cardList);
+            MOVE_CARDS(store, state, player.deck, cardList, { cards: cards, sourceCard: this });
           }
           SHUFFLE_DECK(store, state, player);
         },

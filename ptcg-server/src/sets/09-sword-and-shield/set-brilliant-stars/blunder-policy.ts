@@ -8,14 +8,15 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 
 export class BlunderPolicy extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'E';
   public set: string = 'BRS';
   public setNumber: string = '131';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Blunder Policy';
   public fullName: string = 'Blunder Policy BRS 131';
-  public text: string = 'If the Pokémon this card is attached to uses an attack, if you flip any coins for the damage or effect of that attack, and if any of them are tails, draw 3 cards at the end of your turn. You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached.';
+  public text: string =
+    "If the Pokémon this card is attached to uses an attack, if you flip any coins for the damage or effect of that attack, and if any of them are tails, draw 3 cards at the end of your turn. You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached.";
 
   // TODO: The "if any coin flip during an attack is tails, draw 3 at end of turn" mechanic requires
   // intercepting CoinFlipPrompt results during another card's attack, which is not currently

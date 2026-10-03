@@ -6,7 +6,7 @@ import { Effect } from '../../game/store/effects/effect';
 import { State } from '../../game/store/state/state';
 import { StoreLike } from '../../game/store/store-like';
 import { CardTarget, Card, GameError, GameMessage, PlayerType, SlotType, StateUtils } from '../..';
-import { BLOCK_IF_HAS_SPECIAL_CONDITION, IS_POKEMON_POWER_BLOCKED, WAS_POWER_USED } from '../../game/store/prefabs/prefabs';
+import {BLOCK_IF_HAS_SPECIAL_CONDITION, IS_POKEMON_POWER_BLOCKED, WAS_POWER_USED, MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 import { CheckProvidedEnergyEffect } from '../../game/store/effects/check-effects';
 
 export class Venusaur extends PokemonCard {
@@ -90,7 +90,7 @@ export class Venusaur extends PokemonCard {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
 
-          source.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

@@ -55,7 +55,7 @@ export class Xatu extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            player.deck.moveTo(deckTop, Math.min(5, player.deck.cards.length));
+            MOVE_CARDS(store, state, player.deck, deckTop, { count: Math.min(5, player.deck.cards.length), sourceCard: this });
 
             store.prompt(state, new OrderCardsPrompt(
               player.id,
@@ -79,7 +79,7 @@ export class Xatu extends PokemonCard {
             }
 
             const deckTop = new CardList();
-            opponent.deck.moveTo(deckTop, Math.min(5, opponent.deck.cards.length));
+            MOVE_CARDS(store, state, opponent.deck, deckTop, { count: Math.min(5, opponent.deck.cards.length), sourceCard: this });
 
             store.prompt(state, new OrderCardsPrompt(
               player.id,

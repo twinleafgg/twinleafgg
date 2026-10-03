@@ -4,18 +4,29 @@
 
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, GameMessage, ChoosePokemonPrompt, PlayerType, SlotType, GameError, CardTarget } from '../../../game';
+import {
+  StoreLike,
+  State,
+  GameMessage,
+  ChoosePokemonPrompt,
+  PlayerType,
+  SlotType,
+  GameError,
+  CardTarget,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
+import { MOVE_POKEMON_OFF_BOARD } from '../../../game/store/prefabs/prefabs';
 
 export class GiovannisExile extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNB';
   public setNumber: string = '174';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Giovanni\'s Exile';
-  public fullName: string = 'Giovanni\'s Exile UNB';
-  public text: string = 'Discard up to 2 of your Benched Pokémon that have no damage counters on them and all cards attached to them. You may play only 1 Supporter card during your turn (before your attack).';
+  public name: string = "Giovanni's Exile";
+  public fullName: string = "Giovanni's Exile UNB";
+  public text: string =
+    'Discard up to 2 of your Benched Pokémon that have no damage counters on them and all cards attached to them. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-lost-thunder/cofagrigus.ts (Spirit Juggling - discard benched Pokemon pattern)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -28,7 +39,7 @@ export class GiovannisExile extends TrainerCard {
       }
 
       // Check if there are benched Pokemon with no damage
-      const undamagedBench = player.bench.filter(b => b.cards.length > 0 && b.damage === 0);
+      const undamagedBench = player.bench.filter((b) => b.cards.length > 0 && b.damage === 0);
       if (undamagedBench.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
@@ -41,23 +52,26 @@ export class GiovannisExile extends TrainerCard {
         }
       });
 
-      store.prompt(state, new ChoosePokemonPrompt(
-        player.id,
-        GameMessage.CHOOSE_POKEMON,
-        PlayerType.BOTTOM_PLAYER,
-        [SlotType.BENCH],
-        { min: 1, max: 2, allowCancel: false, blocked }
-      ), selected => {
-        if (selected && selected.length > 0) {
-          selected.forEach(target => {
-            // Discard all cards from the bench slot (tools + cards)
-            const tools = target.tools.slice();
-            tools.forEach(t => { target.moveCardTo(t, player.discard); });
-            target.moveTo(player.discard);
-            target.clearEffects();
-          });
-        }
-      });
+      store.prompt(
+        state,
+        new ChoosePokemonPrompt(
+          player.id,
+          GameMessage.CHOOSE_POKEMON,
+          PlayerType.BOTTOM_PLAYER,
+          [SlotType.BENCH],
+          { min: 1, max: 2, allowCancel: false, blocked },
+        ),
+        (selected) => {
+          if (selected && selected.length > 0) {
+            selected.forEach((target) => {
+              MOVE_POKEMON_OFF_BOARD(store, state, target, {
+                pokemonDestination: player.discard,
+                sourceCard: this,
+              });
+            });
+          }
+        },
+      );
     }
 
     return state;

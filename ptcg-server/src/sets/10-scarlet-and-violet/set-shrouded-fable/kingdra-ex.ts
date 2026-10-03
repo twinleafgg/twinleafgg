@@ -9,7 +9,7 @@ import { StoreLike,
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useKingsOrder(
   next: Function,
@@ -61,7 +61,7 @@ function* useKingsOrder(
   }
 
   cards.forEach((card, index) => {
-    player.discard.moveCardTo(card, slots[index]);
+    MOVE_CARDS(store, state, player.discard, slots[index], { cards: [card], sourceCard: effect.source.getPokemonCard()! });
     slots[index].pokemonPlayedTurn = state.turn;
   });
 }

@@ -14,14 +14,12 @@ import {
 } from '../../../game';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   HAS_MARKER,
   REMOVE_OPPONENT_LAST_TURN_MARKER_AT_END_OF_TURN,
   WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Minun extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -75,7 +73,7 @@ export class Minun extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      player.deck.moveTo(player.hand, 2);
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 2, sourceCard: this });
       player.usedMinusCharge = true;
 
       ABILITY_USED(player, this);
@@ -143,7 +141,7 @@ export class Minun extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              player.active.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
             }
           },
         );

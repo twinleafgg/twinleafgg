@@ -1,4 +1,4 @@
-import { GameLog, GameMessage } from '../../../game/game-message';
+import { GameMessage } from '../../../game/game-message';
 import { StateUtils } from '../../../game/store/state-utils';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { CardTag, TrainerType } from '../../../game/store/card/card-types';
@@ -12,7 +12,7 @@ import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 export class HolonRuins extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '96';
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   public set = 'DS';
   public name = 'Holon Ruins';
   public fullName = 'Holon Ruins DS';
@@ -51,12 +51,6 @@ export class HolonRuins extends TrainerCard {
             return;
           }
           MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
-          cards.forEach((card, index) => {
-            store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD_FROM_HAND, {
-              name: player.name,
-              card: card.name,
-            });
-          });
         },
       );
     }

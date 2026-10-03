@@ -9,7 +9,7 @@ import { MoveCardsEffect, UseStadiumEffect } from '../../../game/store/effects/g
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class NeutralCenter extends TrainerCard {
-  public trainerType = TrainerType.STADIUM;
+  protected _trainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.ACE_SPEC];
   public set = 'SFA';
   public cardImage: string = 'assets/cardback.png';

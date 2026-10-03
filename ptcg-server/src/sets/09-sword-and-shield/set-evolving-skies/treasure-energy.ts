@@ -7,7 +7,7 @@ import { CardType, EnergyType } from '../../../game/store/card/card-types';
 import { StoreLike, State, GameMessage } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DrawPrizesEffect } from '../../../game/store/effects/game-effects';
-import { CONFIRMATION_PROMPT, TAKE_SPECIFIC_PRIZES } from '../../../game/store/prefabs/prefabs';
+import {CONFIRMATION_PROMPT, TAKE_SPECIFIC_PRIZES, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
 import { PlayerType, SlotType } from '../../../game/store/actions/play-card-action';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
@@ -66,7 +66,7 @@ export class TreasureEnergy extends EnergyCard {
     // Move the prize card to hand temporarily
     const prizeIndex = player.prizes.findIndex(prize => prize.cards.includes(this));
     if (prizeIndex !== -1) {
-      player.prizes[prizeIndex].moveCardTo(this, player.hand);
+      MOVE_CARDS(store, state, player.prizes[prizeIndex], player.hand, { cards: [this], sourceCard: this });
     }
 
     // Player chooses a Pokemon to attach to

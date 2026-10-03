@@ -7,7 +7,7 @@ import { IS_TOOL_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { GamePhase } from '../../../game/store/state/state';
 
 export class CustomVest extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'J';
   public set: string = 'M6';
   public setNumber: string = '65';

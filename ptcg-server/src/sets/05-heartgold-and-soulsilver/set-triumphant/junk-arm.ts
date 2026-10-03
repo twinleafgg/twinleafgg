@@ -9,24 +9,34 @@ import { GameMessage } from '../../../game/game-message';
 import { Card } from '../../../game/store/card/card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CardList } from '../../../game/store/state/card-list';
+import { Player } from '../../../game/store/state/player';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, self: JunkArm, effect: TrainerEffect): IterableIterator<State> {
-  const player = effect.player;
-  const itemTypes = [TrainerType.ITEM, TrainerType.TOOL];
-  let cards: Card[] = [];
+const ITEM_TYPES = [TrainerType.ITEM, TrainerType.TOOL];
 
-  cards = player.hand.cards.filter(c => c !== self);
-  if (cards.length < 2) {
-    throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
+function canPlayJunkArm(player: Player, self: JunkArm): boolean {
+  const handCards = player.hand.cards.filter((c) => c !== self);
+  if (handCards.length < 2) {
+    return false;
   }
 
-  let trainersInDiscard = 0;
-  player.discard.cards.forEach(c => {
-    if (c instanceof TrainerCard && itemTypes.includes(c.trainerType) && c.name !== self.name) {
-      trainersInDiscard += 1;
-    }
-  });
-  if (trainersInDiscard === 0) {
+  const hasRecoverableTrainer = player.discard.cards.some(
+    (c) => c instanceof TrainerCard && ITEM_TYPES.includes(c.trainerType) && c.name !== self.name,
+  );
+  return hasRecoverableTrainer;
+}
+
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  self: JunkArm,
+  effect: TrainerEffect,
+): IterableIterator<State> {
+  const player = effect.player;
+  let cards: Card[] = [];
+
+  if (!canPlayJunkArm(player, self)) {
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
@@ -35,18 +45,22 @@ function* playCard(next: Function, store: StoreLike, state: State, self: JunkArm
 
   // prepare card list without Junk Arm
   const handTemp = new CardList();
-  handTemp.cards = player.hand.cards.filter(c => c !== self);
+  handTemp.cards = player.hand.cards.filter((c) => c !== self);
 
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_DISCARD,
-    handTemp,
-    {},
-    { min: 2, max: 2, allowCancel: true }
-  ), selected => {
-    cards = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_DISCARD,
+      handTemp,
+      {},
+      { min: 2, max: 2, allowCancel: true },
+    ),
+    (selected) => {
+      cards = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (cards.length === 0) {
@@ -59,39 +73,42 @@ function* playCard(next: Function, store: StoreLike, state: State, self: JunkArm
       blocked.push(index);
       return;
     }
-    if (!itemTypes.includes(c.trainerType) || c.name === self.name) {
+    if (!ITEM_TYPES.includes(c.trainerType) || c.name === self.name) {
       blocked.push(index);
       return;
     }
   });
 
   let recovered: Card[] = [];
-  yield store.prompt(state, new ChooseCardsPrompt(
-    player,
-    GameMessage.CHOOSE_CARD_TO_HAND,
-    player.discard,
-    {},
-    { min: 1, max: 1, allowCancel: true, blocked }
-  ), selected => {
-    recovered = selected || [];
-    next();
-  });
+  yield store.prompt(
+    state,
+    new ChooseCardsPrompt(
+      player,
+      GameMessage.CHOOSE_CARD_TO_HAND,
+      player.discard,
+      {},
+      { min: 1, max: 1, allowCancel: true, blocked },
+    ),
+    (selected) => {
+      recovered = selected || [];
+      next();
+    },
+  );
 
   // Operation canceled by the user
   if (recovered.length === 0) {
     return state;
   }
 
-  player.hand.moveCardTo(self, player.discard);
-  player.hand.moveCardsTo(cards, player.discard);
-  player.discard.moveCardsTo(recovered, player.hand);
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: [self], sourceCard: self });
+  MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: self });
+  MOVE_CARDS(store, state, player.discard, player.hand, { cards: recovered, sourceCard: self });
 
   return state;
 }
 
 export class JunkArm extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'TM';
 
@@ -105,8 +122,12 @@ export class JunkArm extends TrainerCard {
 
   public text: string =
     'Discard 2 cards from your hand. Search your discard pile for a Trainer ' +
-    'card, show it to your opponent, and put it into your hand. You can\'t ' +
+    "card, show it to your opponent, and put it into your hand. You can't " +
     'choose Junk Arm with the effect of this card.';
+
+  public canPlay(store: StoreLike, state: State, player: Player): boolean {
+    return canPlayJunkArm(player, this);
+  }
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -115,5 +136,4 @@ export class JunkArm extends TrainerCard {
     }
     return state;
   }
-
 }

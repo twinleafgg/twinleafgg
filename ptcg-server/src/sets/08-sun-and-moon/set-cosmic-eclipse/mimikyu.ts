@@ -3,7 +3,7 @@ import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/car
 import { StoreLike, State, StateUtils, GameMessage, ChooseCardsPrompt, TrainerCard, ChoosePokemonPrompt, PlayerType, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
 
 export class Mimikyu extends PokemonCard {
@@ -56,7 +56,7 @@ export class Mimikyu extends PokemonCard {
         }
         const trainerCard = cards[0] as TrainerCard;
         player.supporterTurn -= 1;
-        player.hand.moveCardsTo(cards, player.discard);
+        MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
         const playTrainerEffect = new TrainerEffect(player, trainerCard);
         store.reduceEffect(state, playTrainerEffect);
       });

@@ -8,7 +8,7 @@ import { GameError, GameMessage, Player } from '../../../game';
 import { HealEffect } from '../../../game/store/effects/game-effects';
 
 export class ArvensSandwich extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   protected _tags = [CardTag.ARVENS];
   public regulationMark = 'I';
   public set: string = 'DRI';

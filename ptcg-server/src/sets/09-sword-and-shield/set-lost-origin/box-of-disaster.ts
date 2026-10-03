@@ -12,7 +12,7 @@ import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 export class BoxOfDisaster extends TrainerCard {
   public regulationMark = 'F';
 
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'LOR';
 

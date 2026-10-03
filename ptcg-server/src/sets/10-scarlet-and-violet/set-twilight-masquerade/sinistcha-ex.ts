@@ -19,7 +19,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { HealTargetEffect, PutCountersEffect } from '../../../game/store/effects/attack-effects';
 
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sinistchaex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex];
@@ -86,7 +86,7 @@ export class Sinistchaex extends PokemonCard {
           c.energyType === EnergyType.BASIC &&
           c.name === 'Grass Energy'
         ) {
-          player.discard.moveCardTo(c, player.deck);
+          MOVE_CARDS(store, state, player.discard, player.deck, { cards: [c], sourceCard: this });
         }
       });
 

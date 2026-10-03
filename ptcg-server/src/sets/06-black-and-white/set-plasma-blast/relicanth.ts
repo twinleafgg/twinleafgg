@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag, TrainerType } from '../../../game/store/card/card-types';
 import { GameMessage, StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
@@ -79,7 +79,7 @@ export class Relicanth extends PokemonCard {
         (selected) => {
           const cards = selected || [];
           cards.forEach((card) => {
-            player.discard.moveCardTo(card, player.hand);
+            MOVE_CARDS(store, state, player.discard, player.hand, { cards: [card], sourceCard: this });
           });
 
           if (cards.length > 0) {

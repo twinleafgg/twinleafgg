@@ -11,13 +11,14 @@ import { DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class SamsonOak extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'UNB';
   public setNumber: string = '185';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Samson Oak';
   public fullName: string = 'Samson Oak UNB';
-  public text: string = 'Draw 2 cards. If both Active Pokémon are the same type, draw 2 more cards. You may play only 1 Supporter card during your turn (before your attack).';
+  public text: string =
+    'Draw 2 cards. If both Active Pokémon are the same type, draw 2 more cards. You may play only 1 Supporter card during your turn (before your attack).';
 
   // Ref: set-lost-thunder/virizion-gx.ts (supporterTurn check), set-ultra-prism/bronzong.ts (CheckPokemonTypeEffect)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
@@ -34,7 +35,9 @@ export class SamsonOak extends TrainerCard {
       const checkOpponentType = new CheckPokemonTypeEffect(opponent.active);
       store.reduceEffect(state, checkOpponentType);
 
-      const sameType = checkPlayerType.cardTypes.some(t => checkOpponentType.cardTypes.includes(t));
+      const sameType = checkPlayerType.cardTypes.some((t) =>
+        checkOpponentType.cardTypes.includes(t),
+      );
       if (sameType) {
         DRAW_CARDS(store, state, player, 2);
       }

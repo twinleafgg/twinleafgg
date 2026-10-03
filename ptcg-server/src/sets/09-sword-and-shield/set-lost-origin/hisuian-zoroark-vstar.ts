@@ -4,7 +4,7 @@ import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
 import { GameError, GameMessage, PlayerType, PokemonCard, PowerType } from '../../../game';
 
-import { WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class HisuianZoroarkVSTAR extends PokemonCard {
   public stage: Stage = Stage.VSTAR;
@@ -65,8 +65,8 @@ export class HisuianZoroarkVSTAR extends PokemonCard {
       }
 
       const cards = player.hand.cards.filter((c) => c !== this);
-      player.hand.moveCardsTo(cards, player.discard);
-      player.deck.moveTo(player.hand, 7);
+      MOVE_CARDS(store, state, player.hand, player.discard, { cards: cards, sourceCard: this });
+      MOVE_CARDS(store, state, player.deck, player.hand, { count: 7, sourceCard: this });
       player.usedVSTAR = true;
     }
 

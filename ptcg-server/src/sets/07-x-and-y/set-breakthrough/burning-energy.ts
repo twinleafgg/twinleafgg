@@ -7,7 +7,7 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { AttachEnergyEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_SPECIAL_ENERGY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {IS_SPECIAL_ENERGY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class BurningEnergy extends EnergyCard {
   public provides: CardType[] = [];
@@ -60,7 +60,7 @@ If this card is discarded by an attack of the [R] Pokémon this card is attached
           const checkPokemonType = new CheckPokemonTypeEffect(cardList);
           store.reduceEffect(state, checkPokemonType);
           if (!checkPokemonType.cardTypes.includes(CardType.FIRE)) {
-            cardList.moveCardTo(this, player.discard);
+            MOVE_CARDS(store, state, cardList, player.discard, { cards: [this], sourceCard: this });
           }
         });
       });
@@ -92,7 +92,7 @@ If this card is discarded by an attack of the [R] Pokémon this card is attached
         if (effect.player.active !== undefined) {
           effect.player.discard.cards.forEach(card => {
             if (card === this) {
-              effect.player.discard.moveCardTo(card, effect.player.active);
+              MOVE_CARDS(store, state, effect.player.discard, effect.player.active, { cards: [card], sourceCard: this });
             }
           });
         }

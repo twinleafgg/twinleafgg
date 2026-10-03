@@ -13,14 +13,12 @@ import {
   PokemonCardList,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   WAS_POWER_USED,
   IS_ABILITY_BLOCKED,
   ABILITY_USED,
   USE_ABILITY_ONCE_PER_TURN,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
+  REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { CardList } from '../../../game/store/state/card-list';
@@ -83,7 +81,7 @@ export class GenesectEx2 extends PokemonCard {
       // Move tool to hand (moveCardTo handles removing from tools array)
       if (cardList.tools.length === 1) {
         const tool = cardList.tools[0];
-        cardList.moveCardTo(tool, player.hand);
+        MOVE_CARDS(store, state, cardList, player.hand, { cards: [tool], sourceCard: this });
       } else {
         const toolList = new CardList();
         toolList.cards = [...cardList.tools];
@@ -99,7 +97,7 @@ export class GenesectEx2 extends PokemonCard {
           (selected) => {
             if (selected && selected.length > 0) {
               const tool = selected[0];
-              cardList.moveCardTo(tool, player.hand);
+              MOVE_CARDS(store, state, cardList, player.hand, { cards: [tool], sourceCard: this });
             }
           },
         );
@@ -133,7 +131,7 @@ export class GenesectEx2 extends PokemonCard {
             if (selected && selected.length > 0) {
               effect.damage += 20 * selected.length;
               selected.forEach((c) => {
-                player.active.moveCardTo(c, player.discard);
+                MOVE_CARDS(store, state, player.active, player.discard, { cards: [c], sourceCard: this });
               });
             }
           },

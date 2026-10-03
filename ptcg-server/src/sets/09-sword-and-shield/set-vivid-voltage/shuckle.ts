@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, FLIP_UNTIL_TAILS_AND_COUNT_HEADS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Shuckle extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -47,7 +47,7 @@ export class Shuckle extends PokemonCard {
         // Discard top card of opponent's deck for each heads
         for (let i = 0; i < heads; i++) {
           if (opponent.deck.cards.length > 0) {
-            opponent.deck.moveTo(opponent.discard, 1);
+            MOVE_CARDS(store, state, opponent.deck, opponent.discard, { count: 1, sourceCard: this });
           }
         }
       });

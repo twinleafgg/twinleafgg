@@ -8,7 +8,7 @@ import { StateUtils } from '../../../game/store/state-utils';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
 export class TeamAquaHideout extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.STADIUM;
+  protected _trainerType: TrainerType = TrainerType.STADIUM;
   public set: string = 'MA';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '78';

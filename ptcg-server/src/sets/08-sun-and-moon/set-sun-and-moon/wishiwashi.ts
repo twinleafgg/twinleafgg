@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GameError, GameMessage, PokemonCardList, PowerType, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { MOVE_CARDS, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { MOVE_POKEMON_OFF_BOARD, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 import { CheckPokemonPlayedTurnEffect } from '../../../game/store/effects/check-effects';
 
 export class Wishiwashi extends PokemonCard {
@@ -45,35 +45,15 @@ export class Wishiwashi extends PokemonCard {
       }
 
       const pokemonCardList = cardList as PokemonCardList;
-      const wishiwashiCard = pokemonCardList.getPokemonCard();
-      if (!wishiwashiCard) {
+      if (!pokemonCardList.getPokemonCard()) {
         return state;
       }
 
-      const pokemons = pokemonCardList.getPokemons();
-      const otherCards = cardList.cards.filter(card =>
-        !(card instanceof PokemonCard) &&
-        !pokemons.includes(card as PokemonCard) &&
-        (!pokemonCardList.tools || !pokemonCardList.tools.includes(card))
-      );
-      const tools = [...pokemonCardList.tools];
-
-      // Move tools to discard first
-      if (tools.length > 0) {
-        for (const tool of tools) {
-          pokemonCardList.moveCardTo(tool, player.discard);
-        }
-      }
-
-      // Move other cards to discard
-      if (otherCards.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.discard, { cards: otherCards });
-      }
-
-      // Move Pokémon to hand
-      if (pokemons.length > 0) {
-        MOVE_CARDS(store, state, cardList, player.hand, { cards: pokemons });
-      }
+      MOVE_POKEMON_OFF_BOARD(store, state, pokemonCardList, {
+        pokemonDestination: player.hand,
+        attachedDestination: player.discard,
+        sourceCard: this,
+      });
     }
 
     return state;

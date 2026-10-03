@@ -3,7 +3,7 @@ import { Stage, CardType, CardTag, SuperType } from '../../../game/store/card/ca
 import { StoreLike, State } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, SHUFFLE_DECK, DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TornadusEx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_EX, CardTag.TEAM_PLASMA];
@@ -44,7 +44,7 @@ export class TornadusEx extends PokemonCard {
       // Shuffle entire hand into deck
       const cards = player.hand.cards.slice();
       cards.forEach((c) => {
-        player.hand.moveCardTo(c, player.deck);
+        MOVE_CARDS(store, state, player.hand, player.deck, { cards: [c], sourceCard: this });
       });
       SHUFFLE_DECK(store, state, player);
       DRAW_CARDS(store, state, player, 6);

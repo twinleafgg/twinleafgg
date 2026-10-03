@@ -10,7 +10,7 @@ import { HealEffect } from '../../../game/store/effects/game-effects';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class FreshWaterSet extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'PRC';
   public setNumber: string = '129';
   public cardImage: string = 'assets/cardback.png';

@@ -8,6 +8,7 @@ import {
   PokemonCardList
 } from '../../../game';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useReturn(next: Function, store: StoreLike, state: State,
   self: Unown, effect: PlayPokemonEffect): IterableIterator<State> {
@@ -42,7 +43,7 @@ function* useReturn(next: Function, store: StoreLike, state: State,
   }
 
   const energyCards = targets[0].cards.filter(c => c.superType === SuperType.ENERGY);
-  targets[0].moveCardsTo(energyCards, player.hand);
+  MOVE_CARDS(store, state, targets[0], player.hand, { cards: energyCards, sourceCard: self });
   return state;
 }
 

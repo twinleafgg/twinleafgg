@@ -5,8 +5,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { AddSpecialConditionsEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-
+import {IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class AlolanMuk extends PokemonCard {
 
@@ -61,7 +60,7 @@ export class AlolanMuk extends PokemonCard {
       }
 
       const deckTop = new CardList();
-      opponent.deck.moveTo(deckTop, 6);
+      MOVE_CARDS(store, state, opponent.deck, deckTop, { count: 6, sourceCard: this });
 
       return store.prompt(state, new ChooseCardsPrompt(
         player,
@@ -70,8 +69,8 @@ export class AlolanMuk extends PokemonCard {
         { superType: SuperType.TRAINER, trainerType: TrainerType.ITEM },
         { min: 0, max: 6, allowCancel: false }
       ), selected => {
-        deckTop.moveCardsTo(selected, opponent.discard);
-        deckTop.moveTo(opponent.deck);
+        MOVE_CARDS(store, state, deckTop, opponent.discard, { cards: selected, sourceCard: this });
+        MOVE_CARDS(store, state, deckTop, opponent.deck, { sourceCard: this });
 
         selected.forEach((card, index) => {
           store.log(state, GameLog.LOG_PLAYER_DISCARDS_CARD, { name: player.name, card: card.name, effectName: this.powers[0].name });

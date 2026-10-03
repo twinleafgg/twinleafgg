@@ -8,7 +8,7 @@ import { PowerType, StoreLike, State, GameMessage, GameError, StateUtils } from 
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, ADD_BURN_TO_PLAYER_ACTIVE, ADD_CONFUSION_TO_PLAYER_ACTIVE } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, WAS_POWER_USED, IS_ABILITY_BLOCKED, ABILITY_USED, USE_ABILITY_ONCE_PER_TURN, REMOVE_MARKER_AT_END_OF_TURN, ADD_BURN_TO_PLAYER_ACTIVE, ADD_CONFUSION_TO_PLAYER_ACTIVE, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 export class HisuianTyphlosion extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -84,7 +84,7 @@ export class HisuianTyphlosion extends PokemonCard {
       ), cards => {
         cards = cards || [];
         cards.forEach(card => {
-          player.hand.moveCardTo(card, player.discard);
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: [card], sourceCard: this });
         });
 
         // Make opponent's Active Pokémon Burned and Confused

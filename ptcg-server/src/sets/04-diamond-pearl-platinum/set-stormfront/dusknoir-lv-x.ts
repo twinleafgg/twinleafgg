@@ -4,7 +4,7 @@ import { PowerType, StoreLike, State, GameError, GameMessage, StateUtils, Pokemo
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayStadiumEffect } from '../../../game/store/effects/play-card-effects';
-import { WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class DusknoirLvX extends PokemonCard {
 
@@ -41,7 +41,6 @@ export class DusknoirLvX extends PokemonCard {
       const player = (effect as PowerEffect).player;
       const cardList = StateUtils.findCardList(state, this);
 
-
       // check if UnownR is on player's Bench
       const benchIndex = player.bench.indexOf(cardList as PokemonCardList);
       if (benchIndex === -1) {
@@ -51,7 +50,7 @@ export class DusknoirLvX extends PokemonCard {
       player.bench[benchIndex].clearEffects();
 
       effect instanceof PlayStadiumEffect && effect.card == this; {
-        // player.bench[benchIndex].moveTo(player.stadium);
+        // MOVE_CARDS(store, state, player.bench[benchIndex], player.stadium, { sourceCard: this });
 
         if (state.phase == GamePhase.ATTACK) {
           const opponent = StateUtils.getOpponent(state, player);
@@ -59,7 +58,7 @@ export class DusknoirLvX extends PokemonCard {
           opponent.bench.forEach(b => b.damage += 10);
         }
         if (effect instanceof PlayStadiumEffect && effect.card !== this) {
-          effect.player.stadium.moveTo(effect.player.hand);
+          MOVE_CARDS(store, state, effect.player.stadium, effect.player.hand, { sourceCard: this });
 
           return state;
         }
@@ -70,7 +69,4 @@ export class DusknoirLvX extends PokemonCard {
     return state;
   }
 }
-
-
-
 

@@ -29,11 +29,9 @@ import {
   ShuffleDeckPrompt,
 } from '../../../game';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import {
-  BLOCK_IF_GX_ATTACK_USED,
+import {BLOCK_IF_GX_ATTACK_USED,
   IS_ABILITY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TapuLeleGX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -136,13 +134,7 @@ export class TapuLeleGX extends PokemonCard {
                         }
                       });
 
-                      cards.forEach((card, index) => {
-                        store.log(state, GameLog.LOG_PLAYER_PUTS_CARD_IN_HAND, {
-                          name: player.name,
-                          card: card.name,
-                        });
-                      });
-                      player.deck.moveCardsTo(cards, player.hand);
+                      MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: this });
                     },
                   );
                   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {

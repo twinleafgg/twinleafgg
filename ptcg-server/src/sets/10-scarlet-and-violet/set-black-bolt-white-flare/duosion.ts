@@ -1,7 +1,7 @@
 import { PokemonCard, Stage, CardType, State, StoreLike, PlayerType, CardManager, Card, ChooseCardsPrompt, GameMessage, SuperType, CardTarget, PokemonCardList, ChoosePokemonPrompt, SlotType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 function* useCellularEvolution(next: Function, store: StoreLike, state: State, effect: AttackEffect): IterableIterator<State> {
   const player = effect.player;
@@ -87,7 +87,7 @@ function* useCellularEvolution(next: Function, store: StoreLike, state: State, e
   }
 
   // Evolve Pokemon
-  player.deck.moveCardTo(evolution, targets[0]);
+  MOVE_CARDS(store, state, player.deck, targets[0], { cards: [evolution], sourceCard: effect.source.getPokemonCard()! });
   targets[0].clearEffects();
   targets[0].pokemonPlayedTurn = state.turn;
 

@@ -2,7 +2,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { ChoosePokemonPrompt, GameError, GameMessage, PlayerType, PowerType, ShuffleDeckPrompt, SlotType, State, StateUtils, StoreLike } from '../../..';
 import { Effect } from '../../../game/store/effects/effect';
-import { ABILITY_USED, ADD_MARKER, BLOCK_IF_HAS_SPECIAL_CONDITION, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {ABILITY_USED, ADD_MARKER, BLOCK_IF_HAS_SPECIAL_CONDITION, HAS_MARKER, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PUT_X_DAMAGE_COUNTERS_ON_YOUR_OPPONENTS_ACTIVE_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
 export class Dusknoir extends PokemonCard {
@@ -69,7 +69,7 @@ export class Dusknoir extends PokemonCard {
         targets.forEach(target => {
           target.clearEffects();
           target.damage = 0;
-          target.moveTo(opponent.deck);
+          MOVE_CARDS(store, state, target, opponent.deck, { sourceCard: this });
 
           return store.prompt(state, new ShuffleDeckPrompt(opponent.id), order => {
             opponent.deck.applyOrder(order);

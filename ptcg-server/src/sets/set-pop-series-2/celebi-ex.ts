@@ -8,7 +8,6 @@ import {
   CardList,
   ChooseCardsPrompt,
   GameMessage,
-  GameLog,
 } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
 import { ABILITY_USED, CONFIRMATION_PROMPT, IS_POKEPOWER_BLOCKED, MOVE_CARD_TO, SHOW_CARDS_TO_PLAYER, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
@@ -83,10 +82,6 @@ export class Celebiex extends PokemonCard {
                 if (selected.length === 0) return;
 
                 selected.forEach((card) => {
-                  store.log(state, GameLog.LOG_PLAYER_RETURNS_TO_DECK_FROM_DISCARD, {
-                    name: player.name,
-                    card: card.name,
-                  });
                   MOVE_CARD_TO(state, card, deckTop);
                 });
                 deckTop.moveToTopOfDestination(player.deck);

@@ -13,11 +13,9 @@ import {
   SlotType,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   DRAW_CARDS,
-  BLOCK_IF_GX_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  BLOCK_IF_GX_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class VirizionGx extends PokemonCard {
   protected _tags = [CardTag.POKEMON_GX];
@@ -97,10 +95,10 @@ export class VirizionGx extends PokemonCard {
                 // Move tools first
                 const tools = target.tools.slice();
                 tools.forEach((t) => {
-                  target.moveCardTo(t, player.hand);
+                  MOVE_CARDS(store, state, target, player.hand, { cards: [t], sourceCard: this });
                 });
                 // Move all cards (Pokemon + energy) to hand
-                target.moveTo(player.hand);
+                MOVE_CARDS(store, state, target, player.hand, { sourceCard: this });
                 target.clearEffects();
               });
             }

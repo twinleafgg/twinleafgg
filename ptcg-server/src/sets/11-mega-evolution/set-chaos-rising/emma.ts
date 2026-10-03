@@ -14,7 +14,7 @@ import {
 export const EMMA_PLAYED_THIS_TURN = 'EMMA_PLAYED_THIS_TURN';
 
 export class Emma extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark = 'J';
   public set: string = 'CRI';
   public cardImage: string = 'assets/cardback.png';
@@ -30,7 +30,6 @@ export class Emma extends TrainerCard {
     }
     return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {

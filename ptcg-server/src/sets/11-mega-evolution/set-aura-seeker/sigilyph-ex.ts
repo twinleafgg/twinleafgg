@@ -2,7 +2,7 @@ import { PokemonCard, CardTag, Stage, CardType, PowerType, StoreLike, State, Sta
 import { PutDamageEffect } from "../../../game/store/effects/attack-effects";
 import { Effect } from "../../../game/store/effects/effect";
 import { AfterAttackEffect } from "../../../game/store/effects/game-phase-effects";
-import { IS_ABILITY_BLOCKED } from "../../../game/store/prefabs/prefabs";
+import {IS_ABILITY_BLOCKED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class Sigilyphex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex];
@@ -83,7 +83,7 @@ export class Sigilyphex extends PokemonCard {
         transfers = transfers || [];
         for (const transfer of transfers) {
           const target = StateUtils.getTarget(state, player, transfer.to);
-          player.active.moveCardTo(transfer.card, target);
+          MOVE_CARDS(store, state, player.active, target, { cards: [transfer.card], sourceCard: this });
         }
       });
     }

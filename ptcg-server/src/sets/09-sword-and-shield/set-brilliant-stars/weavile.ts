@@ -6,7 +6,7 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameMessage, ShowCardsPrompt, ChooseCardsPrompt } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Weavile extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -70,7 +70,7 @@ export class Weavile extends PokemonCard {
           ), selected => {
             selected = selected || [];
             for (const card of selected) {
-              opponent.hand.moveCardTo(card, opponent.deck);
+              MOVE_CARDS(store, state, opponent.hand, opponent.deck, { cards: [card], sourceCard: this });
               // Move card to bottom of deck
               const index = opponent.deck.cards.indexOf(card);
               if (index !== -1) {

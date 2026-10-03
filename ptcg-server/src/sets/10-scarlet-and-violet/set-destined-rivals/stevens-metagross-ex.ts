@@ -19,13 +19,11 @@ import {
 } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  ABILITY_USED,
+import {ABILITY_USED,
   ADD_MARKER,
   REMOVE_MARKER_AT_END_OF_TURN,
   SHUFFLE_DECK,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_POWER_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class StevensMetagrossex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -97,7 +95,7 @@ export class StevensMetagrossex extends PokemonCard {
             }
 
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
           SHUFFLE_DECK(store, state, player);
         },

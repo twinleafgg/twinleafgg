@@ -10,17 +10,15 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Carmine extends TrainerCard {
-
   public regulationMark = 'H';
-  public trainerType: TrainerType = TrainerType.SUPPORTER;
+  protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public set: string = 'TWM';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '145';
   public name: string = 'Carmine';
   public fullName: string = 'Carmine TWM';
 
-  public text: string =
-    `If you go first, you can use this card on your first turn.
+  public text: string = `If you go first, you can use this card on your first turn.
 
 Discard your hand and draw 5 cards.`;
 
@@ -48,7 +46,7 @@ Discard your hand and draw 5 cards.`;
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      const cards = player.hand.cards.filter(c => c !== this);
+      const cards = player.hand.cards.filter((c) => c !== this);
       if (cards.length > 0) {
         state = MOVE_CARDS(store, state, player.hand, player.discard, { cards });
       }
@@ -57,5 +55,4 @@ Discard your hand and draw 5 cards.`;
 
     return state;
   }
-
 }

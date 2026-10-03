@@ -19,11 +19,9 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect, EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { CardTarget } from '../../../game/store/actions/play-card-action';
-import {
-  WAS_ATTACK_USED,
+import {WAS_ATTACK_USED,
   IS_ABILITY_BLOCKED,
-  CONFIRMATION_PROMPT,
-} from '../../../game/store/prefabs/prefabs';
+  CONFIRMATION_PROMPT, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PUT_THIS_POKEMON_AND_ALL_ATTACHED_CARDS_INTO_YOUR_HAND } from '../../../game/store/prefabs/attack-effects';
 
 export class LiepardV extends PokemonCard {
@@ -116,7 +114,7 @@ export class LiepardV extends PokemonCard {
             if (target.tools.length > 0) {
               // Find which player owns this target to discard tool to correct discard pile
               const targetOwner = StateUtils.findOwner(state, target);
-              target.moveCardTo(target.tools[0], targetOwner.discard);
+              MOVE_CARDS(store, state, target, targetOwner.discard, { cards: [target.tools[0]], sourceCard: this });
             }
           },
         );

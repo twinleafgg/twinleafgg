@@ -12,7 +12,12 @@ import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
-function* playCard(next: Function, store: StoreLike, state: State, effect: TrainerEffect): IterableIterator<State> {
+function* playCard(
+  next: Function,
+  store: StoreLike,
+  state: State,
+  effect: TrainerEffect,
+): IterableIterator<State> {
   const player = effect.player;
   const opponent = StateUtils.getOpponent(state, player);
 
@@ -26,29 +31,35 @@ function* playCard(next: Function, store: StoreLike, state: State, effect: Train
     const card = player.deck.cards[i];
     cards.push(card);
 
-    if (card instanceof TrainerCard
-      && card.trainerType === TrainerType.SUPPORTER) {
+    if (card instanceof TrainerCard && card.trainerType === TrainerType.SUPPORTER) {
       supporter = card;
       break;
     }
   }
 
-  yield store.prompt(state, [
-    new ShowCardsPrompt(player.id, GameMessage.CARDS_SHOWED_BY_EFFECT, cards),
-    new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards)
-  ], () => next());
+  yield store.prompt(
+    state,
+    [
+      new ShowCardsPrompt(player.id, GameMessage.CARDS_SHOWED_BY_EFFECT, cards),
+      new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
+    ],
+    () => next(),
+  );
 
   if (supporter !== undefined) {
-    MOVE_CARDS(store, state, player.deck, player.hand, { cards: [supporter], sourceCard: effect.trainerCard, sourceEffect: effect.trainerCard });
+    MOVE_CARDS(store, state, player.deck, player.hand, {
+      cards: [supporter],
+      sourceCard: effect.trainerCard,
+      sourceEffect: effect.trainerCard,
+    });
   }
-  return store.prompt(state, new ShuffleDeckPrompt(player.id), order => {
+  return store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {
     player.deck.applyOrder(order);
   });
 }
 
 export class RandomReceiver extends TrainerCard {
-
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
 
   public set: string = 'DEX';
 
@@ -64,9 +75,7 @@ export class RandomReceiver extends TrainerCard {
     'Reveal cards from the top of your deck until you reveal a Supporter ' +
     'card. Put it into your hand. Shuffle the other cards back into your deck.';
 
-
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const generator = playCard(() => generator.next(), store, state, effect);
       return generator.next().value;
@@ -74,5 +83,4 @@ export class RandomReceiver extends TrainerCard {
 
     return state;
   }
-
 }

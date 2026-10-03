@@ -8,7 +8,7 @@ import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
 import { ToolEffect } from '../../../game/store/effects/play-card-effects';
 
 export class ChoiceBelt extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.TOOL;
+  protected _trainerType: TrainerType = TrainerType.TOOL;
 
   public set: string = 'PAL';
 

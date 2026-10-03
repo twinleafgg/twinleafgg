@@ -6,7 +6,7 @@ import { GameMessage } from '../../../game/game-message';
 import { SlotType } from '../../../game/store/actions/play-card-action';
 import { Effect } from '../../../game/store/effects/effect';
 import { EnergyCard } from '../../../game/store/card/energy-card';
-import { WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, COIN_FLIP_PROMPT, SHUFFLE_DECK, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
 export class Dewgong extends PokemonCard {
@@ -91,7 +91,7 @@ export class Dewgong extends PokemonCard {
 
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, player, transfer.from);
-          source.moveCardTo(transfer.card, player.deck);
+          MOVE_CARDS(store, state, source, player.deck, { cards: [transfer.card], sourceCard: this });
         }
 
         SHUFFLE_DECK(store, state, player);

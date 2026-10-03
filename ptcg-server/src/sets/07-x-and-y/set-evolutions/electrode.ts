@@ -10,7 +10,7 @@ import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-eff
 import { Effect } from '../../../game/store/effects/effect';
 import { ChoosePokemonPrompt } from '../../../game/store/prompts/choose-pokemon-prompt';
 import { checkState } from '../../../game/store/effect-reducers/check-effect';
-import { WAS_POWER_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import {WAS_POWER_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Electrode extends PokemonCard implements EnergyCard {
   public stage: Stage = Stage.STAGE_1;
@@ -105,7 +105,7 @@ export class Electrode extends PokemonCard implements EnergyCard {
         effect.preventDefault = true;
         const sourceList = StateUtils.findCardList(state, this);
         if (sourceList) {
-          sourceList.moveCardTo(this, targets[0]);
+          MOVE_CARDS(store, state, sourceList, targets[0], { cards: [this], sourceCard: this });
           if (!targets[0].energies.cards.includes(this)) {
             targets[0].energies.cards.push(this);
           }

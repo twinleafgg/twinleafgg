@@ -3,10 +3,10 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike, State, StateUtils, GameError, GameMessage, Player } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-
+import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MeddlingMemo extends TrainerCard {
-  public trainerType: TrainerType = TrainerType.ITEM;
+  protected _trainerType: TrainerType = TrainerType.ITEM;
   public set: string = 'SSP';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '181';
@@ -14,7 +14,8 @@ export class MeddlingMemo extends TrainerCard {
   public name: string = 'Meddling Memo';
   public fullName: string = 'Meddling Memo SSP';
 
-  public text: string = 'Your opponent counts the cards in their hand, shuffles those cards, and puts them on the bottom of their deck. If they do, they draw that many cards.';
+  public text: string =
+    'Your opponent counts the cards in their hand, shuffles those cards, and puts them on the bottom of their deck. If they do, they draw that many cards.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     const opponent = StateUtils.getOpponent(state, player);
@@ -23,7 +24,6 @@ export class MeddlingMemo extends TrainerCard {
     }
     return true;
   }
-
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -35,14 +35,20 @@ export class MeddlingMemo extends TrainerCard {
       }
 
       effect.preventDefault = true;
-      player.hand.moveCardTo(effect.trainerCard, player.supporter);
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
 
       const newCards = opponent.hand.cards.length;
       this.shufflePlayerHand(opponent);
-      opponent.hand.moveTo(opponent.deck);
-      opponent.deck.moveTo(opponent.hand, newCards);
+      MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
+      MOVE_CARDS(store, state, opponent.deck, opponent.hand, { count: newCards, sourceCard: this });
 
-      player.supporter.moveCardTo(this, player.discard);
+      MOVE_CARDS(store, state, player.supporter, player.discard, {
+        cards: [this],
+        sourceCard: this,
+      });
     }
     return state;
   }

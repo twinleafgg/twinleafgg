@@ -21,7 +21,7 @@ import {
 } from '../../../game';
 import { EnergyCard } from '../../../game/store/card/energy-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import {WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CardList } from '../../../game/store/state/card-list';
 
@@ -66,7 +66,7 @@ export class ExcadrillEx extends PokemonCard {
       }
 
       const topOfDeck = new CardList();
-      player.deck.moveTo(topOfDeck, 1);
+      MOVE_CARDS(store, state, player.deck, topOfDeck, { count: 1, sourceCard: this });
 
       const discardedEnergy = topOfDeck.cards.filter((card) => {
         return (
@@ -76,7 +76,7 @@ export class ExcadrillEx extends PokemonCard {
       });
 
       if (discardedEnergy.length === 0) {
-        topOfDeck.moveTo(player.discard);
+        MOVE_CARDS(store, state, topOfDeck, player.discard, { sourceCard: this });
       } else {
         store.prompt(
           state,
@@ -93,9 +93,9 @@ export class ExcadrillEx extends PokemonCard {
             transfers = transfers || [];
             for (const transfer of transfers) {
               const target = StateUtils.getTarget(state, player, transfer.to);
-              topOfDeck.moveCardTo(transfer.card, target);
+              MOVE_CARDS(store, state, topOfDeck, target, { cards: [transfer.card], sourceCard: this });
             }
-            topOfDeck.moveTo(player.discard);
+            MOVE_CARDS(store, state, topOfDeck, player.discard, { sourceCard: this });
           },
         );
       }

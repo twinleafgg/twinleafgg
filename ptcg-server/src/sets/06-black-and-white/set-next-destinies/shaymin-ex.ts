@@ -17,11 +17,9 @@ import {
   Weakness,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  DEAL_MORE_DAMAGE_FOR_EACH_PRIZE_CARD_TAKEN,
+import {DEAL_MORE_DAMAGE_FOR_EACH_PRIZE_CARD_TAKEN,
   SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class ShayminEX extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -76,7 +74,7 @@ export class ShayminEX extends PokemonCard {
           }
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            player.deck.moveCardTo(transfer.card, target);
+            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
           }
           return SHUFFLE_DECK(store, state, player);
         },
