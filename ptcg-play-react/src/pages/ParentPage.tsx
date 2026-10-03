@@ -68,7 +68,7 @@ function ForestView({ forest, query }: { forest: ForestLayout; query: string }) 
             markerHeight="6"
             orient="auto-start-reverse"
           >
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3ec7c9" />
           </marker>
         </defs>
         {forest.edges.map((edge) => {
@@ -171,6 +171,7 @@ export function ParentPage() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.dots} aria-hidden />
       <div className={styles.header}>
         <div className={styles.titleBlock}>
           <h1>Card parent map</h1>

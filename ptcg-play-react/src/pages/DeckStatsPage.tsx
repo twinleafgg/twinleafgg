@@ -96,6 +96,12 @@ export function DeckStatsPage() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.cornerTL} aria-hidden />
+      <div className={styles.cornerBR} aria-hidden />
+      <div className={styles.dots} aria-hidden />
+
+      <div className={styles.scroll}>
+        <div className={styles.content}>
       <div className={styles.topBar}>
         <button
           type="button"
@@ -127,7 +133,7 @@ export function DeckStatsPage() {
             </div>
             <ShellButton
               type="button"
-              variant="plain"
+              variant="ghost"
               className={styles.editBtn}
               onClick={() => navigate(`/deck/${deckId}`)}
             >
@@ -232,7 +238,7 @@ export function DeckStatsPage() {
                     })}
                   </p>
                 ) : null}
-                <div className={styles.tableWrap}>
+                <div className={styles.tablePanel}>
                   <table className={styles.table}>
                     <thead>
                       <tr>
@@ -265,6 +271,8 @@ export function DeckStatsPage() {
           </section>
         </>
       ) : null}
+        </div>
+      </div>
     </div>
   );
 }

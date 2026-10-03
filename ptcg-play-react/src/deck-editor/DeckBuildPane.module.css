@@ -3,8 +3,8 @@
   flex-direction: column;
   min-height: 0;
   flex: 1 1 auto;
-  background: #fff;
-  color: #222;
+  background: transparent;
+  color: var(--tl-text, #fafafa);
   position: relative;
 }
 
@@ -51,18 +51,19 @@
   bottom: calc(var(--deck-slot-w, 118px) * 0.1);
   width: calc(var(--deck-slot-w, 118px) * 0.32);
   height: calc(var(--deck-slot-w, 118px) * 0.32);
-  border: 1px solid #999;
-  background-color: #fff;
+  border: 1px solid rgba(62, 199, 201, 0.45);
+  background-color: rgba(6, 12, 20, 0.92);
   border-radius: 50%;
   font-weight: bold;
   font-size: calc(var(--deck-slot-w, 118px) * 0.18);
   line-height: 1;
-  color: #222;
+  color: #fff;
   cursor: pointer;
   padding: 0;
   margin: 0;
   z-index: 9;
   box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .circleBtn {
@@ -73,10 +74,10 @@
   bottom: calc(var(--deck-slot-w, 118px) * 0.125);
   width: calc(var(--deck-slot-w, 118px) * 0.27);
   height: calc(var(--deck-slot-w, 118px) * 0.27);
-  border: 1px solid #999;
-  background-color: #fff;
+  border: 1px solid rgba(62, 199, 201, 0.45);
+  background-color: rgba(6, 12, 20, 0.92);
   border-radius: 50%;
-  color: #222;
+  color: #fff;
   font-weight: bold;
   cursor: pointer;
   padding: 0;
@@ -84,7 +85,12 @@
   z-index: 10;
   box-sizing: border-box;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.circleBtn:hover:not(:disabled) {
+  background: rgba(62, 199, 201, 0.2);
 }
 
 .cardWrap:hover .circleBtn:not(:disabled) {
@@ -125,14 +131,15 @@
 }
 
 .emptyDrop {
-  border: 2px dashed #b0b0b0;
-  border-radius: 8px;
+  border: 2px dashed rgba(62, 199, 201, 0.35);
+  border-radius: 14px;
   padding: 32px 16px;
   text-align: center;
-  color: #666;
+  color: var(--tl-text-dim, #a0a1a5);
   font-size: 0.9rem;
   max-width: 420px;
   margin: 24px auto;
+  background: rgba(6, 16, 32, 0.45);
 }
 
 .footer {
@@ -141,7 +148,7 @@
   right: 0;
   bottom: 0;
   padding: 8px 12px;
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.92) 40%);
+  background: linear-gradient(180deg, transparent, rgba(4, 8, 22, 0.92) 40%);
   pointer-events: none;
 }
 
@@ -151,6 +158,6 @@
 
 .toast {
   font-size: 0.8rem;
-  color: #c62828;
+  color: #fca5a5;
   margin-top: 4px;
 }

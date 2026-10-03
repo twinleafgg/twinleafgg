@@ -3,8 +3,8 @@
   flex-direction: column;
   min-height: 0;
   flex: 1 1 auto;
-  background: #fff;
-  color: #222;
+  background: rgba(6, 12, 24, 0.35);
+  color: var(--tl-text, #fafafa);
   position: relative;
 }
 
@@ -16,6 +16,17 @@
   position: relative;
   padding: 12px 12px 48px;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(62, 199, 201, 0.4) transparent;
+}
+
+.scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  background: rgba(62, 199, 201, 0.35);
+  border-radius: 999px;
 }
 
 .gridInner {
@@ -37,11 +48,12 @@
   margin: 0;
   cursor: pointer;
   background: transparent;
+  border-radius: 6px;
 }
 
 .cardFace:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(62, 199, 201, 0.65);
 }
 
 .cardFace:focus:not(:focus-visible) {
@@ -58,18 +70,19 @@
   bottom: calc(var(--deck-slot-w, 118px) * 0.1);
   width: calc(var(--deck-slot-w, 118px) * 0.32);
   height: calc(var(--deck-slot-w, 118px) * 0.32);
-  border: 1px solid #999;
-  background-color: #fff;
+  border: 1px solid rgba(62, 199, 201, 0.45);
+  background-color: rgba(6, 12, 20, 0.92);
   border-radius: 50%;
   font-weight: bold;
   font-size: calc(var(--deck-slot-w, 118px) * 0.18);
   line-height: 1;
-  color: #222;
+  color: #fff;
   cursor: pointer;
   padding: 0;
   margin: 0;
   z-index: 9;
   box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .circleBtn {
@@ -80,10 +93,10 @@
   bottom: calc(var(--deck-slot-w, 118px) * 0.125);
   width: calc(var(--deck-slot-w, 118px) * 0.27);
   height: calc(var(--deck-slot-w, 118px) * 0.27);
-  border: 1px solid #999;
-  background-color: #fff;
+  border: 1px solid rgba(62, 199, 201, 0.45);
+  background-color: rgba(6, 12, 20, 0.92);
   border-radius: 50%;
-  color: #222;
+  color: #fff;
   font-weight: bold;
   cursor: pointer;
   padding: 0;
@@ -91,7 +104,12 @@
   z-index: 10;
   box-sizing: border-box;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.circleBtn:hover:not(:disabled) {
+  background: rgba(62, 199, 201, 0.2);
 }
 
 .cardFace:hover .circleBtn:not(:disabled) {
@@ -138,7 +156,7 @@
   width: calc(var(--deck-slot-w, 118px) * 0.19);
   height: calc(var(--deck-slot-w, 118px) * 0.19);
   border-radius: 5px;
-  border: 1px solid rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   z-index: 4;
   pointer-events: none;
@@ -147,6 +165,6 @@
 .empty {
   padding: 24px;
   text-align: center;
-  opacity: 0.7;
+  color: var(--tl-text-dim, #a0a1a5);
   font-size: 0.9rem;
 }

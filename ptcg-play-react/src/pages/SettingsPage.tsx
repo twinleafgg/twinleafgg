@@ -101,6 +101,12 @@ export function SettingsPage() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.cornerTL} aria-hidden />
+      <div className={styles.cornerBR} aria-hidden />
+      <div className={styles.dots} aria-hidden />
+
+      <div className={styles.scroll}>
+        <div className={styles.contentWrap}>
       <h1 className={styles.title}>Settings</h1>
 
       <nav className={styles.tabNavContainer} aria-label="Settings">
@@ -336,6 +342,8 @@ export function SettingsPage() {
           </button>
         </div>
       ) : null}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 .bar {
   flex: 0 0 auto;
-  background: #fafafa;
-  border-top: 1px solid #e0e0e0;
+  background: linear-gradient(180deg, rgba(12, 26, 46, 0.85), rgba(6, 16, 24, 0.92));
+  border-top: 1px solid rgba(62, 199, 201, 0.22);
   padding: 10px 14px 12px;
-  color: #333;
+  color: var(--tl-text-soft, #c8d0dc);
 }
 
 .counts {
@@ -16,7 +16,7 @@
 }
 
 .counts span {
-  opacity: 0.92;
+  opacity: 0.95;
 }
 
 .formats {
@@ -28,10 +28,10 @@
 }
 
 .formatLabel {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  opacity: 0.65;
+  letter-spacing: 0.08em;
+  color: var(--tl-text-dim, #a0a1a5);
   width: 100%;
   text-align: center;
   margin-bottom: 4px;
@@ -40,14 +40,14 @@
 .chip {
   font-size: 0.72rem;
   padding: 4px 10px;
-  border-radius: 4px;
-  background: #fff;
-  border: 1px solid #c4c4c4;
-  color: #333;
+  border-radius: 999px;
+  background: rgba(62, 199, 201, 0.1);
+  border: 1px solid rgba(62, 199, 201, 0.4);
+  color: #bdf0f1;
 }
 
 .chipMuted {
-  background: #f0f0f0;
-  border-color: #d0d0d0;
-  color: #777;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--tl-text-dim, #a0a1a5);
 }

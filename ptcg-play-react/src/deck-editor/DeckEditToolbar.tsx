@@ -109,7 +109,7 @@ export function DeckEditToolbar({
           />
           <ShellButton
             type="button"
-            variant="plain"
+            variant="ghost"
             className={styles.filterToggle}
             onClick={() => setFiltersOpen((v) => !v)}
             disabled={disabled}
@@ -121,31 +121,31 @@ export function DeckEditToolbar({
           <span className={styles.deckTitle}>{deckName.trim() || t('DECK_EDIT_UNTITLED')}</span>
         </div>
         <div className={styles.actions}>
-          <ShellButtonLink to="/deck" variant="plain">
+          <ShellButtonLink to="/deck" variant="ghost">
             {t('DECK_EDIT_BACK')}
           </ShellButtonLink>
           {customizeTo ? (
-            <ShellButtonLink to={customizeTo} variant="plain">
+            <ShellButtonLink to={customizeTo} variant="ghost">
               Customize
             </ShellButtonLink>
           ) : null}
-          <ShellButton type="button" variant="plain" onClick={onImport} disabled={disabled}>
+          <ShellButton type="button" variant="ghost" onClick={onImport} disabled={disabled}>
             {t('BUTTON_IMPORT')}
           </ShellButton>
-          <ShellButton type="button" variant="plain" onClick={onExport} disabled={disabled}>
+          <ShellButton type="button" variant="ghost" onClick={onExport} disabled={disabled}>
             {t('BUTTON_EXPORT')}
           </ShellButton>
           {onDelete ? (
             <ShellButton
               type="button"
-              variant="plain"
+              variant="ghost"
               onClick={onDelete}
               disabled={disabled || deleting}
             >
               {t('BUTTON_DELETE')}
             </ShellButton>
           ) : null}
-          <ShellButton type="button" variant="plain" onClick={onSave} disabled={disabled || saving}>
+          <ShellButton type="button" variant="ghost" onClick={onSave} disabled={disabled || saving}>
             {saving ? t('BUTTON_SAVING') : t('BUTTON_SAVE')}
           </ShellButton>
         </div>

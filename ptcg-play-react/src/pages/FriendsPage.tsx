@@ -270,7 +270,13 @@ export function FriendsPage() {
   const myId = user?.userId ?? 0;
 
   return (
-    <div className={styles.dashboard}>
+    <div className={styles.page}>
+      <div className={styles.cornerTL} aria-hidden />
+      <div className={styles.cornerBR} aria-hidden />
+      <div className={styles.dots} aria-hidden />
+
+      <div className={styles.scroll}>
+        <div className={styles.dashboard}>
       <nav className={styles.navContainer} aria-label={t('MAIN_FRIENDS')}>
         <div className={styles.tabNav} role="tablist">
           <button
@@ -651,6 +657,8 @@ export function FriendsPage() {
           </Modal>
         </div>
       ) : null}
+        </div>
+      </div>
     </div>
   );
 }

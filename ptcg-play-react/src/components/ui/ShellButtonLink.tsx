@@ -8,6 +8,7 @@ const variantClass: Record<ShellButtonVariant, string> = {
   primary: styles.primary,
   secondary: styles.secondary,
   plain: styles.plain,
+  ghost: styles.ghost,
 };
 
 export type ShellButtonLinkProps = LinkProps & {

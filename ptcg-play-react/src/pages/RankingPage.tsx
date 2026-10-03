@@ -7,8 +7,7 @@ import { getRankingList } from '../api/rankingApi';
 import { useAuth } from '../context/AuthContext';
 import { appConfig } from '../env/config';
 import { ApiError } from '../api/apiError';
-
-const PANEL_MAX_WIDTH = 800;
+import styles from './RankingPage.module.css';
 
 function useDebounced<T>(value: T, ms: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -68,99 +67,100 @@ export function RankingPage() {
     total > 0 ? t('RANKING_RANGE', { start: rangeStart, end: rangeEnd, total }) : '';
 
   return (
-    <div
-      style={{
-        width: '100%',
-        maxWidth: PANEL_MAX_WIDTH,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-      }}
-    >
-      <h1>{t('RANKING_TITLE')}</h1>
-      <p style={{ margin: '0 0 12px', opacity: 0.75, fontSize: '0.9rem' }}>
-        {t('RANKING_INTRO_BLURB', { pageSize })}
-      </p>
-      <div style={{ marginBottom: 16 }}>
-        <input
-          type="search"
-          placeholder={t('RANKING_SEARCH_PLACEHOLDER')}
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          style={{ width: '100%' }}
-        />
-      </div>
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
-      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc', padding: 8 }}>
-              {t('RANKING_COL_POSITION')}
-            </th>
-            <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc', padding: 8 }}>
-              {t('RANKING_COL_POINTS')}
-            </th>
-            <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc', padding: 8 }}>
-              {t('RANKING_COL_PLAYER')}
-            </th>
-            <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc', padding: 8 }}>
-              {t('RANKING_COL_ACTIONS')}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={4} style={{ padding: 16, color: '#555' }}>
-                {t('RANKING_TABLE_LOADING')}
-              </td>
-            </tr>
-          ) : ranking.length === 0 ? (
-            <tr>
-              <td colSpan={4} style={{ padding: 16, color: '#555' }}>
-                {t('RANKING_TABLE_EMPTY')}
-              </td>
-            </tr>
-          ) : (
-            ranking.map((row) => (
-              <tr
-                key={row.user.userId}
-                style={{
-                  background: row.user.userId === loggedUserId ? '#e8f4ff' : undefined,
-                }}
-              >
-                <td style={{ padding: 8 }}>{row.position}</td>
-                <td style={{ padding: 8 }}>{row.user.ranking}</td>
-                <td style={{ padding: 8 }}>{row.user.name}</td>
-                <td style={{ padding: 8 }}>
-                  {row.user.userId !== loggedUserId && (
-                    <Link to={`/message/${row.user.userId}`}>{t('RANKING_ACTION_MESSAGE')}</Link>
-                  )}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-      <div
-        style={{
-          marginTop: 16,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '8px 12px',
-          alignItems: 'center',
-        }}
-      >
-        <button type="button" disabled={pageIndex <= 0 || loading} onClick={() => setPageIndex((p) => Math.max(0, p - 1))}>
-          {t('RANKING_PREV_PAGE')}
-        </button>
-        <span>
-          {t('RANKING_PAGE_OF', { current: pageIndex + 1, total: pageCount || 1 })}
-          {total > 0 ? ` · ${rangeLabel}` : total === 0 && !loading ? ` · ${t('RANKING_ZERO_PLAYERS')}` : ''}
-          {loading ? ` · ${t('RANKING_UPDATING')}` : ''}
-        </span>
-        <button type="button" disabled={pageIndex >= maxPage || loading} onClick={() => setPageIndex((p) => p + 1)}>
-          {t('RANKING_NEXT_PAGE')}
-        </button>
+    <div className={styles.page}>
+      <div className={styles.cornerTL} aria-hidden />
+      <div className={styles.cornerBR} aria-hidden />
+      <div className={styles.dots} aria-hidden />
+
+      <div className={styles.scroll}>
+        <div className={styles.content}>
+          <header className={styles.header}>
+            <h1 className={styles.title}>{t('RANKING_TITLE')}</h1>
+            <p className={styles.intro}>{t('RANKING_INTRO_BLURB', { pageSize })}</p>
+          </header>
+
+          <div className={styles.searchRow}>
+            <input
+              className={`tl-input ${styles.search}`}
+              type="search"
+              placeholder={t('RANKING_SEARCH_PLACEHOLDER')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
+
+          {error ? <p className={`tl-alert ${styles.error}`}>{error}</p> : null}
+
+          <div className={`tl-panel ${styles.tablePanel}`}>
+            <table className={`tl-table ${styles.table}`}>
+              <thead>
+                <tr>
+                  <th>{t('RANKING_COL_POSITION')}</th>
+                  <th>{t('RANKING_COL_POINTS')}</th>
+                  <th>{t('RANKING_COL_PLAYER')}</th>
+                  <th>{t('RANKING_COL_ACTIONS')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className={styles.cellMuted}>
+                      {t('RANKING_TABLE_LOADING')}
+                    </td>
+                  </tr>
+                ) : ranking.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className={styles.cellMuted}>
+                      {t('RANKING_TABLE_EMPTY')}
+                    </td>
+                  </tr>
+                ) : (
+                  ranking.map((row) => (
+                    <tr
+                      key={row.user.userId}
+                      className={row.user.userId === loggedUserId ? styles.rowSelf : undefined}
+                    >
+                      <td>{row.position}</td>
+                      <td>{row.user.ranking}</td>
+                      <td>{row.user.name}</td>
+                      <td>
+                        {row.user.userId !== loggedUserId && (
+                          <Link className={styles.messageLink} to={`/message/${row.user.userId}`}>
+                            {t('RANKING_ACTION_MESSAGE')}
+                          </Link>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className={styles.pagination}>
+            <button
+              type="button"
+              className={styles.pageBtn}
+              disabled={pageIndex <= 0 || loading}
+              onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
+            >
+              {t('RANKING_PREV_PAGE')}
+            </button>
+            <span className={styles.pageHint}>
+              {t('RANKING_PAGE_OF', { current: pageIndex + 1, total: pageCount || 1 })}
+              {total > 0 ? ` · ${rangeLabel}` : total === 0 && !loading ? ` · ${t('RANKING_ZERO_PLAYERS')}` : ''}
+              {loading ? ` · ${t('RANKING_UPDATING')}` : ''}
+            </span>
+            <button
+              type="button"
+              className={styles.pageBtn}
+              disabled={pageIndex >= maxPage || loading}
+              onClick={() => setPageIndex((p) => p + 1)}
+            >
+              {t('RANKING_NEXT_PAGE')}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
