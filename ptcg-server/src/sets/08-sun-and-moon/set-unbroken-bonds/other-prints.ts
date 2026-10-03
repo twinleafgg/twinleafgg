@@ -25,6 +25,42 @@ import { BlastoiseGx } from './blastoise-gx';
 import { BeastBringer } from './beast-bringer';
 import { Pokegear30 } from '../../10-scarlet-and-violet/set-scarlet-and-violet/pokegear-30';
 
+// MARK: Reprints
+
+export class Pokegear30UNB extends Pokegear30 {
+  public setNumber = '182';
+  public fullName: string = 'Pokégear 3.01 UNB';
+  public set = 'UNB';
+}
+
+// MARK: Yellow A alternates
+
+export class Pokegear30HS2UNB extends Pokegear30 {
+  public setNumber = '182a';
+  public fullName: string = 'Pokégear 3.02 UNB';
+  public set = 'UNB';
+}
+
+export class Pokegear30HS3UNB extends Pokegear30 {
+  public setNumber = '182b';
+  public fullName: string = 'Pokégear 3.03 UNB';
+  public set = 'UNB';
+}
+
+export class Welder2UNB extends WelderUNB189 {
+  public setNumber = '189a';
+  public fullName: string = 'Welder2 UNB';
+  public set = 'UNB';
+}
+
+export class DedenneGX3UNB extends DedenneGX {
+  public setNumber = '195a';
+  public fullName: string = 'Dedenne-GX3 UNB';
+  public set = 'UNB';
+}
+
+// MARK: Full art Pokémon
+
 export class PheromosaBuzzwoleGX2UNB extends PheromosaBuzzwoleGXUNB1 {
   public setNumber = '191';
   public fullName: string = 'Pheromosa & Buzzwole-GX2 UNB';
@@ -37,10 +73,22 @@ export class PheromosaBuzzwoleGX3UNB extends PheromosaBuzzwoleGXUNB1 {
   public set = 'UNB';
 }
 
+export class VenomothGx2 extends VenomothGx {
+  public set: string = 'UNB';
+  public setNumber: string = '193';
+  public fullName: string = 'Venomoth-GX UNB 193';
+}
+
 export class ReshiramCharizardGX2UNB extends ReshiramCharizardGXUNB20 {
   public setNumber = '194';
   public fullName: string = 'Reshiram & Charizard-GX2 UNB';
   public set = 'UNB';
+}
+
+export class DedenneGx2 extends DedenneGX {
+  public set: string = 'UNB';
+  public setNumber: string = '195';
+  public fullName: string = 'Dedenne-GX UNB 195';
 }
 
 export class MukAlolanMukGX2UNB extends MukAlolanMukGXUNB61 {
@@ -103,10 +151,54 @@ export class GardevoirSylveonGX3UNB extends GardevoirSylveonGXUNB130 {
   public set = 'UNB';
 }
 
+export class WhimsicottGx2 extends WhimsicottGx {
+  public set: string = 'UNB';
+  public setNumber: string = '206';
+  public fullName: string = 'Whimsicott-GX UNB 206';
+}
+
+export class PersianGx2 extends PersianGx {
+  public set: string = 'UNB';
+  public setNumber: string = '207';
+  public fullName: string = 'Persian-GX UNB 207';
+}
+
+export class CelesteelaGx2 extends CelesteelaGx {
+  public set: string = 'UNB';
+  public setNumber: string = '208';
+  public fullName: string = 'Celesteela-GX UNB 208';
+}
+
+// MARK: Full art Trainers
+
 export class GreensExploration2UNB extends GreensExplorationUNB175 {
   public setNumber = '209';
   public fullName: string = "Green's Exploration2 UNB";
   public set = 'UNB';
+}
+
+export class Janine2 extends Janine {
+  public set: string = 'UNB';
+  public setNumber: string = '210';
+  public fullName: string = 'Janine UNB 210';
+}
+
+export class KogasTrap2 extends KogasTrap {
+  public set: string = 'UNB';
+  public setNumber: string = '211';
+  public fullName: string = "Koga's Trap UNB 211";
+}
+
+export class Molayne2 extends Molayne {
+  public set: string = 'UNB';
+  public setNumber: string = '212';
+  public fullName: string = 'Molayne UNB 212';
+}
+
+export class RedsChallenge2 extends RedsChallenge {
+  public set: string = 'UNB';
+  public setNumber: string = '213';
+  public fullName: string = "Red's Challenge UNB 213";
 }
 
 export class Welder3UNB extends WelderUNB189 {
@@ -115,16 +207,30 @@ export class Welder3UNB extends WelderUNB189 {
   public set = 'UNB';
 }
 
+// MARK: Rainbow rares
+
 export class PheromosaBuzzwoleGX4UNB extends PheromosaBuzzwoleGXUNB1 {
   public setNumber = '215';
   public fullName: string = 'Pheromosa & Buzzwole-GX4 UNB';
   public set = 'UNB';
 }
 
+export class VenomothGx3 extends VenomothGx {
+  public set: string = 'UNB';
+  public setNumber: string = '216';
+  public fullName: string = 'Venomoth-GX UNB 216';
+}
+
 export class ReshiramCharizardGX3UNB extends ReshiramCharizardGXUNB20 {
   public setNumber = '217';
   public fullName: string = 'Reshiram & Charizard-GX3 UNB';
   public set = 'UNB';
+}
+
+export class BlastoiseGx2 extends BlastoiseGx {
+  public set: string = 'UNB';
+  public setNumber: string = '218';
+  public fullName: string = 'Blastoise-GX UNB 218';
 }
 
 export class DedenneGX4UNB extends DedenneGX {
@@ -169,132 +275,6 @@ export class GardevoirSylveonGX4UNB extends GardevoirSylveonGXUNB130 {
   public set = 'UNB';
 }
 
-export class ElectromagneticRadar2UNB extends ElectromagneticRadarUNB169 {
-  public setNumber = '230';
-  public fullName: string = 'Electromagnetic Radar2 UNB';
-  public set = 'UNB';
-}
-
-export class FireCrystal2UNB extends FireCrystalUNB173 {
-  public setNumber = '231';
-  public fullName: string = 'Fire Crystal2 UNB';
-  public set = 'UNB';
-}
-
-export class MetalCoreBarrier2UNB extends MetalCoreBarrierUNB180 {
-  public setNumber = '232';
-  public fullName: string = 'Metal Core Barrier2 UNB';
-  public set = 'UNB';
-}
-
-export class TripleAccelerationEnergy2UNB extends TripleAccelerationEnergyUNB190 {
-  public setNumber = '234';
-  public fullName: string = 'Triple Acceleration Energy2 UNB';
-  public set = 'UNB';
-}
-
-export class Pokegear30UNB extends Pokegear30 {
-  public setNumber = '182';
-  public fullName: string = 'Pokégear 3.01 UNB';
-  public set = 'UNB';
-}
-
-export class Pokegear30HS2UNB extends Pokegear30 {
-  public setNumber = '182a';
-  public fullName: string = 'Pokégear 3.02 UNB';
-  public set = 'UNB';
-}
-
-export class Pokegear30HS3UNB extends Pokegear30 {
-  public setNumber = '182b';
-  public fullName: string = 'Pokégear 3.03 UNB';
-  public set = 'UNB';
-}
-
-export class Pokegear30HS4UNB extends Pokegear30 {
-  public setNumber = '233';
-  public fullName: string = 'Pokégear 3.04 UNB';
-  public set = 'UNB';
-}
-
-export class Welder2UNB extends WelderUNB189 {
-  public setNumber = '189a';
-  public fullName: string = 'Welder2 UNB';
-  public set = 'UNB';
-}
-
-export class DedenneGX3UNB extends DedenneGX {
-  public setNumber = '195a';
-  public fullName: string = 'Dedenne-GX3 UNB';
-  public set = 'UNB';
-}
-
-export class VenomothGx2 extends VenomothGx {
-  public set: string = 'UNB';
-  public setNumber: string = '193';
-  public fullName: string = 'Venomoth-GX UNB 193';
-}
-
-export class DedenneGx2 extends DedenneGX {
-  public set: string = 'UNB';
-  public setNumber: string = '195';
-  public fullName: string = 'Dedenne-GX UNB 195';
-}
-
-export class WhimsicottGx2 extends WhimsicottGx {
-  public set: string = 'UNB';
-  public setNumber: string = '206';
-  public fullName: string = 'Whimsicott-GX UNB 206';
-}
-
-export class PersianGx2 extends PersianGx {
-  public set: string = 'UNB';
-  public setNumber: string = '207';
-  public fullName: string = 'Persian-GX UNB 207';
-}
-
-export class CelesteelaGx2 extends CelesteelaGx {
-  public set: string = 'UNB';
-  public setNumber: string = '208';
-  public fullName: string = 'Celesteela-GX UNB 208';
-}
-
-export class Janine2 extends Janine {
-  public set: string = 'UNB';
-  public setNumber: string = '210';
-  public fullName: string = 'Janine UNB 210';
-}
-
-export class KogasTrap2 extends KogasTrap {
-  public set: string = 'UNB';
-  public setNumber: string = '211';
-  public fullName: string = "Koga's Trap UNB 211";
-}
-
-export class Molayne2 extends Molayne {
-  public set: string = 'UNB';
-  public setNumber: string = '212';
-  public fullName: string = 'Molayne UNB 212';
-}
-
-export class RedsChallenge2 extends RedsChallenge {
-  public set: string = 'UNB';
-  public setNumber: string = '213';
-  public fullName: string = "Red's Challenge UNB 213";
-}
-
-export class VenomothGx3 extends VenomothGx {
-  public set: string = 'UNB';
-  public setNumber: string = '216';
-  public fullName: string = 'Venomoth-GX UNB 216';
-}
-
-export class BlastoiseGx2 extends BlastoiseGx {
-  public set: string = 'UNB';
-  public setNumber: string = '218';
-  public fullName: string = 'Blastoise-GX UNB 218';
-}
-
 export class WhimsicottGx3 extends WhimsicottGx {
   public set: string = 'UNB';
   public setNumber: string = '226';
@@ -313,8 +293,40 @@ export class CelesteelaGx3 extends CelesteelaGx {
   public fullName: string = 'Celesteela-GX UNB 228';
 }
 
+// MARK: Golds
+
 export class BeastBringer2 extends BeastBringer {
   public set: string = 'UNB';
   public setNumber: string = '229';
   public fullName: string = 'Beast Bringer UNB 229';
+}
+
+export class ElectromagneticRadar2UNB extends ElectromagneticRadarUNB169 {
+  public setNumber = '230';
+  public fullName: string = 'Electromagnetic Radar2 UNB';
+  public set = 'UNB';
+}
+
+export class FireCrystal2UNB extends FireCrystalUNB173 {
+  public setNumber = '231';
+  public fullName: string = 'Fire Crystal2 UNB';
+  public set = 'UNB';
+}
+
+export class MetalCoreBarrier2UNB extends MetalCoreBarrierUNB180 {
+  public setNumber = '232';
+  public fullName: string = 'Metal Core Barrier2 UNB';
+  public set = 'UNB';
+}
+
+export class Pokegear30HS4UNB extends Pokegear30 {
+  public setNumber = '233';
+  public fullName: string = 'Pokégear 3.04 UNB';
+  public set = 'UNB';
+}
+
+export class TripleAccelerationEnergy2UNB extends TripleAccelerationEnergyUNB190 {
+  public setNumber = '234';
+  public fullName: string = 'Triple Acceleration Energy2 UNB';
+  public set = 'UNB';
 }
