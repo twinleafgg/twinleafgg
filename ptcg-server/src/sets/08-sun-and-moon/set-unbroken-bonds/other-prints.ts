@@ -57,6 +57,7 @@ export class DedenneGX3UNB extends DedenneGX {
   public setNumber = '195a';
   public fullName: string = 'Dedenne-GX3 UNB';
   public set = 'UNB';
+  public legacyFullName = '';
 }
 
 // MARK: Full art Pokémon
@@ -89,6 +90,7 @@ export class DedenneGx2 extends DedenneGX {
   public set: string = 'UNB';
   public setNumber: string = '195';
   public fullName: string = 'Dedenne-GX UNB 195';
+  public legacyFullName = '';
 }
 
 export class MukAlolanMukGX2UNB extends MukAlolanMukGXUNB61 {
@@ -237,6 +239,7 @@ export class DedenneGX4UNB extends DedenneGX {
   public setNumber = '219';
   public fullName: string = 'Dedenne-GX4 UNB';
   public set = 'UNB';
+  public legacyFullName = '';
 }
 
 export class MukAlolanMukGX4UNB extends MukAlolanMukGXUNB61 {
