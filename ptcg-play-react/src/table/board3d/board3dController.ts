@@ -2681,12 +2681,33 @@ export class Board3dController {
     gsap.killTweensOf(group.rotation);
     gsap.killTweensOf(group.scale);
 
+    const texturesPromise = Promise.all([
+      this.assetLoader.loadCardBack(),
+      this.assetLoader.loadCardMaskTexture(),
+    ]);
+
     void this.animationService
       .playHandCardDropOnBoard(group, targetWorld, {
         endScale: animEndScale,
         endRotationY: animEndRotationY,
+        // Flip face-down while flying to the slot (click and drag both use this path).
+        flipFaceDownDuringTravel: {
+          onHideFace: () => {
+            void texturesPromise.then(([cardBack, mask]) => {
+              board3dCard!.updateTexture(cardBack, cardBack, mask);
+              board3dCard!.setHolo(null);
+              group.userData.isFaceDown = true;
+            });
+          },
+        },
       })
-      .then(() => {
+      .then(async () => {
+        const [cardBack, mask] = await texturesPromise;
+        board3dCard!.updateTexture(cardBack, cardBack, mask);
+        board3dCard!.setHolo(null);
+        group.userData.isFaceDown = true;
+        group.rotation.z = 0;
+
         this.setupPlacementInFlight.delete(handIndex);
         this.stateSync.adoptSetupPreviewCard(
           board3dCard!,

@@ -47,7 +47,8 @@ function snap(
   };
 }
 
-const kinds = (steps: TransitionStep[]) => steps.map((s) => `${s.kind}:${s.playerId}`);
+const kinds = (steps: TransitionStep[]) =>
+  steps.map((s) => (s.kind === 'setupReveal' ? 'setupReveal' : `${s.kind}:${s.playerId}`));
 const hiddenOpp = (init: PlayerInit = {}) =>
   player(OPP, { handIds: null, handCount: 7, ...init });
 
@@ -391,8 +392,63 @@ describe('planTransition', () => {
       hiddenOpp(),
       { isSetup: false, isPlayerTurn: true, activePlayerId: OPP },
     );
-    // Not our turn begin; leaving setup → draw is snapped away.
+    // Not our turn begin; leaving setup → draw is snapped away (no board slots → no reveal).
     expect(planTransition(prev, next).steps).toEqual([]);
+  });
+
+  it('leaving setup with board Pokémon emits setupReveal before turn-begin draw', () => {
+    const active: BoardCardLocation = { slot: 'active', index: 0, isTopPokemon: true };
+    const bench0: BoardCardLocation = { slot: 'bench', index: 0, isTopPokemon: true };
+    const bench1: BoardCardLocation = { slot: 'bench', index: 1, isTopPokemon: true };
+    const prev = snap(
+      player(ME, {
+        handIds: [1],
+        deckCount: 40,
+        board: [
+          [10, active],
+          [11, bench0],
+          [12, bench1],
+        ],
+      }),
+      hiddenOpp({
+        handCount: 5,
+        deckCount: 40,
+        board: [
+          [20, active],
+          [21, bench0],
+        ],
+      }),
+      { isSetup: true, activePlayerId: ME },
+    );
+    const next = snap(
+      player(ME, {
+        handIds: [1, 2],
+        deckCount: 39,
+        board: [
+          [10, active],
+          [11, bench0],
+          [12, bench1],
+        ],
+      }),
+      hiddenOpp({
+        handCount: 5,
+        deckCount: 40,
+        board: [
+          [20, active],
+          [21, bench0],
+        ],
+      }),
+      { isSetup: false, isPlayerTurn: true, activePlayerId: ME },
+    );
+    const plan = planTransition(prev, next);
+    expect(kinds(plan.steps)).toEqual(['setupReveal', 'draw:1']);
+    const reveal = plan.steps[0] as Extract<TransitionStep, { kind: 'setupReveal' }>;
+    expect(reveal.waves).toEqual([
+      { slot: 'active', index: 0 },
+      { slot: 'bench', index: 0 },
+      { slot: 'bench', index: 1 },
+    ]);
+    expect((plan.steps[1] as Extract<TransitionStep, { kind: 'draw' }>).turnBegin).toBe(true);
   });
 
   it('deck limbo from a look-at prompt credits a draw when the card enters hand', () => {

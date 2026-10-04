@@ -17,6 +17,7 @@ import {
   HAND_DISCARD_TO_TRAINER_HOLD_SEC,
   HAND_TO_DECK_STAGGER_SEC,
   MULTI_DRAW_STAGE_TO_HAND_STAGGER_SEC,
+  SETUP_REVEAL_WAVE_GAP_SEC,
   type Board3dAnimationService,
   type DrawFlightVisualPreset,
 } from '../services/board-3d-animation.service';
@@ -136,6 +137,7 @@ export class Board3dTransitionRunner {
     supporterCard: Map<number, Card>;
     hiddenSupporterPlayerIds: Set<number>;
     deckCount: Map<number, number>;
+    holdBoardFaceDown?: boolean;
   };
   private pending = new Map<number, Record<PileZone, Set<number>>>();
   private deckCount = new Map<number, number>();
@@ -157,6 +159,7 @@ export class Board3dTransitionRunner {
       supporterCard: new Map(),
       hiddenSupporterPlayerIds: new Set(),
       deckCount: this.deckCount,
+      holdBoardFaceDown: this.steps.some((s) => s.kind === 'setupReveal'),
     };
   }
 
@@ -193,6 +196,9 @@ export class Board3dTransitionRunner {
             break;
           case 'handToDeck':
             await this.runHandToDeck(step);
+            break;
+          case 'setupReveal':
+            await this.runSetupReveal(step);
             break;
           case 'draw':
             await this.runDraw(step);
@@ -712,6 +718,89 @@ export class Board3dTransitionRunner {
     });
     this.deckCount.set(playerId, deck);
     return origins;
+  }
+
+  private async runSetupReveal(
+    step: Extract<TransitionStep, { kind: 'setupReveal' }>,
+  ): Promise<void> {
+    this.host.stateSync.clearSetupStartingPokemonPreview();
+    // Hold Active/Bench face-down while next state already has isSecret=false.
+    this.overrides.holdBoardFaceDown = true;
+    await this.render();
+
+    const seats: Seat[] = ['bottomPlayer', 'topPlayer'];
+    for (let wi = 0; wi < step.waves.length; wi++) {
+      if (this.isStale()) {
+        break;
+      }
+      const wave = step.waves[wi];
+      const flips: Promise<void>[] = [];
+      for (const seat of seats) {
+        const player = seat === 'bottomPlayer' ? this.host.bottomPlayer() : this.host.topPlayer();
+        if (!player) {
+          continue;
+        }
+        const meshId =
+          wave.slot === 'active'
+            ? `${seat}_${player.id}_active`
+            : `${seat}_${player.id}_bench_${wave.index}`;
+        const mesh = this.host.stateSync.getCardById(meshId);
+        if (!mesh) {
+          continue;
+        }
+        flips.push(this.flipBoardSlotFaceUp(mesh, player, wave));
+      }
+      if (flips.length > 0) {
+        await Promise.all(flips);
+      }
+      if (wi < step.waves.length - 1) {
+        await sleep(SETUP_REVEAL_WAVE_GAP_SEC * 1000);
+      }
+    }
+
+    this.overrides.holdBoardFaceDown = false;
+    await this.render();
+  }
+
+  private async flipBoardSlotFaceUp(
+    mesh: Board3dCard,
+    player: Player,
+    wave: { slot: 'active' | 'bench'; index: number },
+  ): Promise<void> {
+    const list =
+      wave.slot === 'active'
+        ? player.active
+        : player.bench[wave.index];
+    const card = list?.getPokemonCard?.() ?? list?.cards?.[0];
+    const [cardBack, mask] = await Promise.all([
+      this.backTexture(player),
+      this.host.assetLoader.loadCardMaskTexture(),
+    ]);
+    let scan = cardBack;
+    const scanUrl = card ? this.host.cardsAdapter.getScanUrlFor3D(card, list) : undefined;
+    if (scanUrl?.trim()) {
+      try {
+        scan = await this.host.assetLoader.loadCardTexture(scanUrl);
+      } catch {
+        scan = cardBack;
+      }
+    }
+
+    const group = mesh.getGroup();
+    // Show cardback via z=π while loading the scan onto the front material.
+    group.rotation.z = Math.PI;
+    mesh.updateTexture(scan, cardBack, mask);
+    mesh.setHolo(null);
+
+    await this.host.animationService.playInPlaceRevealFlip(group, {
+      onRevealFace: () => {
+        group.userData.isFaceDown = false;
+      },
+    });
+    mesh.updateTexture(scan, cardBack, mask);
+    group.userData.isFaceDown = false;
+    group.rotation.z = 0;
+    this.host.markDirty();
   }
 
   private async runDraw(step: Extract<TransitionStep, { kind: 'draw' }>): Promise<void> {

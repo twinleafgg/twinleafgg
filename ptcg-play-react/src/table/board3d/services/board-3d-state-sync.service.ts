@@ -55,6 +55,11 @@ export interface Board3dDisplayOverrides {
   /** Hide the play zone until a trainer flight lands there. */
   hiddenSupporterPlayerIds?: ReadonlySet<number>;
   deckCount?: ReadonlyMap<number, number>;
+  /**
+   * Keep Active/Bench visually face-down during leave-setup reveal, even though
+   * the server already cleared isSecret.
+   */
+  holdBoardFaceDown?: boolean;
 }
 
 export interface Board3dSyncStateOptions {
@@ -401,6 +406,8 @@ export class Board3dStateSyncService {
     const playerPrefix = `${position}_${player.id}`;
     const playerType = position === 'topPlayer' ? PlayerType.TOP_PLAYER : PlayerType.BOTTOM_PLAYER;
 
+    const holdBoardFaceDown = !!display.holdBoardFaceDown;
+
     // Active and Supporter - run in parallel (independent zones)
     const activePromise =
       player.active && player.active.cards.length > 0
@@ -415,6 +422,8 @@ export class Board3dStateSyncService {
               { player: playerType, slot: SlotType.ACTIVE, index: 0 },
               1.5,
               sleeveImagePath,
+              false,
+              holdBoardFaceDown,
             );
           })()
         : Promise.resolve(undefined).then(() => {
@@ -463,6 +472,8 @@ export class Board3dStateSyncService {
           { player: playerType, slot: SlotType.BENCH, index: i },
           1.0,
           sleeveImagePath,
+          false,
+          holdBoardFaceDown,
         );
       } else {
         this.removeCard(cardId);
@@ -649,6 +660,7 @@ export class Board3dStateSyncService {
     scale: number = 1.0,
     sleeveImagePath?: string,
     revealPrize: boolean = false,
+    forceFaceDown: boolean = false,
   ): Promise<void> {
     cardId = String(cardId);
 
@@ -680,7 +692,11 @@ export class Board3dStateSyncService {
     };
 
     // Determine if card should be face-down (not public or is secret)
-    const isFaceDown = revealPrize ? false : cardList.isSecret || (!cardList.isPublic && !isOwner);
+    const isFaceDown = forceFaceDown
+      ? true
+      : revealPrize
+        ? false
+        : cardList.isSecret || (!cardList.isPublic && !isOwner);
 
     // Get card scan URL (checks artworksMap for overrides first, like 2D components do)
     const scanUrl = this.cardsAdapter.getScanUrlFor3D(mainCard, cardList);
@@ -1179,7 +1195,8 @@ export class Board3dStateSyncService {
       const tempList = new PokemonCardList();
       tempList.cards = [card];
       tempList.isPublic = true;
-      tempList.isSecret = false;
+      // Match server starting Pokémon: face-down until game-start reveal.
+      tempList.isSecret = true;
 
       const position =
         slotTarget.slot === SlotType.ACTIVE
@@ -1250,6 +1267,7 @@ export class Board3dStateSyncService {
     group.userData.isSetupPreview = true;
     group.userData.setupPreviewHandIndex = handIndex;
     group.userData.isBoardCard = true;
+    group.userData.isFaceDown = true;
     delete group.userData.setupPlacementInFlight;
     delete group.userData.playingToBoard;
     delete group.userData.isHandCard;

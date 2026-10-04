@@ -77,6 +77,13 @@ const DRAW_DECK_TO_STAGE_SCALE_DURATION = 0.22;
 /** Total deck→stage phase before stage→hand (padding keeps dwell when travel is shorter than scale). */
 const DRAW_DECK_TO_STAGE_PHASE_DURATION = 0.49;
 
+/** In-place board flip (setup place face-down / game-start reveal). */
+const IN_PLACE_FLIP_DURATION_SEC = 0.4;
+/** World-Y lift during reveal flip so the card clears the board while edge-on. */
+const REVEAL_FLIP_LIFT_Y = 1.35;
+/** Pause between Active / bench reveal waves. */
+export const SETUP_REVEAL_WAVE_GAP_SEC = 0.1;
+
 const DRAW_STAGE_TO_HAND_TRAVEL_DURATION = 0.19;
 const DRAW_STAGE_TO_HAND_SCALE_DURATION = 0.16;
 
@@ -810,19 +817,35 @@ export class Board3dAnimationService {
   /**
    * Hand card released onto the board: arc down to zone, flatten rotation, match board scale/orientation.
    * Card should already be parented to the scene with world-space position.
+   * When {@link flipFaceDownDuringTravel} is set (setup placement), the card flips face-down in flight.
    */
   playHandCardDropOnBoard(
     card: Object3D,
     targetWorld: Vector3,
-    options: { endScale: number; endRotationY: number }
+    options: {
+      endScale: number;
+      endRotationY: number;
+      /** Setup starting-Pokémon: flip face-down while traveling to the slot. */
+      flipFaceDownDuringTravel?: {
+        onHideFace?: () => void;
+      };
+    },
   ): Promise<void> {
     return new Promise(resolve => {
       const midY = Math.max(card.position.y, targetWorld.y) + 0.55;
+      const flipDown = options.flipFaceDownDuringTravel;
+      const endZ = flipDown ? Math.PI : 0;
+      let hideApplied = false;
+
       const timeline = gsap.timeline({
         onComplete: () => {
+          if (flipDown) {
+            // Sync-style face-down: cardback on front, z = 0.
+            card.rotation.z = 0;
+          }
           this.removeAnimation(timeline);
           resolve();
-        }
+        },
       });
 
       timeline
@@ -831,18 +854,33 @@ export class Board3dAnimationService {
           y: midY,
           z: targetWorld.z,
           duration: 0.38,
-          ease: 'power2.out'
+          ease: 'power2.out',
         })
         .to(
           card.rotation,
           {
             x: 0,
             y: options.endRotationY,
-            z: 0,
-            duration: 0.42,
-            ease: 'power3.out'
+            z: endZ,
+            // Setup flip: start with the flight (no delay / soft ease-in).
+            duration: flipDown ? 0.4 : 0.42,
+            ease: flipDown ? 'power2.out' : 'power3.inOut',
+            onUpdate: flipDown
+              ? () => {
+                  if (hideApplied) {
+                    return;
+                  }
+                  // Progress of the z flip (0 → π).
+                  const progress = Math.abs(card.rotation.z) / Math.PI;
+                  if (progress >= 0.5) {
+                    hideApplied = true;
+                    playSfx('carddraw');
+                    flipDown.onHideFace?.();
+                  }
+                }
+              : undefined,
           },
-          '<0.02'
+          flipDown ? '<' : '<0.02',
         )
         .to(
           card.scale,
@@ -851,18 +889,131 @@ export class Board3dAnimationService {
             y: options.endScale,
             z: options.endScale,
             duration: 0.44,
-            ease: 'power2.inOut'
+            ease: 'power2.inOut',
           },
-          '<'
+          '<',
         )
-        .to(card.position, {
-          y: targetWorld.y,
-          duration: 0.3,
-          ease: 'bounce.out'
-        });
+        .to(
+          card.position,
+          {
+            y: targetWorld.y,
+            duration: 0.32,
+            ease: 'power2.in',
+          },
+          '-=0.28',
+        );
 
       this.activeAnimations.push(timeline);
       this.updateAnimationState();
+    });
+  }
+
+  /**
+   * In-place Z flip for board cards (setup place face-down, game-start reveal face-up).
+   * Preserves rotation.y. Midpoint is for texture swaps; onComplete restores z=0 for sync.
+   * When {@link liftHeight} is set, the card rises then settles so it does not clip the board.
+   */
+  playInPlaceCardFlip(
+    card: Object3D,
+    options: {
+      direction: 'faceUp' | 'faceDown';
+      onMidpoint?: () => void;
+      durationSec?: number;
+      /** World-Y hop during the flip (needed for face-up reveal on the board). */
+      liftHeight?: number;
+    },
+  ): Promise<void> {
+    const duration = options.durationSec ?? IN_PLACE_FLIP_DURATION_SEC;
+    const startZ = options.direction === 'faceUp' ? Math.PI : 0;
+    const endZ = options.direction === 'faceUp' ? 0 : Math.PI;
+    const baseY = card.position.y;
+    const lift =
+      options.liftHeight != null && options.liftHeight > 0
+        ? options.liftHeight * Math.max(card.scale.x, 1)
+        : 0;
+    const peakY = baseY + lift;
+    card.rotation.x = 0;
+    card.rotation.z = startZ;
+
+    return new Promise(resolve => {
+      let midApplied = false;
+      const timeline = gsap.timeline({
+        onComplete: () => {
+          card.rotation.z = 0;
+          card.position.y = baseY;
+          this.removeAnimation(timeline);
+          resolve();
+        },
+      });
+      timeline.to(
+        card.rotation,
+        {
+          z: endZ,
+          duration,
+          ease: 'power2.inOut',
+          onUpdate: () => {
+            if (midApplied) {
+              return;
+            }
+            const progress = startZ === endZ ? 1 : (card.rotation.z - startZ) / (endZ - startZ);
+            if (progress >= 0.5) {
+              midApplied = true;
+              playSfx('carddraw');
+              options.onMidpoint?.();
+            }
+          },
+        },
+        0,
+      );
+      if (lift > 0) {
+        // Peak at mid-flip (edge-on) so the card clears the floor, then settle.
+        timeline
+          .to(
+            card.position,
+            {
+              y: peakY,
+              duration: duration * 0.5,
+              ease: 'power2.out',
+            },
+            0,
+          )
+          .to(
+            card.position,
+            {
+              y: baseY,
+              duration: duration * 0.5,
+              ease: 'power2.in',
+            },
+            duration * 0.5,
+          );
+      }
+      this.activeAnimations.push(timeline);
+      this.updateAnimationState();
+    });
+  }
+
+  /** Alias for game-start board reveal (face-down → face-up). */
+  playInPlaceRevealFlip(
+    card: Object3D,
+    options?: { onRevealFace?: () => void; durationSec?: number },
+  ): Promise<void> {
+    return this.playInPlaceCardFlip(card, {
+      direction: 'faceUp',
+      onMidpoint: options?.onRevealFace,
+      durationSec: options?.durationSec,
+      liftHeight: REVEAL_FLIP_LIFT_Y,
+    });
+  }
+
+  /** Alias for setup placement (face-up → face-down). */
+  playInPlaceFaceDownFlip(
+    card: Object3D,
+    options?: { onHideFace?: () => void; durationSec?: number },
+  ): Promise<void> {
+    return this.playInPlaceCardFlip(card, {
+      direction: 'faceDown',
+      onMidpoint: options?.onHideFace,
+      durationSec: options?.durationSec,
     });
   }
 

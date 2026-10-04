@@ -43,6 +43,11 @@ export type TransitionStep =
       /** Opening deal / mulligan redraw during GamePhase.SETUP. */
       setupDeal?: boolean;
     }
+  | {
+      kind: 'setupReveal';
+      /** Active first, then bench indices ascending; both seats flip each wave together. */
+      waves: { slot: 'active' | 'bench'; index: number }[];
+    }
   | { kind: 'trainerToDiscard'; playerId: number; cardId: number; zone: PileZone };
 
 export interface PlayerTransition {
@@ -84,6 +89,7 @@ const STEP_ORDER: TransitionStep['kind'][] = [
   'toPile',
   'boardGhostToPile',
   'handToDeck',
+  'setupReveal',
   'draw',
   'trainerToDiscard',
 ];
@@ -484,8 +490,16 @@ function planPlayer(
           setupDeal: true,
         });
       }
-    } else if (leavingSetup && !(turnBegin && ordered.length === 1)) {
-      // Setup→turn handoff: snap non–turn-begin hand churn.
+    } else if (leavingSetup) {
+      // Opening turn draw after board reveal (active player may already match prev).
+      const firstTurnDraw =
+        nextSnap.isPlayerTurn &&
+        nextSnap.activePlayerId === playerId &&
+        ordered.length === 1 &&
+        ordered[0].source.kind === 'deck';
+      if (firstTurnDraw) {
+        steps.push({ kind: 'draw', playerId, cards: ordered, turnBegin: true });
+      }
     } else if (turnBegin && ordered.length >= 2) {
       const lastDeck = [...ordered].reverse().find((c) => c.source.kind === 'deck');
       const rest = ordered.filter((c) => c !== lastDeck);
@@ -550,5 +564,48 @@ export function planTransition(
       plan.steps.push(...steps.filter((s) => s.kind === kind));
     }
   }
+
+  // Shared leave-setup reveal: one step for both boards, before draws in STEP_ORDER.
+  if (prev.isSetup && !next.isSetup) {
+    const waves = buildSetupRevealWaves(next);
+    if (waves.length > 0) {
+      const reveal: TransitionStep = { kind: 'setupReveal', waves };
+      const drawIdx = plan.steps.findIndex((s) => s.kind === 'draw');
+      if (drawIdx >= 0) {
+        plan.steps.splice(drawIdx, 0, reveal);
+      } else {
+        plan.steps.push(reveal);
+      }
+    }
+  }
+
   return plan;
+}
+
+/** Occupied Active then Bench indices across both players (union). */
+function buildSetupRevealWaves(
+  next: BoardSnapshot,
+): { slot: 'active' | 'bench'; index: number }[] {
+  let hasActive = false;
+  const bench = new Set<number>();
+  for (const p of next.players.values()) {
+    for (const loc of p.boardCards.values()) {
+      if (!loc.isTopPokemon) {
+        continue;
+      }
+      if (loc.slot === 'active') {
+        hasActive = true;
+      } else {
+        bench.add(loc.index);
+      }
+    }
+  }
+  const waves: { slot: 'active' | 'bench'; index: number }[] = [];
+  if (hasActive) {
+    waves.push({ slot: 'active', index: 0 });
+  }
+  for (const index of [...bench].sort((a, b) => a - b)) {
+    waves.push({ slot: 'bench', index });
+  }
+  return waves;
 }
