@@ -20,8 +20,8 @@ import { State } from '../state/state';
 import { StoreLike } from '../store-like';
 
 /**
- * Trainer whose effect is currently creating prompts. Kept on Store, not on
- * Prompt, so it is not serialized to the client.
+ * Trainer whose effect is currently creating prompts. Also stamped onto
+ * Prompt.sourceCard so the client can show the source card in UI.
  */
 export interface ResolvingTrainerSource {
   player: Player;

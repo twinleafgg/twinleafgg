@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import {
-  CanvasTexture,
   DoubleSide,
   LinearFilter,
   LinearMipmapLinearFilter,
@@ -85,43 +84,6 @@ function ZonePad({ position, geometry, material }: ZonePadProps) {
   );
 }
 
-function BoardLabel({ text, position }: { text: string; position: [number, number, number] }) {
-  const texture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 96;
-    const context = canvas.getContext('2d');
-    if (!context) return null;
-    context.font = '600 34px system-ui, sans-serif';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillStyle = 'rgba(205, 231, 229, 0.72)';
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
-    const map = new CanvasTexture(canvas);
-    map.colorSpace = SRGBColorSpace;
-    map.minFilter = LinearFilter;
-    map.magFilter = LinearFilter;
-    return map;
-  }, [text]);
-
-  useEffect(() => () => texture?.dispose(), [texture]);
-  if (!texture) return null;
-
-  return (
-    <mesh position={position} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
-      <planeGeometry args={[3.3, 0.56]} />
-      <meshBasicMaterial
-        map={texture}
-        transparent
-        opacity={0.76}
-        depthWrite={false}
-        toneMapped={false}
-        side={DoubleSide}
-      />
-    </mesh>
-  );
-}
-
 export type Board3dStaticSceneProps = {
   /** When true, emblem is wrapped in postprocessing {@link Select} for selective bloom. */
   bloomActive?: boolean;
@@ -153,7 +115,7 @@ export function Board3dStaticScene({ bloomActive = false }: Board3dStaticScenePr
       slotFrame: new MeshBasicMaterial({
         color: 0xf3e4ce,
         transparent: true,
-        opacity: 0.88,
+        opacity: 0.15,
         depthTest: true,
         depthWrite: false,
         toneMapped: false,
@@ -248,16 +210,6 @@ export function Board3dStaticScene({ bloomActive = false }: Board3dStaticScenePr
           material={materials.slotFrame}
         />
       ))}
-
-      <BoardLabel text="BENCH" position={[0, 0.077, home.bench[2].z - 2.45]} />
-      <BoardLabel text="BENCH" position={[0, 0.077, away.bench[2].z + 2.45]} />
-      <BoardLabel text="STADIUM" position={[zonePositions.stadium.x, 0.077, zonePositions.stadium.z + 2.5]} />
-      <BoardLabel text="SIDE" position={[home.prizes.x - 3.7, 0.077, home.prizes.z]} />
-      <BoardLabel text="SIDE" position={[away.prizes.x + 3.7, 0.077, away.prizes.z]} />
-      <BoardLabel text="DECK" position={[home.deck.x + 3.5, 0.077, home.deck.z]} />
-      <BoardLabel text="TRASH" position={[home.discard.x + 3.5, 0.077, home.discard.z]} />
-      <BoardLabel text="DECK" position={[away.deck.x - 3.5, 0.077, away.deck.z]} />
-      <BoardLabel text="TRASH" position={[away.discard.x - 3.5, 0.077, away.discard.z]} />
       {bloomActive ? <Select enabled>{emblemMesh}</Select> : emblemMesh}
     </group>
   );
