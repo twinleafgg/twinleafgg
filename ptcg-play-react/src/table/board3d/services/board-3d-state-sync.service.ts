@@ -42,20 +42,26 @@ import {
   isSharedStadiumMeshId,
 } from '../dual-stadium.utils';
 
+/**
+ * Per-player zone contents to show instead of the raw game state while a transition's
+ * flights are still landing (keyed by player id).
+ */
+export interface Board3dDisplayOverrides {
+  /** Discard ids to show, in pile order. */
+  discardIds?: ReadonlyMap<number, readonly number[]>;
+  lostzoneIds?: ReadonlyMap<number, readonly number[]>;
+  /** Card to show on the play zone even when the state no longer (or not yet) has it. */
+  supporterCard?: ReadonlyMap<number, Card>;
+  /** Hide the play zone until a trainer flight lands there. */
+  hiddenSupporterPlayerIds?: ReadonlySet<number>;
+  deckCount?: ReadonlyMap<number, number>;
+}
+
 export interface Board3dSyncStateOptions {
   skippedCardId?: string | null;
   skippedScaleCardId?: string | readonly string[] | null;
   handPlayFlightHiddenCardId?: string | readonly string[] | null;
-  /** Skip discard pile mesh updates for this player (item hand-play flight — keep prior discard until resolved). */
-  freezeDiscardVisualForPlayerId?: number | null;
-  /** When frozen, show only this many discard cards (incremental hand-discard animations). */
-  freezeDiscardVisibleCardCount?: number | null;
-  /** Base discard count before an in-progress hand→discard flight batch. */
-  freezeDiscardHandFlightBaseStack?: number | null;
-  /** Discard ids already flown this batch (in pile order). */
-  freezeDiscardHandFlightIds?: readonly number[] | null;
-  /** Keep supporter slot mesh when game state cleared it (trainer/item resolve → discard flight). */
-  freezeSupporterClearForPlayerId?: number | null;
+  display?: Board3dDisplayOverrides;
   /** Admin spectator UI toggles for hidden zones (client-side display only). */
   adminSpectatorReveal?: {
     revealPrizes: boolean;
@@ -204,11 +210,7 @@ export class Board3dStateSyncService {
       skippedCardId = null,
       skippedScaleCardId = null,
       handPlayFlightHiddenCardId = null,
-      freezeDiscardVisualForPlayerId = null,
-      freezeDiscardVisibleCardCount = null,
-      freezeDiscardHandFlightBaseStack = null,
-      freezeDiscardHandFlightIds = null,
-      freezeSupporterClearForPlayerId = null,
+      display = {},
       adminSpectatorReveal,
     } = options;
 
@@ -277,34 +279,14 @@ export class Board3dStateSyncService {
     if (bottomPlayerToSync) {
       const isOwner = bottomPlayerToSync.id === currentPlayerId || omniscient;
       const prizeIsOwner = isOwner || adminRevealPrizes;
-      await this.syncPlayer(
-        bottomPlayerToSync,
-        'bottomPlayer',
-        isOwner,
-        prizeIsOwner,
-        freezeDiscardVisualForPlayerId ?? null,
-        freezeDiscardVisibleCardCount ?? null,
-        freezeDiscardHandFlightBaseStack ?? null,
-        freezeDiscardHandFlightIds ?? null,
-        freezeSupporterClearForPlayerId ?? null,
-      );
+      await this.syncPlayer(bottomPlayerToSync, 'bottomPlayer', isOwner, prizeIsOwner, display);
     }
 
     // Sync topPlayer
     if (topPlayerToSync) {
       const isOwner = topPlayerToSync.id === currentPlayerId || omniscient;
       const prizeIsOwner = isOwner || adminRevealPrizes;
-      await this.syncPlayer(
-        topPlayerToSync,
-        'topPlayer',
-        isOwner,
-        prizeIsOwner,
-        freezeDiscardVisualForPlayerId ?? null,
-        freezeDiscardVisibleCardCount ?? null,
-        freezeDiscardHandFlightBaseStack ?? null,
-        freezeDiscardHandFlightIds ?? null,
-        freezeSupporterClearForPlayerId ?? null,
-      );
+      await this.syncPlayer(topPlayerToSync, 'topPlayer', isOwner, prizeIsOwner, display);
     }
 
     // Sync shared stadium (only once - stadium is shared between both players)
@@ -378,86 +360,34 @@ export class Board3dStateSyncService {
     this.markStadiumMesh(SHARED_STADIUM_MESH_ID, stadium);
   }
 
-  /**
-   * Update discard pile mesh to show only the first `visibleCount` cards from game state.
-   */
-  async updateDiscardPileVisibleCount(
-    player: Player,
-    position: 'topPlayer' | 'bottomPlayer',
-    visibleCount: number,
-  ): Promise<void> {
-    const rotation = position === 'topPlayer' ? 180 : 0;
-    const playerPrefix = `${position}_${player.id}`;
-    const discardStackId = `${playerPrefix}_discard`;
-
-    if (!player.discard || visibleCount <= 0 || player.discard.cards.length === 0) {
-      this.stackService.removeStack(discardStackId, this.worldMount, false);
-      this.removeCard(`${discardStackId}_top`);
-      return;
+  /** Pile restricted to `visibleIds` (pile order kept from `ids`). */
+  private pileWithIds(pile: CardList, visibleIds: readonly number[] | undefined): CardList {
+    if (!visibleIds) {
+      return pile;
     }
-
-    const count = Math.min(visibleCount, player.discard.cards.length);
-    const visibleDiscard = new CardList();
-    visibleDiscard.cards = player.discard.cards.slice(0, count);
-    visibleDiscard.isPublic = player.discard.isPublic;
-    visibleDiscard.isSecret = player.discard.isSecret;
-
-    await this.stackService.updateDiscardStack(
-      visibleDiscard,
-      discardStackId,
-      ZONE_POSITIONS[position].discard,
-      rotation,
-      this.worldMount,
-      this.updateCard.bind(this),
-      this.getCardById.bind(this),
-    );
+    const byId = new Map(pile.cards.map((c) => [c.id, c]));
+    const list = new CardList();
+    list.cards = visibleIds.map((id) => byId.get(id)).filter((c): c is Card => c != null);
+    list.isPublic = pile.isPublic;
+    list.isSecret = pile.isSecret;
+    return list;
   }
 
-  /**
-   * Show base discard pile plus cards discarded so far (in flight order).
-   * Avoids reading the wrong interim top from the final game-state pile order.
-   */
-  async updateDiscardPileAfterHandDiscards(
-    player: Player,
+  /** World position of the next card placed on this player's discard / Lost Zone pile. */
+  getPileTopWorld(
     position: 'topPlayer' | 'bottomPlayer',
-    baseStack: number,
-    discardedIdsInFlightOrder: number[],
-  ): Promise<void> {
-    const rotation = position === 'topPlayer' ? 180 : 0;
-    const playerPrefix = `${position}_${player.id}`;
-    const discardStackId = `${playerPrefix}_discard`;
-
-    if (!player.discard) {
-      this.stackService.removeStack(discardStackId, this.worldMount, false);
-      this.removeCard(`${discardStackId}_top`);
-      return;
+    zone: 'discard' | 'lostzone',
+    visibleCount: number,
+  ): Vector3 {
+    const target = (zone === 'discard'
+      ? ZONE_POSITIONS[position].discard
+      : ZONE_POSITIONS[position].lostZone
+    ).clone();
+    target.y += visibleCount * Board3dStackService.STACK_HEIGHT_INCREMENT;
+    if (zone === 'lostzone') {
+      target.y += 0.1;
     }
-
-    if (discardedIdsInFlightOrder.length === 0) {
-      await this.updateDiscardPileVisibleCount(player, position, baseStack);
-      return;
-    }
-
-    const cardsById = new Map(player.discard.cards.map((c) => [c.id, c]));
-    const baseCards = player.discard.cards.slice(0, baseStack);
-    const flownCards = discardedIdsInFlightOrder
-      .map((id) => cardsById.get(id))
-      .filter((c): c is Card => c != null);
-
-    const visibleDiscard = new CardList();
-    visibleDiscard.cards = [...baseCards, ...flownCards];
-    visibleDiscard.isPublic = player.discard.isPublic;
-    visibleDiscard.isSecret = player.discard.isSecret;
-
-    await this.stackService.updateDiscardStack(
-      visibleDiscard,
-      discardStackId,
-      ZONE_POSITIONS[position].discard,
-      rotation,
-      this.worldMount,
-      this.updateCard.bind(this),
-      this.getCardById.bind(this),
-    );
+    return target;
   }
 
   private async syncPlayer(
@@ -465,11 +395,7 @@ export class Board3dStateSyncService {
     position: 'topPlayer' | 'bottomPlayer',
     isOwner: boolean,
     prizeIsOwner: boolean,
-    freezeDiscardVisualForPlayerId: number | null,
-    freezeDiscardVisibleCardCount: number | null,
-    freezeDiscardHandFlightBaseStack: number | null,
-    freezeDiscardHandFlightIds: readonly number[] | null,
-    freezeSupporterClearForPlayerId: number | null,
+    display: Board3dDisplayOverrides,
   ): Promise<void> {
     const rotation = position === 'topPlayer' ? 180 : 0;
     const playerPrefix = `${position}_${player.id}`;
@@ -495,23 +421,30 @@ export class Board3dStateSyncService {
             this.removeCard(`${playerPrefix}_active`);
           });
 
-    const freezeSupporterClear =
-      freezeSupporterClearForPlayerId != null && player.id === freezeSupporterClearForPlayerId;
-
-    const supporterPromise =
-      player.supporter && player.supporter.cards.length > 0
-        ? this.updateCard(
-            player.supporter,
-            `${playerPrefix}_supporter`,
-            ZONE_POSITIONS[position].supporter,
-            isOwner,
-            rotation,
-          )
-        : freezeSupporterClear
-          ? Promise.resolve()
-          : Promise.resolve(undefined).then(() => {
-              this.removeCard(`${playerPrefix}_supporter`);
-            });
+    const supporterOverride = display.supporterCard?.get(player.id);
+    let supporterList: CardList | null = null;
+    if (supporterOverride) {
+      supporterList = new CardList();
+      supporterList.cards = [supporterOverride];
+      supporterList.isPublic = true;
+    } else if (
+      player.supporter &&
+      player.supporter.cards.length > 0 &&
+      !display.hiddenSupporterPlayerIds?.has(player.id)
+    ) {
+      supporterList = player.supporter;
+    }
+    const supporterPromise = supporterList
+      ? this.updateCard(
+          supporterList,
+          `${playerPrefix}_supporter`,
+          ZONE_POSITIONS[position].supporter,
+          isOwner || supporterOverride != null,
+          rotation,
+        )
+      : Promise.resolve(undefined).then(() => {
+          this.removeCard(`${playerPrefix}_supporter`);
+        });
 
     await Promise.all([activePromise, supporterPromise]);
 
@@ -539,10 +472,12 @@ export class Board3dStateSyncService {
     await Promise.all(benchPromises);
 
     // Deck stack
-    if (player.deck && player.deck.cards.length > 0) {
+    const deckStackId = `${playerPrefix}_deck`;
+    const deckCount = display.deckCount?.get(player.id) ?? player.deck?.cards.length ?? 0;
+    if (player.deck && deckCount > 0) {
       await this.stackService.updateDeckStack(
-        `${playerPrefix}_deck`,
-        player.deck.cards.length,
+        deckStackId,
+        deckCount,
         ZONE_POSITIONS[position].deck,
         rotation,
         this.worldMount,
@@ -551,43 +486,39 @@ export class Board3dStateSyncService {
         this.updateCard.bind(this),
         this.getCardById.bind(this),
       );
+    } else {
+      this.stackService.removeStack(deckStackId, this.worldMount, true);
+      this.removeCard(`${deckStackId}_top`);
     }
 
     // Discard pile (stacked with latest on top)
-    const freezeDiscard =
-      freezeDiscardVisualForPlayerId != null && player.id === freezeDiscardVisualForPlayerId;
-    if (!freezeDiscard) {
-      if (player.discard && player.discard.cards.length > 0) {
-        const discardStackId = `${playerPrefix}_discard`;
-        await this.stackService.updateDiscardStack(
-          player.discard,
-          discardStackId,
-          ZONE_POSITIONS[position].discard,
-          rotation,
-          this.worldMount,
-          this.updateCard.bind(this),
-          this.getCardById.bind(this),
-        );
-      } else {
-        const discardStackId = `${playerPrefix}_discard`;
-        this.stackService.removeStack(discardStackId, this.worldMount, false);
-        this.removeCard(`${discardStackId}_top`);
-      }
-    } else if (freezeDiscardHandFlightBaseStack != null) {
-      await this.updateDiscardPileAfterHandDiscards(
-        player,
-        position,
-        freezeDiscardHandFlightBaseStack,
-        freezeDiscardHandFlightIds ? [...freezeDiscardHandFlightIds] : [],
+    const discardStackId = `${playerPrefix}_discard`;
+    const discard = player.discard
+      ? this.pileWithIds(player.discard, display.discardIds?.get(player.id))
+      : null;
+    if (discard && discard.cards.length > 0) {
+      await this.stackService.updateDiscardStack(
+        discard,
+        discardStackId,
+        ZONE_POSITIONS[position].discard,
+        rotation,
+        this.worldMount,
+        this.updateCard.bind(this),
+        this.getCardById.bind(this),
       );
+    } else {
+      this.stackService.removeStack(discardStackId, this.worldMount, false);
+      this.removeCard(`${discardStackId}_top`);
     }
-    // else: item hand-play flight freeze — keep existing discard mesh until flight ends
 
     // Lost Zone (stacked with latest on top)
     const lostZoneStackId = `${playerPrefix}_lostzone`;
-    if (player.lostzone && player.lostzone.cards.length > 0) {
+    const lostzone = player.lostzone
+      ? this.pileWithIds(player.lostzone, display.lostzoneIds?.get(player.id))
+      : null;
+    if (lostzone && lostzone.cards.length > 0) {
       await this.stackService.updateLostZoneStack(
-        player.lostzone,
+        lostzone,
         lostZoneStackId,
         ZONE_POSITIONS[position].lostZone,
         rotation,
@@ -1081,11 +1012,13 @@ export class Board3dStateSyncService {
   }
 
   /**
-   * Move active slot mesh to a KO ghost id before sync paints the replacement active.
+   * Re-key a board slot mesh as a ghost (e.g. Knock Out) before sync paints the slot's next contents.
    */
-  detachActiveAsKoGhost(position: 'topPlayer' | 'bottomPlayer', playerId: number): string | null {
-    const oldKey = `${position}_${playerId}_active`;
-    const newKey = `${position}_${playerId}_koAnim_active`;
+  detachBoardCardAsGhost(oldKey: string): string | null {
+    const newKey = `${oldKey}_ghost`;
+    if (this.cardsMap.has(newKey)) {
+      this.removeCard(newKey);
+    }
     const card = this.cardsMap.get(oldKey);
     if (!card) {
       return null;
@@ -1093,7 +1026,10 @@ export class Board3dStateSyncService {
     this.cardsMap.delete(oldKey);
     this.cardsMap.set(newKey, card);
     this.overlayService.rekeyOverlays(oldKey, newKey);
-    card.getGroup().userData.koAnimGhost = true;
+    const ud = card.getGroup().userData;
+    ud.koAnimGhost = true;
+    ud.cardId = newKey;
+    delete ud.cardTarget;
     return newKey;
   }
 
