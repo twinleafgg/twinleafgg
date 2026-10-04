@@ -8,10 +8,6 @@ export const BOARD_3D_CENTER_EMBLEM_SIZE = 7;
 export const BOARD_3D_BENCH_OUTLINE_THICKNESS = 0.02;
 /** Grid overlay + non-bench slot ribbons (white). */
 export const BOARD_3D_BENCH_OUTLINE_COLOR = 0xffffff;
-/** Bench row slot ribbons only ({@link Board3dController} imperative outlines). */
-export const BOARD_3D_BENCH_SLOT_OUTLINE_COLOR = 0x2563eb;
-/** Bench slot frame ribbons — must be > 0 or meshes stay fully transparent. */
-export const BOARD_3D_BENCH_SLOT_OUTLINE_OPACITY = 0.32;
 /** Idle visibility for bench slot / bench-general drop planes — must be > 0 or bench reads as empty. */
 export const BOARD_3D_BENCH_DROP_ZONE_IDLE_OPACITY = 0.14;
 /** Idle visibility for the large bench-general drop plane behind the row. */

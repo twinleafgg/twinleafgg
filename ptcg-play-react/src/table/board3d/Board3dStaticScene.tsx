@@ -1,70 +1,125 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import {
-  BufferGeometry,
+  CanvasTexture,
   DoubleSide,
-  Euler,
   LinearFilter,
   LinearMipmapLinearFilter,
-  Matrix4,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  Path,
   PlaneGeometry,
-  Quaternion,
   SRGBColorSpace,
-  Vector3,
+  Shape,
+  ShapeGeometry,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { Select } from '@react-three/postprocessing';
-import { useTexture } from '@react-three/drei';
-import { useThree } from '@react-three/fiber';
-import { ZONE_POSITIONS } from './board-3d-zone-positions';
+import { useLoader, useThree } from '@react-three/fiber';
+import { TextureLoader } from 'three';
+import { getBoardConfig } from './board-3d-config';
 import {
-  BOARD_3D_BENCH_OUTLINE_COLOR,
-  BOARD_3D_BENCH_OUTLINE_THICKNESS,
-  BOARD_3D_CENTER_EMBLEM_SIZE,
-  BOARD_3D_CENTER_EMBLEM_Y,
-  BOARD_3D_GRID_Y,
-} from './board3d-constants';
+  BOARD3D_CARD_CORNER_RADIUS,
+  BOARD3D_CARD_HEIGHT,
+  BOARD3D_CARD_WIDTH,
+} from './board3dCardShared';
+import { BOARD_3D_CENTER_EMBLEM_SIZE, BOARD_3D_CENTER_EMBLEM_Y } from './board3d-constants';
 import { publicAssetUrl } from '../../utils/publicAssetUrl';
 
 const BOARD_W = 70;
 const BOARD_H = 50;
 const BOARD_CENTER_Z = 12;
+const SLOT_W = BOARD3D_CARD_WIDTH;
+const SLOT_H = BOARD3D_CARD_HEIGHT;
 
-function buildMergedBoardGridGeometry(): BufferGeometry {
-  const t = BOARD_3D_BENCH_OUTLINE_THICKNESS;
-  const y = BOARD_3D_GRID_Y;
-  const minX = -BOARD_W / 2;
-  const maxX = BOARD_W / 2;
-  const minZ = BOARD_CENTER_Z - BOARD_H / 2;
-  const maxZ = BOARD_CENTER_Z + BOARD_H / 2;
+type ZonePadProps = {
+  position: [number, number, number];
+  geometry: ShapeGeometry;
+  material: MeshBasicMaterial;
+};
 
-  const m = new Matrix4();
-  const q = new Quaternion().setFromEuler(new Euler(-Math.PI / 2, 0, 0));
-  const s = new Vector3(1, 1, 1);
-  const v = new Vector3();
-  const parts: BufferGeometry[] = [];
+function createRoundedRectShape(width: number, height: number, radius: number): Shape {
+  const r = Math.min(radius, width / 2, height / 2);
+  const x = -width / 2;
+  const y = -height / 2;
+  const shape = new Shape();
+  shape.moveTo(x + r, y);
+  shape.lineTo(x + width - r, y);
+  shape.absarc(x + width - r, y + r, r, -Math.PI / 2, 0, false);
+  shape.lineTo(x + width, y + height - r);
+  shape.absarc(x + width - r, y + height - r, r, 0, Math.PI / 2, false);
+  shape.lineTo(x + r, y + height);
+  shape.absarc(x + r, y + height - r, r, Math.PI / 2, Math.PI, false);
+  shape.lineTo(x, y + r);
+  shape.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5, false);
+  return shape;
+}
 
-  for (let x = Math.ceil(minX) + 1; x <= Math.floor(maxX) - 1; x++) {
-    const g = new PlaneGeometry(t, BOARD_H);
-    v.set(x, y, BOARD_CENTER_Z);
-    m.compose(v, q, s);
-    g.applyMatrix4(m);
-    parts.push(g);
-  }
-  for (let z = Math.ceil(minZ) + 1; z <= Math.floor(maxZ) - 1; z++) {
-    const g = new PlaneGeometry(BOARD_W, t);
-    v.set(0, y, z);
-    m.compose(v, q, s);
-    g.applyMatrix4(m);
-    parts.push(g);
-  }
+function createRoundedRectFrame(
+  width: number,
+  height: number,
+  radius: number,
+  innerRadius: number,
+  borderWidth: number,
+): Shape {
+  const shape = createRoundedRectShape(width, height, radius);
+  const innerShape = createRoundedRectShape(
+    width - borderWidth * 2,
+    height - borderWidth * 2,
+    innerRadius,
+  );
+  const hole = new Path();
+  hole.setFromPoints(innerShape.getPoints(12).reverse());
+  shape.holes.push(hole);
+  return shape;
+}
 
-  const merged = mergeGeometries(parts);
-  for (const p of parts) {
-    p.dispose();
-  }
-  return merged;
+function ZonePad({ position, geometry, material }: ZonePadProps) {
+  return (
+    <mesh
+      position={position}
+      rotation={[-Math.PI / 2, 0, 0]}
+      geometry={geometry}
+      material={material}
+      receiveShadow={false}
+    />
+  );
+}
+
+function BoardLabel({ text, position }: { text: string; position: [number, number, number] }) {
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 96;
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+    context.font = '600 34px system-ui, sans-serif';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = 'rgba(205, 231, 229, 0.72)';
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+    const map = new CanvasTexture(canvas);
+    map.colorSpace = SRGBColorSpace;
+    map.minFilter = LinearFilter;
+    map.magFilter = LinearFilter;
+    return map;
+  }, [text]);
+
+  useEffect(() => () => texture?.dispose(), [texture]);
+  if (!texture) return null;
+
+  return (
+    <mesh position={position} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+      <planeGeometry args={[3.3, 0.56]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent
+        opacity={0.76}
+        depthWrite={false}
+        toneMapped={false}
+        side={DoubleSide}
+      />
+    </mesh>
+  );
 }
 
 export type Board3dStaticSceneProps = {
@@ -74,12 +129,14 @@ export type Board3dStaticSceneProps = {
 
 export function Board3dStaticScene({ bloomActive = false }: Board3dStaticSceneProps) {
   const emblemPath = publicAssetUrl('assets/twinleaf-board-center.png');
-  const centerTex = useTexture(emblemPath);
+  const centerTex = useLoader(TextureLoader, emblemPath);
   const gl = useThree((s) => s.gl);
+  const size = useThree((s) => s.size);
+  const { zonePositions } = getBoardConfig(size.width / Math.max(size.height, 1));
 
   useLayoutEffect(() => {
-    // Premultiply on upload so leftover RGB in A=0 texels doesn't bleed into mipmap edges
-    // (classic white/grey halo around transparent PNGs).
+    // Premultiply transparent texels to prevent pale mipmap halos around the center art.
+    // eslint-disable-next-line react-hooks/immutability -- configure the loaded Three.js texture before first render.
     centerTex.colorSpace = SRGBColorSpace;
     centerTex.premultiplyAlpha = true;
     centerTex.generateMipmaps = true;
@@ -89,92 +146,119 @@ export function Board3dStaticScene({ bloomActive = false }: Board3dStaticScenePr
     centerTex.needsUpdate = true;
   }, [centerTex, gl]);
 
-  const boardMaterial = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: 0x404040,
-        roughness: 1,
-        metalness: 0,
+  const materials = useMemo(() => {
+    return {
+      trim: new MeshStandardMaterial({ color: 0x080f19, roughness: 0.4, metalness: 0.12 }),
+      board: new MeshStandardMaterial({ color: 0x15253b, roughness: 0.94, metalness: 0.01 }),
+      slotFrame: new MeshBasicMaterial({
+        color: 0xf3e4ce,
+        transparent: true,
+        opacity: 0.88,
+        depthTest: true,
+        depthWrite: false,
+        toneMapped: false,
       }),
-    []
-  );
-
-  const emblemMaterial = useMemo(
-    () =>
-      new MeshBasicMaterial({
+      emblem: new MeshBasicMaterial({
         map: centerTex,
         transparent: true,
+        opacity: 1,
         depthTest: true,
         depthWrite: false,
         side: DoubleSide,
-        /** Skip renderer tone mapping so PNG colors match the source art. */
         toneMapped: false,
-        /** Drop near-zero alpha fringe that MSAA can still brighten against the board. */
         alphaTest: 0.02,
       }),
-    [centerTex]
-  );
-
-  const gridMaterial = useMemo(
-    () =>
-      new MeshBasicMaterial({
-        color: BOARD_3D_BENCH_OUTLINE_COLOR,
+      guide: new MeshBasicMaterial({
+        color: 0xd6e8dc,
         transparent: true,
-        opacity: 0.1,
+        opacity: 0.2,
         side: DoubleSide,
         depthTest: true,
+        depthWrite: false,
+        toneMapped: false,
       }),
-    []
-  );
-
-  const gridMergedGeometry = useMemo(() => buildMergedBoardGridGeometry(), []);
-  const boardPlaneGeometry = useMemo(() => new PlaneGeometry(BOARD_W, BOARD_H), []);
-  const emblemPlaneGeometry = useMemo(
-    () => new PlaneGeometry(BOARD_3D_CENTER_EMBLEM_SIZE, BOARD_3D_CENTER_EMBLEM_SIZE),
-    []
-  );
-
-  useEffect(() => {
-    return () => {
-      gridMergedGeometry.dispose();
-      boardPlaneGeometry.dispose();
-      emblemPlaneGeometry.dispose();
     };
-  }, [gridMergedGeometry, boardPlaneGeometry, emblemPlaneGeometry]);
+  }, [centerTex]);
 
-  const midX = (ZONE_POSITIONS.bottomPlayer.active.x + ZONE_POSITIONS.topPlayer.active.x) / 2;
-  const midZ = (ZONE_POSITIONS.bottomPlayer.active.z + ZONE_POSITIONS.topPlayer.active.z) / 2;
+  const geometries = useMemo(() => ({
+    outer: new RoundedBoxGeometry(BOARD_W + 1.2, 0.82, BOARD_H + 1.2, 6, 0.38),
+    board: new RoundedBoxGeometry(BOARD_W, 0.64, BOARD_H, 6, 0.3),
+    slotFrame: new ShapeGeometry(
+      createRoundedRectFrame(
+        SLOT_W + 0.07,
+        SLOT_H + 0.07,
+        BOARD3D_CARD_CORNER_RADIUS + 0.035,
+        BOARD3D_CARD_CORNER_RADIUS,
+        0.035,
+      ),
+      12,
+    ),
+    emblem: new PlaneGeometry(BOARD_3D_CENTER_EMBLEM_SIZE, BOARD_3D_CENTER_EMBLEM_SIZE),
+    divider: new PlaneGeometry(44, 0.045),
+  }), []);
+
+  useEffect(() => () => {
+    Object.values(geometries).forEach((geometry) => geometry.dispose());
+    Object.values(materials).forEach((material) => material.dispose());
+  }, [geometries, materials]);
+
+  const home = zonePositions.bottomPlayer;
+  const away = zonePositions.topPlayer;
+  const midX = (home.active.x + away.active.x) / 2;
+  const midZ = (home.active.z + away.active.z) / 2;
+  const slotElements = [
+    home.active,
+    ...home.bench.slice(0, 5),
+    away.active,
+    ...away.bench.slice(0, 5),
+    home.supporter,
+    away.supporter,
+    zonePositions.stadium,
+    home.deck,
+    home.discard,
+    away.deck,
+    away.discard,
+    ...[home, away].flatMap((player) => Array.from({ length: 6 }, (_, index) => ({
+      x: player.prizes.x + ((index % 2) - 0.5) * 3,
+      y: player.prizes.y,
+      z: player.prizes.z + (Math.floor(index / 2) - 1) * 4,
+    }))),
+  ];
 
   const emblemMesh = (
     <mesh
-      geometry={emblemPlaneGeometry}
-      material={emblemMaterial}
-      rotation={[-Math.PI / 2, 0, Math.PI + Math.PI / 2 + Math.PI / 2]}
-      scale={[1, 1, 1]}
+      geometry={geometries.emblem}
+      material={materials.emblem}
+      rotation={[-Math.PI / 2, 0, Math.PI * 2]}
       position={[midX, BOARD_3D_CENTER_EMBLEM_Y, midZ]}
-      renderOrder={50}
+      renderOrder={3}
       receiveShadow={false}
     />
   );
 
   return (
     <group>
-      <mesh
-        geometry={boardPlaneGeometry}
-        material={boardMaterial}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0, BOARD_CENTER_Z]}
-        receiveShadow={false}
-      />
+      <mesh geometry={geometries.outer} material={materials.trim} position={[0, -0.42, BOARD_CENTER_Z]} receiveShadow={false} />
+      <mesh geometry={geometries.board} material={materials.board} position={[0, -0.32, BOARD_CENTER_Z]} receiveShadow={false} />
+      {slotElements.map((position, index) => (
+        <ZonePad
+          key={index}
+          position={[position.x, 0.052, position.z]}
+          geometry={geometries.slotFrame}
+          material={materials.slotFrame}
+        />
+      ))}
 
+      <BoardLabel text="BENCH" position={[0, 0.077, home.bench[2].z - 2.45]} />
+      <BoardLabel text="BENCH" position={[0, 0.077, away.bench[2].z + 2.45]} />
+      <BoardLabel text="STADIUM" position={[zonePositions.stadium.x, 0.077, zonePositions.stadium.z + 2.5]} />
+      <BoardLabel text="SIDE" position={[home.prizes.x - 3.7, 0.077, home.prizes.z]} />
+      <BoardLabel text="SIDE" position={[away.prizes.x + 3.7, 0.077, away.prizes.z]} />
+      <BoardLabel text="DECK" position={[home.deck.x + 3.5, 0.077, home.deck.z]} />
+      <BoardLabel text="TRASH" position={[home.discard.x + 3.5, 0.077, home.discard.z]} />
+      <BoardLabel text="DECK" position={[away.deck.x - 3.5, 0.077, away.deck.z]} />
+      <BoardLabel text="TRASH" position={[away.discard.x - 3.5, 0.077, away.discard.z]} />
       {bloomActive ? <Select enabled>{emblemMesh}</Select> : emblemMesh}
-
-      <mesh
-        geometry={gridMergedGeometry}
-        material={gridMaterial}
-        renderOrder={-1}
-        userData={{ isBoardGrid: true }}
-      />
     </group>
   );
 }

@@ -15,7 +15,7 @@ import { ZONE_POSITIONS } from './board-3d-zone-positions';
 import { COIN_FLIP_SPIN_DURATION_SEC, getCoinFlipSpinKeyframes } from '../coin-flip-animation';
 
 const COIN_EDGE_COLOR = 0x3e834d; // Matches twinleaf-coin.png outer rim
-export const COIN_FLIP_RADIUS = 1.45;
+export const COIN_FLIP_RADIUS = 0.9;
 const COIN_THICKNESS = COIN_FLIP_RADIUS / 8;
 /** Sits on the board surface (cards are at {@link BOARD_3D_GRID_Y}). */
 const COIN_REST_Y = BOARD_3D_GRID_Y + COIN_THICKNESS / 2 + 0.04;

@@ -11,10 +11,25 @@
   height: 100%;
   position: relative;
   overflow: hidden;
-  background: transparent;
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(38, 98, 101, 0.32), transparent 58%),
+    radial-gradient(ellipse at 50% 100%, rgba(5, 14, 23, 0.3), transparent 56%),
+    linear-gradient(145deg, #101d2a 0%, #172b38 48%, #101a28 100%);
+  box-shadow: inset 0 0 90px rgba(3, 10, 18, 0.42);
+}
+
+.board3dContainer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(218, 237, 221, 0.025), transparent 38%, rgba(4, 12, 18, 0.08));
 }
 
 .board3dCanvas {
+  position: relative;
+  z-index: 0;
   display: block;
   width: 100%;
   height: 100%;

@@ -44,11 +44,8 @@ import type { Board3dCardsAdapter, Board3dCardInfoData, CardInfoPaneActionResult
 import {
   BOARD3D_CARD_SLOT_BASE_HEIGHT,
   BOARD3D_CARD_SLOT_BASE_WIDTH,
-  BOARD3D_BENCH_DROP_ZONE_HEIGHT,
-  BOARD3D_BENCH_DROP_ZONE_WIDTH,
   BOARD3D_DROP_ZONE_TARGET_SCALE,
-  BOARD_3D_BENCH_SLOT_OUTLINE_COLOR,
-  BOARD_3D_BENCH_SLOT_OUTLINE_OPACITY,
+  BOARD_3D_BENCH_OUTLINE_COLOR,
   BOARD_3D_CENTER_EMBLEM_Y,
 } from './board3d-constants';
 import type { CardInfoPaneOptions } from '../../card-info/CardInfoPane';
@@ -159,9 +156,7 @@ export class Board3dController {
   private boardMesh?: Mesh;
   private boardCenterOverlay?: Mesh;
 
-  // Per-slot outlines (always visible, independent of drop zones)
-  private topBenchSpotOutlines: Group[] = [];
-  private bottomBenchSpotOutlines: Group[] = [];
+  // Per-zone outlines (always visible, independent of drop zones)
   private otherSpotOutlines: Group[] = [];
 
   // 4x4 grid overlay on the board
@@ -503,7 +498,7 @@ export class Board3dController {
       .createDropZoneIndicators(this.scene, bottomBenchSize, topBenchSize)
       .then((rebuilt) => {
         if (rebuilt) {
-          this.createBenchSpotOutlines(bottomBenchSize, topBenchSize);
+          this.createZoneOutlines();
         }
         this.markDirty();
       });
@@ -543,7 +538,7 @@ export class Board3dController {
       .createDropZoneIndicators(this.scene, bottomBenchSize, topBenchSize)
       .then((rebuilt) => {
         if (rebuilt) {
-          this.createBenchSpotOutlines(bottomBenchSize, topBenchSize);
+          this.createZoneOutlines();
         }
         this.markDirty();
       });
@@ -958,7 +953,6 @@ export class Board3dController {
 
     this.wireframeService.dispose(this.scene);
 
-    this.disposeBenchOutlines();
     this.disposeOtherSpotOutlines();
     this.disposeBoardGrid();
 
@@ -1160,7 +1154,7 @@ export class Board3dController {
     const maxZ = boardCenterZ + boardH / 2;
 
     const material = new MeshBasicMaterial({
-      color: Board3dController.BENCH_OUTLINE_COLOR,
+      color: BOARD_3D_BENCH_OUTLINE_COLOR,
       transparent: true,
       opacity: 0.1,
       side: DoubleSide,
@@ -1429,7 +1423,7 @@ export class Board3dController {
       .createDropZoneIndicators(this.scene, bottomBenchSize, topBenchSize)
       .then((rebuilt) => {
         if (rebuilt) {
-          this.createBenchSpotOutlines(bottomBenchSize, topBenchSize);
+          this.createZoneOutlines();
         }
         this.markDirty();
       });
@@ -1438,7 +1432,6 @@ export class Board3dController {
   /** Bench ribbon tuning */
   private static readonly BENCH_OUTLINE_THICKNESS = 0.02;
   private static readonly BENCH_OUTLINE_Y = 0.15;
-  private static readonly BENCH_OUTLINE_COLOR = 0xffffff;
 
   /** Card/slot dimensions for non-bench outlines (match enlarged {@link Board3dDropZone} defaults). */
   private static readonly CARD_SLOT_WIDTH =
@@ -1446,48 +1439,15 @@ export class Board3dController {
   private static readonly CARD_SLOT_HEIGHT =
     BOARD3D_CARD_SLOT_BASE_HEIGHT * BOARD3D_DROP_ZONE_TARGET_SCALE;
 
-  /** Bench slot outlines — match {@link BOARD3D_BENCH_DROP_ZONE_WIDTH} / height. */
-  private static readonly BENCH_SLOT_WIDTH = BOARD3D_BENCH_DROP_ZONE_WIDTH;
-  private static readonly BENCH_SLOT_HEIGHT = BOARD3D_BENCH_DROP_ZONE_HEIGHT;
-
   /**
-   * Create per-slot outline meshes for bench and all other board slots.
-   * Always visible, independent of drop zone state.
+   * Create decorative outlines for non-bench zones.
+   * Bench card spaces are marked by the static cream frames in Board3dStaticScene.
    */
-  private createBenchSpotOutlines(bottomBenchSize: number, topBenchSize: number): void {
-    this.disposeBenchOutlines();
+  private createZoneOutlines(): void {
     this.disposeOtherSpotOutlines();
 
     const w = Board3dController.CARD_SLOT_WIDTH;
     const h = Board3dController.CARD_SLOT_HEIGHT;
-    const benchW = Board3dController.BENCH_SLOT_WIDTH;
-    const benchH = Board3dController.BENCH_SLOT_HEIGHT;
-
-    // Bench slots
-    const topPositions = getBenchPositions(topBenchSize, PlayerType.TOP_PLAYER);
-    for (const pos of topPositions) {
-      const group = this.createSpotOutlineGroup(
-        pos,
-        benchW,
-        benchH,
-        BOARD_3D_BENCH_SLOT_OUTLINE_COLOR,
-        BOARD_3D_BENCH_SLOT_OUTLINE_OPACITY,
-      );
-      this.topBenchSpotOutlines.push(group);
-      this.scene.add(group);
-    }
-    const bottomPositions = getBenchPositions(bottomBenchSize, PlayerType.BOTTOM_PLAYER);
-    for (const pos of bottomPositions) {
-      const group = this.createSpotOutlineGroup(
-        pos,
-        benchW,
-        benchH,
-        BOARD_3D_BENCH_SLOT_OUTLINE_COLOR,
-        BOARD_3D_BENCH_SLOT_OUTLINE_OPACITY,
-      );
-      this.bottomBenchSpotOutlines.push(group);
-      this.scene.add(group);
-    }
 
     // Stadium (single shared slot)
     this.addSpotOutline(ZONE_POSITIONS.stadium, w, h);
@@ -1528,7 +1488,7 @@ export class Board3dController {
     position: Vector3,
     width: number,
     height: number,
-    outlineColor: number = Board3dController.BENCH_OUTLINE_COLOR,
+    outlineColor: number = BOARD_3D_BENCH_OUTLINE_COLOR,
     outlineOpacity: number = 0,
   ): Group {
     const t = Board3dController.BENCH_OUTLINE_THICKNESS;
@@ -1571,27 +1531,6 @@ export class Board3dController {
     group.renderOrder = 100;
     group.userData.isSpotOutline = true;
     return group;
-  }
-
-  /**
-   * Remove and dispose bench spot outline meshes.
-   */
-  private disposeBenchOutlines(): void {
-    const disposeGroup = (g: Group) => {
-      this.scene.remove(g);
-      let material: MeshBasicMaterial | null = null;
-      for (const child of g.children) {
-        if (child instanceof Mesh) {
-          child.geometry.dispose();
-          material = child.material as MeshBasicMaterial; // All children share one material
-        }
-      }
-      material?.dispose();
-    };
-    this.topBenchSpotOutlines.forEach(disposeGroup);
-    this.bottomBenchSpotOutlines.forEach(disposeGroup);
-    this.topBenchSpotOutlines = [];
-    this.bottomBenchSpotOutlines = [];
   }
 
   /**
