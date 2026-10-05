@@ -16,7 +16,7 @@ export const BOARD_BASIC_ANIMATION_DURATION_SEC = 0.5;
 export const BOARD_ATTACK_EFFECT_DURATION_MS = 1500;
 
 /** Delay before showing trainer-effect prompts after a trainer is played. */
-export const TRAINER_PLAY_EFFECT_PROMPT_DELAY_MS = 2500;
+export const TRAINER_PLAY_EFFECT_PROMPT_DELAY_MS = 650;
 
 /** Delay after KO discard before choose-prize prompt. */
 export const KO_TO_PRIZE_PROMPT_DELAY_MS = 350;

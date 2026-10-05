@@ -197,7 +197,7 @@ function PendingBoardAnimationWaitPrompt(props: {
   promptId: number;
   fallbackMs: number;
   pollMs?: number;
-  /** How far before mount an animation start still counts (trainer prompt delay can be ~2.5s). */
+  /** How far before mount an animation start still counts (trainer prompt delay can be ~650ms). */
   startedAtSkewMs?: number;
   kind: 'handToDeck' | 'shuffle' | 'draw';
   boardInteraction: BoardInteractionService;
@@ -1092,7 +1092,7 @@ function TablePromptLayerBody({
 
   if (suppressTrainerEffectPrompts) {
     // Silent / animation WaitPrompts must still resolve — otherwise hand→deck / shuffle
-    // gates sit until the trainer play delay ends (~2.5s) after the motion already finished.
+    // gates sit until the trainer play delay ends (~650ms) after the motion already finished.
     if (activePrompt.type === 'WaitPrompt') {
       const wp = activePrompt as WaitPrompt;
       const isAnimationGate =
