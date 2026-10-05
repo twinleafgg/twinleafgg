@@ -77,14 +77,22 @@ import {
 import { r3fPointerEventAsMouse } from './board3dR3fPointer';
 import { subscribeBoard3dInteractionStreams } from './board3dControllerSubscriptions';
 import { Board3dCard } from './board-3d-card';
+import { Board3dEnergySprite } from './board-3d-energy-sprite';
+import { Board3dMarker } from './board-3d-marker';
 import { apply3dCardHolo } from './board-3d-holo-apply';
+import {
+  countSceneObjects,
+  getBoard3dCardFaceMaterialCacheSize,
+  getGsapChildCount,
+  type Board3dPerfStats,
+} from './board3dPerfStats';
 import { playSfx } from '../../sfx';
 import {
   projectCardFaceToScreenAnchor,
   projectCardLowerFaceToScreenAnchor,
   projectCardRetreatPlateToScreenAnchor,
 } from './board3dAbilityFocusProjection';
-import { playDeckShuffleAnimation, playDeckShufflePreview } from './board3dDeckShufflePreview';
+import { playDeckShuffleAnimation, playDeckShufflePreview, killAllDeckShuffleAnimations } from './board3dDeckShufflePreview';
 import {
   LEGEND_3D_HALF_ROTATION,
   LEGEND_3D_HALF_SCALE,
@@ -272,7 +280,11 @@ export class Board3dController {
     private cardsAdapter: Board3dCardsAdapter,
     private gameActions: Board3dGameActions,
     private boardInteractionService: BoardInteractionService,
-  ) {}
+  ) {
+    this.animationService.setDeckShuffleKillHook(() => {
+      killAllDeckShuffleAnimations(this.stateSync.getStackService());
+    });
+  }
 
   private getHandPlayableCardIdsForDisplay(): number[] | undefined {
     if (
@@ -1089,6 +1101,23 @@ export class Board3dController {
     }
   }
 
+  /**
+   * GPU / animation counters for progressive-FPS debugging.
+   * Compare early-game vs late-game values (textureCache / faceMaterials should stay bounded).
+   */
+  getPerfStats(): Board3dPerfStats {
+    const root = this.worldContentRoot ?? this.scene;
+    return {
+      textureCache: this.assetLoader.getCacheSize(),
+      pinnedTextures: this.assetLoader.getPinnedCacheSize(),
+      faceMaterials: getBoard3dCardFaceMaterialCacheSize(),
+      trackedCards: this.stateSync.getTrackedCardCount(),
+      activeAnimations: this.animationService.getActiveAnimationCount(),
+      gsapChildren: getGsapChildCount(),
+      sceneObjects: root ? countSceneObjects(root) : 0,
+    };
+  }
+
   destroy(): void {
     // Stop animation loop
     if (this.animationFrameId) {
@@ -1113,6 +1142,7 @@ export class Board3dController {
     // Kill any active animations
     this.animationService.killAllAnimations();
     this.animationService.disposeCoinFlipScene();
+    this.animationService.setDeckShuffleKillHook(null);
     this.stopAbilityFocusTracking();
     this.stopCardInspectFocusTracking();
     this.cardInspectService.dispose();
@@ -1126,6 +1156,12 @@ export class Board3dController {
     this.stateSync.dispose(this.scene);
     this.handService.dispose(this.worldContentRoot);
     this.interactionService.dispose(this.scene);
+
+    // Release GPU caches after scene objects are disposed (textures/materials are shared).
+    Board3dCard.disposeSharedResources();
+    Board3dEnergySprite.disposeSharedResources();
+    Board3dMarker.disposeSharedResources();
+    this.assetLoader.clearCache();
 
     if (!this.r3fMode) {
       this.lightingService.dispose(this.scene);

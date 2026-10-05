@@ -106,6 +106,7 @@ export function getSpecialConditionRotationZ(conditions: SpecialCondition[]): nu
 export class Board3dMarker {
   private group: Group;
   private markerMeshes: Mesh[] = [];
+  private lastMarkerSignature = '';
   private static geometry: PlaneGeometry;
   private static readonly _qParent = new Quaternion();
   private static readonly _qCam = new Quaternion();
@@ -137,11 +138,17 @@ export class Board3dMarker {
    * Update markers from image filenames (without path/extension).
    */
   async updateMarkerFiles(markerFiles: string[]): Promise<void> {
-    const generation = ++this.updateGeneration;
-    this.clear();
-
     const stack = resolveMarkerStack(markerFiles);
+    const signature = stack.join('|');
+    if (signature === this.lastMarkerSignature) {
+      return;
+    }
+
+    const generation = ++this.updateGeneration;
+    this.clearMeshes();
+
     if (stack.length === 0) {
+      this.lastMarkerSignature = signature;
       return;
     }
 
@@ -154,6 +161,8 @@ export class Board3dMarker {
     if (generation !== this.updateGeneration) {
       return;
     }
+
+    this.lastMarkerSignature = signature;
 
     for (let i = 0; i < stack.length; i++) {
       const file = stack[i];
@@ -222,12 +231,17 @@ export class Board3dMarker {
     await this.updateMarkerFiles(MARKER_DISPLAY_ORDER.filter((file) => active.has(file)));
   }
 
-  clear(): void {
+  private clearMeshes(): void {
     for (const mesh of this.markerMeshes) {
       this.group.remove(mesh);
       (mesh.material as MeshBasicMaterial).dispose();
     }
     this.markerMeshes = [];
+  }
+
+  clear(): void {
+    this.lastMarkerSignature = '';
+    this.clearMeshes();
   }
 
   getGroup(): Group {
@@ -244,6 +258,7 @@ export class Board3dMarker {
   static disposeSharedResources(): void {
     if (Board3dMarker.geometry) {
       Board3dMarker.geometry.dispose();
+      (Board3dMarker as { geometry?: PlaneGeometry }).geometry = undefined;
     }
   }
 }

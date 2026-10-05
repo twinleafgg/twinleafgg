@@ -11,9 +11,19 @@ import {
 } from 'three';
 import { CardList } from 'ptcg-server';
 import { Board3dCard } from '../board-3d-card';
+import { getBoard3dCardGeometry } from '../board3dCardShared';
 import { Board3dAssetLoaderService } from './board-3d-asset-loader.service';
 import type { Board3dCardsAdapter } from '../board3dCardsAdapter';
 import { BOARD3D_DECK_BULK_VISUAL_UD } from '../board3d-constants';
+
+/** Metadata so discard/LZ InstancedMeshes can skip rebuild when unchanged. */
+type InstancedStackMeta = {
+  remainingCount: number;
+  rotation: number;
+  posX: number;
+  posY: number;
+  posZ: number;
+};
 
 // Callback type for updating cards (to avoid circular dependency)
 export type UpdateCardCallback = (
@@ -46,11 +56,79 @@ export class Board3dStackService {
   private deckSleeveKey: Map<string, string> = new Map();
   private discardStacks: Map<string, InstancedMesh> = new Map();
   private lostZoneStacks: Map<string, InstancedMesh> = new Map();
+  private discardStackMeta: Map<string, InstancedStackMeta> = new Map();
+  private lostZoneStackMeta: Map<string, InstancedStackMeta> = new Map();
 
   constructor(
     private assetLoader: Board3dAssetLoaderService,
     private cardsAdapter: Board3dCardsAdapter
   ) { }
+
+  /**
+   * Remove an InstancedMesh that shares {@link getBoard3dCardGeometry}.
+   * Must not dispose the shared geometry — only the per-stack material.
+   */
+  private disposeInstancedStack(mesh: InstancedMesh, attachRoot: Object3D): void {
+    attachRoot.remove(mesh);
+    const material = mesh.material;
+    if (Array.isArray(material)) {
+      material.forEach((m) => m.dispose());
+    } else {
+      (material as MeshStandardMaterial).dispose();
+    }
+  }
+
+  private instancedMetaMatches(
+    meta: InstancedStackMeta | undefined,
+    remainingCount: number,
+    rotation: number,
+    position: Vector3,
+  ): boolean {
+    if (!meta) {
+      return false;
+    }
+    return (
+      meta.remainingCount === remainingCount &&
+      meta.rotation === rotation &&
+      meta.posX === position.x &&
+      meta.posY === position.y &&
+      meta.posZ === position.z
+    );
+  }
+
+  private async buildFaceDownInstancedStack(
+    remainingCount: number,
+    position: Vector3,
+    rotation: number,
+    yOffset: number,
+  ): Promise<InstancedMesh> {
+    const cardBackTexture = await this.assetLoader.loadCardBack();
+    const geometry = getBoard3dCardGeometry();
+    const instanceCount = Math.min(remainingCount, 60);
+    const instancedMesh = new InstancedMesh(
+      geometry,
+      new MeshStandardMaterial({ map: cardBackTexture }),
+      instanceCount,
+    );
+
+    const rotationRad = (rotation * Math.PI) / 180;
+    const quaternion = new Quaternion().setFromEuler(new Euler(-Math.PI / 2, rotationRad, 0, 'XYZ'));
+
+    for (let i = 0; i < instanceCount; i++) {
+      const matrix = new Matrix4();
+      const pos = new Vector3(
+        position.x,
+        position.y + yOffset + i * Board3dStackService.STACK_HEIGHT_INCREMENT,
+        position.z,
+      );
+      matrix.compose(pos, quaternion, new Vector3(1, 1, 1));
+      instancedMesh.setMatrixAt(i, matrix);
+    }
+
+    instancedMesh.instanceMatrix.needsUpdate = true;
+    instancedMesh.castShadow = true;
+    return instancedMesh;
+  }
 
   getDeckAnchor(stackId: string): Group | undefined {
     return this.deckAnchors.get(stackId);
@@ -254,17 +332,14 @@ export class Board3dStackService {
     updateCardCallback: UpdateCardCallback,
     getCardByIdCallback: GetCardByIdCallback
   ): Promise<void> {
-    // Remove old stack if it exists
-    const oldStack = this.discardStacks.get(stackId);
-    if (oldStack) {
-      attachRoot.remove(oldStack);
-      oldStack.geometry.dispose();
-      (oldStack.material as MeshStandardMaterial).dispose();
-      this.discardStacks.delete(stackId);
-    }
-
     const cardCount = discard.cards.length;
     if (cardCount === 0) {
+      const oldStack = this.discardStacks.get(stackId);
+      if (oldStack) {
+        this.disposeInstancedStack(oldStack, attachRoot);
+        this.discardStacks.delete(stackId);
+      }
+      this.discardStackMeta.delete(stackId);
       return;
     }
 
@@ -299,45 +374,39 @@ export class Board3dStackService {
       topCardMesh.getMesh().renderOrder = 100;
     }
 
-    // Remaining cards (if any) as instanced stack underneath
-    if (cardCount > 1) {
-      const remainingCount = cardCount - 1;
-      const cardBackTexture = await this.assetLoader.loadCardBack();
-      const geometry = new Board3dCard(
-        cardBackTexture,
-        cardBackTexture,
-        new Vector3(0, 0, 0),
+    const remainingCount = Math.max(0, cardCount - 1);
+    const prevMeta = this.discardStackMeta.get(stackId);
+    if (
+      remainingCount > 0 &&
+      this.discardStacks.has(stackId) &&
+      this.instancedMetaMatches(prevMeta, remainingCount, rotation, position)
+    ) {
+      return;
+    }
+
+    const oldStack = this.discardStacks.get(stackId);
+    if (oldStack) {
+      this.disposeInstancedStack(oldStack, attachRoot);
+      this.discardStacks.delete(stackId);
+    }
+    this.discardStackMeta.delete(stackId);
+
+    if (remainingCount > 0) {
+      const instancedMesh = await this.buildFaceDownInstancedStack(
+        remainingCount,
+        position,
         rotation,
-        1.0
-      ).getMesh().geometry;
-
-      const instancedMesh = new InstancedMesh(
-        geometry,
-        new MeshStandardMaterial({ map: cardBackTexture }),
-        Math.min(remainingCount, 60) // Max 60 instances
+        0,
       );
-
-      // Position and rotate each card in the stack
-      const rotationRad = (rotation * Math.PI) / 180;
-      const quaternion = new Quaternion().setFromEuler(new Euler(-Math.PI / 2, rotationRad, 0));
-
-      for (let i = 0; i < remainingCount && i < 60; i++) {
-        const matrix = new Matrix4();
-        const pos = new Vector3(
-          position.x,
-          position.y + (i * Board3dStackService.STACK_HEIGHT_INCREMENT), // Stack height
-          position.z
-        );
-        // Compose matrix from position, rotation, and scale
-        matrix.compose(pos, quaternion, new Vector3(1, 1, 1));
-        instancedMesh.setMatrixAt(i, matrix);
-      }
-
-      instancedMesh.instanceMatrix.needsUpdate = true;
-      instancedMesh.castShadow = true;
-
       attachRoot.add(instancedMesh);
       this.discardStacks.set(stackId, instancedMesh);
+      this.discardStackMeta.set(stackId, {
+        remainingCount,
+        rotation,
+        posX: position.x,
+        posY: position.y,
+        posZ: position.z,
+      });
     }
   }
 
@@ -356,17 +425,14 @@ export class Board3dStackService {
     getCardByIdCallback: GetCardByIdCallback,
     removeCardCallback: RemoveCardCallback
   ): Promise<void> {
-    // Remove old stack if it exists
-    const oldStack = this.lostZoneStacks.get(stackId);
-    if (oldStack) {
-      attachRoot.remove(oldStack);
-      oldStack.geometry.dispose();
-      (oldStack.material as MeshStandardMaterial).dispose();
-      this.lostZoneStacks.delete(stackId);
-    }
-
     const cardCount = lostZone.cards.length;
     if (cardCount === 0) {
+      const oldStack = this.lostZoneStacks.get(stackId);
+      if (oldStack) {
+        this.disposeInstancedStack(oldStack, attachRoot);
+        this.lostZoneStacks.delete(stackId);
+      }
+      this.lostZoneStackMeta.delete(stackId);
       return;
     }
 
@@ -406,46 +472,39 @@ export class Board3dStackService {
       topCardMesh.getMesh().renderOrder = 100;
     }
 
-    // Remaining cards (if any) as instanced stack underneath
-    if (cardCount > 1) {
-      const remainingCount = cardCount - 1;
-      const cardBackTexture = await this.assetLoader.loadCardBack();
-      // Use rotation 0 for geometry extraction since we apply rotation via quaternion
-      const geometry = new Board3dCard(
-        cardBackTexture,
-        cardBackTexture,
-        new Vector3(0, 0, 0),
-        0, // No rotation - we'll apply it via quaternion
-        1.0
-      ).getMesh().geometry;
+    const remainingCount = Math.max(0, cardCount - 1);
+    const prevMeta = this.lostZoneStackMeta.get(stackId);
+    if (
+      remainingCount > 0 &&
+      this.lostZoneStacks.has(stackId) &&
+      this.instancedMetaMatches(prevMeta, remainingCount, rotation, position)
+    ) {
+      return;
+    }
 
-      const instancedMesh = new InstancedMesh(
-        geometry,
-        new MeshStandardMaterial({ map: cardBackTexture }),
-        Math.min(remainingCount, 60) // Max 60 instances
+    const oldStack = this.lostZoneStacks.get(stackId);
+    if (oldStack) {
+      this.disposeInstancedStack(oldStack, attachRoot);
+      this.lostZoneStacks.delete(stackId);
+    }
+    this.lostZoneStackMeta.delete(stackId);
+
+    if (remainingCount > 0) {
+      const instancedMesh = await this.buildFaceDownInstancedStack(
+        remainingCount,
+        position,
+        rotation,
+        Board3dStackService.LOST_ZONE_HEIGHT_OFFSET,
       );
-
-      // Position and rotate each card in the stack
-      const rotationRad = (rotation * Math.PI) / 180;
-      const quaternion = new Quaternion().setFromEuler(new Euler(-Math.PI / 2, rotationRad, 0, 'XYZ'));
-
-      for (let i = 0; i < remainingCount && i < 60; i++) {
-        const matrix = new Matrix4();
-        const pos = new Vector3(
-          position.x,
-          position.y + Board3dStackService.LOST_ZONE_HEIGHT_OFFSET + (i * Board3dStackService.STACK_HEIGHT_INCREMENT), // Stack height with Lost Zone offset
-          position.z
-        );
-        // Compose matrix from position, rotation, and scale
-        matrix.compose(pos, quaternion, new Vector3(1, 1, 1));
-        instancedMesh.setMatrixAt(i, matrix);
-      }
-
-      instancedMesh.instanceMatrix.needsUpdate = true;
-      instancedMesh.castShadow = true;
-
       attachRoot.add(instancedMesh);
       this.lostZoneStacks.set(stackId, instancedMesh);
+      this.lostZoneStackMeta.set(stackId, {
+        remainingCount,
+        rotation,
+        posX: position.x,
+        posY: position.y,
+        posZ: position.z,
+      });
     }
   }
 
@@ -459,11 +518,10 @@ export class Board3dStackService {
     }
     const oldStack = this.discardStacks.get(stackId);
     if (oldStack) {
-      attachRoot.remove(oldStack);
-      oldStack.geometry.dispose();
-      (oldStack.material as MeshStandardMaterial).dispose();
+      this.disposeInstancedStack(oldStack, attachRoot);
       this.discardStacks.delete(stackId);
     }
+    this.discardStackMeta.delete(stackId);
   }
 
   /**
@@ -472,11 +530,10 @@ export class Board3dStackService {
   removeLostZoneStack(stackId: string, attachRoot: Object3D): void {
     const oldStack = this.lostZoneStacks.get(stackId);
     if (oldStack) {
-      attachRoot.remove(oldStack);
-      oldStack.geometry.dispose();
-      (oldStack.material as MeshStandardMaterial).dispose();
+      this.disposeInstancedStack(oldStack, attachRoot);
       this.lostZoneStacks.delete(stackId);
     }
+    this.lostZoneStackMeta.delete(stackId);
   }
 
   /**
@@ -497,20 +554,18 @@ export class Board3dStackService {
     this.deckBulkMeshes.clear();
     this.deckSleeveKey.clear();
 
-    // Clean up discard stacks
+    // Clean up discard stacks (shared geometry must not be disposed)
     this.discardStacks.forEach(stack => {
-      scene.remove(stack);
-      stack.geometry.dispose();
-      (stack.material as MeshStandardMaterial).dispose();
+      this.disposeInstancedStack(stack, scene);
     });
     this.discardStacks.clear();
+    this.discardStackMeta.clear();
 
     // Clean up Lost Zone stacks
     this.lostZoneStacks.forEach(stack => {
-      scene.remove(stack);
-      stack.geometry.dispose();
-      (stack.material as MeshStandardMaterial).dispose();
+      this.disposeInstancedStack(stack, scene);
     });
     this.lostZoneStacks.clear();
+    this.lostZoneStackMeta.clear();
   }
 }

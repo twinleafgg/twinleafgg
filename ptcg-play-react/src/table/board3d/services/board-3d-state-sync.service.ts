@@ -143,6 +143,11 @@ export class Board3dStateSyncService {
     return this.stackService;
   }
 
+  /** Number of board/prize/discard-top cards currently tracked (perf instrumentation). */
+  getTrackedCardCount(): number {
+    return this.cardsMap.size;
+  }
+
   getBoardCardMapEntries(): [string, Board3dCard][] {
     const byStringKey = new Map<string, Board3dCard>();
     for (const [k, card] of this.cardsMap) {

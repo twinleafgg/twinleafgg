@@ -112,8 +112,18 @@ export function Board3dExperience({
     ctrl.initFromR3f(ctx, controllerProps);
     ctrlRef.current = ctrl;
     onControllerReady?.(ctrl);
+    if (import.meta.env.DEV) {
+      (window as Window & { __board3dGetPerfStats?: () => unknown }).__board3dGetPerfStats = () =>
+        ctrl.getPerfStats();
+    }
 
     return () => {
+      if (import.meta.env.DEV) {
+        const w = window as Window & { __board3dGetPerfStats?: () => unknown };
+        if (w.__board3dGetPerfStats) {
+          delete w.__board3dGetPerfStats;
+        }
+      }
       ctrl.destroy();
       ctrlRef.current = null;
       onControllerReady?.(null);
@@ -128,9 +138,39 @@ export function Board3dExperience({
     ctrlRef.current?.refreshProps(controllerProps);
   }, [controllerProps]);
 
+  const onPerfStats =
+    import.meta.env.DEV
+      ? (stats: {
+          fps: number;
+          textureCache: number;
+          faceMaterials: number;
+          trackedCards: number;
+          activeAnimations: number;
+          gsapChildren: number;
+          sceneObjects: number;
+        }) => {
+          // Progressive FPS: textureCache/faceMaterials should stay bounded; gsapChildren should not climb.
+          console.debug('[Board3dPerf]', stats);
+        }
+      : undefined;
+
   const tree = (
     <Board3dControllerRefContext.Provider value={ctrlRef}>
-      {onBoardFps ? <Board3dFpsBridge onFps={onBoardFps} /> : null}
+      {onBoardFps ? (
+        <Board3dFpsBridge
+          onFps={onBoardFps}
+          getPerfStats={() => ctrlRef.current?.getPerfStats() ?? {
+            textureCache: 0,
+            pinnedTextures: 0,
+            faceMaterials: 0,
+            trackedCards: 0,
+            activeAnimations: 0,
+            gsapChildren: 0,
+            sceneObjects: 0,
+          }}
+          onPerfStats={onPerfStats}
+        />
+      ) : null}
       <Board3dShufflePreviewKey />
       <Board3dCameraRig clientId={controllerProps.clientId} topPlayer={controllerProps.topPlayer} />
       <Board3dLightingRig settings={lightingSettings} />

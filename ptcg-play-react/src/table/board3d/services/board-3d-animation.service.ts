@@ -191,9 +191,17 @@ export class Board3dAnimationService {
   private activeAbilityTimeline: gsap.core.Timeline | null = null;
   private activeCoinFlipTimeline: gsap.core.Timeline | null = null;
   private activeCoinFlipScene: CoinFlipSceneGraph | null = null;
+  /** Bumps on each coin-flip request so stale async texture loads cannot start a spin. */
+  private coinFlipGeneration = 0;
   private hasActiveAnimationsCache: boolean = false;
   private lastAnimationCheck: number = 0;
   private animationCheckInterval: number = 50; // Check every 50ms (20fps check rate)
+  /** Optional hook to kill untracked deck-shuffle timelines on destroy. */
+  private deckShuffleKillHook: (() => void) | null = null;
+
+  setDeckShuffleKillHook(hook: (() => void) | null): void {
+    this.deckShuffleKillHook = hook;
+  }
 
   /**
    * Play basic Pokemon animation (card drops from above)
@@ -297,7 +305,15 @@ export class Board3dAnimationService {
           card.renderOrder = prevRenderOrder;
           this.removeAnimation(timeline);
           resolve();
-        }
+        },
+        onKill: () => {
+          disposeFlash();
+          card.position.y = baseY;
+          card.rotation.z = startRotZ;
+          card.renderOrder = prevRenderOrder;
+          this.removeAnimation(timeline);
+          resolve();
+        },
       });
 
       card.renderOrder = 1000;
@@ -438,6 +454,7 @@ export class Board3dAnimationService {
         onKill: () => {
           card.renderOrder = prevRenderOrder;
           this.activeAbilityTimeline = null;
+          this.removeAnimation(timeline);
         },
       });
 
@@ -481,10 +498,17 @@ export class Board3dAnimationService {
       this.activeCoinFlipTimeline = null;
     }
 
+    const generation = ++this.coinFlipGeneration;
+
     const startSpin = (): void => {
+      if (generation !== this.coinFlipGeneration) {
+        return;
+      }
       let timeline: gsap.core.Timeline;
       const finish = (): void => {
-        this.activeCoinFlipTimeline = null;
+        if (this.activeCoinFlipTimeline === timeline) {
+          this.activeCoinFlipTimeline = null;
+        }
         this.removeAnimation(timeline);
         this.updateAnimationState();
       };
@@ -505,6 +529,7 @@ export class Board3dAnimationService {
   }
 
   cancelCoinFlipAnimation(): void {
+    this.coinFlipGeneration++;
     if (this.activeCoinFlipTimeline) {
       this.removeAnimation(this.activeCoinFlipTimeline);
       this.activeCoinFlipTimeline.kill();
@@ -1176,6 +1201,16 @@ export class Board3dAnimationService {
           this.removeAnimation(timeline);
           resolve();
         },
+        onKill: () => {
+          disposeFlash();
+          topHalf.removeFromParent();
+          bottomHalf.removeFromParent();
+          assembly.removeFromParent();
+          topHalf.renderOrder = 0;
+          bottomHalf.renderOrder = 0;
+          this.removeAnimation(timeline);
+          resolve();
+        },
       });
 
       timeline
@@ -1671,11 +1706,18 @@ export class Board3dAnimationService {
       this.activeAbilityTimeline = null;
     }
     this.cancelCoinFlipAnimation();
+    this.deckShuffleKillHook?.();
     this.activeAnimations.forEach(animation => {
       animation.kill();
     });
     this.activeAnimations = [];
     this.hasActiveAnimationsCache = false;
+  }
+
+  /** Count of timelines currently tracked as active (for perf instrumentation). */
+  getActiveAnimationCount(): number {
+    this.updateAnimationState();
+    return this.activeAnimations.length;
   }
 
   /**

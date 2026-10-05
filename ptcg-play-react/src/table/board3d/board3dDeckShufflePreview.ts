@@ -254,5 +254,28 @@ export function playDeckShuffleAnimation(opts: PlayDeckShuffleAnimationOpts): Pr
   return done;
 }
 
+/**
+ * Kill any in-flight deck shuffle timelines stored on deck anchors (e.g. on controller destroy).
+ */
+export function killAllDeckShuffleAnimations(stackService: Board3dStackService): void {
+  stackService.forEachDeckStackId((stackId) => {
+    const anchor = stackService.getDeckAnchor(stackId);
+    if (!anchor) {
+      return;
+    }
+    const tl = anchor.userData[UD_TL] as gsap.core.Timeline | undefined;
+    if (tl) {
+      tl.kill();
+      delete anchor.userData[UD_TL];
+    }
+    const restore = anchor.userData[UD_RESTORE] as DeckShuffleRestorePack | undefined;
+    if (restore) {
+      const bulkGroups = stackService.getDeckBulkGroups(stackId);
+      restoreBulkTransforms(bulkGroups, restore.bulk);
+      delete anchor.userData[UD_RESTORE];
+    }
+  });
+}
+
 /** @deprecated Prefer {@link playDeckShuffleAnimation}. */
 export const playDeckShufflePreview = playDeckShuffleAnimation;

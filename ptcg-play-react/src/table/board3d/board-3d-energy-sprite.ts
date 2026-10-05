@@ -38,7 +38,10 @@ export { ENERGY_SPRITE_HEIGHT, ENERGY_SPRITE_WIDTH };
 export class Board3dEnergySprite {
   private group: Group;
   private energyMeshes: Mesh[] = [];
+  private lastSignature = '';
   private static geometry: PlaneGeometry;
+  /** Shared horizontally-flipped clones keyed by source texture UUID (created once). */
+  private static flippedTextureBySource = new Map<string, Texture>();
   private static readonly _qParent = new Quaternion();
   private static readonly _qCam = new Quaternion();
   private static readonly _qFlip = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI);
@@ -65,6 +68,36 @@ export class Board3dEnergySprite {
     return getCustomEnergyIconPath(card, true);
   }
 
+  private static getFlippedTexture(source: Texture): Texture {
+    const key = source.uuid;
+    let flipped = Board3dEnergySprite.flippedTextureBySource.get(key);
+    if (!flipped) {
+      flipped = source.clone();
+      flipped.repeat.x = -1;
+      flipped.offset.x = 1;
+      Board3dEnergySprite.flippedTextureBySource.set(key, flipped);
+    }
+    return flipped;
+  }
+
+  private buildSignature(
+    energyCards: Card[],
+    resolveTextureKey: (card: Card) => string | null,
+    hideIndex: number,
+  ): string {
+    const visibleCount = Math.min(energyCards.length, MAX_VISIBLE_ENERGIES);
+    const parts: string[] = [`h${hideIndex}`];
+    for (let i = 0; i < visibleCount; i++) {
+      if (i === hideIndex) {
+        parts.push('x');
+        continue;
+      }
+      const card = energyCards[i];
+      parts.push(`${card.id}:${resolveTextureKey(card) ?? 'back'}`);
+    }
+    return parts.join('|');
+  }
+
   updateEnergies(
     energyCards: Card[],
     energyCardList: CardList,
@@ -73,7 +106,16 @@ export class Board3dEnergySprite {
     resolveTextureKey: (card: Card) => string | null = (c) => Board3dEnergySprite.getEnergyIconPath(c),
     hideIndex: number = -1,
   ): void {
-    this.clear();
+    const signature = this.buildSignature(energyCards, resolveTextureKey, hideIndex);
+    if (signature === this.lastSignature && this.energyMeshes.length > 0) {
+      // Refresh cardList refs in case the list object identity changed.
+      for (const mesh of this.energyMeshes) {
+        mesh.userData.cardList = energyCardList;
+      }
+      return;
+    }
+    this.lastSignature = signature;
+    this.clearMeshes();
 
     const visibleCount = Math.min(energyCards.length, MAX_VISIBLE_ENERGIES);
 
@@ -90,9 +132,7 @@ export class Board3dEnergySprite {
         texture = cardBackTexture;
       }
 
-      const textureToUse = texture.clone();
-      textureToUse.repeat.x = -1;
-      textureToUse.offset.x = 1;
+      const textureToUse = Board3dEnergySprite.getFlippedTexture(texture);
 
       const material = new MeshBasicMaterial({
         map: textureToUse,
@@ -138,16 +178,19 @@ export class Board3dEnergySprite {
     }
   }
 
-  clear(): void {
+  /** Remove meshes; do not dispose shared flipped textures. */
+  private clearMeshes(): void {
     for (const mesh of this.energyMeshes) {
       this.group.remove(mesh);
       const material = mesh.material as MeshBasicMaterial;
-      if (material.map) {
-        material.map.dispose();
-      }
       material.dispose();
     }
     this.energyMeshes = [];
+  }
+
+  clear(): void {
+    this.lastSignature = '';
+    this.clearMeshes();
   }
 
   getGroup(): Group {
@@ -163,6 +206,9 @@ export class Board3dEnergySprite {
   static disposeSharedResources(): void {
     if (Board3dEnergySprite.geometry) {
       Board3dEnergySprite.geometry.dispose();
+      (Board3dEnergySprite as { geometry?: PlaneGeometry }).geometry = undefined;
     }
+    Board3dEnergySprite.flippedTextureBySource.forEach((t) => t.dispose());
+    Board3dEnergySprite.flippedTextureBySource.clear();
   }
 }

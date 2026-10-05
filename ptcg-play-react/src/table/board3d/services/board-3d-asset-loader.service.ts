@@ -3,6 +3,7 @@ import type { HoloVariant } from '../../../components/cards/holoVariant';
 import { holoMaskUrl } from '../../../components/cards/holoMaskUrl';
 import { publicAssetUrl } from '../../../utils/publicAssetUrl';
 import { imageUrlNeedsCrossOrigin, isProxiedImageUrl, proxyImageUrlForWebGl } from '../../../utils/proxyImageUrl';
+import { evictBoard3dCardFaceMaterialsForTexture } from '../board3dCardShared';
 
 /** Resolve local asset paths, then proxy external scans for WebGL. */
 function resolveTextureRequestUrl(url: string): string {
@@ -20,9 +21,14 @@ function resolveTextureRequestUrl(url: string): string {
   return proxyImageUrlForWebGl(local);
 }
 
+/** Soft cap for scan/sleeve/tool/marker textures kept mid-session. */
+const MAX_TEXTURE_CACHE_SIZE = 256;
+
 export class Board3dAssetLoaderService {
   private textureLoader: TextureLoader;
   private textureCache: Map<string, Texture>;
+  /** URLs that must never be LRU-evicted (board chrome). */
+  private pinnedTextureUrls = new Set<string>();
   private cardBackTexture: Texture | null = null;
   private boardGridTexture: Texture | null = null;
   private slotGridTexture: Texture | null = null;
@@ -38,6 +44,46 @@ export class Board3dAssetLoaderService {
   constructor() {
     this.textureLoader = new TextureLoader();
     this.textureCache = new Map();
+  }
+
+  /** Touch an existing cache entry so LRU eviction prefers older unused scans. */
+  private touchTextureCache(key: string): Texture | undefined {
+    const texture = this.textureCache.get(key);
+    if (!texture) {
+      return undefined;
+    }
+    // Re-insert to move to Map insertion-order end (most recently used).
+    this.textureCache.delete(key);
+    this.textureCache.set(key, texture);
+    return texture;
+  }
+
+  private setTextureCache(key: string, texture: Texture, pinned = false): void {
+    if (pinned) {
+      this.pinnedTextureUrls.add(key);
+    }
+    this.textureCache.delete(key);
+    this.textureCache.set(key, texture);
+    this.evictTextureCacheIfNeeded();
+  }
+
+  private evictTextureCacheIfNeeded(): void {
+    while (this.textureCache.size > MAX_TEXTURE_CACHE_SIZE) {
+      let evicted = false;
+      for (const [key, texture] of this.textureCache) {
+        if (this.pinnedTextureUrls.has(key)) {
+          continue;
+        }
+        this.textureCache.delete(key);
+        evictBoard3dCardFaceMaterialsForTexture(texture);
+        texture.dispose();
+        evicted = true;
+        break;
+      }
+      if (!evicted) {
+        break;
+      }
+    }
   }
 
   /** Prefer the renderer's {@link WebGLCapabilities.getMaxAnisotropy}; reapplies to cached textures. */
@@ -100,7 +146,7 @@ export class Board3dAssetLoaderService {
       return null;
     }
     const resolved = resolveTextureRequestUrl(scanUrl);
-    return this.textureCache.get(resolved) ?? null;
+    return this.touchTextureCache(resolved) ?? null;
   }
 
   /**
@@ -108,13 +154,15 @@ export class Board3dAssetLoaderService {
    */
   async loadCardTexture(scanUrl: string): Promise<Texture> {
     const resolved = resolveTextureRequestUrl(scanUrl);
-    if (this.textureCache.has(resolved)) {
-      return this.textureCache.get(resolved)!;
+    const cached = this.touchTextureCache(resolved);
+    if (cached) {
+      return cached;
     }
 
     return this.withConcurrencyLimit(async () => {
-      if (this.textureCache.has(resolved)) {
-        return this.textureCache.get(resolved)!;
+      const again = this.touchTextureCache(resolved);
+      if (again) {
+        return again;
       }
 
       try {
@@ -127,7 +175,7 @@ export class Board3dAssetLoaderService {
         this.applyAnisotropy(texture);
         texture.flipY = true;
 
-        this.textureCache.set(resolved, texture);
+        this.setTextureCache(resolved, texture);
         return texture;
     } catch (error) {
       console.warn('Failed to load card texture:', resolved, (error as Error)?.message);
@@ -141,8 +189,9 @@ export class Board3dAssetLoaderService {
    */
   async loadToolIconTexture(iconPath: string): Promise<Texture> {
     const resolved = resolveTextureRequestUrl(iconPath);
-    if (this.textureCache.has(resolved)) {
-      return this.textureCache.get(resolved)!;
+    const cached = this.touchTextureCache(resolved);
+    if (cached) {
+      return cached;
     }
     try {
       const loader = imageUrlNeedsCrossOrigin(resolved)
@@ -152,7 +201,7 @@ export class Board3dAssetLoaderService {
       texture.colorSpace = 'srgb';
       this.applyAnisotropy(texture);
       texture.flipY = true;
-      this.textureCache.set(resolved, texture);
+      this.setTextureCache(resolved, texture);
       return texture;
     } catch (error) {
       console.warn('Failed to load tool icon texture:', resolved);
@@ -165,8 +214,9 @@ export class Board3dAssetLoaderService {
    */
   async loadSleeveTexture(sleeveUrl: string): Promise<Texture> {
     const resolved = resolveTextureRequestUrl(sleeveUrl);
-    if (this.textureCache.has(resolved)) {
-      return this.textureCache.get(resolved)!;
+    const cached = this.touchTextureCache(resolved);
+    if (cached) {
+      return cached;
     }
     try {
       const loader = imageUrlNeedsCrossOrigin(resolved)
@@ -176,7 +226,7 @@ export class Board3dAssetLoaderService {
       texture.colorSpace = 'srgb';
       this.applyAnisotropy(texture);
       texture.flipY = true;
-      this.textureCache.set(resolved, texture);
+      this.setTextureCache(resolved, texture);
       return texture;
     } catch (error) {
       console.warn('Failed to load sleeve texture:', resolved);
@@ -214,8 +264,9 @@ export class Board3dAssetLoaderService {
   async loadMarkerTexture(markerFile: string): Promise<Texture> {
     const markerUrl = publicAssetUrl(`assets/status-conditions/${markerFile}.webp`);
 
-    if (this.textureCache.has(markerUrl)) {
-      return this.textureCache.get(markerUrl)!;
+    const cached = this.touchTextureCache(markerUrl);
+    if (cached) {
+      return cached;
     }
 
     try {
@@ -223,7 +274,7 @@ export class Board3dAssetLoaderService {
       texture.colorSpace = 'srgb';
       this.applyAnisotropy(texture);
 
-      this.textureCache.set(markerUrl, texture);
+      this.setTextureCache(markerUrl, texture, true);
       return texture;
     } catch (error) {
       console.error('Failed to load marker texture:', markerFile, error);
@@ -265,8 +316,9 @@ export class Board3dAssetLoaderService {
   async loadBoardCenterTexture(): Promise<Texture> {
     const centerUrl = publicAssetUrl('assets/twinleaf-board-center.png');
 
-    if (this.textureCache.has(centerUrl)) {
-      return this.textureCache.get(centerUrl)!;
+    const cached = this.touchTextureCache(centerUrl);
+    if (cached) {
+      return cached;
     }
 
     try {
@@ -279,7 +331,7 @@ export class Board3dAssetLoaderService {
       this.applyAnisotropy(texture);
       texture.needsUpdate = true;
 
-      this.textureCache.set(centerUrl, texture);
+      this.setTextureCache(centerUrl, texture, true);
       return texture;
     } catch (error) {
       console.error('Failed to load board center texture:', error);
@@ -388,6 +440,7 @@ export class Board3dAssetLoaderService {
       texture.dispose();
     });
     this.textureCache.clear();
+    this.pinnedTextureUrls.clear();
 
     if (this.cardBackTexture) {
       this.cardBackTexture.dispose();
@@ -418,6 +471,11 @@ export class Board3dAssetLoaderService {
    */
   getCacheSize(): number {
     return this.textureCache.size;
+  }
+
+  /** Pinned + unpinned texture URLs currently held (for perf instrumentation). */
+  getPinnedCacheSize(): number {
+    return this.pinnedTextureUrls.size;
   }
 
   /**
