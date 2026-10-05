@@ -39,7 +39,7 @@ export class Board3dEnergySprite {
   private group: Group;
   private energyMeshes: Mesh[] = [];
   private lastSignature = '';
-  private static geometry: PlaneGeometry;
+  private static geometry?: PlaneGeometry;
   /** Shared horizontally-flipped clones keyed by source texture UUID (created once). */
   private static flippedTextureBySource = new Map<string, Texture>();
   private static readonly _qParent = new Quaternion();
@@ -206,7 +206,7 @@ export class Board3dEnergySprite {
   static disposeSharedResources(): void {
     if (Board3dEnergySprite.geometry) {
       Board3dEnergySprite.geometry.dispose();
-      (Board3dEnergySprite as { geometry?: PlaneGeometry }).geometry = undefined;
+      Board3dEnergySprite.geometry = undefined;
     }
     Board3dEnergySprite.flippedTextureBySource.forEach((t) => t.dispose());
     Board3dEnergySprite.flippedTextureBySource.clear();

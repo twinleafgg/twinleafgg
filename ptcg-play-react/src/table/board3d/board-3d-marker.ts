@@ -107,7 +107,7 @@ export class Board3dMarker {
   private group: Group;
   private markerMeshes: Mesh[] = [];
   private lastMarkerSignature = '';
-  private static geometry: PlaneGeometry;
+  private static geometry?: PlaneGeometry;
   private static readonly _qParent = new Quaternion();
   private static readonly _qCam = new Quaternion();
   private static readonly _qFlip = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI);
@@ -176,7 +176,11 @@ export class Board3dMarker {
         side: DoubleSide,
         alphaTest: 0.1,
         depthWrite: false,
-        depthTest: false,
+        // Respect depth so hand / flight cards occlude markers (depthTest:false painted over everything).
+        depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
       });
 
       const mesh = new Mesh(Board3dMarker.geometry, material);
@@ -258,7 +262,7 @@ export class Board3dMarker {
   static disposeSharedResources(): void {
     if (Board3dMarker.geometry) {
       Board3dMarker.geometry.dispose();
-      (Board3dMarker as { geometry?: PlaneGeometry }).geometry = undefined;
+      Board3dMarker.geometry = undefined;
     }
   }
 }
