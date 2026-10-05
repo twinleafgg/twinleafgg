@@ -3077,8 +3077,11 @@ export class Board3dController {
     gsap.killTweensOf(group.rotation);
     gsap.killTweensOf(group.scale);
 
+    const sleevePath = (this.bottomPlayer?.deck as { sleeveImagePath?: string } | undefined)
+      ?.sleeveImagePath;
+    const sleeveUrl = sleevePath ? this.cardsAdapter.getSleeveUrl(sleevePath) : undefined;
     const texturesPromise = Promise.all([
-      this.assetLoader.loadCardBack(),
+      sleeveUrl ? this.assetLoader.loadSleeveTexture(sleeveUrl) : this.assetLoader.loadCardBack(),
       this.assetLoader.loadCardMaskTexture(),
     ]);
 
