@@ -35,6 +35,15 @@ import { playSfx } from '../../../sfx';
 
 /** World Z: flip in the plane of the hand / table (not Y, which tumbles the card edge-on). */
 const DRAW_FLIP_AXIS_Z = new Vector3(0, 0, 1);
+const DRAW_FLIP_AXIS_Y = new Vector3(0, 1, 0);
+
+/** Hover height above a slot at the end of a deck→board arc, before the bench drop. */
+const DECK_TO_BOARD_HOVER_LIFT = 1.5;
+/** Same scale a hand card uses when it is released onto the board. */
+const DECK_TO_BOARD_HOVER_SCALE = 1.3;
+/** Extra height of the deck→board arc above the straight chord between deck and hover. */
+const DECK_TO_BOARD_ARC_LIFT = 1.15;
+const DECK_TO_BOARD_ARC_DURATION_SEC = 0.38;
 
 const HAND_DRAW_SCALE = 1.1;
 /** Stage scale during deck→board draw flight (keep in sync with batch spread in board3dController). */
@@ -585,6 +594,75 @@ export class Board3dAnimationService {
   }
 
   /**
+   * Deck → hover over a board slot. One continuous arc, face-down to face-up.
+   * Ends at the pose {@link playHandCardDropOnBoard} expects when a card is released onto the board:
+   * above the slot, face-up, yaw matching the seat, scale {@link DECK_TO_BOARD_HOVER_SCALE}.
+   */
+  playDrawDeckToBoard(
+    card: Object3D,
+    targetWorld: Vector3,
+    options: {
+      endRotationY: number;
+      onRevealFace?: () => void;
+    },
+  ): Promise<void> {
+    const start = card.position.clone();
+    const hover = targetWorld.clone();
+    hover.y += DECK_TO_BOARD_HOVER_LIFT;
+    const control = start.clone().lerp(hover, 0.5);
+    control.y += DECK_TO_BOARD_ARC_LIFT;
+
+    const qYaw = new Quaternion().setFromAxisAngle(DRAW_FLIP_AXIS_Y, options.endRotationY);
+    const qFaceDown = new Quaternion().setFromAxisAngle(DRAW_FLIP_AXIS_Z, Math.PI);
+    const qFaceUp = new Quaternion();
+    const qFlip = new Quaternion();
+    const startScale = card.scale.x;
+    const progress = { t: 0 };
+    let revealApplied = false;
+
+    card.quaternion.multiplyQuaternions(qFaceDown, qYaw);
+
+    return new Promise((resolve) => {
+      const timeline = gsap.timeline({
+        onComplete: () => {
+          card.position.copy(hover);
+          card.rotation.set(0, options.endRotationY, 0);
+          card.scale.setScalar(DECK_TO_BOARD_HOVER_SCALE);
+          this.removeAnimation(timeline);
+          resolve();
+        },
+      });
+
+      timeline.to(progress, {
+        t: 1,
+        duration: DECK_TO_BOARD_ARC_DURATION_SEC,
+        ease: 'power2.inOut',
+        onUpdate: () => {
+          const t = progress.t;
+          const u = 1 - t;
+          card.position.set(
+            u * u * start.x + 2 * u * t * control.x + t * t * hover.x,
+            u * u * start.y + 2 * u * t * control.y + t * t * hover.y,
+            u * u * start.z + 2 * u * t * control.z + t * t * hover.z,
+          );
+          qFlip.slerpQuaternions(qFaceDown, qFaceUp, t);
+          card.quaternion.multiplyQuaternions(qFlip, qYaw);
+          const scale = startScale + (DECK_TO_BOARD_HOVER_SCALE - startScale) * t;
+          card.scale.setScalar(scale);
+          if (!revealApplied && t >= 0.5) {
+            revealApplied = true;
+            playSfx('carddraw');
+            options.onRevealFace?.();
+          }
+        },
+      });
+
+      this.activeAnimations.push(timeline);
+      this.updateAnimationState();
+    });
+  }
+
+  /**
    * Deck → board stage: move and180° Z flip (reveal at midpoint). Card should start at deck world pose.
    */
   playDrawDeckToStage(
@@ -829,9 +907,12 @@ export class Board3dAnimationService {
       flipFaceDownDuringTravel?: {
         onHideFace?: () => void;
       };
+      /** Scales travel time. Deck→bench plays use this; hand plays stay at 1. */
+      durationScale?: number;
     },
   ): Promise<void> {
     return new Promise(resolve => {
+      const pace = options.durationScale ?? 1;
       const midY = Math.max(card.position.y, targetWorld.y) + 0.55;
       const flipDown = options.flipFaceDownDuringTravel;
       const endZ = flipDown ? Math.PI : 0;
@@ -840,7 +921,7 @@ export class Board3dAnimationService {
       const timeline = gsap.timeline({
         onComplete: () => {
           if (flipDown) {
-            // Sync-style face-down: cardback on front, z = 0.
+            // Sync-style face-down: texture state determines the face after travel.
             card.rotation.z = 0;
           }
           this.removeAnimation(timeline);
@@ -853,7 +934,7 @@ export class Board3dAnimationService {
           x: targetWorld.x,
           y: midY,
           z: targetWorld.z,
-          duration: 0.38,
+          duration: 0.38 * pace,
           ease: 'power2.out',
         })
         .to(
@@ -862,15 +943,14 @@ export class Board3dAnimationService {
             x: 0,
             y: options.endRotationY,
             z: endZ,
-            // Setup flip: start with the flight (no delay / soft ease-in).
-            duration: flipDown ? 0.4 : 0.42,
+            // Setup flip starts with the flight (no delay / soft ease-in).
+            duration: (flipDown ? 0.4 : 0.42) * pace,
             ease: flipDown ? 'power2.out' : 'power3.inOut',
             onUpdate: flipDown
               ? () => {
                   if (hideApplied) {
                     return;
                   }
-                  // Progress of the z flip (0 → π).
                   const progress = Math.abs(card.rotation.z) / Math.PI;
                   if (progress >= 0.5) {
                     hideApplied = true;
@@ -880,7 +960,7 @@ export class Board3dAnimationService {
                 }
               : undefined,
           },
-          flipDown ? '<' : '<0.02',
+          flipDown ? '<' : `<${0.02 * pace}`,
         )
         .to(
           card.scale,
@@ -888,7 +968,7 @@ export class Board3dAnimationService {
             x: options.endScale,
             y: options.endScale,
             z: options.endScale,
-            duration: 0.44,
+            duration: 0.44 * pace,
             ease: 'power2.inOut',
           },
           '<',
@@ -897,10 +977,10 @@ export class Board3dAnimationService {
           card.position,
           {
             y: targetWorld.y,
-            duration: 0.32,
+            duration: 0.32 * pace,
             ease: 'power2.in',
           },
-          '-=0.28',
+          `-=${0.28 * pace}`,
         );
 
       this.activeAnimations.push(timeline);

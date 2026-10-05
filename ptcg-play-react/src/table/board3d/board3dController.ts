@@ -77,6 +77,8 @@ import {
 import { r3fPointerEventAsMouse } from './board3dR3fPointer';
 import { subscribeBoard3dInteractionStreams } from './board3dControllerSubscriptions';
 import { Board3dCard } from './board-3d-card';
+import { apply3dCardHolo } from './board-3d-holo-apply';
+import { playSfx } from '../../sfx';
 import {
   projectCardFaceToScreenAnchor,
   projectCardLowerFaceToScreenAnchor,
@@ -89,6 +91,7 @@ import {
   resolveLegendDisplayHalves,
 } from './legend-display.utils';
 import type { Board3dDisplayOverrides } from './services/board-3d-state-sync.service';
+import { Board3dStackService } from './services/board-3d-stack.service';
 import { BoardTransitionQueue, type ProcessStateOptions } from './transitions/boardTransitionQueue';
 import { captureSnapshot, type BoardSnapshot } from './transitions/boardSnapshot';
 import { planTransition, type TransitionStep } from './transitions/planTransition';
@@ -134,6 +137,11 @@ export type Board3dR3fInitContext = {
   /** Texture anisotropy from graphics quality preset (clamped to GPU max). */
   maxAnisotropy?: number;
 };
+
+/** How long after one deck→bench card launches before the next may leave the deck. */
+const DECK_TO_BENCH_LAUNCH_STAGGER_MS = 500;
+/** Bench-drop pace for a deck play. Hand plays keep the default pace of 1. */
+const DECK_TO_BENCH_DROP_PACE = 0.6;
 
 export class Board3dController {
   gameState!: LocalGameState;
@@ -201,6 +209,22 @@ export class Board3dController {
   private handPlayBoardBasicAnimationSuppressedMeshIds = new Set<string>();
   /** Slots whose server entrance animation (basic / evolution) waits for its state to commit. */
   private pendingEntranceMeshIds = new Set<string>();
+  /** Keep state sync from overwriting a card while it animates out of the deck. */
+  private deckFlightProtectedMeshIds = new Set<string>();
+  /** Deck→bench plays cascade. The next card leaves {@link DECK_TO_BENCH_LAUNCH_STAGGER_MS} after the previous one starts. */
+  private deckToBenchChain: Promise<void> = Promise.resolve();
+  /** Bumped on destroy so a queued deck flight does not start after the board is gone. */
+  private deckToBenchGeneration = 0;
+  /**
+   * Deck-source entrances that have not landed yet. A shuffle that arrives while this is
+   * above zero waits, so the riffle plays after the Pokémon leave the deck.
+   */
+  private outstandingDeckEntrances = 0;
+  private deckEntranceIdleWaiters: (() => void)[] = [];
+  /** Shuffle is waiting on deck flights, so the trainer discard must wait for that riffle too. */
+  private deckShuffleDeferred = false;
+  /** Trainer → discard flights held until the card's deck plays (and shuffle) have finished. */
+  private deferredTrainerDiscards: Extract<TransitionStep, { kind: 'trainerToDiscard' }>[] = [];
   private onKoSequenceActiveChange?: (active: boolean) => void;
   /** Drop stale overlapping {@link syncSetupStartingPokemonPreview} runs. */
   private setupPreviewSyncGeneration = 0;
@@ -688,7 +712,24 @@ export class Board3dController {
           preFlownCardIds: new Set(this.localTrainerFlights.keys()),
           deckLimboByPlayer: this.deckLimboByPlayer,
         });
-        const steps = seatChanged ? this.stepsWithoutHandOrigins(plan.steps) : plan.steps;
+        let steps = seatChanged ? this.stepsWithoutHandOrigins(plan.steps) : plan.steps;
+        if (this.outstandingDeckEntrances > 0) {
+          const held = steps.filter(
+            (step): step is Extract<TransitionStep, { kind: 'trainerToDiscard' }> =>
+              step.kind === 'trainerToDiscard',
+          );
+          if (held.length > 0) {
+            for (const step of held) {
+              const alreadyHeld = this.deferredTrainerDiscards.some(
+                (existing) => existing.playerId === step.playerId && existing.cardId === step.cardId,
+              );
+              if (!alreadyHeld) {
+                this.deferredTrainerDiscards.push(step);
+              }
+            }
+            steps = steps.filter((step) => step.kind !== 'trainerToDiscard');
+          }
+        }
         if (steps.length > 0) {
           const result = await new Board3dTransitionRunner(
             this.transitionHost(),
@@ -730,8 +771,127 @@ export class Board3dController {
     });
   }
 
-  private async commitFrame(): Promise<void> {
+  /**
+   * Keep a trainer on the play zone, and out of the discard pile, until its deck plays and
+   * shuffle have animated. The server state already has the card in the discard.
+   */
+  private deferredTrainerHoldOverrides(): Board3dDisplayOverrides {
+    if (this.deferredTrainerDiscards.length === 0) {
+      return {};
+    }
+    const supporterCard = new Map<number, Card>();
+    const omitDiscard = new Map<number, Set<number>>();
+    const omitLost = new Map<number, Set<number>>();
+    for (const step of this.deferredTrainerDiscards) {
+      const player = this.playerById(step.playerId);
+      const card = player ? this.findPlayerCard(player, step.cardId) : undefined;
+      if (card) {
+        supporterCard.set(step.playerId, card);
+      }
+      const omit = step.zone === 'discard' ? omitDiscard : omitLost;
+      let ids = omit.get(step.playerId);
+      if (!ids) {
+        ids = new Set();
+        omit.set(step.playerId, ids);
+      }
+      ids.add(step.cardId);
+    }
+    const discardIds = new Map<number, number[]>();
+    const lostzoneIds = new Map<number, number[]>();
+    for (const [playerId, ids] of omitDiscard) {
+      const player = this.playerById(playerId);
+      if (player) {
+        discardIds.set(
+          playerId,
+          player.discard.cards.map((c) => c.id).filter((id) => !ids.has(id)),
+        );
+      }
+    }
+    for (const [playerId, ids] of omitLost) {
+      const player = this.playerById(playerId);
+      if (player) {
+        lostzoneIds.set(
+          playerId,
+          player.lostzone.cards.map((c) => c.id).filter((id) => !ids.has(id)),
+        );
+      }
+    }
+    return { supporterCard, discardIds, lostzoneIds };
+  }
+
+  private playerById(playerId: number): Player | undefined {
+    if (this.bottomPlayer?.id === playerId) {
+      return this.bottomPlayer;
+    }
+    if (this.topPlayer?.id === playerId) {
+      return this.topPlayer;
+    }
+    return undefined;
+  }
+
+  private findPlayerCard(player: Player, cardId: number): Card | undefined {
+    const lists = [player.discard, player.lostzone, player.supporter, player.hand, player.deck];
+    for (const list of lists) {
+      const card = list?.cards?.find((c) => c.id === cardId);
+      if (card) {
+        return card;
+      }
+    }
+    return undefined;
+  }
+
+  /** Fly held trainers from the play zone into their pile, after the card's other effects. */
+  private async playDeferredTrainerDiscards(): Promise<void> {
+    const steps = this.deferredTrainerDiscards;
+    const snapshot = this.displayedSnapshot;
+    if (steps.length === 0 || !snapshot) {
+      this.deferredTrainerDiscards = [];
+      return;
+    }
+    this.deferredTrainerDiscards = [];
+    const prev = this.snapshotWithTrainersStillInPlay(snapshot, steps);
+    await new Board3dTransitionRunner(
+      this.transitionHost(),
+      prev,
+      snapshot,
+      { steps, players: new Map() },
+      steps,
+      false,
+      () => false,
+    ).run();
     this.displayOverrides = {};
+    await this.renderDisplay();
+  }
+
+  /** Prev snapshot for the delayed discard flight: the trainer is still on the play zone. */
+  private snapshotWithTrainersStillInPlay(
+    base: BoardSnapshot,
+    steps: Extract<TransitionStep, { kind: 'trainerToDiscard' }>[],
+  ): BoardSnapshot {
+    const players = new Map(base.players);
+    for (const step of steps) {
+      const player = players.get(step.playerId);
+      if (!player) {
+        continue;
+      }
+      players.set(step.playerId, {
+        ...player,
+        supporterIds: player.supporterIds.includes(step.cardId)
+          ? player.supporterIds
+          : [...player.supporterIds, step.cardId],
+        discardIds:
+          step.zone === 'discard' ? player.discardIds.filter((id) => id !== step.cardId) : player.discardIds,
+        lostzoneIds:
+          step.zone === 'lostzone'
+            ? player.lostzoneIds.filter((id) => id !== step.cardId)
+            : player.lostzoneIds,
+      });
+    }
+    return { ...base, players };
+  }
+
+  private async commitFrame(): Promise<void> {
+    this.displayOverrides = this.deferredTrainerHoldOverrides();
     await this.renderDisplay();
     await this.waitForHandInteractionIdle();
     await this.syncHandRows();
@@ -822,6 +982,7 @@ export class Board3dController {
         this.cardInspectService.getInspectedCardId(),
       skippedScaleCardId: this.interactionService.getScaleLockedBoardCardIds(),
       handPlayFlightHiddenCardId: this.getHandPlayFlightHiddenMeshIdsForSync(),
+      protectedVisualCardIds: [...this.deckFlightProtectedMeshIds],
       display: this.displayOverrides,
       adminSpectatorReveal: this.adminSpectatorReveal,
     });
@@ -935,6 +1096,11 @@ export class Board3dController {
     }
 
     this.transitionQueue.reset();
+    this.deckToBenchGeneration++;
+    this.deckToBenchChain = Promise.resolve();
+    this.deckShuffleDeferred = false;
+    this.deferredTrainerDiscards = [];
+    this.releaseDeckEntranceWaiters();
     for (const settle of [...this.openAnimationGates]) {
       settle();
     }
@@ -979,6 +1145,7 @@ export class Board3dController {
     this.handPlayFlightHiddenMeshIds.clear();
     this.handPlayBoardBasicAnimationSuppressedMeshIds.clear();
     this.pendingEntranceMeshIds.clear();
+    this.deckFlightProtectedMeshIds.clear();
     this.displayedProps = null;
     this.displayedSnapshot = null;
     this.displayOverrides = {};
@@ -1021,7 +1188,10 @@ export class Board3dController {
   }
 
   private getHandPlayFlightHiddenMeshIdsForSync(): readonly string[] | undefined {
-    const ids = new Set([...this.handPlayFlightHiddenMeshIds, ...this.pendingEntranceMeshIds]);
+    const ids = new Set([
+      ...this.handPlayFlightHiddenMeshIds,
+      ...this.pendingEntranceMeshIds,
+    ]);
     return ids.size > 0 ? [...ids] : undefined;
   }
 
@@ -1408,7 +1578,80 @@ export class Board3dController {
   }
 
   private playBoardDeckShuffleAnimation(ev: DeckShuffleAnimationEvent): void {
+    if (this.outstandingDeckEntrances > 0) {
+      this.deferDeckShuffleUntilEntrancesFinish(ev.playerId);
+      return;
+    }
     void this.triggerDeckShuffle(ev.playerId);
+  }
+
+  /**
+   * The bench state is still behind this socket event. Leave the shuffle off the queue until the
+   * deck flights that are already announced have landed, then enqueue it in the normal way.
+   */
+  private deferDeckShuffleUntilEntrancesFinish(playerId: number): void {
+    this.deckShuffleDeferred = true;
+    const { promise, settle } = this.openAnimationGate();
+    this.boardInteractionService.setPendingDeckShuffleAnimationPromise(promise);
+    const generation = this.deckToBenchGeneration;
+    void this.whenDeckEntrancesIdle().then(() => {
+      if (generation !== this.deckToBenchGeneration) {
+        this.deckShuffleDeferred = false;
+        settle();
+        return;
+      }
+      this.transitionQueue.enqueueEvent(
+        async () => {
+          try {
+            await this.runDeckShuffle(playerId);
+            if (generation === this.deckToBenchGeneration) {
+              await this.playDeferredTrainerDiscards();
+            }
+          } finally {
+            this.deckShuffleDeferred = false;
+            settle();
+          }
+        },
+        { droppable: false },
+      );
+    });
+  }
+
+  private trackDeckEntrance(): void {
+    this.outstandingDeckEntrances++;
+  }
+
+  private finishDeckEntrance(): void {
+    this.outstandingDeckEntrances = Math.max(0, this.outstandingDeckEntrances - 1);
+    if (this.outstandingDeckEntrances === 0) {
+      const waiters = this.deckEntranceIdleWaiters;
+      this.deckEntranceIdleWaiters = [];
+      for (const waiter of waiters) {
+        waiter();
+      }
+      if (!this.deckShuffleDeferred && this.deferredTrainerDiscards.length > 0) {
+        this.transitionQueue.enqueueEvent(() => this.playDeferredTrainerDiscards(), { droppable: false });
+      }
+    }
+  }
+
+  private whenDeckEntrancesIdle(): Promise<void> {
+    if (this.outstandingDeckEntrances === 0) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      this.deckEntranceIdleWaiters.push(resolve);
+    });
+  }
+
+  /** Wake deferred shuffles during destroy so they can bail instead of hanging. */
+  private releaseDeckEntranceWaiters(): void {
+    this.outstandingDeckEntrances = 0;
+    const waiters = this.deckEntranceIdleWaiters;
+    this.deckEntranceIdleWaiters = [];
+    for (const waiter of waiters) {
+      waiter();
+    }
   }
 
   /**
@@ -1614,6 +1857,7 @@ export class Board3dController {
   /**
    * Socket animation events use the same mesh ids as {@link Board3dStateSyncService}.
    * Slot may be `'active'` / `'bench'` (attack, board emit helpers) or stringified {@link SlotType} (`"1"` / `"2"`).
+   * When slot/index are missing, falls back to scanning board meshes by cardData.id.
    */
   private boardMeshIdFromAnimationEvent(ev: BasicEntranceAnimationEvent): string | null {
     if (!this.bottomPlayer?.id || !this.topPlayer?.id) {
@@ -1637,7 +1881,7 @@ export class Board3dController {
     if (isBench && ev.index !== undefined) {
       return `${pos}_${ev.playerId}_bench_${ev.index}`;
     }
-    return null;
+    return this.stateSync.findMeshIdByCardDataId(ev.cardId, ev.playerId);
   }
 
   private playBoardAttackAnimation(ev: BasicEntranceAnimationEvent): void {
@@ -1848,7 +2092,7 @@ export class Board3dController {
   }
 
   /**
-   * Basic Pokémon entrance from deck/item (socket): same motion as dragging from hand to bench
+   * Basic Pokémon entrance from hand/item (socket): same motion as dragging from hand to bench
    * ({@link Board3dAnimationService.playHandCardDropOnBoard}), not {@link Board3dAnimationService.playBasicAnimation}.
    */
   private playHandCardDropBasicAnimation(group: Group, meshId: string): void {
@@ -1876,6 +2120,184 @@ export class Board3dController {
     void this.animationService.playHandCardDropOnBoard(group, targetWorld, {
       endScale,
       endRotationY,
+    });
+  }
+
+  /**
+   * Cascade deck→bench flights. The next card may leave the deck 0.5s after this one starts,
+   * while this flight is still in the air. `markStarted` releases that wait.
+   */
+  private enqueueDeckToBench(run: (markStarted: () => void) => Promise<void>): void {
+    const generation = this.deckToBenchGeneration;
+    let resolveStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+      resolveStarted = resolve;
+    });
+    let didStart = false;
+    const markStarted = (): void => {
+      if (didStart) {
+        return;
+      }
+      didStart = true;
+      resolveStarted();
+    };
+
+    const flight = this.deckToBenchChain.then(async () => {
+      try {
+        if (generation !== this.deckToBenchGeneration) {
+          markStarted();
+          return;
+        }
+        await run(markStarted);
+      } finally {
+        markStarted();
+        this.finishDeckEntrance();
+      }
+    });
+    this.deckToBenchChain = started.then(
+      () =>
+        new Promise<void>((resolve) => {
+          window.setTimeout(resolve, DECK_TO_BENCH_LAUNCH_STAGGER_MS);
+        }),
+    );
+    void flight.catch((error) => {
+      markStarted();
+      console.error('[Board3D] deck-to-board basic animation failed:', error);
+    });
+  }
+
+  /**
+   * Basic Pokémon from deck: arc off the deck face-down, flip to reveal mid-flight, hover
+   * over the slot, then play the same drop used when a card is played from the hand.
+   */
+  private playDeckToBenchBasicAnimation(group: Group, meshId: string, boardCard: Board3dCard): void {
+    const targetWorld = group.position.clone();
+    targetWorld.y = Math.max(targetWorld.y, 0.08);
+
+    const isTopPlayer = meshId.startsWith('topPlayer_');
+    const seat = isTopPlayer ? 'topPlayer' : 'bottomPlayer';
+    const player = isTopPlayer ? this.topPlayer : this.bottomPlayer;
+    // Match the draw animation's start: top card of the post-effect deck (one card removed).
+    const deckCountAfter = player?.deck?.cards?.length ?? 0;
+    const deckStart = ZONE_POSITIONS[seat].deck.clone();
+    deckStart.y +=
+      Math.max(0, deckCountAfter) * Board3dStackService.STACK_HEIGHT_INCREMENT + 0.35;
+
+    const isActive = meshId.endsWith('_active');
+    const endScale = isActive ? 1.5 : 1.0;
+    const endRotationY = isTopPlayer ? Math.PI : 0;
+    const card = group.userData?.cardData as Card | undefined;
+    const cardList = group.userData?.cardList as PokemonCardList | undefined;
+    let flightCard: Board3dCard | null = null;
+    const generation = this.deckToBenchGeneration;
+    const flightStillOwned = (): boolean =>
+      generation === this.deckToBenchGeneration && this.deckFlightProtectedMeshIds.has(meshId);
+    const cleanupFlightMetadata = (): void => {
+      this.pendingEntranceMeshIds.delete(meshId);
+      delete group.userData.playingToBoard;
+      group.position.copy(targetWorld);
+      group.rotation.set(0, endRotationY, 0);
+      group.scale.setScalar(endScale);
+      flightCard?.dispose();
+      flightCard = null;
+      group.visible = true;
+      this.deckFlightProtectedMeshIds.delete(meshId);
+      this.stateSync.unprotectBoardCardVisual(meshId);
+      this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+      this.syncGameState();
+      this.markDirty();
+    };
+    const sleevePath = (player?.deck as { sleeveImagePath?: string } | undefined)?.sleeveImagePath;
+    const sleeveUrl = sleevePath ? this.cardsAdapter.getSleeveUrl(sleevePath) : undefined;
+    const assetReady = Promise.all([
+      sleeveUrl ? this.assetLoader.loadSleeveTexture(sleeveUrl) : this.assetLoader.loadCardBack(),
+      this.assetLoader.loadCardMaskTexture(),
+    ]).then(async ([cardBack, mask]) => {
+      const scanUrl = card ? this.cardsAdapter.getScanUrlFor3D(card, cardList) : undefined;
+      let scan = cardBack;
+      if (scanUrl?.trim()) {
+        try {
+          scan = await this.assetLoader.loadCardTexture(scanUrl);
+        } catch {
+          // Keep the cardback as the face if the scan cannot be loaded.
+        }
+      }
+      return { cardBack, mask, scan };
+    });
+
+    group.userData.playingToBoard = true;
+    group.visible = false;
+    this.pendingEntranceMeshIds.add(meshId);
+    this.deckFlightProtectedMeshIds.add(meshId);
+    this.stateSync.protectBoardCardVisual(meshId);
+    this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+    this.markDirty();
+
+    this.enqueueDeckToBench(async (markStarted) => {
+      try {
+        const { cardBack, mask, scan } = await assetReady;
+        if (!flightStillOwned()) {
+          return;
+        }
+
+        // Animate an independent card, leaving the actual slot mesh hidden until the drop lands.
+        flightCard = new Board3dCard(cardBack, cardBack, deckStart, isTopPlayer ? 180 : 0, 1.1, mask);
+        const flightGroup = flightCard.getGroup();
+        flightGroup.userData.cardData = card;
+        flightGroup.userData.cardList = cardList;
+        flightGroup.userData.isFaceDown = true;
+        flightGroup.rotation.set(0, endRotationY, Math.PI);
+        flightGroup.renderOrder = 110;
+        this.worldContentRoot.add(flightGroup);
+        this.pendingEntranceMeshIds.delete(meshId);
+        this.markDirty();
+        playSfx('pokemonplay');
+        markStarted();
+
+        await this.animationService.playDrawDeckToBoard(flightGroup, targetWorld, {
+          endRotationY,
+          onRevealFace: () => {
+            // Flip is z=π → 0, so the exposed face at the end of the turn is the card front.
+            flightCard?.updateTexture(scan, cardBack, mask);
+            flightCard?.setHolo(null);
+            if (flightGroup.userData) {
+              flightGroup.userData.isFaceDown = false;
+            }
+            this.markDirty();
+          },
+        });
+        if (!flightStillOwned()) {
+          flightCard?.dispose();
+          flightCard = null;
+          return;
+        }
+
+        await this.animationService.playHandCardDropOnBoard(flightGroup, targetWorld, {
+          endScale,
+          endRotationY,
+          durationScale: DECK_TO_BENCH_DROP_PACE,
+        });
+        if (!flightStillOwned()) {
+          flightCard?.dispose();
+          flightCard = null;
+          return;
+        }
+
+        boardCard.updateTexture(scan, cardBack, mask);
+        boardCard.setHolo(null);
+        cleanupFlightMetadata();
+        if (card) {
+          void apply3dCardHolo(this.assetLoader, boardCard, card, false);
+        }
+      } catch (error) {
+        console.error('[Board3D] deck-to-board basic animation failed:', error);
+        if (flightStillOwned()) {
+          cleanupFlightMetadata();
+        } else {
+          flightCard?.dispose();
+          flightCard = null;
+        }
+      }
     });
   }
 
@@ -1977,23 +2399,36 @@ export class Board3dController {
    * hidden while earlier transitions play, then animate right after that state commits.
    */
   private playBoardBasicAnimation(ev: BasicEntranceAnimationEvent): void {
+    if (ev.source === 'deck') {
+      this.trackDeckEntrance();
+    }
     const meshId = this.boardMeshIdFromAnimationEvent(ev);
     const hide =
       meshId != null &&
-      !this.handPlayBoardBasicAnimationSuppressedMeshIds.has(meshId) &&
-      !this.handPlayFlightHiddenMeshIds.has(meshId);
+      (ev.source === 'deck' ||
+        (!this.handPlayBoardBasicAnimationSuppressedMeshIds.has(meshId) &&
+          !this.handPlayFlightHiddenMeshIds.has(meshId)));
     if (hide) {
       this.pendingEntranceMeshIds.add(meshId);
+      if (ev.source === 'deck') {
+        // Protect synchronously so a state sync racing the socket event cannot show the slot card.
+        this.deckFlightProtectedMeshIds.add(meshId);
+        this.stateSync.protectBoardCardVisual(meshId);
+        this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+      }
     }
     this.transitionQueue.runAfterNextCommit(() => {
       if (!hide) {
         this.playBoardBasicAnimationNow(ev);
         return;
       }
-      this.pendingEntranceMeshIds.delete(meshId);
-      const boardCard = this.stateSync.getCardById(meshId);
-      if (boardCard) {
-        boardCard.getGroup().visible = true;
+      // Deck arrivals keep their board mesh hidden while texture assets load and it launches.
+      if (ev.source !== 'deck') {
+        this.pendingEntranceMeshIds.delete(meshId);
+        const boardCard = this.stateSync.getCardById(meshId);
+        if (boardCard) {
+          boardCard.getGroup().visible = true;
+        }
       }
       this.playBoardBasicAnimationNow(ev);
       this.markDirty();
@@ -2002,24 +2437,35 @@ export class Board3dController {
 
   private playBoardBasicAnimationNow(ev: BasicEntranceAnimationEvent): void {
     const maxAttempts = 12;
+    const abandonDeckEntrance = (): void => {
+      if (ev.source === 'deck') {
+        this.finishDeckEntrance();
+      }
+    };
 
     const tryPlay = (attempt: number): void => {
       const meshId = this.boardMeshIdFromAnimationEvent(ev);
       if (!meshId) {
+        abandonDeckEntrance();
         return;
       }
       const boardCard = this.stateSync.getCardById(meshId);
       if (!boardCard) {
         if (attempt < maxAttempts) {
           requestAnimationFrame(() => tryPlay(attempt + 1));
+          return;
         }
+        abandonDeckEntrance();
         return;
       }
-      if (this.handPlayBoardBasicAnimationSuppressedMeshIds.has(meshId)) {
+      if (
+        ev.source !== 'deck' &&
+        this.handPlayBoardBasicAnimationSuppressedMeshIds.has(meshId)
+      ) {
         this.handPlayBoardBasicAnimationSuppressedMeshIds.delete(meshId);
         return;
       }
-      if (this.handPlayFlightHiddenMeshIds.has(meshId)) {
+      if (ev.source !== 'deck' && this.handPlayFlightHiddenMeshIds.has(meshId)) {
         return;
       }
       const group = boardCard.getGroup();
@@ -2027,7 +2473,9 @@ export class Board3dController {
       if (data && data.id !== ev.cardId) {
         if (attempt < maxAttempts) {
           requestAnimationFrame(() => tryPlay(attempt + 1));
+          return;
         }
+        abandonDeckEntrance();
         return;
       }
 
@@ -2043,10 +2491,13 @@ export class Board3dController {
       if (waitingForLegendHalves) {
         if (attempt < maxAttempts) {
           requestAnimationFrame(() => tryPlay(attempt + 1));
+          return;
         }
+        abandonDeckEntrance();
         return;
       }
       if (topHalfCard && bottomHalfCard && cardList) {
+        abandonDeckEntrance();
         this.playRemoteLegendAssemblyAnimation(
           meshId,
           boardCard,
@@ -2054,6 +2505,12 @@ export class Board3dController {
           bottomHalfCard,
           cardList,
         );
+        return;
+      }
+
+      if (ev.source === 'deck') {
+        // Keep state-sync from snapping the card back into the slot while it flies from the deck.
+        this.playDeckToBenchBasicAnimation(group, meshId, boardCard);
         return;
       }
 

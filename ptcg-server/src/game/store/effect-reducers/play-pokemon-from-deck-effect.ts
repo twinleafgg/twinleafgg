@@ -4,6 +4,7 @@ import { GameMessage, GameLog } from '../../game-message';
 import { Effect } from '../effects/effect';
 import { State } from '../state/state';
 import { StoreLike } from '../store-like';
+import { SlotType } from '../actions/play-card-action';
 
 /**
  * Helper function to emit animation events
@@ -33,12 +34,20 @@ export function playPokemonFromDeckReducer(store: StoreLike, state: State, effec
       effect.player.deck.moveCardTo(effect.pokemonCard, effect.target);
       effect.target.pokemonPlayedTurn = state.turn;
 
+      const slot =
+        effect.slot ??
+        (effect.target === effect.player.active ? SlotType.ACTIVE : SlotType.BENCH);
+      const index =
+        effect.index ??
+        (slot === SlotType.BENCH ? effect.player.bench.indexOf(effect.target) : undefined);
+
       // Emit basic animation event
       emitAnimationEvent(store, 'playBasicAnimation', {
         playerId: effect.player.id,
         cardId: effect.pokemonCard.id,
-        slot: effect.slot ? String(effect.slot) : undefined,
-        index: effect.index
+        slot: String(slot),
+        index,
+        source: 'deck',
       });
 
       return state;
@@ -48,4 +57,4 @@ export function playPokemonFromDeckReducer(store: StoreLike, state: State, effec
   }
 
   return state;
-} 
+}

@@ -13,6 +13,7 @@ import styles from './ChooseCardsPromptPanel.module.css';
 const CARD_BACK = '/assets/cardback.png';
 const MAX_VISIBLE_SLOTS = 8;
 const WHEEL_DELAY_MS = 200;
+const FLIGHT_DURATION_MS = 480;
 
 export type ChooseCardsPromptPanelProps = {
   prompt: ChooseCardsPrompt;
@@ -34,6 +35,23 @@ type PromptItem = {
 type FanItem = PromptItem & {
   role: 'cardMain' | 'cardLeft' | 'cardLeftBack' | 'cardSide' | 'cardBack' | 'cardExit';
 };
+
+type CardFlight = {
+  id: number;
+  card: Card;
+  originalIndex: number;
+  src: string;
+  from: { x: number; y: number; w: number; h: number };
+  to: { x: number; y: number; w: number; h: number };
+  /** Hide face in slot (to-slot) or fan (to-fan) until flight ends. */
+  hideUntil: 'slot' | 'fan';
+  active: boolean;
+};
+
+function rectOf(el: Element): { x: number; y: number; w: number; h: number } {
+  const r = el.getBoundingClientRect();
+  return { x: r.left, y: r.top, w: r.width, h: r.height };
+}
 
 function buildFilterMapByIndex(
   cards: Card[],
@@ -137,9 +155,14 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [detail, setDetail] = useState<{ card: Card; index: number } | null>(null);
+  const [flights, setFlights] = useState<CardFlight[]>([]);
   const lastWheelTimeRef = useRef(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   const deckLengthRef = useRef(0);
+  const fanElRefs = useRef(new Map<number, HTMLButtonElement>());
+  const slotElRefs = useRef(new Map<number, HTMLButtonElement>());
+  const flightIdRef = useRef(0);
+  const flightTimeoutsRef = useRef(new Map<number, number>());
 
   useEffect(() => {
     setTab('valid');
@@ -147,7 +170,21 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
     setCurrentIndex(0);
     setRevealed(false);
     setDetail(null);
+    setFlights([]);
+    for (const t of flightTimeoutsRef.current.values()) {
+      window.clearTimeout(t);
+    }
+    flightTimeoutsRef.current.clear();
   }, [prompt.id]);
+
+  useEffect(() => {
+    return () => {
+      for (const t of flightTimeoutsRef.current.values()) {
+        window.clearTimeout(t);
+      }
+      flightTimeoutsRef.current.clear();
+    };
+  }, []);
 
   const deckItems = useMemo(() => {
     const selected = new Set(selectedIndices);
@@ -207,25 +244,92 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
   const canConfirm = chooseCardsSelectionValid(cards, selectedCards, prompt.filter, prompt.options);
   const useCardBack = isSecret && (!replay || !revealed);
 
-  const selectCard = (originalIndex: number) => {
+  const hiddenInSlot = useMemo(() => {
+    const set = new Set<number>();
+    for (const f of flights) {
+      if (f.hideUntil === 'slot') {
+        set.add(f.originalIndex);
+      }
+    }
+    return set;
+  }, [flights]);
+
+  const hiddenInFan = useMemo(() => {
+    const set = new Set<number>();
+    for (const f of flights) {
+      if (f.hideUntil === 'fan') {
+        set.add(f.originalIndex);
+      }
+    }
+    return set;
+  }, [flights]);
+
+  const endFlight = (flightId: number) => {
+    setFlights((prev) => prev.filter((f) => f.id !== flightId));
+    const timeout = flightTimeoutsRef.current.get(flightId);
+    if (timeout != null) {
+      window.clearTimeout(timeout);
+      flightTimeoutsRef.current.delete(flightId);
+    }
+  };
+
+  const startFlight = (flight: Omit<CardFlight, 'id' | 'active'>) => {
+    const id = ++flightIdRef.current;
+    setFlights((prev) => [...prev, { ...flight, id, active: false }]);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setFlights((prev) => prev.map((f) => (f.id === id ? { ...f, active: true } : f)));
+      });
+    });
+    const timeout = window.setTimeout(() => endFlight(id), FLIGHT_DURATION_MS + 40);
+    flightTimeoutsRef.current.set(id, timeout);
+  };
+
+  const selectCard = (originalIndex: number, fromEl: HTMLElement | null) => {
     if (!filterMap[originalIndex]) {
       return;
     }
     if (selectedIndices.includes(originalIndex) || selectedIndices.length >= max) {
       return;
     }
+    const card = cards[originalIndex];
+    if (!card) {
+      return;
+    }
+
+    const targetSlot = selectedIndices.length;
+    const toEl = slotElRefs.current.get(targetSlot) ?? null;
+    const from = fromEl ? rectOf(fromEl) : null;
+    const to = toEl ? rectOf(toEl) : null;
+
     const deckPos = deckItems.findIndex((item) => item.originalIndex === originalIndex);
     if (deckPos !== -1 && deckPos < currentIndex) {
       setCurrentIndex(Math.max(0, currentIndex - 1));
     }
     setSelectedIndices((prev) => [...prev, originalIndex]);
+
+    if (from && to) {
+      startFlight({
+        card,
+        originalIndex,
+        src: useCardBack ? CARD_BACK : getScanUrl(card),
+        from,
+        to,
+        hideUntil: 'slot',
+      });
+    }
   };
 
-  const deselectSlot = (slotIndex: number) => {
+  const deselectSlot = (slotIndex: number, fromEl: HTMLElement | null) => {
     if (slotIndex < 0 || slotIndex >= selectedIndices.length) {
       return;
     }
     const removed = selectedIndices[slotIndex];
+    const card = cards[removed];
+    if (!card) {
+      return;
+    }
+    const from = fromEl ? rectOf(fromEl) : null;
     const nextSelected = [
       ...selectedIndices.slice(0, slotIndex),
       ...selectedIndices.slice(slotIndex + 1),
@@ -241,7 +345,65 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
     if (insertIndex !== -1 && insertIndex <= currentIndex) {
       setCurrentIndex(Math.min(Math.max(afterDeck.length - 1, 0), currentIndex + 1));
     }
+
+    // Hide fan face until we measure destination and finish flight.
+    const pendingId = ++flightIdRef.current;
+    setFlights((prev) => [
+      ...prev,
+      {
+        id: pendingId,
+        card,
+        originalIndex: removed,
+        src: useCardBack ? CARD_BACK : getScanUrl(card),
+        from: from ?? { x: 0, y: 0, w: 100, h: 140 },
+        to: from ?? { x: 0, y: 0, w: 100, h: 140 },
+        hideUntil: 'fan',
+        active: false,
+      },
+    ]);
     setSelectedIndices(nextSelected);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const toEl = fanElRefs.current.get(removed);
+        const to = toEl
+          ? rectOf(toEl)
+          : (() => {
+              const carousel = carouselRef.current;
+              if (!carousel) {
+                return from ?? { x: 0, y: 0, w: 100, h: 140 };
+              }
+              const r = carousel.getBoundingClientRect();
+              return {
+                x: r.left + r.width / 2 - 50,
+                y: r.top + r.height / 2 - 70,
+                w: 100,
+                h: 140,
+              };
+            })();
+        setFlights((prev) =>
+          prev.map((f) =>
+            f.id === pendingId
+              ? {
+                  ...f,
+                  from: from ?? f.from,
+                  to,
+                  active: false,
+                }
+              : f,
+          ),
+        );
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setFlights((prev) =>
+              prev.map((f) => (f.id === pendingId ? { ...f, active: true } : f)),
+            );
+          });
+        });
+        const timeout = window.setTimeout(() => endFlight(pendingId), FLIGHT_DURATION_MS + 80);
+        flightTimeoutsRef.current.set(pendingId, timeout);
+      });
+    });
   };
 
   const previousCards = () => {
@@ -263,7 +425,7 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
       setDetail({ card: item.card, index: item.originalIndex });
       return;
     }
-    selectCard(item.originalIndex);
+    selectCard(item.originalIndex, e.currentTarget);
   };
 
   const onTabChange = (nextTab: 'valid' | 'all') => {
@@ -325,10 +487,18 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
                 <button
                   key={`${item.originalIndex}-${item.card.id}-${item.card.fullName}`}
                   type="button"
+                  ref={(el) => {
+                    if (el) {
+                      fanElRefs.current.set(item.originalIndex, el);
+                    } else {
+                      fanElRefs.current.delete(item.originalIndex);
+                    }
+                  }}
                   className={cn(
                     styles.fanCard,
                     ROLE_CLASS[item.role],
                     !item.isAvailable && styles.fanCardUnavailable,
+                    hiddenInFan.has(item.originalIndex) && styles.fanCardHidden,
                   )}
                   disabled={!item.isAvailable || item.role === 'cardExit'}
                   onClick={(e) => onFanCardClick(e, item)}
@@ -381,15 +551,30 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
           {Array.from({ length: slotCount }, (_, slotIndex) => {
             const cardIndex = selectedIndices[slotIndex];
             const selectedCard = cardIndex !== undefined ? cards[cardIndex] : undefined;
+            const faceHidden =
+              selectedCard != null &&
+              cardIndex !== undefined &&
+              hiddenInSlot.has(cardIndex);
             return (
               <button
                 key={`slot-${slotIndex}-${prompt.id}`}
                 type="button"
-                className={cn(styles.slot, selectedCard && styles.slotFilled)}
-                disabled={!selectedCard}
-                onClick={() => {
+                ref={(el) => {
+                  if (el) {
+                    slotElRefs.current.set(slotIndex, el);
+                  } else {
+                    slotElRefs.current.delete(slotIndex);
+                  }
+                }}
+                className={cn(
+                  styles.slot,
+                  selectedCard && styles.slotFilled,
+                  faceHidden && styles.slotHiddenFace,
+                )}
+                disabled={!selectedCard || faceHidden}
+                onClick={(e) => {
                   if (selectedCard) {
-                    deselectSlot(slotIndex);
+                    deselectSlot(slotIndex, e.currentTarget);
                   }
                 }}
                 aria-label={
@@ -414,6 +599,38 @@ export function ChooseCardsPromptPanel(props: ChooseCardsPromptPanelProps) {
           })}
         </div>
       </div>
+
+      {flights.length > 0 ? (
+        <div className={styles.flightLayer} aria-hidden>
+          {flights.map((flight) => {
+            const sx = flight.active ? flight.to.w / Math.max(flight.from.w, 1) : 1;
+            const sy = flight.active ? flight.to.h / Math.max(flight.from.h, 1) : 1;
+            const tx = flight.active ? flight.to.x : flight.from.x;
+            const ty = flight.active ? flight.to.y : flight.from.y;
+            return (
+              <div
+                key={flight.id}
+                className={styles.flightCard}
+                style={{
+                  width: flight.from.w,
+                  height: flight.from.h,
+                  transform: `translate(${tx}px, ${ty}px) scale(${sx}, ${sy})`,
+                  transition: flight.active
+                    ? `transform ${FLIGHT_DURATION_MS}ms cubic-bezier(0.22, 0.61, 0.36, 1)`
+                    : 'none',
+                }}
+              >
+                <CardFace
+                  card={useCardBack ? null : flight.card}
+                  src={flight.src}
+                  name={flight.card.name}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
 
       <div className={styles.actions}>
         {replay && isSecret ? (

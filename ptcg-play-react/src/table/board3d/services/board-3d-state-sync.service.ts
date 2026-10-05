@@ -66,6 +66,8 @@ export interface Board3dSyncStateOptions {
   skippedCardId?: string | null;
   skippedScaleCardId?: string | readonly string[] | null;
   handPlayFlightHiddenCardId?: string | readonly string[] | null;
+  /** Preserve existing card transform and texture while a custom flight owns that mesh. */
+  protectedVisualCardIds?: readonly string[];
   display?: Board3dDisplayOverrides;
   /** Admin spectator UI toggles for hidden zones (client-side display only). */
   adminSpectatorReveal?: {
@@ -91,6 +93,9 @@ export class Board3dStateSyncService {
   private skippedScaleCardIdsForSync: ReadonlySet<string> | null = null;
   /** Hide these board meshes while a hand card animates (avoid double image at discard + supporter, etc.). */
   private handPlayFlightHiddenCardIds: ReadonlySet<string> | null = null;
+  private protectedVisualCardIds: ReadonlySet<string> | null = null;
+  /** Imperative protections survive syncState calls until their owning flight releases them. */
+  private imperativelyProtectedVisualCardIds = new Set<string>();
 
   /** Cards removed while R3F owns the board subtree; dispose after React detaches primitives. */
   private pendingR3fBoardCardDisposals: Board3dCard[] = [];
@@ -215,6 +220,7 @@ export class Board3dStateSyncService {
       skippedCardId = null,
       skippedScaleCardId = null,
       handPlayFlightHiddenCardId = null,
+      protectedVisualCardIds,
       display = {},
       adminSpectatorReveal,
     } = options;
@@ -246,6 +252,12 @@ export class Board3dStateSyncService {
       }
       this.handPlayFlightHiddenCardIds = next.size > 0 ? next : null;
     }
+    const protectedVisualIds = new Set(this.imperativelyProtectedVisualCardIds);
+    for (const id of protectedVisualCardIds ?? []) {
+      protectedVisualIds.add(id);
+    }
+    this.protectedVisualCardIds = protectedVisualIds.size > 0 ? protectedVisualIds : null;
+    const preserveProtectedVisual = this.protectedVisualCardIds;
     const state = gameState.state;
 
     // Use provided players if available (for replay/spectator mode with switchSide)
@@ -284,14 +296,28 @@ export class Board3dStateSyncService {
     if (bottomPlayerToSync) {
       const isOwner = bottomPlayerToSync.id === currentPlayerId || omniscient;
       const prizeIsOwner = isOwner || adminRevealPrizes;
-      await this.syncPlayer(bottomPlayerToSync, 'bottomPlayer', isOwner, prizeIsOwner, display);
+      await this.syncPlayer(
+        bottomPlayerToSync,
+        'bottomPlayer',
+        isOwner,
+        prizeIsOwner,
+        display,
+        preserveProtectedVisual,
+      );
     }
 
     // Sync topPlayer
     if (topPlayerToSync) {
       const isOwner = topPlayerToSync.id === currentPlayerId || omniscient;
       const prizeIsOwner = isOwner || adminRevealPrizes;
-      await this.syncPlayer(topPlayerToSync, 'topPlayer', isOwner, prizeIsOwner, display);
+      await this.syncPlayer(
+        topPlayerToSync,
+        'topPlayer',
+        isOwner,
+        prizeIsOwner,
+        display,
+        preserveProtectedVisual,
+      );
     }
 
     // Sync shared stadium (only once - stadium is shared between both players)
@@ -401,6 +427,7 @@ export class Board3dStateSyncService {
     isOwner: boolean,
     prizeIsOwner: boolean,
     display: Board3dDisplayOverrides,
+    preserveProtectedVisual: ReadonlySet<string> | null,
   ): Promise<void> {
     const rotation = position === 'topPlayer' ? 180 : 0;
     const playerPrefix = `${position}_${player.id}`;
@@ -409,6 +436,7 @@ export class Board3dStateSyncService {
     const holdBoardFaceDown = !!display.holdBoardFaceDown;
 
     // Active and Supporter - run in parallel (independent zones)
+    const activeMeshId = `${playerPrefix}_active`;
     const activePromise =
       player.active && player.active.cards.length > 0
         ? (() => {
@@ -424,6 +452,7 @@ export class Board3dStateSyncService {
               sleeveImagePath,
               false,
               holdBoardFaceDown,
+              preserveProtectedVisual?.has(activeMeshId) ?? false,
             );
           })()
         : Promise.resolve(undefined).then(() => {
@@ -474,6 +503,7 @@ export class Board3dStateSyncService {
           sleeveImagePath,
           false,
           holdBoardFaceDown,
+          preserveProtectedVisual?.has(cardId) ?? false,
         );
       } else {
         this.removeCard(cardId);
@@ -661,6 +691,7 @@ export class Board3dStateSyncService {
     sleeveImagePath?: string,
     revealPrize: boolean = false,
     forceFaceDown: boolean = false,
+    preserveFlightVisual = false,
   ): Promise<void> {
     cardId = String(cardId);
 
@@ -738,7 +769,12 @@ export class Board3dStateSyncService {
             .loadCardTexture(scanUrl)
             .then((loadedFront) => {
               const currentCard = this.cardsMap.get(cardId);
-              if (currentCard && currentCard.getGroup().userData.cardData?.id === mainCard.id) {
+              const flightOwnsVisual = this.protectedVisualCardIds?.has(cardId) ?? false;
+              if (
+                currentCard &&
+                !flightOwnsVisual &&
+                currentCard.getGroup().userData.cardData?.id === mainCard.id
+              ) {
                 currentCard.updateTexture(loadedFront, backTexture, maskTexture);
                 void apply3dCardHolo(this.assetLoader, currentCard, mainCard, false);
               }
@@ -761,21 +797,27 @@ export class Board3dStateSyncService {
 
     // Check if card already exists
     let cardMesh = this.cardsMap.get(cardId);
+    preserveFlightVisual =
+      preserveFlightVisual || (this.protectedVisualCardIds?.has(cardId) ?? false);
 
     if (cardMesh) {
-      // Update existing card (skip position/rotation/scale if this card is being dragged)
-      cardMesh.updateTexture(frontTexture, backTexture, maskTexture);
-      if (cardId !== this.skippedCardIdForSync) {
-        cardMesh.setPosition(position);
-        cardMesh.setRotation(rotation);
+      // Preserve a flight-owned mesh's current rendering until that animation lands.
+      if (!preserveFlightVisual) {
+        cardMesh.updateTexture(frontTexture, backTexture, maskTexture);
+        if (cardId !== this.skippedCardIdForSync) {
+          cardMesh.setPosition(position);
+          cardMesh.setRotation(rotation);
+        }
+        if (cardId !== this.skippedCardIdForSync && !this.skippedScaleCardIdsForSync?.has(cardId)) {
+          applyCardScale(cardMesh, scale);
+        }
       }
-      if (cardId !== this.skippedCardIdForSync && !this.skippedScaleCardIdsForSync?.has(cardId)) {
-        applyCardScale(cardMesh, scale);
-      }
-      // Update userData with latest cardList
+      // Update userData with latest cardList for game state/actions.
       cardMesh.getGroup().userData.cardData = mainCard;
       cardMesh.getGroup().userData.cardList = cardList;
-      cardMesh.getGroup().userData.isFaceDown = isFaceDown;
+      if (!preserveFlightVisual) {
+        cardMesh.getGroup().userData.isFaceDown = isFaceDown;
+      }
     } else {
       // Create new card
       cardMesh = new Board3dCard(frontTexture, backTexture, position, rotation, scale, maskTexture);
@@ -797,7 +839,12 @@ export class Board3dStateSyncService {
     }
 
     const hiddenForHandFlight = this.handPlayFlightHiddenCardIds?.has(cardId) ?? false;
-    cardMesh.getGroup().visible = !hiddenForHandFlight;
+    if (preserveFlightVisual) {
+      // A newly-created destination mesh must stay hidden too; it has no prior visibility to preserve.
+      cardMesh.getGroup().visible = false;
+    } else {
+      cardMesh.getGroup().visible = !hiddenForHandFlight;
+    }
 
     // Update overlays for PokemonCardList
     if (cardList instanceof PokemonCardList) {
@@ -820,14 +867,16 @@ export class Board3dStateSyncService {
       this.overlayService.clearOverlays(cardId, this.interactionScene);
     }
 
-    if (isFaceDown) {
-      void apply3dCardHolo(this.assetLoader, cardMesh, mainCard, true);
-    } else if (awaitingAsyncScan) {
-      cardMesh.setHolo(null);
-    } else if (scanUrl && scanUrl.trim()) {
-      void apply3dCardHolo(this.assetLoader, cardMesh, mainCard, false);
-    } else {
-      void apply3dCardHolo(this.assetLoader, cardMesh, mainCard, true);
+    if (!preserveFlightVisual) {
+      if (isFaceDown) {
+        void apply3dCardHolo(this.assetLoader, cardMesh, mainCard, true);
+      } else if (awaitingAsyncScan) {
+        cardMesh.setHolo(null);
+      } else if (scanUrl && scanUrl.trim()) {
+        void apply3dCardHolo(this.assetLoader, cardMesh, mainCard, false);
+      } else {
+        void apply3dCardHolo(this.assetLoader, cardMesh, mainCard, true);
+      }
     }
   }
 
@@ -1011,6 +1060,22 @@ export class Board3dStateSyncService {
     return this.cardsMap.get(cardId);
   }
 
+  /**
+   * Find a board mesh id whose cardData.id matches (optional playerId filter on the mesh key).
+   */
+  findMeshIdByCardDataId(cardId: number | string, playerId?: number): string | null {
+    for (const [meshId, boardCard] of this.cardsMap) {
+      if (playerId != null && !meshId.includes(`_${playerId}_`)) {
+        continue;
+      }
+      const data = boardCard.getGroup().userData?.cardData as { id?: number | string } | undefined;
+      if (data?.id === cardId || String(data?.id) === String(cardId)) {
+        return meshId;
+      }
+    }
+    return null;
+  }
+
   setSuppressedEnergyIconSlot(hostMeshId: string, energyIndex: number): void {
     this.overlayService.setSuppressedEnergyIconSlot(hostMeshId, energyIndex);
   }
@@ -1052,6 +1117,24 @@ export class Board3dStateSyncService {
   /** Remove a board card and its overlays (e.g. after KO ghost animation). */
   removeBoardCardById(cardId: string): void {
     this.removeCard(cardId);
+  }
+
+  /** Protect a board mesh immediately while a deck-origin animation takes ownership of it. */
+  protectBoardCardVisual(meshId: string): void {
+    this.imperativelyProtectedVisualCardIds.add(meshId);
+    this.protectedVisualCardIds = new Set([...(this.protectedVisualCardIds ?? []), meshId]);
+    const card = this.cardsMap.get(meshId);
+    if (card) {
+      card.getGroup().visible = false;
+    }
+  }
+
+  /** Release an imperative visual protection after its replacement flight has landed. */
+  unprotectBoardCardVisual(meshId: string): void {
+    this.imperativelyProtectedVisualCardIds.delete(meshId);
+    const remaining = new Set(this.protectedVisualCardIds ?? []);
+    remaining.delete(meshId);
+    this.protectedVisualCardIds = remaining.size > 0 ? remaining : null;
   }
 
   /**
@@ -1311,5 +1394,7 @@ export class Board3dStateSyncService {
       card.dispose();
     });
     this.cardsMap.clear();
+    this.imperativelyProtectedVisualCardIds.clear();
+    this.protectedVisualCardIds = null;
   }
 }

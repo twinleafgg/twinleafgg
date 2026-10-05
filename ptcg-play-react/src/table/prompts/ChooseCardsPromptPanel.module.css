@@ -299,34 +299,82 @@
   width: clamp(100px, 11.5vw, 138px);
   height: clamp(140px, 16.1vw, 193px);
   padding: 0;
-  border: 2px dashed rgba(80, 100, 140, 0.35);
+  border: 2px solid rgba(60, 78, 110, 0.65);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(4, 8, 22, 0.2);
+  background: rgba(18, 24, 40, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   cursor: default;
   line-height: 0;
   overflow: hidden;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .slot:hover {
-  border-color: rgba(100, 130, 180, 0.5);
+  border-color: rgba(90, 120, 170, 0.75);
+  background: rgba(24, 32, 52, 0.96);
 }
 
 .slotFilled {
   cursor: pointer;
-  border-style: solid;
-  border-color: rgba(68, 144, 88, 0.55);
+  border-color: rgba(68, 144, 88, 0.7);
+  background: rgba(12, 22, 18, 0.95);
+  box-shadow: 0 0 0 1px rgba(68, 144, 88, 0.25);
 }
 
 .slotFilled:hover {
   border-color: #449058;
+  box-shadow: 0 0 0 2px rgba(68, 144, 88, 0.35);
 }
 
 .slot :global(img),
 .slot > * {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.slotHiddenFace {
+  /* Destination/source occupied during flight — keep layout, hide face */
+}
+
+.slotHiddenFace > * {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fanCardHidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.flightLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.flightCard {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  line-height: 0;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  will-change: transform;
+  transform-origin: top left;
+}
+
+.flightCard :global(img),
+.flightCard > * {
   width: 100% !important;
   height: 100% !important;
 }
