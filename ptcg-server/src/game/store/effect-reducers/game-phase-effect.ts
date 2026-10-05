@@ -7,12 +7,11 @@ import { BoardEffect, CardTag, SpecialCondition } from '../card/card-types';
 import { State, GamePhase, GameWinner } from '../state/state';
 import { StoreLike } from '../store-like';
 import { checkState, endGame } from './check-effect';
-import { CoinFlipPrompt } from '../prompts/coin-flip-prompt';
 import { WaitPrompt } from '../prompts/wait-prompt';
 import { PlayerType } from '../actions/play-card-action';
 import { StateUtils } from '../state-utils';
 import { RESOLVE_PENDING_END_OF_OPPONENTS_NEXT_TURN_EFFECTS } from '../prefabs/attack-effects';
-import { MOVE_CARDS } from '../prefabs/prefabs';
+import { MOVE_CARDS, COIN_FLIP_PROMPT, MULTIPLE_COIN_FLIPS_PROMPT } from '../prefabs/prefabs';
 
 /** Silent hold so clients (and admin phase HUD) can show automatic phase transitions. */
 const PHASE_TRANSITION_WAIT_MS = 500;
@@ -167,8 +166,6 @@ function startNextTurn(store: StoreLike, state: State): State {
 function handleSpecialConditions(store: StoreLike, state: State, effect: BetweenTurnsEffect) {
   const player = effect.player;
   for (const sp of player.active.specialConditions) {
-    const flipsForSleep: CoinFlipPrompt[] = [];
-
     switch (sp) {
       case SpecialCondition.POISONED:
         player.active.damage += effect.poisonDamage;
@@ -183,10 +180,7 @@ function handleSpecialConditions(store: StoreLike, state: State, effect: Between
           player.active.damage += effect.burnDamage;
           break;
         }
-        store.prompt(state, new CoinFlipPrompt(
-          player.id,
-          GameMessage.FLIP_BURNED
-        ), result => {
+        COIN_FLIP_PROMPT(store, state, player, result => {
           if (result === true) {
             player.active.removeSpecialCondition(SpecialCondition.BURNED);
           }
@@ -201,19 +195,10 @@ function handleSpecialConditions(store: StoreLike, state: State, effect: Between
           break;
         }
 
-        for (let i = 0; i < effect.player.active.sleepFlips; i++) {
+        if (effect.player.active.sleepFlips > 0) {
           store.log(state, GameLog.LOG_FLIP_ASLEEP, { name: player.name });
-          flipsForSleep.push(new CoinFlipPrompt(
-            player.id,
-            GameMessage.FLIP_ASLEEP
-          ));
-        }
-
-        if (flipsForSleep.length > 0) {
-          store.prompt(state, flipsForSleep, results => {
-            const wakesUp = Array.isArray(results) ? results.every(r => r) : results;
-
-            if (wakesUp) {
+          MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, effect.player.active.sleepFlips, results => {
+            if (results.every(r => r)) {
               player.active.removeSpecialCondition(SpecialCondition.ASLEEP);
             }
           });

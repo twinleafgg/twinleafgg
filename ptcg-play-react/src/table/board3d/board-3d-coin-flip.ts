@@ -12,7 +12,6 @@ import {
 } from 'three';
 import { BOARD_3D_GRID_Y } from './board3d-constants';
 import { ZONE_POSITIONS } from './board-3d-zone-positions';
-import { COIN_FLIP_SPIN_DURATION_SEC, getCoinFlipSpinKeyframes } from '../coin-flip-animation';
 
 const COIN_EDGE_COLOR = 0x3e834d; // Matches twinleaf-coin.png outer rim
 export const COIN_FLIP_RADIUS = 0.9;
@@ -28,6 +27,13 @@ export const COIN_BACK_IMAGE_PATH = 'twinleaf-coin-back.png';
 export const COIN_DEFAULT_FRONT_IMAGE_PATH = 'twinleaf-coin.png';
 
 const deg = (d: number) => (d * Math.PI) / 180;
+
+/** Faster than the Angular 1s CSS keyframe spin; continuous GSAP easing reads smoother in 3D. */
+const COIN_3D_SPIN_DURATION_SEC = 0.58;
+/** Peak size mid-flight (was 2.0 in the old stepped keyframes). */
+const COIN_3D_PEAK_SCALE = 1.7;
+/** Extra Y wobble peak while airborne (radians). */
+const COIN_3D_WOBBLE_Y = deg(28);
 
 const textureLoader = new TextureLoader();
 textureLoader.setCrossOrigin('anonymous');
@@ -46,10 +52,20 @@ async function loadCoinTexture(url: string): Promise<Texture> {
   return prepareCoinTexture(texture);
 }
 
+/**
+ * Lift above rest so a vertical (edge-on) coin at `scale` clears the board plane (Y≈0).
+ * Root already sits at {@link COIN_REST_Y}; this is additional local Y on the coin group.
+ */
+function coinLiftForScale(scale: number): number {
+  const clearance = COIN_FLIP_RADIUS * scale + 0.12;
+  return Math.max(0, clearance - COIN_REST_Y);
+}
+
 /** Flat on the board: heads (+Y) or tails (−Y flipped up). */
 export function snapCoinRestPose(coin: Group, isHeads: boolean): void {
   coin.rotation.set(isHeads ? 0 : Math.PI, 0, 0);
   coin.scale.set(1, 1, 1);
+  coin.position.y = 0;
 }
 
 /** Permanent 180° correction so faces the camera right-side up. */
@@ -163,7 +179,11 @@ export function buildCoinFlipTimeline(
 ): gsap.core.Timeline {
   snapCoinRestPose(coin, true);
 
-  const keyframes = getCoinFlipSpinKeyframes(isHeads);
+  const spinDur = COIN_3D_SPIN_DURATION_SEC;
+  const peakLift = coinLiftForScale(COIN_3D_PEAK_SCALE);
+  // Heads: 3 full turns; tails: 3.5 — enough motion at the shorter duration.
+  const endRotX = deg(isHeads ? 1080 : 1260);
+
   const timeline = gsap.timeline({
     onComplete: () => {
       snapCoinRestPose(coin, isHeads);
@@ -171,36 +191,79 @@ export function buildCoinFlipTimeline(
     },
   });
 
-  const spinDur = COIN_FLIP_SPIN_DURATION_SEC;
+  // Continuous X spin: fast at first, eases into the final face (no stepped keyframes).
+  timeline.to(
+    coin.rotation,
+    {
+      x: endRotX,
+      duration: spinDur,
+      ease: 'power2.out',
+    },
+    0,
+  );
 
-  for (let i = 1; i < keyframes.length; i++) {
-    const prev = keyframes[i - 1];
-    const curr = keyframes[i];
-    const segmentDur = (curr.offset - prev.offset) * spinDur;
-    const startAt = prev.offset * spinDur;
+  // Soft Y wobble out and back — sine keeps the direction change smooth.
+  timeline.to(
+    coin.rotation,
+    {
+      y: COIN_3D_WOBBLE_Y,
+      duration: spinDur * 0.32,
+      ease: 'sine.out',
+    },
+    0,
+  );
+  timeline.to(
+    coin.rotation,
+    {
+      y: 0,
+      duration: spinDur * 0.68,
+      ease: 'power3.out',
+    },
+    spinDur * 0.32,
+  );
 
-    timeline.to(
-      coin.rotation,
-      {
-        x: deg(curr.rotXDeg),
-        y: deg(curr.rotYDeg),
-        duration: segmentDur,
-        ease: 'none',
-      },
-      startAt,
-    );
-    timeline.to(
-      coin.scale,
-      {
-        x: curr.scale,
-        y: curr.scale,
-        z: curr.scale,
-        duration: segmentDur,
-        ease: 'none',
-      },
-      startAt,
-    );
-  }
+  // Rise + grow on the way up, then settle onto the board.
+  timeline.to(
+    coin.scale,
+    {
+      x: COIN_3D_PEAK_SCALE,
+      y: COIN_3D_PEAK_SCALE,
+      z: COIN_3D_PEAK_SCALE,
+      duration: spinDur * 0.38,
+      ease: 'power2.out',
+    },
+    0,
+  );
+  timeline.to(
+    coin.scale,
+    {
+      x: 1,
+      y: 1,
+      z: 1,
+      duration: spinDur * 0.62,
+      ease: 'power3.inOut',
+    },
+    spinDur * 0.38,
+  );
+
+  timeline.to(
+    coin.position,
+    {
+      y: peakLift,
+      duration: spinDur * 0.38,
+      ease: 'power2.out',
+    },
+    0,
+  );
+  timeline.to(
+    coin.position,
+    {
+      y: 0,
+      duration: spinDur * 0.62,
+      ease: 'power3.inOut',
+    },
+    spinDur * 0.38,
+  );
 
   return timeline;
 }

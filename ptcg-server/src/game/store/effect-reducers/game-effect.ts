@@ -28,7 +28,6 @@ import {
   EffectOfAbilityEffect,
 } from '../effects/game-effects';
 import { AfterAttackEffect, BeforeDoingDamageEffect, EndTurnEffect } from '../effects/game-phase-effects';
-import { CoinFlipPrompt } from '../prompts/coin-flip-prompt';
 import { PlayerType, SlotType } from '../actions/play-card-action';
 import { StateUtils } from '../state-utils';
 import { GamePhase, State } from '../state/state';
@@ -258,13 +257,12 @@ function* useAttack(next: Function, store: StoreLike, state: State, effect: UseA
     let flip = false;
 
     store.log(state, GameLog.LOG_FLIP_CONFUSION, { name: player.name });
-    yield store.prompt(state, new CoinFlipPrompt(
-      player.id,
-      GameMessage.FLIP_CONFUSION),
-      result => {
-        flip = result;
-        next();
-      });
+    state = COIN_FLIP_PROMPT(store, state, player, result => {
+      flip = result;
+    });
+    if (store.hasPrompts()) {
+      yield store.waitPrompt(state, () => next());
+    }
 
     if (flip === false) {
       store.log(state, GameLog.LOG_HURTS_ITSELF);
