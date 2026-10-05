@@ -10,11 +10,13 @@ import {
   SRGBColorSpace,
   Shape,
   ShapeGeometry,
+  type Vector3,
 } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { Select } from '@react-three/postprocessing';
 import { useLoader, useThree } from '@react-three/fiber';
 import { TextureLoader } from 'three';
+import { PlayerType } from 'ptcg-server';
 import { getBoardConfig } from './board-3d-config';
 import {
   BOARD3D_CARD_CORNER_RADIUS,
@@ -22,6 +24,7 @@ import {
   BOARD3D_CARD_WIDTH,
 } from './board3dCardShared';
 import { BOARD_3D_CENTER_EMBLEM_SIZE, BOARD_3D_CENTER_EMBLEM_Y } from './board3d-constants';
+import { getBenchPositions } from './board-3d-zone-positions';
 import { publicAssetUrl } from '../../utils/publicAssetUrl';
 
 const BOARD_W = 70;
@@ -84,17 +87,31 @@ function ZonePad({ position, geometry, material }: ZonePadProps) {
   );
 }
 
+type SlotPad = {
+  key: string;
+  position: Vector3 | { x: number; y: number; z: number };
+};
+
 export type Board3dStaticSceneProps = {
   /** When true, emblem is wrapped in postprocessing {@link Select} for selective bloom. */
   bloomActive?: boolean;
+  /** Live bench capacity for the near player (from `player.bench.length`). */
+  bottomBenchSize?: number;
+  /** Live bench capacity for the far player (from `player.bench.length`). */
+  topBenchSize?: number;
 };
 
-export function Board3dStaticScene({ bloomActive = false }: Board3dStaticSceneProps) {
+export function Board3dStaticScene({
+  bloomActive = false,
+  bottomBenchSize = 5,
+  topBenchSize = 5,
+}: Board3dStaticSceneProps) {
   const emblemPath = publicAssetUrl('assets/twinleaf-board-center.png');
   const centerTex = useLoader(TextureLoader, emblemPath);
   const gl = useThree((s) => s.gl);
   const size = useThree((s) => s.size);
-  const { zonePositions } = getBoardConfig(size.width / Math.max(size.height, 1));
+  const aspect = size.width / Math.max(size.height, 1);
+  const { zonePositions } = getBoardConfig(aspect);
 
   useLayoutEffect(() => {
     // Premultiply transparent texels to prevent pale mipmap halos around the center art.
@@ -168,23 +185,37 @@ export function Board3dStaticScene({ bloomActive = false }: Board3dStaticScenePr
   const away = zonePositions.topPlayer;
   const midX = (home.active.x + away.active.x) / 2;
   const midZ = (home.active.z + away.active.z) / 2;
-  const slotElements = [
-    home.active,
-    ...home.bench.slice(0, 5),
-    away.active,
-    ...away.bench.slice(0, 5),
-    home.supporter,
-    away.supporter,
-    zonePositions.stadium,
-    home.deck,
-    home.discard,
-    away.deck,
-    away.discard,
-    ...[home, away].flatMap((player) => Array.from({ length: 6 }, (_, index) => ({
-      x: player.prizes.x + ((index % 2) - 0.5) * 3,
-      y: player.prizes.y,
-      z: player.prizes.z + (Math.floor(index / 2) - 1) * 4,
-    }))),
+  const bottomBench = getBenchPositions(bottomBenchSize, PlayerType.BOTTOM_PLAYER, aspect);
+  const topBench = getBenchPositions(topBenchSize, PlayerType.TOP_PLAYER, aspect);
+  const slotElements: SlotPad[] = [
+    { key: 'bottom-active', position: home.active },
+    ...bottomBench.map((position, index) => ({
+      key: `bottom-bench-${index}`,
+      position,
+    })),
+    { key: 'top-active', position: away.active },
+    ...topBench.map((position, index) => ({
+      key: `top-bench-${index}`,
+      position,
+    })),
+    { key: 'bottom-supporter', position: home.supporter },
+    { key: 'top-supporter', position: away.supporter },
+    { key: 'stadium', position: zonePositions.stadium },
+    { key: 'bottom-deck', position: home.deck },
+    { key: 'bottom-discard', position: home.discard },
+    { key: 'top-deck', position: away.deck },
+    { key: 'top-discard', position: away.discard },
+    ...[home, away].flatMap((player, playerIndex) => {
+      const side = playerIndex === 0 ? 'bottom' : 'top';
+      return Array.from({ length: 6 }, (_, index) => ({
+        key: `${side}-prize-${index}`,
+        position: {
+          x: player.prizes.x + ((index % 2) - 0.5) * 3,
+          y: player.prizes.y,
+          z: player.prizes.z + (Math.floor(index / 2) - 1) * 4,
+        },
+      }));
+    }),
   ];
 
   const emblemMesh = (
@@ -202,9 +233,9 @@ export function Board3dStaticScene({ bloomActive = false }: Board3dStaticScenePr
     <group>
       <mesh geometry={geometries.outer} material={materials.trim} position={[0, -0.42, BOARD_CENTER_Z]} receiveShadow={false} />
       <mesh geometry={geometries.board} material={materials.board} position={[0, -0.32, BOARD_CENTER_Z]} receiveShadow={false} />
-      {slotElements.map((position, index) => (
+      {slotElements.map(({ key, position }) => (
         <ZonePad
-          key={index}
+          key={key}
           position={[position.x, 0.052, position.z]}
           geometry={geometries.slotFrame}
           material={materials.slotFrame}

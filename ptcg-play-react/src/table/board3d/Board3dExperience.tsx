@@ -175,7 +175,11 @@ export function Board3dExperience({
       <Board3dCameraRig clientId={controllerProps.clientId} topPlayer={controllerProps.topPlayer} />
       <Board3dLightingRig settings={lightingSettings} />
       <Suspense fallback={null}>
-        <Board3dStaticScene bloomActive={bloomActive} />
+        <Board3dStaticScene
+          bloomActive={bloomActive}
+          bottomBenchSize={controllerProps.bottomPlayer?.bench?.length ?? 5}
+          topBenchSize={controllerProps.topPlayer?.bench?.length ?? 5}
+        />
       </Suspense>
       <group ref={worldRef}>
         <group ref={handRef} />
