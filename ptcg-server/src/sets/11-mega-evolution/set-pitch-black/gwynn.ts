@@ -72,7 +72,7 @@ export class Gwynn extends TrainerCard {
         blocked.push(i);
       }
     });
-    if (player.hand.cards.length - blocked.length < 2) {
+    if (player.hand.cards.length - blocked.length < 1) {
       return false;
     }
     return true;
