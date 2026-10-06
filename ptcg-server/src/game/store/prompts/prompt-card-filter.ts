@@ -1,4 +1,4 @@
-import { CardTag, CardType, SuperType } from '../card/card-types';
+import { CardTag, CardType, SuperType, TrainerType } from '../card/card-types';
 
 /**
  * Duck-typed so this module does not import Card / PokemonCard / EnergyCard.
@@ -12,6 +12,8 @@ export interface PromptFilterCard {
   /** Present on class instances. Client state cards are plain JSON and only have `tags`. */
   tags?: CardTag[];
   hasTag?(tag: CardTag): boolean;
+  trainerType?: TrainerType;
+  _trainerType?: TrainerType;
 }
 
 function asTypeList(value: unknown): CardType[] {
@@ -28,10 +30,18 @@ function cardHasTag(card: PromptFilterCard, tag: CardTag): boolean {
   return Array.isArray(card.tags) && card.tags.includes(tag);
 }
 
+function cardTrainerType(card: PromptFilterCard): TrainerType | undefined {
+  if (card.trainerType != null) {
+    return card.trainerType;
+  }
+  return card._trainerType;
+}
+
 /**
  * Prompt filters used to compare every key with !==. That fails now that
  * cardType (and tags) are arrays, and Energy stores types on provides rather
- * than cardType. Scalar keys still use !==.
+ * than cardType. Trainer type is a getter, so client cards only have
+ * `_trainerType`. Scalar keys still use !==.
  */
 export function matchesPromptFilter(card: PromptFilterCard | null | undefined, filter: object): boolean {
   if (!card) {
@@ -62,6 +72,12 @@ export function matchesPromptFilter(card: PromptFilterCard | null | undefined, f
     if (key === 'tags') {
       const wanted = (Array.isArray(expected) ? expected : [expected]) as CardTag[];
       if (!wanted.every(tag => cardHasTag(card, tag))) {
+        return false;
+      }
+      continue;
+    }
+    if (key === 'trainerType') {
+      if (expected !== cardTrainerType(card)) {
         return false;
       }
       continue;
