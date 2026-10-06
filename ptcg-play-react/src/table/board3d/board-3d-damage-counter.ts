@@ -184,8 +184,12 @@ export class Board3dDamageCounter {
       side: DoubleSide,
       alphaTest: 0.1,
       depthWrite: false,
-      // Same as status markers: large corner discs otherwise depth-clip through the card edge.
-      depthTest: false,
+      // Respect depth so hand / flight cards occlude the counter (depthTest:false painted over everything).
+      // Slight polygon offset keeps the billboarded disc from depth-fighting the host card edge.
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1,
       color: 0xd0d0d0, // Darkened to prevent bloom (luminance ~0.815, below 0.85 threshold)
     });
 

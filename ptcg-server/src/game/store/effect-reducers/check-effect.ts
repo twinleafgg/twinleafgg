@@ -7,10 +7,9 @@ import { PokemonCard } from '../card/pokemon-card';
 import { CheckHpEffect, CheckAttackCostEffect, CheckProvidedEnergyEffect, CheckTableStateEffect, CheckRetreatCostEffect, CheckPokemonTypeEffect } from '../effects/check-effects';
 import { Effect } from '../effects/effect';
 import { KnockOutEffect, MovedToActiveEffect } from '../effects/game-effects';
-import { TAKE_SPECIFIC_PRIZES, MOVE_CARDS } from '../prefabs/prefabs';
+import { TAKE_SPECIFIC_PRIZES, MOVE_CARDS, COIN_FLIP_PROMPT } from '../prefabs/prefabs';
 import { ChoosePokemonPrompt } from '../prompts/choose-pokemon-prompt';
 import { ChoosePrizePrompt } from '../prompts/choose-prize-prompt';
-import { CoinFlipPrompt } from '../prompts/coin-flip-prompt';
 import { ShuffleDeckPrompt } from '../prompts/shuffle-prompt';
 import { setupGame } from '../reducers/setup-reducer';
 import { CardList } from '../state/card-list';
@@ -400,10 +399,7 @@ function initiateSuddenDeath(store: StoreLike, state: State): State {
   });
 
   // Coin flip for first player
-  return store.prompt(state, new CoinFlipPrompt(
-    state.players[0].id,
-    GameMessage.SETUP_WHO_BEGINS_FLIP
-  ), result => {
+  return COIN_FLIP_PROMPT(store, state, state.players[0], result => {
     const firstPlayer = result ? 0 : 1;
     setupSuddenDeathGame(store, state, firstPlayer);
   });

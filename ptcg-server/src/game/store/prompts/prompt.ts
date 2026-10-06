@@ -1,3 +1,4 @@
+import { Card } from '../card/card';
 import { State } from '../state/state';
 
 export abstract class Prompt<T> {
@@ -12,6 +13,12 @@ export abstract class Prompt<T> {
    * another player's effect (e.g. Hypno Hand Control).
    */
   public perspectivePlayerId?: number;
+
+  /**
+   * Card whose effect created this prompt (e.g. the Supporter/Item being resolved).
+   * Set by Store when a trainer is resolving; serialized to the client for UI.
+   */
+  public sourceCard?: Card;
 
   constructor(public playerId: number) {
     this.id = 0;

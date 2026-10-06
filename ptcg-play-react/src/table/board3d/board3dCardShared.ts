@@ -51,6 +51,25 @@ export const board3dCardOutlineMaterialCache = new Map<string, MeshBasicMaterial
 /** Edge materials keyed by hex color (shared across cards with the same sleeve border). */
 export const board3dCardEdgeMaterialCache = new Map<number, MeshStandardMaterial>();
 
+export function getBoard3dCardFaceMaterialCacheSize(): number {
+  return board3dCardFaceMaterialCache.size;
+}
+
+/**
+ * Dispose face materials whose cache key references the given texture UUID.
+ * Used when the asset loader evicts a texture from its LRU cache.
+ */
+export function evictBoard3dCardFaceMaterialsForTexture(texture: Texture): void {
+  const uuid = texture.uuid;
+  for (const [key, material] of [...board3dCardFaceMaterialCache.entries()]) {
+    if (!key.startsWith(`${uuid}|`)) {
+      continue;
+    }
+    material.dispose();
+    board3dCardFaceMaterialCache.delete(key);
+  }
+}
+
 /** Avoid re-sampling the same texture image for every card in a stack. */
 const textureBorderColorCache = new WeakMap<object, number>();
 

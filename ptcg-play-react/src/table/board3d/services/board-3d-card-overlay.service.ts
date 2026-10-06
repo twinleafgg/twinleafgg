@@ -49,6 +49,8 @@ export interface CardOverlays {
   legendTopCard?: Board3dCard;
   legendBottomCard?: Board3dCard;
   toolCards: Board3dCard[];
+  /** Signature of last built tool list (ids/names) to skip rebuilds. */
+  toolSignature?: string;
 }
 
 export class Board3dCardOverlayService {
@@ -388,12 +390,18 @@ export class Board3dCardOverlayService {
     scene: Scene,
     cardList?: PokemonCardList
   ): Promise<void> {
+    const toolSignature = tools.map((t) => `${t.id}:${t.fullName}`).join('|');
+    if (toolSignature === overlays.toolSignature) {
+      return;
+    }
+
     for (const toolCard of overlays.toolCards) {
       disposeToolCardHitTarget(toolCard.getGroup());
       attachRoot.remove(toolCard.getGroup());
       toolCard.dispose();
     }
     overlays.toolCards = [];
+    overlays.toolSignature = toolSignature;
 
     if (tools.length === 0) {
       return;
@@ -519,9 +527,7 @@ export class Board3dCardOverlayService {
       this.clearOverlays(cardId, scene);
     });
     this.cardOverlays.clear();
-    this.energyTextureCache.forEach((texture) => {
-      texture.dispose();
-    });
+    // Textures are owned by the asset loader cache — do not dispose them here.
     this.energyTextureCache.clear();
   }
 }

@@ -21,7 +21,6 @@ import {
   Card,
   PokemonCard,
   PokemonCardList,
-  TrainerCard,
   type CardTarget,
 } from 'ptcg-server';
 import gsap from 'gsap';
@@ -29,6 +28,7 @@ import { Board3dDropZone, DropZoneType, type DropZoneConfig } from '../board-3d-
 import {
   cardPlaysAsBasicPokemonFromHand,
   cardHasUseFromHandToBenchPower,
+  resolveTrainerType,
   trainerTypeIsSupporter,
   type HandPlayPokemonZoneGameSettings,
 } from '../board3dMeshIdForPlayTarget';
@@ -945,7 +945,7 @@ export class Board3dInteractionService {
       card: cardData,
       superType: cardData.superType,
       stage: (cardData as PokemonCard).stage,
-      trainerType: (cardData as TrainerCard).trainerType,
+      trainerType: resolveTrainerType(cardData),
       originalTarget: source === 'board' ? card.userData.cardTarget : undefined
     };
 
@@ -2395,10 +2395,7 @@ export class Board3dInteractionService {
     endScale: number;
     rotationY: number;
   } {
-    const trainerTypeFromCard =
-      card?.superType === SuperType.TRAINER
-        ? (card as TrainerCard).trainerType
-        : undefined;
+    const trainerTypeFromCard = resolveTrainerType(card);
     const effectiveTrainer = trainerTypeFromCard ?? dragTrainerType;
 
     let world: Vector3;

@@ -223,7 +223,7 @@ export class Store implements StoreLike {
       }
 
       state.prompts.push(prompts[i]);
-      this.stampTrainerPrompt(prompts[i].id);
+      this.stampTrainerPrompt(prompts[i]);
     }
 
     const promptItem: PromptItem = {
@@ -554,11 +554,12 @@ export class Store implements StoreLike {
     }
   }
 
-  private stampTrainerPrompt(promptId: number): void {
+  private stampTrainerPrompt(prompt: Prompt<any>): void {
     if (this.calculatingPlayability || this.resolvingTrainer === undefined) {
       return;
     }
-    this.trainerPromptSources.set(promptId, this.resolvingTrainer);
+    this.trainerPromptSources.set(prompt.id, this.resolvingTrainer);
+    prompt.sourceCard = this.resolvingTrainer.trainerCard;
   }
 
   private applyTrainerTargetFilters(state: State, promptIds: number[]): void {

@@ -59,6 +59,8 @@ export interface BasicEntranceAnimationEvent {
   cardId: number | string;
   slot: string;
   index?: number;
+  /** Origin of the entrance (e.g. deck search → bench). */
+  source?: 'deck' | 'hand' | 'discard';
 }
 
 export interface AbilityAnimationEvent extends BasicEntranceAnimationEvent {

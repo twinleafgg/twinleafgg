@@ -27,7 +27,6 @@ import type {
   OrderCardsPrompt,
   SelectOptionPrompt,
 } from 'ptcg-server';
-import { chooseCardsSelectionValid, matchesPromptFilter } from './matchesPromptFilter';
 import type { LocalGameState } from '../types/localGameState';
 import { activeGamePrompt } from '../activeGamePrompt';
 import { BoardInteractionService } from '../BoardInteractionService';
@@ -40,6 +39,7 @@ import { playSfx } from '../../sfx';
 import styles from './TablePromptLayer.module.css';
 import { AttachEnergyPromptPanel } from './AttachEnergyPromptPanel';
 import { ChooseAttackPromptPanel } from './ChooseAttackPromptPanel';
+import { ChooseCardsPromptPanel } from './ChooseCardsPromptPanel';
 import { ChooseEnergyPromptPanel } from './ChooseEnergyPromptPanel';
 import { MoveEnergyPromptPanel } from './MoveEnergyPromptPanel';
 import { DiscardEnergyPromptPanel } from './DiscardEnergyPromptPanel';
@@ -70,20 +70,6 @@ const CHOOSE_CARDS_CARD_BACK = '/assets/cardback.png';
 
 /** Visual prize numbers (match Angular board layout). */
 const PRIZE_SLOT_LABELS = [5, 6, 3, 4, 1, 2];
-
-function buildChooseCardsFilterMap(
-  cards: Card[],
-  filter: ChooseCardsPrompt['filter'],
-  blocked: number[],
-): Record<string, boolean> {
-  const filterMap: Record<string, boolean> = {};
-  for (let i = 0; i < cards.length; i++) {
-    const card = cards[i];
-    const isBlocked = blocked.includes(i) || !matchesPromptFilter(card, filter);
-    filterMap[card.fullName] = !isBlocked;
-  }
-  return filterMap;
-}
 
 export type TablePromptLayerProps = {
   localGame: LocalGameState;
@@ -211,7 +197,7 @@ function PendingBoardAnimationWaitPrompt(props: {
   promptId: number;
   fallbackMs: number;
   pollMs?: number;
-  /** How far before mount an animation start still counts (trainer prompt delay can be ~2.5s). */
+  /** How far before mount an animation start still counts (trainer prompt delay can be ~650ms). */
   startedAtSkewMs?: number;
   kind: 'handToDeck' | 'shuffle' | 'draw';
   boardInteraction: BoardInteractionService;
@@ -1106,7 +1092,7 @@ function TablePromptLayerBody({
 
   if (suppressTrainerEffectPrompts) {
     // Silent / animation WaitPrompts must still resolve — otherwise hand→deck / shuffle
-    // gates sit until the trainer play delay ends (~2.5s) after the motion already finished.
+    // gates sit until the trainer play delay ends (~650ms) after the motion already finished.
     if (activePrompt.type === 'WaitPrompt') {
       const wp = activePrompt as WaitPrompt;
       const isAnimationGate =
@@ -1281,7 +1267,7 @@ function TablePromptLayerBody({
       );
     }
     return (
-      <ChooseCardsPanel
+      <ChooseCardsPromptPanel
         key={ccp.id}
         prompt={ccp}
         players={localGame.state.players}
@@ -1712,190 +1698,6 @@ function ChoosePrizePanel(props: {
         />
       ) : null}
     </>
-  );
-}
-
-function ChooseCardsPanel(props: {
-  prompt: ChooseCardsPrompt;
-  players: LocalGameState['state']['players'];
-  catalog: Card[];
-  getScanUrl: (card: Card) => string;
-  t: TFunction;
-  gameMessageText: (t: TFunction, message: string | number) => string;
-  resolve: (id: number, result: unknown) => void;
-  replay: boolean;
-}) {
-  const { prompt, players, catalog, getScanUrl, t, gameMessageText, resolve, replay } = props;
-  const cards = prompt.cards.cards;
-  const blocked = prompt.options.blocked ?? [];
-  const { min, max, allowCancel, isSecret } = prompt.options;
-
-  const filterMap = useMemo(
-    () => buildChooseCardsFilterMap(cards, prompt.filter, blocked),
-    [cards, prompt.filter, blocked],
-  );
-
-  const items = useMemo(
-    () =>
-      cards.map((card, index) => ({
-        card,
-        index,
-        isAvailable: filterMap[card.fullName] ?? false,
-      })),
-    [cards, filterMap],
-  );
-
-  const [tab, setTab] = useState<'valid' | 'all'>('valid');
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const [revealed, setRevealed] = useState(false);
-  const [detail, setDetail] = useState<{ card: Card; index: number } | null>(null);
-
-  useEffect(() => {
-    setTab('valid');
-    setSelectedIndices([]);
-    setRevealed(false);
-    setDetail(null);
-  }, [prompt.id]);
-
-  const visibleItems = tab === 'valid' ? items.filter((x) => x.isAvailable) : items;
-
-  const toggleIndex = (index: number, isAvailable: boolean) => {
-    if (!isAvailable) {
-      return;
-    }
-    setSelectedIndices((prev) => {
-      const pos = prev.indexOf(index);
-      if (pos !== -1) {
-        return [...prev.slice(0, pos), ...prev.slice(pos + 1)];
-      }
-      if (prev.length >= max) {
-        return prev;
-      }
-      return [...prev, index];
-    });
-  };
-
-  const selectedCards = selectedIndices.map((i) => cards[i]);
-  const canConfirm = chooseCardsSelectionValid(cards, selectedCards, prompt.filter, prompt.options);
-
-  const title = t('PROMPT_CHOOSE_CARDS_TITLE', { defaultValue: 'Choose cards' });
-  /** Secret: facedown in live play; in replay, facedown until user checks Reveal. */
-  const useCardBack = isSecret && (!replay || !revealed);
-  const facedownForPopup = useCardBack;
-
-  return (
-    <div className={styles.backdrop} role="presentation">
-      <div className={`${styles.panel} ${styles.panelWide}`} role="dialog" aria-modal="true">
-        <h2 className={styles.title}>{title}</h2>
-        <p className={styles.message}>{gameMessageText(t, prompt.message)}</p>
-
-        {replay && isSecret ? (
-          <div className={styles.chooseSecretRow}>
-            <CheckboxField
-              id={`choose-cards-reveal-${prompt.id}`}
-              checked={revealed}
-              onChange={() => setRevealed((r) => !r)}
-            >
-              {t('REACT_REVEAL_SECRET_CARDS', { defaultValue: 'Reveal cards' })}
-            </CheckboxField>
-          </div>
-        ) : null}
-
-        <div className={styles.chooseTabs} role="tablist" aria-label={t('REACT_CARD_FILTER_TABS', { defaultValue: 'Card filter' })}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'valid'}
-            className={`${styles.chooseTab} ${tab === 'valid' ? styles.chooseTabActive : ''}`}
-            onClick={() => setTab('valid')}
-          >
-            {t('CARDS_VALID', { defaultValue: 'Valid' })}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'all'}
-            className={`${styles.chooseTab} ${tab === 'all' ? styles.chooseTabActive : ''}`}
-            onClick={() => setTab('all')}
-          >
-            {t('CARDS_ALL', { defaultValue: 'All' })}
-          </button>
-        </div>
-
-        <p className={styles.chooseSelectionMeta}>
-          {t('REACT_CHOOSE_CARDS_COUNT', {
-            defaultValue: 'Selected {{n}} (min {{min}}, max {{max}})',
-            n: selectedIndices.length,
-            min,
-            max,
-          })}
-        </p>
-
-        <div className={styles.chooseCardsGrid}>
-          {visibleItems.map(({ card, index, isAvailable }) => {
-            const selected = selectedIndices.includes(index);
-            const src = useCardBack ? CHOOSE_CARDS_CARD_BACK : getScanUrl(card);
-            const disabled = !isAvailable;
-            return (
-              <button
-                key={`${index}-${card.id}-${card.fullName}`}
-                type="button"
-                className={`${styles.chooseCardBtn} ${selected ? styles.chooseCardBtnSelected : ''} ${disabled ? styles.chooseCardBtnDisabled : ''}`}
-                disabled={disabled}
-                onClick={(e) => {
-                  if (e.shiftKey && !disabled) {
-                    setDetail({ card, index });
-                    return;
-                  }
-                  toggleIndex(index, isAvailable);
-                }}
-                title={t('REACT_CHOOSE_CARDS_CARD_HINT', {
-                  defaultValue: '{{name}} — Shift+click for card info',
-                  name: card.name,
-                })}
-              >
-                <CardFace
-                  card={useCardBack ? null : card}
-                  src={src}
-                  name={card.name}
-                  style={{ width: 100, height: 140 }}
-                />
-              </button>
-            );
-          })}
-        </div>
-
-        <div className={styles.actions}>
-          {allowCancel ? (
-            <ShellButton type="button" variant="secondary" onClick={() => resolve(prompt.id, null)}>
-              {t('BUTTON_CANCEL')}
-            </ShellButton>
-          ) : null}
-          <ShellButton
-            type="button"
-            disabled={!canConfirm}
-            onClick={() => {
-              if (canConfirm) {
-                resolve(prompt.id, selectedIndices);
-              }
-            }}
-          >
-            {t('BUTTON_OK')}
-          </ShellButton>
-        </div>
-      </div>
-      {detail ? (
-        <CardInfoPopup
-          card={detail.card}
-          facedown={facedownForPopup}
-          players={players}
-          catalog={catalog}
-          getScanUrl={getScanUrl}
-          onClose={() => setDetail(null)}
-          isInGame
-        />
-      ) : null}
-    </div>
   );
 }
 

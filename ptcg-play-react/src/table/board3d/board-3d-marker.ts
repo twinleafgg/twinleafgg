@@ -106,7 +106,8 @@ export function getSpecialConditionRotationZ(conditions: SpecialCondition[]): nu
 export class Board3dMarker {
   private group: Group;
   private markerMeshes: Mesh[] = [];
-  private static geometry: PlaneGeometry;
+  private lastMarkerSignature = '';
+  private static geometry?: PlaneGeometry;
   private static readonly _qParent = new Quaternion();
   private static readonly _qCam = new Quaternion();
   private static readonly _qFlip = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI);
@@ -137,11 +138,17 @@ export class Board3dMarker {
    * Update markers from image filenames (without path/extension).
    */
   async updateMarkerFiles(markerFiles: string[]): Promise<void> {
-    const generation = ++this.updateGeneration;
-    this.clear();
-
     const stack = resolveMarkerStack(markerFiles);
+    const signature = stack.join('|');
+    if (signature === this.lastMarkerSignature) {
+      return;
+    }
+
+    const generation = ++this.updateGeneration;
+    this.clearMeshes();
+
     if (stack.length === 0) {
+      this.lastMarkerSignature = signature;
       return;
     }
 
@@ -155,6 +162,8 @@ export class Board3dMarker {
       return;
     }
 
+    this.lastMarkerSignature = signature;
+
     for (let i = 0; i < stack.length; i++) {
       const file = stack[i];
       const texture = textures[i];
@@ -167,7 +176,11 @@ export class Board3dMarker {
         side: DoubleSide,
         alphaTest: 0.1,
         depthWrite: false,
-        depthTest: false,
+        // Respect depth so hand / flight cards occlude markers (depthTest:false painted over everything).
+        depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
       });
 
       const mesh = new Mesh(Board3dMarker.geometry, material);
@@ -222,12 +235,17 @@ export class Board3dMarker {
     await this.updateMarkerFiles(MARKER_DISPLAY_ORDER.filter((file) => active.has(file)));
   }
 
-  clear(): void {
+  private clearMeshes(): void {
     for (const mesh of this.markerMeshes) {
       this.group.remove(mesh);
       (mesh.material as MeshBasicMaterial).dispose();
     }
     this.markerMeshes = [];
+  }
+
+  clear(): void {
+    this.lastMarkerSignature = '';
+    this.clearMeshes();
   }
 
   getGroup(): Group {
@@ -244,6 +262,7 @@ export class Board3dMarker {
   static disposeSharedResources(): void {
     if (Board3dMarker.geometry) {
       Board3dMarker.geometry.dispose();
+      Board3dMarker.geometry = undefined;
     }
   }
 }

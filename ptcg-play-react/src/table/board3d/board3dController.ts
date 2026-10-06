@@ -21,17 +21,7 @@ import gsap from 'gsap';
 import type { ThreeEvent } from '@react-three/fiber';
 import { Board3dAssetLoaderService } from './services/board-3d-asset-loader.service';
 import { Board3dStateSyncService } from './services/board-3d-state-sync.service';
-import { Board3dStackService } from './services/board-3d-stack.service';
-import {
-  Board3dAnimationService,
-  getMultiDrawBatchStageLayout,
-  getMultiDrawSharedHoldSec,
-  HAND_DISCARD_TO_DRAW_HOLD_SEC,
-  HAND_DISCARD_TO_TRAINER_HOLD_SEC,
-  HAND_TO_DECK_STAGGER_SEC,
-  MULTI_DRAW_STAGE_TO_HAND_STAGGER_SEC,
-  type DrawFlightVisualPreset,
-} from './services/board-3d-animation.service';
+import { Board3dAnimationService } from './services/board-3d-animation.service';
 import { Board3dInteractionService, type DropResult, type PlayCardFlightPayload } from './services/board-3d-interaction.service';
 import { Board3dHandService, BOARD3D_PLAYER_HAND_Z } from './services/board-3d-hand.service';
 import { Board3dWireframeService } from './services/board-3d-wireframe.service';
@@ -39,7 +29,6 @@ import { Board3dLightingService } from './services/board-3d-lighting.service';
 import { Board3dPostProcessingService } from './services/board-3d-post-processing.service';
 import { Board3dCardInspectService, BOARD3D_CARD_INFO_INSPECT_ENABLED } from './services/board-3d-card-inspect.service';
 import type { LocalGameState } from '../types/localGameState';
-import { hasUnresolvedGamePrompts } from '../activeGamePrompt';
 import {
   Player,
   CardList,
@@ -47,45 +36,34 @@ import {
   SlotType,
   PlayerType,
   SuperType,
-  TrainerCard,
-  GamePhase,
   PokemonCardList,
   CardTag,
   type CardTarget,
-  type State,
 } from 'ptcg-server';
 import type { Board3dCardsAdapter, Board3dCardInfoData, CardInfoPaneActionResult } from './board3dCardsAdapter';
 import {
   BOARD3D_CARD_SLOT_BASE_HEIGHT,
   BOARD3D_CARD_SLOT_BASE_WIDTH,
-  BOARD3D_BENCH_DROP_ZONE_HEIGHT,
-  BOARD3D_BENCH_DROP_ZONE_WIDTH,
   BOARD3D_DROP_ZONE_TARGET_SCALE,
-  BOARD_3D_BENCH_SLOT_OUTLINE_COLOR,
-  BOARD_3D_BENCH_SLOT_OUTLINE_OPACITY,
+  BOARD_3D_BENCH_OUTLINE_COLOR,
   BOARD_3D_CENTER_EMBLEM_Y,
 } from './board3d-constants';
 import type { CardInfoPaneOptions } from '../../card-info/CardInfoPane';
 import type { Board3dGameActions } from './board3dGameActions';
 import { BoardInteractionService, type AbilityAnimationEvent, type AbilityFocusAnchor, type BasicEntranceAnimationEvent, type CoinFlipAnimationEvent, type DeckShuffleAnimationEvent } from '../BoardInteractionService';
-import {
-  getBoardConfig,
-  getCameraConfig,
-  getBottomPrizeSlotWorld,
-  getTopPrizeSlotWorld,
-  getDrawFlightStageCenterWorld,
-  getMaxDrawStageRowWidthWorld,
-} from './board-3d-config';
+import { getCameraConfig, getDrawFlightStageCenterWorld } from './board-3d-config';
 import {
   board3dMeshIdForPlayTarget,
   cardIsFossilLikeTrainer,
+  cardIsStadium,
   cardIsSupporter,
   cardIsTrainerBoardHandPlay,
+  resolveTrainerType,
   worldPositionForSupporterMeshId,
 } from './board3dMeshIdForPlayTarget';
 import { DropZoneType } from './board-3d-drop-zone';
 import { getBenchPositions, ZONE_POSITIONS } from './board-3d-zone-positions';
-import { isSharedStadiumMeshId } from './dual-stadium.utils';
+import { isSharedStadiumMeshId, SHARED_STADIUM_MESH_IDS } from './dual-stadium.utils';
 import {
   cardCanAssembleLegendFromHand,
   findLegendAssemblyPartnerHandIndex,
@@ -99,17 +77,37 @@ import {
 import { r3fPointerEventAsMouse } from './board3dR3fPointer';
 import { subscribeBoard3dInteractionStreams } from './board3dControllerSubscriptions';
 import { Board3dCard } from './board-3d-card';
+import { Board3dEnergySprite } from './board-3d-energy-sprite';
+import { Board3dMarker } from './board-3d-marker';
+import { apply3dCardHolo } from './board-3d-holo-apply';
+import {
+  countSceneObjects,
+  getBoard3dCardFaceMaterialCacheSize,
+  getGsapChildCount,
+  type Board3dPerfStats,
+} from './board3dPerfStats';
+import { playSfx } from '../../sfx';
 import {
   projectCardFaceToScreenAnchor,
   projectCardLowerFaceToScreenAnchor,
   projectCardRetreatPlateToScreenAnchor,
 } from './board3dAbilityFocusProjection';
-import { playDeckShuffleAnimation, playDeckShufflePreview } from './board3dDeckShufflePreview';
+import { playDeckShuffleAnimation, playDeckShufflePreview, killAllDeckShuffleAnimations } from './board3dDeckShufflePreview';
 import {
   LEGEND_3D_HALF_ROTATION,
   LEGEND_3D_HALF_SCALE,
   resolveLegendDisplayHalves,
 } from './legend-display.utils';
+import type { Board3dDisplayOverrides } from './services/board-3d-state-sync.service';
+import { Board3dStackService } from './services/board-3d-stack.service';
+import { BoardTransitionQueue, type ProcessStateOptions } from './transitions/boardTransitionQueue';
+import { captureSnapshot, type BoardSnapshot } from './transitions/boardSnapshot';
+import { planTransition, type TransitionStep } from './transitions/planTransition';
+import {
+  Board3dTransitionRunner,
+  type Board3dTransitionHost,
+  type LocalTrainerFlight,
+} from './transitions/board3dTransitionRunner';
 
 export type AdminSpectatorReveal = {
   revealPrizes: boolean;
@@ -129,10 +127,11 @@ export interface Board3dControllerProps {
   onKoSequenceActiveChange?: (active: boolean) => void;
 }
 
-type HandDrawFlightSegment = { ids: number[]; preset: DrawFlightVisualPreset };
-
-/** Prize→hand flight start: which side of the table (view) and 0–5 grid index. */
-type PrizeFlightOrigin = { side: 'bottom' | 'top'; grid: number };
+type Board3dFrame = {
+  props: Board3dControllerProps;
+  /** Resolve the silent animation WaitPrompts this state carries once it has played. */
+  gates: (() => void)[];
+};
 
 /** Context when the board runs inside React Three Fiber (shared gl/scene/camera). */
 export type Board3dR3fInitContext = {
@@ -146,6 +145,11 @@ export type Board3dR3fInitContext = {
   /** Texture anisotropy from graphics quality preset (clamped to GPU max). */
   maxAnisotropy?: number;
 };
+
+/** How long after one deck→bench card launches before the next may leave the deck. */
+const DECK_TO_BENCH_LAUNCH_STAGGER_MS = 500;
+/** Bench-drop pace for a deck play. Hand plays keep the default pace of 1. */
+const DECK_TO_BENCH_DROP_PACE = 0.6;
 
 export class Board3dController {
   gameState!: LocalGameState;
@@ -168,9 +172,7 @@ export class Board3dController {
   private boardMesh?: Mesh;
   private boardCenterOverlay?: Mesh;
 
-  // Per-slot outlines (always visible, independent of drop zones)
-  private topBenchSpotOutlines: Group[] = [];
-  private bottomBenchSpotOutlines: Group[] = [];
+  // Per-zone outlines (always visible, independent of drop zones)
   private otherSpotOutlines: Group[] = [];
 
   // 4x4 grid overlay on the board
@@ -182,7 +184,6 @@ export class Board3dController {
   private holoClock = new Clock();
   private needsRender: boolean = true;
   private currentHoveredCard: any = null;
-  private hasInitializedHand: boolean = false;
   private resizeObserver: ResizeObserver | null = null;
 
   private r3fMode = false;
@@ -207,25 +208,6 @@ export class Board3dController {
   // Wireframe overlay
   public showWireframes: boolean = false;
 
-  /** Card ids in hand order after last successful sync (for single-draw detection). */
-  private lastHandCardIds: number[] = [];
-  /** Which player's hand `lastHandCardIds` refers to (switch-sides swaps bottom hand → must reset diff). */
-  private lastHandOwnerPlayerId: number | undefined = undefined;
-  /** Prize card id → grid index (0–5) after last sync; used to detect prize→hand flights. */
-  private lastBottomPrizeIdToGrid: Map<number, number> = new Map();
-  private lastTopPrizeIdToGrid: Map<number, number> = new Map();
-  /** Prize slots that just emptied (secret prizes use fake ids until hand sync; slot diff still works). */
-  private pendingPrizeEmptiedBottom: number[] = [];
-  private pendingPrizeEmptiedTop: number[] = [];
-  /** Active player id after last hand sync (detect “our turn just began” vs mid-turn draws). */
-  private lastHandSyncActivePlayerId: number | undefined = undefined;
-  /** Serializes hand sync so rapid updates wait for draw animation to finish. */
-  private syncHandChain: Promise<void> = Promise.resolve();
-  /** Incremented when a failed play must supersede queued/in-flight hand sync (skip stale commits). */
-  private handSyncInvalidationGen = 0;
-  /** Hand update arrived while dragging; flush when drag ends. */
-  private pendingHandSyncWhileDragging = false;
-
   /** Board mesh ids hidden while one or more hand-play flights are in progress. */
   private handPlayFlightHiddenMeshIds = new Set<string>();
   /**
@@ -233,151 +215,24 @@ export class Board3dController {
    * {@link playBoardBasicAnimation} from the server until consumed or timed out.
    */
   private handPlayBoardBasicAnimationSuppressedMeshIds = new Set<string>();
-  /** During item hand-play flight, discard mesh stays at pre-play state until the flight ends. */
-  private discardVisualFreezePlayerId: number | null = null;
-  /** When discard is frozen, show this many cards (incremental hand-discard animations). */
-  private discardVisualFreezeVisibleCount: number | null = null;
-  /** Base discard height before an in-progress hand→discard flight batch. */
-  private discardHandFlightBaseStack: number | null = null;
-  /** Discard ids already flown this batch (pile order); used when sync races the animation. */
-  private discardHandFlightVisibleIds: number[] | null = null;
-
-  private clearHandDiscardFlightFreeze(): void {
-    this.discardVisualFreezePlayerId = null;
-    this.discardVisualFreezeVisibleCount = null;
-    this.discardHandFlightBaseStack = null;
-    this.discardHandFlightVisibleIds = null;
-  }
-
-  /** Hand→deck flights in progress (block trainer discard until done). */
-  private handToDeckAnimationLock = false;
-  /** Deck→hand draw flights in progress (block trainer discard until done). */
-  private handDrawAnimationLock = false;
+  /** Slots whose server entrance animation (basic / evolution) waits for its state to commit. */
+  private pendingEntranceMeshIds = new Set<string>();
+  /** Keep state sync from overwriting a card while it animates out of the deck. */
+  private deckFlightProtectedMeshIds = new Set<string>();
+  /** Deck→bench plays cascade. The next card leaves {@link DECK_TO_BENCH_LAUNCH_STAGGER_MS} after the previous one starts. */
+  private deckToBenchChain: Promise<void> = Promise.resolve();
+  /** Bumped on destroy so a queued deck flight does not start after the board is gone. */
+  private deckToBenchGeneration = 0;
   /**
-   * After shuffle-hand-into-deck, the next empty→full hand sync should use the
-   * standard deck→stage→hand draw animation (prev hand ids are []).
+   * Deck-source entrances that have not landed yet. A shuffle that arrives while this is
+   * above zero waits, so the riffle plays after the Pokémon leave the deck.
    */
-  private expectPostShuffleDraw = false;
-
-  /** Trainer flies to discard only after prompts close and hand-discard flights finish. */
-  private isTrainerDiscardBlocked(): boolean {
-    if (hasUnresolvedGamePrompts(this.gameState)) {
-      return true;
-    }
-    if (this.handDiscardAnimationLock) {
-      return true;
-    }
-    if (this.handToDeckAnimationLock || this.handDrawAnimationLock) {
-      return true;
-    }
-    if (
-      this.discardHandFlightBaseStack != null &&
-      this.bottomPlayer != null &&
-      this.discardVisualFreezePlayerId === this.bottomPlayer.id
-    ) {
-      return true;
-    }
-    return false;
-  }
-
-  private promoteDeferredTrainerDiscard(): void {
-    if (this.trainerToDiscardResolvePlayerId != null) {
-      return;
-    }
-    if (this.deferredTrainerDiscardPlayerId == null) {
-      return;
-    }
-    if (this.isTrainerDiscardBlocked()) {
-      return;
-    }
-    const playerId = this.deferredTrainerDiscardPlayerId;
-    this.deferredTrainerDiscardPlayerId = null;
-    this.trainerToDiscardResolvePlayerId = playerId;
-    void this.runTrainerToDiscardFlight(playerId);
-  }
-
-  /**
-   * Detect an imminent hand→discard flight batch (same guards as {@link runSyncHandOnce}).
-   */
-  private evaluateHandDiscardAnimation(
-    prevIds: number[],
-    nextIds: number[],
-  ): { discardIds: number[]; baseStack: number } | null {
-    if (!this.bottomPlayer?.discard) {
-      return null;
-    }
-    const gs = this.gameState?.state;
-    if (gs?.phase === GamePhase.SETUP) {
-      return null;
-    }
-    const { effectivePrevCardCount } = this.computeHandDrawDelta(prevIds, nextIds);
-    const discardIds = this.computeDiscardedFromHandIds(prevIds, nextIds);
-    if (effectivePrevCardCount <= 0 || discardIds.length === 0) {
-      return null;
-    }
-    const finalDiscardCount = this.bottomPlayer.discard.cards.length;
-    const baseStack = Math.max(0, finalDiscardCount - discardIds.length);
-    return { discardIds, baseStack };
-  }
-
-  /** Hold discard pile at pre-batch height until each card's flight lands. */
-  private armHandDiscardFlightFreeze(baseStack: number): void {
-    if (!this.bottomPlayer) {
-      return;
-    }
-    this.discardVisualFreezePlayerId = this.bottomPlayer.id;
-    this.discardVisualFreezeVisibleCount = baseStack;
-    this.discardHandFlightBaseStack = baseStack;
-    this.discardHandFlightVisibleIds = [];
-  }
-
-  /**
-   * Arm discard freeze before syncGameState so the pile does not jump to the final
-   * server state while hand→discard flights are still queued or in progress.
-   */
-  private tryArmPendingHandDiscardFreeze(): void {
-    if (!this.bottomPlayerHand || !this.bottomPlayer) {
-      return;
-    }
-    const prevIds = this.lastHandCardIds;
-    const nextIds = this.bottomPlayerHand.cards.map((c) => c.id);
-    const pending = this.evaluateHandDiscardAnimation(prevIds, nextIds);
-    if (!pending) {
-      return;
-    }
-    let baseStack = pending.baseStack;
-    // Same state update often also moves the played trainer into discard. Keep it off the
-    // pile mesh until the deferred trainer flight (still shown on supporter).
-    const prevSup = this.lastSupporterTopCardIdByPlayerId.get(this.bottomPlayer.id) ?? null;
-    const disc = this.bottomPlayer.discard?.cards;
-    const topDisc = disc?.length ? disc[disc.length - 1]?.id : null;
-    const trainerOnDiscardTop =
-      topDisc != null &&
-      !pending.discardIds.includes(topDisc) &&
-      (topDisc === prevSup || this.pendingTrainerEffectPlayerId === this.bottomPlayer.id);
-    if (trainerOnDiscardTop) {
-      baseStack = Math.max(0, baseStack - 1);
-    }
-    this.armHandDiscardFlightFreeze(baseStack);
-  }
-
-  /** Supporter top card id per player after last sync (detect trainer/item → discard). */
-  private lastSupporterTopCardIdByPlayerId: Map<number, number> = new Map();
-  /** Player whose supporter mesh is flying to discard (freeze discard + supporter removal until done). */
-  private trainerToDiscardResolvePlayerId: number | null = null;
-  /** Trainer played from hand; keep supporter mesh until effect fully resolves. */
-  private pendingTrainerEffectPlayerId: number | null = null;
-  /** Supporter→discard detected while prompts still open; defer flight until resolved. */
-  private deferredTrainerDiscardPlayerId: number | null = null;
-  /** Hand→discard flights in progress; trainer must fly to discard last. */
-  private handDiscardAnimationLock = false;
-
-  /** Active Pokémon top card id per player after last sync (KO detection). */
-  private lastActiveTopCardIdByPlayerId = new Map<number, number>();
-  /** Skip overlapping KO detach while a sequence is running. */
-  private koSequenceLock = false;
-  /** Keep discard pile mesh frozen while KO ghost flies (avoid duplicate top card at discard + flying ghost). */
-  private koDiscardVisualFreezePlayerId: number | null = null;
+  private outstandingDeckEntrances = 0;
+  private deckEntranceIdleWaiters: (() => void)[] = [];
+  /** Shuffle is waiting on deck flights, so the trainer discard must wait for that riffle too. */
+  private deckShuffleDeferred = false;
+  /** Trainer → discard flights held until the card's deck plays (and shuffle) have finished. */
+  private deferredTrainerDiscards: Extract<TransitionStep, { kind: 'trainerToDiscard' }>[] = [];
   private onKoSequenceActiveChange?: (active: boolean) => void;
   /** Drop stale overlapping {@link syncSetupStartingPokemonPreview} runs. */
   private setupPreviewSyncGeneration = 0;
@@ -386,8 +241,31 @@ export class Board3dController {
   private setupHandSyncBlocked = false;
   /** Card ids detached for an optimistic hand→board play (omit from hand sync until resolve). */
   private handPlayFlightCardIds = new Set<number>();
-  /** Drop stale overlapping {@link syncGameState} runs (discard freeze races). */
-  private syncGameStateGeneration = 0;
+
+  /** Serializes server states so each one's animations finish before the next begins. */
+  private transitionQueue = new BoardTransitionQueue<Board3dFrame>({
+    processState: (frame, options) => this.processFrame(frame, options),
+    onError: (error) => console.error('[Board3D] board transition failed:', error),
+  });
+  /** Newest props from React; `this.*` props are what the board currently shows. */
+  private latestProps: Board3dControllerProps | null = null;
+  private displayedProps: Board3dControllerProps | null = null;
+  private displayedSnapshot: BoardSnapshot | null = null;
+  private displayOverrides: Board3dDisplayOverrides = {};
+  /** Serializes {@link Board3dStateSyncService.syncState} calls. */
+  private renderChain: Promise<void> = Promise.resolve();
+  /** Trainers dragged onto the play zone, waiting for the state that resolves them. */
+  private localTrainerFlights = new Map<number, LocalTrainerFlight>();
+  /**
+   * Cards that left a player's deck into untracked prompt lists (look-at-top, etc.).
+   * Credited into draw budget on the resolve frame so ability hand-adds still animate.
+   */
+  private deckLimboByPlayer = new Map<number, number>();
+  /** Silent server WaitPrompts already tied to a queued frame. */
+  private gatedPromptIds = new Set<number>();
+  private openAnimationGates = new Set<() => void>();
+  private lastBottomHandSignature = '';
+  private lastTopHandSignature = '';
 
   constructor(
     private assetLoader: Board3dAssetLoaderService,
@@ -402,7 +280,11 @@ export class Board3dController {
     private cardsAdapter: Board3dCardsAdapter,
     private gameActions: Board3dGameActions,
     private boardInteractionService: BoardInteractionService,
-  ) {}
+  ) {
+    this.animationService.setDeckShuffleKillHook(() => {
+      killAllDeckShuffleAnimations(this.stateSync.getStackService());
+    });
+  }
 
   private getHandPlayableCardIdsForDisplay(): number[] | undefined {
     if (
@@ -595,6 +477,7 @@ export class Board3dController {
 
   init(canvas: HTMLCanvasElement, initial: Board3dControllerProps): void {
     this.canvasEl = canvas;
+    this.latestProps = initial;
     this.setProps(initial);
     this.runInit();
     this.afterCanvasReady();
@@ -613,6 +496,7 @@ export class Board3dController {
     this.assetLoader.setMaxAnisotropy(
       ctx.maxAnisotropy ?? ctx.gl.capabilities.getMaxAnisotropy(),
     );
+    this.latestProps = initial;
     this.setProps(initial);
     this.stateSync.setAttachmentTargets(this.worldContentRoot, null, this.scene);
     this.interactionService.setWorldContentRoot(this.worldContentRoot);
@@ -650,22 +534,12 @@ export class Board3dController {
       .createDropZoneIndicators(this.scene, bottomBenchSize, topBenchSize)
       .then((rebuilt) => {
         if (rebuilt) {
-          this.createBenchSpotOutlines(bottomBenchSize, topBenchSize);
+          this.createZoneOutlines();
         }
         this.markDirty();
       });
 
-    // Sync initial game state if available
-    if (this.gameState) {
-      this.syncGameState();
-    }
-
-    // Sync initial hand if available
-    if (this.bottomPlayerHand) {
-      this.syncHand();
-      this.hasInitializedHand = true;
-    }
-    this.syncOpponentHand();
+    this.enqueueInitialFrame();
 
     this.selectionSubs.push(
       ...subscribeBoard3dInteractionStreams(this.boardInteractionService, {
@@ -700,20 +574,12 @@ export class Board3dController {
       .createDropZoneIndicators(this.scene, bottomBenchSize, topBenchSize)
       .then((rebuilt) => {
         if (rebuilt) {
-          this.createBenchSpotOutlines(bottomBenchSize, topBenchSize);
+          this.createZoneOutlines();
         }
         this.markDirty();
       });
 
-    if (this.gameState) {
-      this.syncGameState();
-    }
-
-    if (this.bottomPlayerHand) {
-      this.syncHand();
-      this.hasInitializedHand = true;
-    }
-    this.syncOpponentHand();
+    this.enqueueInitialFrame();
 
     this.selectionSubs.push(
       ...subscribeBoard3dInteractionStreams(this.boardInteractionService, {
@@ -739,69 +605,482 @@ export class Board3dController {
 
   /** Called from React when props change after mount. */
   refreshProps(next: Board3dControllerProps): void {
-    const topChanged = this.topPlayer !== next.topPlayer;
-    const bottomChanged = this.bottomPlayer !== next.bottomPlayer;
-    const clientChanged = this.clientId !== next.clientId;
-    const gameStateChanged = this.gameState !== next.gameState;
-    const handChanged = this.bottomPlayerHand !== next.bottomPlayerHand;
-    const topHandChanged = this.topPlayerHand !== next.topPlayerHand;
-    const topHandPublicChanged =
-      !!this.topPlayerHand?.isPublic !== !!next.topPlayerHand?.isPublic;
-    const revealChanged =
-      this.adminSpectatorReveal?.revealPrizes !== next.adminSpectatorReveal?.revealPrizes ||
-      this.adminSpectatorReveal?.revealHands !== next.adminSpectatorReveal?.revealHands;
+    this.onKoSequenceActiveChange = next.onKoSequenceActiveChange;
+    const prev = this.latestProps;
+    if (
+      prev &&
+      prev.gameState === next.gameState &&
+      prev.topPlayer === next.topPlayer &&
+      prev.bottomPlayer === next.bottomPlayer &&
+      prev.bottomPlayerHand === next.bottomPlayerHand &&
+      prev.topPlayerHand === next.topPlayerHand &&
+      prev.clientId === next.clientId &&
+      prev.adminSpectatorReveal?.revealPrizes === next.adminSpectatorReveal?.revealPrizes &&
+      prev.adminSpectatorReveal?.revealHands === next.adminSpectatorReveal?.revealHands
+    ) {
+      return;
+    }
+    this.latestProps = next;
+    if (!this.scene) {
+      this.setProps(next);
+      return;
+    }
+    this.enqueueFrame(next);
+  }
 
-    // Capture prize layout *before* applying incoming props so prize→hand draws still
-    // match card ids to grid slots after setProps (prizes may already be empty on next).
-    let prevBottomPrizeOcc: boolean[] = Array(6).fill(false);
-    let prevTopPrizeOcc: boolean[] = Array(6).fill(false);
-    if (this.scene) {
-      prevBottomPrizeOcc = this.prizeSlotsOccupied(this.bottomPlayer);
-      prevTopPrizeOcc = this.prizeSlotsOccupied(this.topPlayer);
-      if (this.bottomPlayer) {
-        this.rebuildPrizeIdToGridFromPlayerPrizes(this.bottomPlayer, this.lastBottomPrizeIdToGrid);
+  private enqueueInitialFrame(): void {
+    if (this.latestProps?.gameState) {
+      this.enqueueFrame(this.latestProps);
+    }
+  }
+
+  private enqueueFrame(props: Board3dControllerProps): void {
+    this.transitionQueue.enqueueState({ props, gates: this.openGatesForState(props) });
+  }
+
+  /**
+   * Silent server WaitPrompts ("Hand to deck animation", "Draw animation") arrive in the same
+   * state as the change they gate. Publish a pending promise now and settle it once that state
+   * has played on the board.
+   */
+  private openGatesForState(props: Board3dControllerProps): (() => void)[] {
+    const gates: (() => void)[] = [];
+    for (const prompt of props.gameState?.state?.prompts ?? []) {
+      if (
+        prompt.type !== 'WaitPrompt' ||
+        prompt.result !== undefined ||
+        this.gatedPromptIds.has(prompt.id)
+      ) {
+        continue;
       }
-      if (this.topPlayer) {
-        this.rebuildPrizeIdToGridFromPlayerPrizes(this.topPlayer, this.lastTopPrizeIdToGrid);
+      const message = String((prompt as { message?: string }).message ?? '').toLowerCase();
+      const isHandToDeck = message.includes('hand to deck animation');
+      if (!isHandToDeck && !message.includes('draw animation')) {
+        continue;
+      }
+      this.gatedPromptIds.add(prompt.id);
+      const { promise, settle } = this.openAnimationGate();
+      if (isHandToDeck) {
+        this.boardInteractionService.setPendingHandToDeckAnimationPromise(promise);
+      } else {
+        this.boardInteractionService.setPendingDrawAnimationPromise(promise);
+      }
+      gates.push(settle);
+    }
+    return gates;
+  }
+
+  private openAnimationGate(): { promise: Promise<void>; settle: () => void } {
+    let resolve!: () => void;
+    const promise = new Promise<void>((r) => {
+      resolve = r;
+    });
+    const settle = (): void => {
+      this.openAnimationGates.delete(settle);
+      resolve();
+    };
+    this.openAnimationGates.add(settle);
+    return { promise, settle };
+  }
+
+  private captureBoardSnapshot(props: Board3dControllerProps): BoardSnapshot | null {
+    const state = props.gameState?.state;
+    if (!state) {
+      return null;
+    }
+    return captureSnapshot(state, {
+      omniscient: !!props.gameState.replay,
+      handIdsReal: (p) =>
+        p.id === props.clientId || !!p.hand?.isPublic || !!props.adminSpectatorReveal?.revealHands,
+    });
+  }
+
+  private async processFrame(frame: Board3dFrame, options: ProcessStateOptions): Promise<void> {
+    try {
+      await this.waitForHandInteractionIdle(options.isStale);
+      if (options.isStale()) {
+        return;
+      }
+      const { props } = frame;
+      const prevProps = this.displayedProps;
+      const prevSnapshot = this.displayedSnapshot;
+      const perspectiveChanged =
+        !prevProps ||
+        prevProps.topPlayer?.id !== props.topPlayer?.id ||
+        prevProps.bottomPlayer?.id !== props.bottomPlayer?.id ||
+        prevProps.clientId !== props.clientId;
+      const seatChanged = !!prevProps && prevProps.bottomPlayer?.id !== props.bottomPlayer?.id;
+
+      this.setProps(props);
+      this.displayedProps = props;
+      if (this.camera && perspectiveChanged) {
+        this.updatePerspective();
+      }
+      const snapshot = this.captureBoardSnapshot(props);
+      this.displayedSnapshot = snapshot;
+
+      if (options.animate && prevSnapshot && snapshot) {
+        const plan = planTransition(prevSnapshot, snapshot, {
+          preFlownCardIds: new Set(this.localTrainerFlights.keys()),
+          deckLimboByPlayer: this.deckLimboByPlayer,
+        });
+        let steps = seatChanged ? this.stepsWithoutHandOrigins(plan.steps) : plan.steps;
+        if (this.outstandingDeckEntrances > 0) {
+          const held = steps.filter(
+            (step): step is Extract<TransitionStep, { kind: 'trainerToDiscard' }> =>
+              step.kind === 'trainerToDiscard',
+          );
+          if (held.length > 0) {
+            for (const step of held) {
+              const alreadyHeld = this.deferredTrainerDiscards.some(
+                (existing) => existing.playerId === step.playerId && existing.cardId === step.cardId,
+              );
+              if (!alreadyHeld) {
+                this.deferredTrainerDiscards.push(step);
+              }
+            }
+            steps = steps.filter((step) => step.kind !== 'trainerToDiscard');
+          }
+        }
+        if (steps.length > 0) {
+          const result = await new Board3dTransitionRunner(
+            this.transitionHost(),
+            prevSnapshot,
+            snapshot,
+            plan,
+            steps,
+            seatChanged,
+            options.isStale,
+          ).run();
+          if (result.bottomHandTouched) {
+            this.lastBottomHandSignature = '';
+          }
+          if (result.topHandTouched) {
+            this.lastTopHandSignature = '';
+          }
+        }
+      }
+      if (options.isStale()) {
+        return;
+      }
+      await this.commitFrame();
+    } finally {
+      frame.gates.forEach((settle) => settle());
+    }
+  }
+
+  /** After a seat swap the hand rows are rebuilt, so cards cannot fly out of them. */
+  private stepsWithoutHandOrigins(steps: TransitionStep[]): TransitionStep[] {
+    return steps.flatMap((step): TransitionStep[] => {
+      if (step.kind === 'handToDeck' || (step.kind === 'trainerToPlayZone' && !step.preFlown)) {
+        return [];
+      }
+      if (step.kind === 'toPile') {
+        const cards = step.cards.filter((c) => c.origin.kind !== 'hand');
+        return cards.length > 0 ? [{ ...step, cards }] : [];
+      }
+      return [step];
+    });
+  }
+
+  /**
+   * Keep a trainer on the play zone, and out of the discard pile, until its deck plays and
+   * shuffle have animated. The server state already has the card in the discard.
+   */
+  private deferredTrainerHoldOverrides(): Board3dDisplayOverrides {
+    if (this.deferredTrainerDiscards.length === 0) {
+      return {};
+    }
+    const supporterCard = new Map<number, Card>();
+    const omitDiscard = new Map<number, Set<number>>();
+    const omitLost = new Map<number, Set<number>>();
+    for (const step of this.deferredTrainerDiscards) {
+      const player = this.playerById(step.playerId);
+      const card = player ? this.findPlayerCard(player, step.cardId) : undefined;
+      if (card) {
+        supporterCard.set(step.playerId, card);
+      }
+      const omit = step.zone === 'discard' ? omitDiscard : omitLost;
+      let ids = omit.get(step.playerId);
+      if (!ids) {
+        ids = new Set();
+        omit.set(step.playerId, ids);
+      }
+      ids.add(step.cardId);
+    }
+    const discardIds = new Map<number, number[]>();
+    const lostzoneIds = new Map<number, number[]>();
+    for (const [playerId, ids] of omitDiscard) {
+      const player = this.playerById(playerId);
+      if (player) {
+        discardIds.set(
+          playerId,
+          player.discard.cards.map((c) => c.id).filter((id) => !ids.has(id)),
+        );
       }
     }
-
-    this.setProps(next);
-
-    if (handChanged) {
-      this.pendingPrizeEmptiedBottom = this.emptiedPrizeSlotIndices(
-        prevBottomPrizeOcc,
-        this.prizeSlotsOccupied(this.bottomPlayer),
-      );
-      this.pendingPrizeEmptiedTop = this.emptiedPrizeSlotIndices(
-        prevTopPrizeOcc,
-        this.prizeSlotsOccupied(this.topPlayer),
-      );
-    } else {
-      this.pendingPrizeEmptiedBottom = [];
-      this.pendingPrizeEmptiedTop = [];
+    for (const [playerId, ids] of omitLost) {
+      const player = this.playerById(playerId);
+      if (player) {
+        lostzoneIds.set(
+          playerId,
+          player.lostzone.cards.map((c) => c.id).filter((id) => !ids.has(id)),
+        );
+      }
     }
+    return { supporterCard, discardIds, lostzoneIds };
+  }
 
-    if (this.camera && (topChanged || bottomChanged || clientChanged)) {
-      this.updatePerspective();
+  private playerById(playerId: number): Player | undefined {
+    if (this.bottomPlayer?.id === playerId) {
+      return this.bottomPlayer;
     }
+    if (this.topPlayer?.id === playerId) {
+      return this.topPlayer;
+    }
+    return undefined;
+  }
 
-    if (this.scene && handChanged) {
-      this.tryArmPendingHandDiscardFreeze();
+  private findPlayerCard(player: Player, cardId: number): Card | undefined {
+    const lists = [player.discard, player.lostzone, player.supporter, player.hand, player.deck];
+    for (const list of lists) {
+      const card = list?.cards?.find((c) => c.id === cardId);
+      if (card) {
+        return card;
+      }
     }
+    return undefined;
+  }
 
-    if (this.scene && (gameStateChanged || topChanged || bottomChanged || revealChanged)) {
-      this.syncGameState();
+  /** Fly held trainers from the play zone into their pile, after the card's other effects. */
+  private async playDeferredTrainerDiscards(): Promise<void> {
+    const steps = this.deferredTrainerDiscards;
+    const snapshot = this.displayedSnapshot;
+    if (steps.length === 0 || !snapshot) {
+      this.deferredTrainerDiscards = [];
+      return;
     }
+    this.deferredTrainerDiscards = [];
+    const prev = this.snapshotWithTrainersStillInPlay(snapshot, steps);
+    await new Board3dTransitionRunner(
+      this.transitionHost(),
+      prev,
+      snapshot,
+      { steps, players: new Map() },
+      steps,
+      false,
+      () => false,
+    ).run();
+    this.displayOverrides = {};
+    await this.renderDisplay();
+  }
 
-    if (this.scene && (handChanged || revealChanged)) {
-      this.syncHand();
-      this.hasInitializedHand = true;
+  /** Prev snapshot for the delayed discard flight: the trainer is still on the play zone. */
+  private snapshotWithTrainersStillInPlay(
+    base: BoardSnapshot,
+    steps: Extract<TransitionStep, { kind: 'trainerToDiscard' }>[],
+  ): BoardSnapshot {
+    const players = new Map(base.players);
+    for (const step of steps) {
+      const player = players.get(step.playerId);
+      if (!player) {
+        continue;
+      }
+      players.set(step.playerId, {
+        ...player,
+        supporterIds: player.supporterIds.includes(step.cardId)
+          ? player.supporterIds
+          : [...player.supporterIds, step.cardId],
+        discardIds:
+          step.zone === 'discard' ? player.discardIds.filter((id) => id !== step.cardId) : player.discardIds,
+        lostzoneIds:
+          step.zone === 'lostzone'
+            ? player.lostzoneIds.filter((id) => id !== step.cardId)
+            : player.lostzoneIds,
+      });
     }
+    return { ...base, players };
+  }
 
-    if (this.scene && (topHandChanged || topHandPublicChanged || revealChanged || handChanged)) {
-      this.syncOpponentHand();
+  private async commitFrame(): Promise<void> {
+    this.displayOverrides = this.deferredTrainerHoldOverrides();
+    await this.renderDisplay();
+    await this.waitForHandInteractionIdle();
+    await this.syncHandRows();
+    await this.releaseOrphanLocalTrainerFlights();
+  }
+
+  /** A dragged trainer whose card left the hand without a play-zone step just snaps into place. */
+  private async releaseOrphanLocalTrainerFlights(): Promise<void> {
+    const handIds = new Set(this.bottomPlayerHand?.cards.map((c) => c.id) ?? []);
+    const orphans = [...this.localTrainerFlights].filter(([id]) => !handIds.has(id));
+    if (orphans.length === 0) {
+      return;
     }
+    for (const [id, flight] of orphans) {
+      this.localTrainerFlights.delete(id);
+      await Promise.race([flight.landed, new Promise<void>((r) => setTimeout(r, 2000))]);
+      flight.endHiding();
+    }
+    await this.renderDisplay();
+    orphans.forEach(([, flight]) => flight.dispose());
+  }
+
+  private async waitForHandInteractionIdle(isStale?: () => boolean): Promise<void> {
+    while (
+      !isStale?.() &&
+      (this.interactionService.getIsDragging() ||
+        this.interactionService.hasPendingDrag() ||
+        this.setupHandSyncBlocked)
+    ) {
+      await new Promise<void>((r) => setTimeout(r, 50));
+    }
+  }
+
+  private transitionHost(): Board3dTransitionHost {
+    return {
+      worldRoot: this.worldContentRoot,
+      handSlot: this.handSlot,
+      opponentHandSlot: this.opponentHandSlot,
+      stateSync: this.stateSync,
+      handService: this.handService,
+      animationService: this.animationService,
+      assetLoader: this.assetLoader,
+      cardsAdapter: this.cardsAdapter,
+      bottomPlayer: () => this.bottomPlayer,
+      topPlayer: () => this.topPlayer,
+      bottomHand: () => this.bottomPlayerHand,
+      topHand: () => this.topPlayerHand,
+      aspect: () => this.canvasEl.clientWidth / Math.max(this.canvasEl.clientHeight, 1),
+      isUpsideDown: () => this.isUpsideDown,
+      isBottomHandFaceUp: () => this.isHandVisibleToViewer(),
+      isTopHandFaceUp: () => this.isOpponentHandVisibleToViewer(),
+      playableCardIds: () => this.getHandPlayableCardIdsForDisplay(),
+      handFlightCardIds: () => this.handPlayFlightCardIds,
+      takeLocalTrainerFlight: (cardId) => {
+        const flight = this.localTrainerFlights.get(cardId);
+        this.localTrainerFlights.delete(cardId);
+        return flight;
+      },
+      setOverrides: (overrides) => {
+        this.displayOverrides = overrides;
+      },
+      render: () => this.renderDisplay(),
+      setKoActive: (active) => this.onKoSequenceActiveChange?.(active),
+      markDirty: () => this.markDirty(),
+    };
+  }
+
+  /** Re-render board meshes from the displayed props and current overrides. */
+  private syncGameState(): void {
+    void this.renderDisplay();
+  }
+
+  private renderDisplay(): Promise<void> {
+    const run = this.renderChain
+      .then(() => this.renderDisplayNow())
+      .catch((error) => console.error('Failed to sync 3D board state:', error));
+    this.renderChain = run;
+    return run;
+  }
+
+  private async renderDisplayNow(): Promise<void> {
+    if (!this.gameState || !this.scene) {
+      return;
+    }
+    await this.stateSync.syncState(this.gameState, this.clientId, this.topPlayer, this.bottomPlayer, {
+      skippedCardId:
+        this.interactionService.getDraggedBoardCardId() ??
+        this.cardInspectService.getInspectedCardId(),
+      skippedScaleCardId: this.interactionService.getScaleLockedBoardCardIds(),
+      handPlayFlightHiddenCardId: this.getHandPlayFlightHiddenMeshIdsForSync(),
+      protectedVisualCardIds: [...this.deckFlightProtectedMeshIds],
+      display: this.displayOverrides,
+      adminSpectatorReveal: this.adminSpectatorReveal,
+    });
+    this.updateDropZoneOccupancy();
+    this.updateDropZonesForBenchSize();
+    this.interactionService.updateInteractiveObjects(this.scene);
+    this.markDirty();
+    if (this.r3fMode) {
+      this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+      requestAnimationFrame(() => {
+        this.stateSync.drainPendingR3fBoardCardDisposals();
+        this.handService.drainPendingR3fHandDisposals();
+      });
+    }
+  }
+
+  /** Rebuild both hand rows from the displayed props when they differ from what is shown. */
+  private async syncHandRows(force = false): Promise<void> {
+    if (!this.scene) {
+      return;
+    }
+    if (this.bottomPlayerHand && this.bottomPlayer) {
+      const isOwner = this.isHandVisibleToViewer();
+      const playable = this.getHandPlayableCardIdsForDisplay();
+      const omit = this.getHandSyncOmitIndices();
+      const signature = JSON.stringify([
+        this.bottomPlayer.id,
+        this.bottomPlayerHand.cards.map((c) => c.id),
+        isOwner,
+        playable ?? null,
+        omit ? [...omit].sort((a, b) => a - b) : null,
+      ]);
+      if (force || signature !== this.lastBottomHandSignature) {
+        await this.handService.updateHand(this.bottomPlayerHand, isOwner, this.handSlot, playable, omit);
+        this.lastBottomHandSignature = signature;
+      }
+    }
+    if (this.topPlayerHand && this.topPlayer && this.opponentHandSlot) {
+      const visible = this.isOpponentHandVisibleToViewer();
+      const signature = JSON.stringify([
+        this.topPlayer.id,
+        visible ? this.topPlayerHand.cards.map((c) => c.id) : this.topPlayerHand.cards.length,
+        visible,
+      ]);
+      if (force || signature !== this.lastTopHandSignature) {
+        await this.handService.updateOpponentHand(this.topPlayerHand, visible, this.opponentHandSlot);
+        this.lastTopHandSignature = signature;
+      }
+    }
+    this.interactionService.updateInteractiveObjects(this.scene);
+    this.refreshHandSelectionVisualsIfNeeded();
+    this.markDirty();
+    if (this.r3fMode) {
+      this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+      requestAnimationFrame(() => this.handService.drainPendingR3fHandDisposals());
+    }
+  }
+
+  /** After a failed play or abandoned flight: rebuild the hand once the current transition ends. */
+  private forceHandResyncAfterFailedPlay(): void {
+    this.transitionQueue.enqueueEvent(() => this.syncHandRows(true), { droppable: false });
+  }
+
+  /** Map a displayed hand index to the server's current hand (the board may lag a state behind). */
+  private serverHandIndex(displayIndex: number, card?: Card): number {
+    const played = card ?? this.bottomPlayerHand?.cards[displayIndex];
+    const latest = this.latestProps?.bottomPlayerHand ?? this.bottomPlayerHand;
+    if (!played || !latest) {
+      return displayIndex;
+    }
+    const index = latest.cards.findIndex((c) => c.id === played.id);
+    return index >= 0 ? index : displayIndex;
+  }
+
+  /**
+   * The card a hand drop refers to. Row indices are re-compacted whenever a card leaves the row
+   * (e.g. an earlier play still in flight), so the dragged mesh's card wins over the index.
+   */
+  private droppedHandCard(result: DropResult): Card | undefined {
+    const meshCard = result.playCardFlight?.board3dCard.getGroup().userData.cardData as Card | undefined;
+    if (meshCard) {
+      return meshCard;
+    }
+    return result.handIndex != null && result.handIndex >= 0
+      ? this.bottomPlayerHand.cards[result.handIndex]
+      : undefined;
   }
 
   private afterCanvasReadyR3f(): void {
@@ -822,28 +1101,54 @@ export class Board3dController {
     }
   }
 
+  /**
+   * GPU / animation counters for progressive-FPS debugging.
+   * Compare early-game vs late-game values (textureCache / faceMaterials should stay bounded).
+   */
+  getPerfStats(): Board3dPerfStats {
+    const root = this.worldContentRoot ?? this.scene;
+    return {
+      textureCache: this.assetLoader.getCacheSize(),
+      pinnedTextures: this.assetLoader.getPinnedCacheSize(),
+      faceMaterials: getBoard3dCardFaceMaterialCacheSize(),
+      trackedCards: this.stateSync.getTrackedCardCount(),
+      activeAnimations: this.animationService.getActiveAnimationCount(),
+      gsapChildren: getGsapChildCount(),
+      sceneObjects: root ? countSceneObjects(root) : 0,
+    };
+  }
+
   destroy(): void {
     // Stop animation loop
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
 
+    this.transitionQueue.reset();
+    this.deckToBenchGeneration++;
+    this.deckToBenchChain = Promise.resolve();
+    this.deckShuffleDeferred = false;
+    this.deferredTrainerDiscards = [];
+    this.releaseDeckEntranceWaiters();
+    for (const settle of [...this.openAnimationGates]) {
+      settle();
+    }
+    for (const flight of this.localTrainerFlights.values()) {
+      flight.dispose();
+    }
+    this.localTrainerFlights.clear();
+    this.deckLimboByPlayer.clear();
+
     // Kill any active animations
     this.animationService.killAllAnimations();
     this.animationService.disposeCoinFlipScene();
+    this.animationService.setDeckShuffleKillHook(null);
     this.stopAbilityFocusTracking();
     this.stopCardInspectFocusTracking();
     this.cardInspectService.dispose();
 
-    this.lastSupporterTopCardIdByPlayerId.clear();
-    this.trainerToDiscardResolvePlayerId = null;
-    this.lastActiveTopCardIdByPlayerId.clear();
-    this.koSequenceLock = false;
-    this.koDiscardVisualFreezePlayerId = null;
-
     this.wireframeService.dispose(this.scene);
 
-    this.disposeBenchOutlines();
     this.disposeOtherSpotOutlines();
     this.disposeBoardGrid();
 
@@ -851,6 +1156,12 @@ export class Board3dController {
     this.stateSync.dispose(this.scene);
     this.handService.dispose(this.worldContentRoot);
     this.interactionService.dispose(this.scene);
+
+    // Release GPU caches after scene objects are disposed (textures/materials are shared).
+    Board3dCard.disposeSharedResources();
+    Board3dEnergySprite.disposeSharedResources();
+    Board3dMarker.disposeSharedResources();
+    this.assetLoader.clearCache();
 
     if (!this.r3fMode) {
       this.lightingService.dispose(this.scene);
@@ -867,19 +1178,16 @@ export class Board3dController {
       s.unsubscribe();
     }
     this.selectionSubs = [];
-    this.lastHandCardIds = [];
-    this.lastHandOwnerPlayerId = undefined;
-    this.lastBottomPrizeIdToGrid.clear();
-    this.lastTopPrizeIdToGrid.clear();
-    this.pendingPrizeEmptiedBottom = [];
-    this.pendingPrizeEmptiedTop = [];
-    this.lastHandSyncActivePlayerId = undefined;
-    this.syncHandChain = Promise.resolve();
-    this.handSyncInvalidationGen = 0;
-    this.pendingHandSyncWhileDragging = false;
     this.handPlayFlightHiddenMeshIds.clear();
     this.handPlayBoardBasicAnimationSuppressedMeshIds.clear();
-    this.discardVisualFreezePlayerId = null;
+    this.pendingEntranceMeshIds.clear();
+    this.deckFlightProtectedMeshIds.clear();
+    this.displayedProps = null;
+    this.displayedSnapshot = null;
+    this.displayOverrides = {};
+    this.gatedPromptIds.clear();
+    this.lastBottomHandSignature = '';
+    this.lastTopHandSignature = '';
   }
 
   private beginHandPlayFlightHiddenMeshes(meshIds: readonly string[]): void {
@@ -916,9 +1224,11 @@ export class Board3dController {
   }
 
   private getHandPlayFlightHiddenMeshIdsForSync(): readonly string[] | undefined {
-    return this.handPlayFlightHiddenMeshIds.size > 0
-      ? [...this.handPlayFlightHiddenMeshIds]
-      : undefined;
+    const ids = new Set([
+      ...this.handPlayFlightHiddenMeshIds,
+      ...this.pendingEntranceMeshIds,
+    ]);
+    return ids.size > 0 ? [...ids] : undefined;
   }
 
   private initScene(): void {
@@ -1050,7 +1360,7 @@ export class Board3dController {
     const maxZ = boardCenterZ + boardH / 2;
 
     const material = new MeshBasicMaterial({
-      color: Board3dController.BENCH_OUTLINE_COLOR,
+      color: BOARD_3D_BENCH_OUTLINE_COLOR,
       transparent: true,
       opacity: 0.1,
       side: DoubleSide,
@@ -1261,8 +1571,27 @@ export class Board3dController {
     }
   }
 
-  /** Production shuffle animation for one player's deck (socket / sandbox). */
+  /**
+   * Production shuffle animation for one player's deck (socket / sandbox). Runs in order with
+   * board transitions; the pending promise covers the wait in the queue too.
+   */
   triggerDeckShuffle(playerId: number): Promise<void> {
+    const { promise, settle } = this.openAnimationGate();
+    this.boardInteractionService.setPendingDeckShuffleAnimationPromise(promise);
+    this.transitionQueue.enqueueEvent(
+      async () => {
+        try {
+          await this.runDeckShuffle(playerId);
+        } finally {
+          settle();
+        }
+      },
+      { droppable: false },
+    );
+    return promise;
+  }
+
+  private runDeckShuffle(playerId: number): Promise<void> {
     if (!this.r3fMode) {
       return Promise.resolve();
     }
@@ -1277,316 +1606,87 @@ export class Board3dController {
     }
     const stackId = `${position}_${playerId}_deck`;
     const stackService = this.stateSync.getStackService();
-    const p = playDeckShuffleAnimation({
+    return playDeckShuffleAnimation({
       stackService,
       getCardById: (id) => this.stateSync.getCardById(id),
       stackId,
     });
-    this.boardInteractionService.setPendingDeckShuffleAnimationPromise(p);
-    return p;
   }
 
   private playBoardDeckShuffleAnimation(ev: DeckShuffleAnimationEvent): void {
+    if (this.outstandingDeckEntrances > 0) {
+      this.deferDeckShuffleUntilEntrancesFinish(ev.playerId);
+      return;
+    }
     void this.triggerDeckShuffle(ev.playerId);
   }
 
-  private refreshActiveTopCardSnapshot(): void {
-    for (const p of [this.bottomPlayer, this.topPlayer]) {
-      if (!p) {
-        continue;
-      }
-      const top = p.active?.cards[0]?.id;
-      if (top != null) {
-        this.lastActiveTopCardIdByPlayerId.set(p.id, top);
-      } else {
-        this.lastActiveTopCardIdByPlayerId.delete(p.id);
-      }
-    }
-  }
-
-  private tryDetectActiveKo(): {
-    ghostKey: string;
-    playerId: number;
-    position: 'topPlayer' | 'bottomPlayer';
-  } | null {
-    const run = (player: Player | undefined, position: 'topPlayer' | 'bottomPlayer') => {
-      if (!player) {
-        return null;
-      }
-      if (this.gameState?.replay) {
-        return null;
-      }
-      if (this.trainerToDiscardResolvePlayerId != null || this.koSequenceLock) {
-        return null;
-      }
-      const prevTop = this.lastActiveTopCardIdByPlayerId.get(player.id);
-      const nextTop = player.active?.cards[0]?.id;
-      if (prevTop == null || nextTop === prevTop) {
-        return null;
-      }
-      const inDiscard = player.discard?.cards?.some((c) => c.id === prevTop) ?? false;
-      if (!inDiscard) {
-        return null;
-      }
-      const ghostKey = this.stateSync.detachActiveAsKoGhost(position, player.id);
-      if (!ghostKey) {
-        return null;
-      }
-      return { ghostKey, playerId: player.id, position };
-    };
-    return run(this.bottomPlayer, 'bottomPlayer') ?? run(this.topPlayer, 'topPlayer');
-  }
-
-  private async runKoSequence(spec: {
-    ghostKey: string;
-    playerId: number;
-    position: 'topPlayer' | 'bottomPlayer';
-  }): Promise<void> {
-    try {
-      const player =
-        this.bottomPlayer?.id === spec.playerId
-          ? this.bottomPlayer
-          : this.topPlayer?.id === spec.playerId
-            ? this.topPlayer
-            : undefined;
-      if (!player) {
+  /**
+   * The bench state is still behind this socket event. Leave the shuffle off the queue until the
+   * deck flights that are already announced have landed, then enqueue it in the normal way.
+   */
+  private deferDeckShuffleUntilEntrancesFinish(playerId: number): void {
+    this.deckShuffleDeferred = true;
+    const { promise, settle } = this.openAnimationGate();
+    this.boardInteractionService.setPendingDeckShuffleAnimationPromise(promise);
+    const generation = this.deckToBenchGeneration;
+    void this.whenDeckEntrancesIdle().then(() => {
+      if (generation !== this.deckToBenchGeneration) {
+        this.deckShuffleDeferred = false;
+        settle();
         return;
       }
-      const boardCard = this.stateSync.getCardById(spec.ghostKey);
-      if (!boardCard) {
-        return;
-      }
-      const group = boardCard.getGroup();
-      const prevOrder = group.renderOrder;
-      group.renderOrder = 120;
-
-      const discardCount = player.discard?.cards?.length ?? 0;
-      const stackY =
-        discardCount > 0 ? (discardCount - 1) * Board3dStackService.STACK_HEIGHT_INCREMENT : 0;
-      const target = ZONE_POSITIONS[spec.position].discard.clone();
-      target.y += stackY;
-
-      await this.animationService.playKnockOutToDiscardSequence(group, target);
-      group.renderOrder = prevOrder;
-      this.stateSync.removeBoardCardById(spec.ghostKey);
-    } finally {
-      this.koSequenceLock = false;
-      this.koDiscardVisualFreezePlayerId = null;
-      this.onKoSequenceActiveChange?.(false);
-      this.interactionService.updateInteractiveObjects(this.scene);
-      this.syncGameState();
-      this.markDirty();
-    }
-  }
-
-  private syncGameState(): void {
-    const gen = ++this.syncGameStateGeneration;
-    void this.runSyncGameStateBody(gen);
-  }
-
-  private syncGameStateAwait(): Promise<void> {
-    const gen = ++this.syncGameStateGeneration;
-    return this.runSyncGameStateBody(gen);
-  }
-
-  private async runSyncGameStateBody(gen: number): Promise<void> {
-    let pendingKo: {
-      ghostKey: string;
-      playerId: number;
-      position: 'topPlayer' | 'bottomPlayer';
-    } | null = null;
-    try {
-      pendingKo = this.tryDetectActiveKo();
-      if (pendingKo != null) {
-        this.koSequenceLock = true;
-        this.koDiscardVisualFreezePlayerId = pendingKo.playerId;
-        this.onKoSequenceActiveChange?.(true);
-      }
-
-      let trainerDiscardDetectedPlayerId: number | null = null;
-      if (this.trainerToDiscardResolvePlayerId == null) {
-        if (this.deferredTrainerDiscardPlayerId != null && !this.isTrainerDiscardBlocked()) {
-          trainerDiscardDetectedPlayerId = this.deferredTrainerDiscardPlayerId;
-          this.deferredTrainerDiscardPlayerId = null;
-          this.trainerToDiscardResolvePlayerId = trainerDiscardDetectedPlayerId;
-        } else {
-          const tryDetect = (player: Player | undefined): void => {
-            if (!player) {
-              return;
+      this.transitionQueue.enqueueEvent(
+        async () => {
+          try {
+            await this.runDeckShuffle(playerId);
+            if (generation === this.deckToBenchGeneration) {
+              await this.playDeferredTrainerDiscards();
             }
-            const prev = this.lastSupporterTopCardIdByPlayerId.get(player.id) ?? null;
-            const cur = player.supporter?.cards[0]?.id ?? null;
-            const disc = player.discard?.cards;
-            const topDisc = disc?.length ? disc[disc.length - 1]?.id : null;
-            if (prev != null && cur == null && topDisc === prev) {
-              trainerDiscardDetectedPlayerId = player.id;
-            }
-          };
-          tryDetect(this.bottomPlayer);
-          tryDetect(this.topPlayer);
-          if (
-            trainerDiscardDetectedPlayerId == null &&
-            this.pendingTrainerEffectPlayerId != null
-          ) {
-            // Supporters like Research finish resolve in one state tick (hand→supporter→discard
-            // server-side), so lastSupporter never snapshots them. Still fly the pending play.
-            const pendingId = this.pendingTrainerEffectPlayerId;
-            const pendingPlayer =
-              this.bottomPlayer?.id === pendingId
-                ? this.bottomPlayer
-                : this.topPlayer?.id === pendingId
-                  ? this.topPlayer
-                  : undefined;
-            if (pendingPlayer && (pendingPlayer.supporter?.cards.length ?? 0) === 0) {
-              trainerDiscardDetectedPlayerId = pendingId;
-            }
+          } finally {
+            this.deckShuffleDeferred = false;
+            settle();
           }
-          if (trainerDiscardDetectedPlayerId != null) {
-            if (this.isTrainerDiscardBlocked()) {
-              this.deferredTrainerDiscardPlayerId = trainerDiscardDetectedPlayerId;
-              trainerDiscardDetectedPlayerId = null;
-            } else {
-              this.trainerToDiscardResolvePlayerId = trainerDiscardDetectedPlayerId;
-            }
-          }
-        }
-      }
-
-      if (gen !== this.syncGameStateGeneration) {
-        return;
-      }
-
-      const freezeDiscardForSync =
-        this.discardVisualFreezePlayerId ??
-        this.trainerToDiscardResolvePlayerId ??
-        this.koDiscardVisualFreezePlayerId ??
-        undefined;
-      const freezeDiscardVisibleCountForSync =
-        this.discardVisualFreezePlayerId != null ? this.discardVisualFreezeVisibleCount : undefined;
-      const freezeDiscardHandFlightBaseStackForSync = this.discardHandFlightBaseStack ?? undefined;
-      const freezeDiscardHandFlightIdsForSync = this.discardHandFlightVisibleIds ?? undefined;
-      const freezeSupporterClearForSync =
-        this.pendingTrainerEffectPlayerId ??
-        this.deferredTrainerDiscardPlayerId ??
-        this.trainerToDiscardResolvePlayerId ??
-        undefined;
-
-      await this.stateSync.syncState(
-        this.gameState,
-        this.clientId,
-        this.topPlayer,
-        this.bottomPlayer,
-        {
-          skippedCardId:
-            this.interactionService.getDraggedBoardCardId() ??
-            this.cardInspectService.getInspectedCardId(),
-          skippedScaleCardId: this.interactionService.getScaleLockedBoardCardIds(),
-          handPlayFlightHiddenCardId: this.getHandPlayFlightHiddenMeshIdsForSync(),
-          freezeDiscardVisualForPlayerId: freezeDiscardForSync,
-          freezeDiscardVisibleCardCount: freezeDiscardVisibleCountForSync,
-          freezeDiscardHandFlightBaseStack: freezeDiscardHandFlightBaseStackForSync,
-          freezeDiscardHandFlightIds: freezeDiscardHandFlightIdsForSync,
-          freezeSupporterClearForPlayerId: freezeSupporterClearForSync,
-          adminSpectatorReveal: this.adminSpectatorReveal,
         },
+        { droppable: false },
       );
+    });
+  }
 
-      if (gen !== this.syncGameStateGeneration) {
-        return;
-      }
+  private trackDeckEntrance(): void {
+    this.outstandingDeckEntrances++;
+  }
 
-      for (const p of [this.bottomPlayer, this.topPlayer]) {
-        if (!p) {
-          continue;
-        }
-        if (
-          p.id === this.trainerToDiscardResolvePlayerId ||
-          p.id === this.deferredTrainerDiscardPlayerId
-        ) {
-          continue;
-        }
-        const supId = p.supporter?.cards[0]?.id;
-        if (supId != null) {
-          this.lastSupporterTopCardIdByPlayerId.set(p.id, supId);
-        } else {
-          this.lastSupporterTopCardIdByPlayerId.delete(p.id);
-        }
+  private finishDeckEntrance(): void {
+    this.outstandingDeckEntrances = Math.max(0, this.outstandingDeckEntrances - 1);
+    if (this.outstandingDeckEntrances === 0) {
+      const waiters = this.deckEntranceIdleWaiters;
+      this.deckEntranceIdleWaiters = [];
+      for (const waiter of waiters) {
+        waiter();
       }
-
-      if (trainerDiscardDetectedPlayerId != null) {
-        void this.runTrainerToDiscardFlight(trainerDiscardDetectedPlayerId);
+      if (!this.deckShuffleDeferred && this.deferredTrainerDiscards.length > 0) {
+        this.transitionQueue.enqueueEvent(() => this.playDeferredTrainerDiscards(), { droppable: false });
       }
-
-      this.refreshActiveTopCardSnapshot();
-
-      if (pendingKo != null) {
-        void this.runKoSequence(pendingKo);
-      }
-
-      this.updateDropZoneOccupancy();
-      this.updateDropZonesForBenchSize();
-      this.interactionService.updateInteractiveObjects(this.scene);
-      this.markDirty();
-      if (this.r3fMode) {
-        this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
-        requestAnimationFrame(() => {
-          this.stateSync.drainPendingR3fBoardCardDisposals();
-          this.handService.drainPendingR3fHandDisposals();
-        });
-      }
-    } catch (error) {
-      if (pendingKo != null) {
-        this.koSequenceLock = false;
-        this.koDiscardVisualFreezePlayerId = null;
-        this.onKoSequenceActiveChange?.(false);
-      }
-      console.error('Failed to sync 3D board state:', error);
     }
   }
 
-  private async runTrainerToDiscardFlight(playerId: number): Promise<void> {
-    try {
-      const isBottom = this.bottomPlayer.id === playerId;
-      const player = isBottom ? this.bottomPlayer : this.topPlayer;
-      if (!player || player.id !== playerId) {
-        return;
-      }
-      const position = isBottom ? 'bottomPlayer' : 'topPlayer';
-      const meshId = `${position}_${playerId}_supporter`;
-      const boardCard = this.stateSync.getCardById(meshId);
-      if (!boardCard) {
-        return;
-      }
+  private whenDeckEntrancesIdle(): Promise<void> {
+    if (this.outstandingDeckEntrances === 0) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      this.deckEntranceIdleWaiters.push(resolve);
+    });
+  }
 
-      const group = boardCard.getGroup();
-      const prevOrder = group.renderOrder;
-      group.renderOrder = 110;
-
-      const discardCount = player.discard?.cards?.length ?? 0;
-      const stackY =
-        discardCount > 0 ? (discardCount - 1) * Board3dStackService.STACK_HEIGHT_INCREMENT : 0;
-      const target = ZONE_POSITIONS[position].discard.clone();
-      target.y += stackY;
-
-      await this.animationService.playTrainerResolveToDiscard(group, target);
-
-      group.renderOrder = prevOrder;
-    } finally {
-      this.trainerToDiscardResolvePlayerId = null;
-      this.pendingTrainerEffectPlayerId = null;
-      this.deferredTrainerDiscardPlayerId = null;
-      for (const p of [this.bottomPlayer, this.topPlayer]) {
-        if (!p) {
-          continue;
-        }
-        const supId = p.supporter?.cards[0]?.id;
-        if (supId != null) {
-          this.lastSupporterTopCardIdByPlayerId.set(p.id, supId);
-        } else {
-          this.lastSupporterTopCardIdByPlayerId.delete(p.id);
-        }
-      }
-      this.syncGameState();
+  /** Wake deferred shuffles during destroy so they can bail instead of hanging. */
+  private releaseDeckEntranceWaiters(): void {
+    this.outstandingDeckEntrances = 0;
+    const waiters = this.deckEntranceIdleWaiters;
+    this.deckEntranceIdleWaiters = [];
+    for (const waiter of waiters) {
+      waiter();
     }
   }
 
@@ -1602,7 +1702,7 @@ export class Board3dController {
       .createDropZoneIndicators(this.scene, bottomBenchSize, topBenchSize)
       .then((rebuilt) => {
         if (rebuilt) {
-          this.createBenchSpotOutlines(bottomBenchSize, topBenchSize);
+          this.createZoneOutlines();
         }
         this.markDirty();
       });
@@ -1611,7 +1711,6 @@ export class Board3dController {
   /** Bench ribbon tuning */
   private static readonly BENCH_OUTLINE_THICKNESS = 0.02;
   private static readonly BENCH_OUTLINE_Y = 0.15;
-  private static readonly BENCH_OUTLINE_COLOR = 0xffffff;
 
   /** Card/slot dimensions for non-bench outlines (match enlarged {@link Board3dDropZone} defaults). */
   private static readonly CARD_SLOT_WIDTH =
@@ -1619,48 +1718,15 @@ export class Board3dController {
   private static readonly CARD_SLOT_HEIGHT =
     BOARD3D_CARD_SLOT_BASE_HEIGHT * BOARD3D_DROP_ZONE_TARGET_SCALE;
 
-  /** Bench slot outlines — match {@link BOARD3D_BENCH_DROP_ZONE_WIDTH} / height. */
-  private static readonly BENCH_SLOT_WIDTH = BOARD3D_BENCH_DROP_ZONE_WIDTH;
-  private static readonly BENCH_SLOT_HEIGHT = BOARD3D_BENCH_DROP_ZONE_HEIGHT;
-
   /**
-   * Create per-slot outline meshes for bench and all other board slots.
-   * Always visible, independent of drop zone state.
+   * Create decorative outlines for non-bench zones.
+   * Bench card spaces are marked by the static cream frames in Board3dStaticScene.
    */
-  private createBenchSpotOutlines(bottomBenchSize: number, topBenchSize: number): void {
-    this.disposeBenchOutlines();
+  private createZoneOutlines(): void {
     this.disposeOtherSpotOutlines();
 
     const w = Board3dController.CARD_SLOT_WIDTH;
     const h = Board3dController.CARD_SLOT_HEIGHT;
-    const benchW = Board3dController.BENCH_SLOT_WIDTH;
-    const benchH = Board3dController.BENCH_SLOT_HEIGHT;
-
-    // Bench slots
-    const topPositions = getBenchPositions(topBenchSize, PlayerType.TOP_PLAYER);
-    for (const pos of topPositions) {
-      const group = this.createSpotOutlineGroup(
-        pos,
-        benchW,
-        benchH,
-        BOARD_3D_BENCH_SLOT_OUTLINE_COLOR,
-        BOARD_3D_BENCH_SLOT_OUTLINE_OPACITY,
-      );
-      this.topBenchSpotOutlines.push(group);
-      this.scene.add(group);
-    }
-    const bottomPositions = getBenchPositions(bottomBenchSize, PlayerType.BOTTOM_PLAYER);
-    for (const pos of bottomPositions) {
-      const group = this.createSpotOutlineGroup(
-        pos,
-        benchW,
-        benchH,
-        BOARD_3D_BENCH_SLOT_OUTLINE_COLOR,
-        BOARD_3D_BENCH_SLOT_OUTLINE_OPACITY,
-      );
-      this.bottomBenchSpotOutlines.push(group);
-      this.scene.add(group);
-    }
 
     // Stadium (single shared slot)
     this.addSpotOutline(ZONE_POSITIONS.stadium, w, h);
@@ -1701,7 +1767,7 @@ export class Board3dController {
     position: Vector3,
     width: number,
     height: number,
-    outlineColor: number = Board3dController.BENCH_OUTLINE_COLOR,
+    outlineColor: number = BOARD_3D_BENCH_OUTLINE_COLOR,
     outlineOpacity: number = 0,
   ): Group {
     const t = Board3dController.BENCH_OUTLINE_THICKNESS;
@@ -1744,27 +1810,6 @@ export class Board3dController {
     group.renderOrder = 100;
     group.userData.isSpotOutline = true;
     return group;
-  }
-
-  /**
-   * Remove and dispose bench spot outline meshes.
-   */
-  private disposeBenchOutlines(): void {
-    const disposeGroup = (g: Group) => {
-      this.scene.remove(g);
-      let material: MeshBasicMaterial | null = null;
-      for (const child of g.children) {
-        if (child instanceof Mesh) {
-          child.geometry.dispose();
-          material = child.material as MeshBasicMaterial; // All children share one material
-        }
-      }
-      material?.dispose();
-    };
-    this.topBenchSpotOutlines.forEach(disposeGroup);
-    this.bottomBenchSpotOutlines.forEach(disposeGroup);
-    this.topBenchSpotOutlines = [];
-    this.bottomBenchSpotOutlines = [];
   }
 
   /**
@@ -1848,6 +1893,7 @@ export class Board3dController {
   /**
    * Socket animation events use the same mesh ids as {@link Board3dStateSyncService}.
    * Slot may be `'active'` / `'bench'` (attack, board emit helpers) or stringified {@link SlotType} (`"1"` / `"2"`).
+   * When slot/index are missing, falls back to scanning board meshes by cardData.id.
    */
   private boardMeshIdFromAnimationEvent(ev: BasicEntranceAnimationEvent): string | null {
     if (!this.bottomPlayer?.id || !this.topPlayer?.id) {
@@ -1871,7 +1917,7 @@ export class Board3dController {
     if (isBench && ev.index !== undefined) {
       return `${pos}_${ev.playerId}_bench_${ev.index}`;
     }
-    return null;
+    return this.stateSync.findMeshIdByCardDataId(ev.cardId, ev.playerId);
   }
 
   private playBoardAttackAnimation(ev: BasicEntranceAnimationEvent): void {
@@ -2082,7 +2128,7 @@ export class Board3dController {
   }
 
   /**
-   * Basic Pokémon entrance from deck/item (socket): same motion as dragging from hand to bench
+   * Basic Pokémon entrance from hand/item (socket): same motion as dragging from hand to bench
    * ({@link Board3dAnimationService.playHandCardDropOnBoard}), not {@link Board3dAnimationService.playBasicAnimation}.
    */
   private playHandCardDropBasicAnimation(group: Group, meshId: string): void {
@@ -2110,6 +2156,184 @@ export class Board3dController {
     void this.animationService.playHandCardDropOnBoard(group, targetWorld, {
       endScale,
       endRotationY,
+    });
+  }
+
+  /**
+   * Cascade deck→bench flights. The next card may leave the deck 0.5s after this one starts,
+   * while this flight is still in the air. `markStarted` releases that wait.
+   */
+  private enqueueDeckToBench(run: (markStarted: () => void) => Promise<void>): void {
+    const generation = this.deckToBenchGeneration;
+    let resolveStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+      resolveStarted = resolve;
+    });
+    let didStart = false;
+    const markStarted = (): void => {
+      if (didStart) {
+        return;
+      }
+      didStart = true;
+      resolveStarted();
+    };
+
+    const flight = this.deckToBenchChain.then(async () => {
+      try {
+        if (generation !== this.deckToBenchGeneration) {
+          markStarted();
+          return;
+        }
+        await run(markStarted);
+      } finally {
+        markStarted();
+        this.finishDeckEntrance();
+      }
+    });
+    this.deckToBenchChain = started.then(
+      () =>
+        new Promise<void>((resolve) => {
+          window.setTimeout(resolve, DECK_TO_BENCH_LAUNCH_STAGGER_MS);
+        }),
+    );
+    void flight.catch((error) => {
+      markStarted();
+      console.error('[Board3D] deck-to-board basic animation failed:', error);
+    });
+  }
+
+  /**
+   * Basic Pokémon from deck: arc off the deck face-down, flip to reveal mid-flight, hover
+   * over the slot, then play the same drop used when a card is played from the hand.
+   */
+  private playDeckToBenchBasicAnimation(group: Group, meshId: string, boardCard: Board3dCard): void {
+    const targetWorld = group.position.clone();
+    targetWorld.y = Math.max(targetWorld.y, 0.08);
+
+    const isTopPlayer = meshId.startsWith('topPlayer_');
+    const seat = isTopPlayer ? 'topPlayer' : 'bottomPlayer';
+    const player = isTopPlayer ? this.topPlayer : this.bottomPlayer;
+    // Match the draw animation's start: top card of the post-effect deck (one card removed).
+    const deckCountAfter = player?.deck?.cards?.length ?? 0;
+    const deckStart = ZONE_POSITIONS[seat].deck.clone();
+    deckStart.y +=
+      Math.max(0, deckCountAfter) * Board3dStackService.STACK_HEIGHT_INCREMENT + 0.35;
+
+    const isActive = meshId.endsWith('_active');
+    const endScale = isActive ? 1.5 : 1.0;
+    const endRotationY = isTopPlayer ? Math.PI : 0;
+    const card = group.userData?.cardData as Card | undefined;
+    const cardList = group.userData?.cardList as PokemonCardList | undefined;
+    let flightCard: Board3dCard | null = null;
+    const generation = this.deckToBenchGeneration;
+    const flightStillOwned = (): boolean =>
+      generation === this.deckToBenchGeneration && this.deckFlightProtectedMeshIds.has(meshId);
+    const cleanupFlightMetadata = (): void => {
+      this.pendingEntranceMeshIds.delete(meshId);
+      delete group.userData.playingToBoard;
+      group.position.copy(targetWorld);
+      group.rotation.set(0, endRotationY, 0);
+      group.scale.setScalar(endScale);
+      flightCard?.dispose();
+      flightCard = null;
+      group.visible = true;
+      this.deckFlightProtectedMeshIds.delete(meshId);
+      this.stateSync.unprotectBoardCardVisual(meshId);
+      this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+      this.syncGameState();
+      this.markDirty();
+    };
+    const sleevePath = (player?.deck as { sleeveImagePath?: string } | undefined)?.sleeveImagePath;
+    const sleeveUrl = sleevePath ? this.cardsAdapter.getSleeveUrl(sleevePath) : undefined;
+    const assetReady = Promise.all([
+      sleeveUrl ? this.assetLoader.loadSleeveTexture(sleeveUrl) : this.assetLoader.loadCardBack(),
+      this.assetLoader.loadCardMaskTexture(),
+    ]).then(async ([cardBack, mask]) => {
+      const scanUrl = card ? this.cardsAdapter.getScanUrlFor3D(card, cardList) : undefined;
+      let scan = cardBack;
+      if (scanUrl?.trim()) {
+        try {
+          scan = await this.assetLoader.loadCardTexture(scanUrl);
+        } catch {
+          // Keep the cardback as the face if the scan cannot be loaded.
+        }
+      }
+      return { cardBack, mask, scan };
+    });
+
+    group.userData.playingToBoard = true;
+    group.visible = false;
+    this.pendingEntranceMeshIds.add(meshId);
+    this.deckFlightProtectedMeshIds.add(meshId);
+    this.stateSync.protectBoardCardVisual(meshId);
+    this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+    this.markDirty();
+
+    this.enqueueDeckToBench(async (markStarted) => {
+      try {
+        const { cardBack, mask, scan } = await assetReady;
+        if (!flightStillOwned()) {
+          return;
+        }
+
+        // Animate an independent card, leaving the actual slot mesh hidden until the drop lands.
+        flightCard = new Board3dCard(cardBack, cardBack, deckStart, isTopPlayer ? 180 : 0, 1.1, mask);
+        const flightGroup = flightCard.getGroup();
+        flightGroup.userData.cardData = card;
+        flightGroup.userData.cardList = cardList;
+        flightGroup.userData.isFaceDown = true;
+        flightGroup.rotation.set(0, endRotationY, Math.PI);
+        flightGroup.renderOrder = 110;
+        this.worldContentRoot.add(flightGroup);
+        this.pendingEntranceMeshIds.delete(meshId);
+        this.markDirty();
+        playSfx('pokemonplay');
+        markStarted();
+
+        await this.animationService.playDrawDeckToBoard(flightGroup, targetWorld, {
+          endRotationY,
+          onRevealFace: () => {
+            // Flip is z=π → 0, so the exposed face at the end of the turn is the card front.
+            flightCard?.updateTexture(scan, cardBack, mask);
+            flightCard?.setHolo(null);
+            if (flightGroup.userData) {
+              flightGroup.userData.isFaceDown = false;
+            }
+            this.markDirty();
+          },
+        });
+        if (!flightStillOwned()) {
+          flightCard?.dispose();
+          flightCard = null;
+          return;
+        }
+
+        await this.animationService.playHandCardDropOnBoard(flightGroup, targetWorld, {
+          endScale,
+          endRotationY,
+          durationScale: DECK_TO_BENCH_DROP_PACE,
+        });
+        if (!flightStillOwned()) {
+          flightCard?.dispose();
+          flightCard = null;
+          return;
+        }
+
+        boardCard.updateTexture(scan, cardBack, mask);
+        boardCard.setHolo(null);
+        cleanupFlightMetadata();
+        if (card) {
+          void apply3dCardHolo(this.assetLoader, boardCard, card, false);
+        }
+      } catch (error) {
+        console.error('[Board3D] deck-to-board basic animation failed:', error);
+        if (flightStillOwned()) {
+          cleanupFlightMetadata();
+        } else {
+          flightCard?.dispose();
+          flightCard = null;
+        }
+      }
     });
   }
 
@@ -2206,26 +2430,78 @@ export class Board3dController {
     })();
   }
 
+  /**
+   * Socket entrance events arrive just before the state that contains their mesh. Keep the slot
+   * hidden while earlier transitions play, then animate right after that state commits.
+   */
   private playBoardBasicAnimation(ev: BasicEntranceAnimationEvent): void {
+    if (ev.source === 'deck') {
+      this.trackDeckEntrance();
+    }
+    const meshId = this.boardMeshIdFromAnimationEvent(ev);
+    const hide =
+      meshId != null &&
+      (ev.source === 'deck' ||
+        (!this.handPlayBoardBasicAnimationSuppressedMeshIds.has(meshId) &&
+          !this.handPlayFlightHiddenMeshIds.has(meshId)));
+    if (hide) {
+      this.pendingEntranceMeshIds.add(meshId);
+      if (ev.source === 'deck') {
+        // Protect synchronously so a state sync racing the socket event cannot show the slot card.
+        this.deckFlightProtectedMeshIds.add(meshId);
+        this.stateSync.protectBoardCardVisual(meshId);
+        this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
+      }
+    }
+    this.transitionQueue.runAfterNextCommit(() => {
+      if (!hide) {
+        this.playBoardBasicAnimationNow(ev);
+        return;
+      }
+      // Deck arrivals keep their board mesh hidden while texture assets load and it launches.
+      if (ev.source !== 'deck') {
+        this.pendingEntranceMeshIds.delete(meshId);
+        const boardCard = this.stateSync.getCardById(meshId);
+        if (boardCard) {
+          boardCard.getGroup().visible = true;
+        }
+      }
+      this.playBoardBasicAnimationNow(ev);
+      this.markDirty();
+    });
+  }
+
+  private playBoardBasicAnimationNow(ev: BasicEntranceAnimationEvent): void {
     const maxAttempts = 12;
+    const abandonDeckEntrance = (): void => {
+      if (ev.source === 'deck') {
+        this.finishDeckEntrance();
+      }
+    };
 
     const tryPlay = (attempt: number): void => {
       const meshId = this.boardMeshIdFromAnimationEvent(ev);
       if (!meshId) {
+        abandonDeckEntrance();
         return;
       }
       const boardCard = this.stateSync.getCardById(meshId);
       if (!boardCard) {
         if (attempt < maxAttempts) {
           requestAnimationFrame(() => tryPlay(attempt + 1));
+          return;
         }
+        abandonDeckEntrance();
         return;
       }
-      if (this.handPlayBoardBasicAnimationSuppressedMeshIds.has(meshId)) {
+      if (
+        ev.source !== 'deck' &&
+        this.handPlayBoardBasicAnimationSuppressedMeshIds.has(meshId)
+      ) {
         this.handPlayBoardBasicAnimationSuppressedMeshIds.delete(meshId);
         return;
       }
-      if (this.handPlayFlightHiddenMeshIds.has(meshId)) {
+      if (ev.source !== 'deck' && this.handPlayFlightHiddenMeshIds.has(meshId)) {
         return;
       }
       const group = boardCard.getGroup();
@@ -2233,7 +2509,9 @@ export class Board3dController {
       if (data && data.id !== ev.cardId) {
         if (attempt < maxAttempts) {
           requestAnimationFrame(() => tryPlay(attempt + 1));
+          return;
         }
+        abandonDeckEntrance();
         return;
       }
 
@@ -2249,10 +2527,13 @@ export class Board3dController {
       if (waitingForLegendHalves) {
         if (attempt < maxAttempts) {
           requestAnimationFrame(() => tryPlay(attempt + 1));
+          return;
         }
+        abandonDeckEntrance();
         return;
       }
       if (topHalfCard && bottomHalfCard && cardList) {
+        abandonDeckEntrance();
         this.playRemoteLegendAssemblyAnimation(
           meshId,
           boardCard,
@@ -2263,12 +2544,22 @@ export class Board3dController {
         return;
       }
 
+      if (ev.source === 'deck') {
+        // Keep state-sync from snapping the card back into the slot while it flies from the deck.
+        this.playDeckToBenchBasicAnimation(group, meshId, boardCard);
+        return;
+      }
+
       this.playHandCardDropBasicAnimation(group, meshId);
     };
     tryPlay(0);
   }
 
   private playBoardEvolutionAnimation(ev: BasicEntranceAnimationEvent): void {
+    this.transitionQueue.runAfterNextCommit(() => this.playBoardEvolutionAnimationNow(ev));
+  }
+
+  private playBoardEvolutionAnimationNow(ev: BasicEntranceAnimationEvent): void {
     const maxAttempts = 12;
     const tryPlay = (attempt: number): void => {
       const meshId = this.boardMeshIdFromAnimationEvent(ev);
@@ -2293,988 +2584,6 @@ export class Board3dController {
       void this.animationService.evolutionAnimation(group);
     };
     tryPlay(0);
-  }
-
-  private getRenderedHandCardIds(): number[] {
-    return this.handService
-      .getHandSlotSnapshots()
-      .map((s) => s.cardId)
-      .filter((id): id is number => id !== undefined);
-  }
-
-  /**
-   * Detect newly drawn cards by id (not positional prefix/suffix overlap).
-   * Merges rendered hand ids so a stale {@link lastHandCardIds} snapshot cannot
-   * re-animate cards that are already on screen.
-   */
-  private computeHandDrawDelta(
-    prevIds: number[],
-    nextIds: number[],
-  ): {
-    incomingDrawIds: number[];
-    stableK: number;
-    drawCount: number;
-    incomingFormsContiguousSuffix: boolean;
-    effectivePrevCardCount: number;
-  } {
-    const renderedIds = this.getRenderedHandCardIds();
-    const effectivePrevSet = new Set([...prevIds, ...renderedIds]);
-    const incomingDrawIds = nextIds.filter((id) => !effectivePrevSet.has(id));
-    const drawCount = incomingDrawIds.length;
-
-    let stableK = nextIds.length;
-    if (drawCount > 0) {
-      const incomingSet = new Set(incomingDrawIds);
-      const firstIncomingIdx = nextIds.findIndex((id) => incomingSet.has(id));
-      stableK = firstIncomingIdx >= 0 ? firstIncomingIdx : nextIds.length;
-    }
-
-    const incomingFormsContiguousSuffix =
-      drawCount === 0 ||
-      (nextIds.length - stableK === drawCount &&
-        nextIds.slice(stableK).every((id, i) => id === incomingDrawIds[i]));
-
-    const effectivePrevCardCount = Math.max(prevIds.length, renderedIds.length);
-
-    return {
-      incomingDrawIds,
-      stableK,
-      drawCount,
-      incomingFormsContiguousSuffix,
-      effectivePrevCardCount,
-    };
-  }
-
-  /** Card ids removed from hand that landed in the bottom player's discard pile (not played to board). */
-  private computeDiscardedFromHandIds(prevIds: number[], nextIds: number[]): number[] {
-    if (!this.bottomPlayer?.discard) {
-      return [];
-    }
-    const nextSet = new Set(nextIds);
-    const discardCards = this.bottomPlayer.discard.cards;
-    const discardIdSet = new Set(discardCards.map((c) => c.id));
-    const removedFromHand = new Set(
-      prevIds.filter((id) => !nextSet.has(id) && discardIdSet.has(id)),
-    );
-    if (removedFromHand.size === 0) {
-      return [];
-    }
-    // Match discard pile append order so flights and pile-top updates stay in sync.
-    return discardCards.filter((c) => removedFromHand.has(c.id)).map((c) => c.id);
-  }
-
-  /** Card ids removed from hand that returned to the bottom player's deck (shuffle-hand-into-deck). */
-  private computeReturnedToDeckFromHandIds(prevIds: number[], nextIds: number[]): number[] {
-    if (!this.bottomPlayer?.deck) {
-      return [];
-    }
-    const nextSet = new Set(nextIds);
-    const deckIdSet = new Set(this.bottomPlayer.deck.cards.map(c => c.id));
-    const discardIdSet = new Set(
-      (this.bottomPlayer.discard?.cards ?? []).map(c => c.id),
-    );
-    return prevIds.filter(
-      id => !nextSet.has(id) && deckIdSet.has(id) && !discardIdSet.has(id),
-    );
-  }
-
-  private getPlayerDeckFlightTarget(playerId: number, stackIndexFromBase: number): Vector3 {
-    const isBottom = this.bottomPlayer?.id === playerId;
-    const position = isBottom ? 'bottomPlayer' : 'topPlayer';
-    const target = ZONE_POSITIONS[position].deck.clone();
-    target.y += stackIndexFromBase * Board3dStackService.STACK_HEIGHT_INCREMENT;
-    return target;
-  }
-
-  private async runAnimatedHandToDeckFlights(deckIds: number[]): Promise<boolean> {
-    if (!this.bottomPlayer || deckIds.length === 0) {
-      return false;
-    }
-
-    const playerId = this.bottomPlayer.id;
-    const finalDeckCount = this.bottomPlayer.deck?.cards.length ?? 0;
-    const baseStack = Math.max(0, finalDeckCount - deckIds.length);
-
-    let resolveBatch!: () => void;
-    const batchPromise = new Promise<void>((resolve) => {
-      resolveBatch = resolve;
-    });
-    this.boardInteractionService.setPendingHandToDeckAnimationPromise(batchPromise);
-
-    this.handToDeckAnimationLock = true;
-    let anyFlown = false;
-    try {
-      const flightPromises: Promise<void>[] = [];
-      for (let i = 0; i < deckIds.length; i++) {
-        const board3d = this.handService.detachHandCardForDiscardFlight(
-          deckIds[i],
-          this.worldContentRoot,
-        );
-        if (!board3d) {
-          continue;
-        }
-        anyFlown = true;
-        const group = board3d.getGroup();
-        const prevOrder = group.renderOrder;
-        group.renderOrder = 110;
-        const target = this.getPlayerDeckFlightTarget(playerId, baseStack + i);
-        const delayMs = i * HAND_TO_DECK_STAGGER_SEC * 1000;
-        flightPromises.push(
-          (async () => {
-            if (delayMs > 0) {
-              await new Promise<void>((r) => setTimeout(r, delayMs));
-            }
-            await this.animationService.playHandToDeck(group, target);
-            group.renderOrder = prevOrder;
-            board3d.dispose();
-          })(),
-        );
-      }
-      await Promise.all(flightPromises);
-      return anyFlown;
-    } finally {
-      this.handToDeckAnimationLock = false;
-      resolveBatch();
-      this.promoteDeferredTrainerDiscard();
-      if (anyFlown && this.bottomPlayer) {
-        await this.syncGameStateAwait();
-        this.markDirty();
-      }
-    }
-  }
-
-  private getPlayerDiscardFlightTarget(
-    playerId: number,
-    stackIndexFromBase: number,
-  ): Vector3 {
-    const isBottom = this.bottomPlayer?.id === playerId;
-    const position = isBottom ? 'bottomPlayer' : 'topPlayer';
-    const target = ZONE_POSITIONS[position].discard.clone();
-    target.y += stackIndexFromBase * Board3dStackService.STACK_HEIGHT_INCREMENT;
-    return target;
-  }
-
-  private async runAnimatedHandDiscardFlights(discardIds: number[]): Promise<boolean> {
-    if (!this.bottomPlayer || discardIds.length === 0) {
-      return false;
-    }
-
-    const playerId = this.bottomPlayer.id;
-    const finalDiscardCount = this.bottomPlayer.discard?.cards.length ?? 0;
-    const baseStack = Math.max(0, finalDiscardCount - discardIds.length);
-
-    this.armHandDiscardFlightFreeze(baseStack);
-    this.handDiscardAnimationLock = true;
-    let anyFlown = false;
-    try {
-      await this.stateSync.updateDiscardPileAfterHandDiscards(
-        this.bottomPlayer,
-        'bottomPlayer',
-        baseStack,
-        [],
-      );
-      this.markDirty();
-
-      for (let i = 0; i < discardIds.length; i++) {
-        const board3d = this.handService.detachHandCardForDiscardFlight(
-          discardIds[i],
-          this.worldContentRoot,
-        );
-        if (!board3d) {
-          continue;
-        }
-        anyFlown = true;
-        const group = board3d.getGroup();
-        const prevOrder = group.renderOrder;
-        group.renderOrder = 110;
-        const target = this.getPlayerDiscardFlightTarget(playerId, baseStack + i);
-        await this.animationService.playTrainerResolveToDiscard(group, target);
-        group.renderOrder = prevOrder;
-        board3d.dispose();
-
-        const visibleCount = baseStack + i + 1;
-        this.discardVisualFreezeVisibleCount = visibleCount;
-        this.discardHandFlightVisibleIds = discardIds.slice(0, i + 1);
-        await this.stateSync.updateDiscardPileAfterHandDiscards(
-          this.bottomPlayer,
-          'bottomPlayer',
-          baseStack,
-          discardIds.slice(0, i + 1),
-        );
-        this.markDirty();
-      }
-      return anyFlown;
-    } finally {
-      if (anyFlown && this.bottomPlayer) {
-        await this.stateSync.updateDiscardPileAfterHandDiscards(
-          this.bottomPlayer,
-          'bottomPlayer',
-          baseStack,
-          discardIds,
-        );
-        this.markDirty();
-      }
-      this.clearHandDiscardFlightFreeze();
-      if (anyFlown) {
-        await this.syncGameStateAwait();
-        this.markDirty();
-      }
-      const trainerFollowsHandDiscard =
-        this.deferredTrainerDiscardPlayerId != null || this.pendingTrainerEffectPlayerId != null;
-      if (anyFlown && trainerFollowsHandDiscard) {
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, HAND_DISCARD_TO_TRAINER_HOLD_SEC * 1000);
-        });
-      }
-      this.handDiscardAnimationLock = false;
-      this.promoteDeferredTrainerDiscard();
-    }
-  }
-
-  private flushPendingHandSyncAfterDrag(): void {
-    if (!this.pendingHandSyncWhileDragging) {
-      return;
-    }
-    this.pendingHandSyncWhileDragging = false;
-    if (this.interactionService.getIsDragging() || this.interactionService.hasPendingDrag()) {
-      this.pendingHandSyncWhileDragging = true;
-      return;
-    }
-    this.syncHand();
-  }
-
-  private syncHand(): void {
-    // Skip sync if user is currently dragging a card to prevent destroying the dragged card
-    if (this.interactionService.getIsDragging()) {
-      this.pendingHandSyncWhileDragging = true;
-      return;
-    }
-
-    if (this.setupHandSyncBlocked) {
-      this.pendingHandSyncWhileDragging = true;
-      return;
-    }
-
-    if (!this.bottomPlayerHand || !this.bottomPlayer) {
-      return;
-    }
-
-    // Ensure handService is ready (handGroup exists and is in scene)
-    const handGroup = this.handService.getHandGroup();
-    if (!handGroup || !this.scene.children.includes(handGroup)) {
-      this.scene.add(handGroup);
-    }
-
-    this.syncHandChain = this.syncHandChain.then(() => this.runSyncHandOnce());
-  }
-
-  /** Static far-hand rebuild (no draw flights); safe to call alongside player-hand sync. */
-  private syncOpponentHand(): void {
-    if (!this.topPlayerHand || !this.topPlayer || !this.opponentHandSlot) {
-      return;
-    }
-
-    const opponentGroup = this.handService.getOpponentHandGroup();
-    if (!this.opponentHandSlot.children.includes(opponentGroup)) {
-      this.opponentHandSlot.add(opponentGroup);
-    }
-
-    void this.handService.updateOpponentHand(
-      this.topPlayerHand,
-      this.isOpponentHandVisibleToViewer(),
-      this.opponentHandSlot,
-    );
-  }
-
-  /** After server rejects playCard: skip animation queue and rebuild hand from current props immediately. */
-  private forceHandResyncAfterFailedPlay(): void {
-    if (this.interactionService.getIsDragging()) {
-      this.pendingHandSyncWhileDragging = true;
-      return;
-    }
-    if (!this.bottomPlayerHand || !this.bottomPlayer) {
-      return;
-    }
-    const handGroup = this.handService.getHandGroup();
-    if (!this.scene.children.includes(handGroup)) {
-      this.scene.add(handGroup);
-    }
-    this.handSyncInvalidationGen++;
-    this.syncHandChain = Promise.resolve();
-    this.syncHandChain = this.syncHandChain.then(() => this.runSyncHandOnce({ immediate: true }));
-  }
-
-  /**
-   * Prize card id → grid index for the given player's prize layout.
-   * Used so prize→hand flights start from the prize mesh, not the deck.
-   */
-  private rebuildPrizeIdToGridFromPlayerPrizes(
-    player: Player | undefined,
-    into: Map<number, number>,
-  ): void {
-    into.clear();
-    const prizes = player?.prizes;
-    if (!prizes) {
-      return;
-    }
-    prizes.forEach((pile, gridIndex) => {
-      const card = pile?.cards?.[0];
-      if (card) {
-        into.set(card.id, gridIndex);
-      }
-    });
-  }
-
-  private prizeSlotsOccupied(player: Player | undefined): boolean[] {
-    const occ = Array(6).fill(false) as boolean[];
-    const prizes = player?.prizes;
-    if (!prizes) {
-      return occ;
-    }
-    for (let i = 0; i < 6; i++) {
-      const pile = prizes[i];
-      occ[i] = !!pile?.cards?.length;
-    }
-    return occ;
-  }
-
-  private emptiedPrizeSlotIndices(prev: boolean[], next: boolean[]): number[] {
-    const out: number[] = [];
-    for (let i = 0; i < 6; i++) {
-      if (prev[i] && !next[i]) {
-        out.push(i);
-      }
-    }
-    return out;
-  }
-
-  /**
-   * Map hand card id → prize world slot for this draw sync (id map + secret-prize slot diff).
-   */
-  private buildPrizeFlightOrigins(incomingDrawIds: number[]): Map<number, PrizeFlightOrigin> {
-    const meta = new Map<number, PrizeFlightOrigin>();
-    const frozenBottom = new Map(this.lastBottomPrizeIdToGrid);
-    const frozenTop = new Map(this.lastTopPrizeIdToGrid);
-    for (const id of incomingDrawIds) {
-      const gb = frozenBottom.get(id);
-      if (gb !== undefined) {
-        meta.set(id, { side: 'bottom', grid: gb });
-      }
-      const gt = frozenTop.get(id);
-      if (gt !== undefined) {
-        meta.set(id, { side: 'top', grid: gt });
-      }
-    }
-    const bottomSlots = [...this.pendingPrizeEmptiedBottom].sort((a, b) => a - b);
-    const topSlots = [...this.pendingPrizeEmptiedTop].sort((a, b) => a - b);
-    const slotQueue: PrizeFlightOrigin[] = [
-      ...bottomSlots.map((grid) => ({ side: 'bottom' as const, grid })),
-      ...topSlots.map((grid) => ({ side: 'top' as const, grid })),
-    ];
-    for (const id of incomingDrawIds) {
-      if (!meta.has(id) && slotQueue.length > 0) {
-        meta.set(id, slotQueue.shift()!);
-      }
-    }
-    return meta;
-  }
-
-  private refreshBottomPrizeSnapshotFromCurrentState(): void {
-    this.rebuildPrizeIdToGridFromPlayerPrizes(this.bottomPlayer, this.lastBottomPrizeIdToGrid);
-    this.rebuildPrizeIdToGridFromPlayerPrizes(this.topPlayer, this.lastTopPrizeIdToGrid);
-  }
-
-  /**
-   * When the server batches several draws into one hand update, run flights in order:
-   * prize cards → other deck draws (mulligan/comp style) → turn-open draw.
-   */
-  private buildHandDrawFlightSegments(
-    incoming: number[],
-    isPrize: (id: number) => boolean,
-    gs: State | undefined,
-    ourTurnJustBegan: boolean,
-    bottomId: number | undefined,
-    nowActivePlayerId: number | undefined,
-  ): HandDrawFlightSegment[] {
-    if (incoming.length === 0) {
-      return [];
-    }
-
-    let firstDeckIdx = 0;
-    while (firstDeckIdx < incoming.length && isPrize(incoming[firstDeckIdx])) {
-      firstDeckIdx++;
-    }
-    let afterDeck = firstDeckIdx;
-    while (afterDeck < incoming.length && !isPrize(incoming[afterDeck])) {
-      afterDeck++;
-    }
-    if (afterDeck < incoming.length && isPrize(incoming[afterDeck])) {
-      return [{ ids: incoming, preset: 'default' }];
-    }
-
-    const prizePart = firstDeckIdx > 0 ? incoming.slice(0, firstDeckIdx) : [];
-    const deckPart = incoming.slice(firstDeckIdx);
-
-    const segs: HandDrawFlightSegment[] = [];
-    if (prizePart.length > 0) {
-      segs.push({ ids: prizePart, preset: 'default' });
-    }
-
-    if (deckPart.length === 0) {
-      return segs;
-    }
-
-    const firstTurnOpen =
-      (gs?.phase === GamePhase.PLAYER_TURN || gs?.phase === GamePhase.DRAW) &&
-      (ourTurnJustBegan ||
-        (gs.turn === 1 && bottomId !== undefined && nowActivePlayerId === bottomId));
-
-    if (gs?.phase === GamePhase.SETUP) {
-      segs.push({ ids: deckPart, preset: 'setupMulligan' });
-      return segs;
-    }
-
-    // Only split "comp-style then mandatory draw" when our turn actually just began
-    // (opponent → us). Turn 1 + we are active (going first) must not split: a batched
-    // deck slice would wrongly animate as (n−1) mulligan + 1 turn draw.
-    if (
-      deckPart.length >= 2 &&
-      (gs?.phase === GamePhase.PLAYER_TURN || gs?.phase === GamePhase.DRAW) &&
-      ourTurnJustBegan
-    ) {
-      segs.push({ ids: deckPart.slice(0, -1), preset: 'setupMulligan' });
-      segs.push({ ids: deckPart.slice(-1), preset: 'turnBegin' });
-      return segs;
-    }
-
-    const singleTurnOpen =
-      deckPart.length === 1 &&
-      (gs?.phase === GamePhase.PLAYER_TURN || gs?.phase === GamePhase.DRAW) &&
-      firstTurnOpen;
-    segs.push({
-      ids: deckPart,
-      preset: singleTurnOpen ? 'turnBegin' : 'default',
-    });
-    return segs;
-  }
-
-  private async runAnimatedHandDrawSegments(
-    segments: HandDrawFlightSegment[],
-    fullIncoming: number[],
-    stableKStart: number,
-    finalTotal: number,
-    isOwner: boolean,
-    playableCardIds: number[] | undefined,
-    aspect: number,
-    boardConfig: ReturnType<typeof getBoardConfig>,
-    prizeFlightOrigins: ReadonlyMap<number, PrizeFlightOrigin>,
-    totalDeckDrawsFull: number,
-  ): Promise<boolean> {
-    const isFromPrize = (id: number) => prizeFlightOrigins.has(id);
-
-    const flightStartAtGlobal = (stepInFull: number): Vector3 => {
-      const id = fullIncoming[stepInFull];
-      const origin = prizeFlightOrigins.get(id);
-      if (origin !== undefined) {
-        return origin.side === 'bottom'
-          ? getBottomPrizeSlotWorld(aspect, origin.grid)
-          : getTopPrizeSlotWorld(aspect, origin.grid);
-      }
-      let deckOrd = 0;
-      for (let j = 0; j < stepInFull; j++) {
-        if (!isFromPrize(fullIncoming[j])) {
-          deckOrd++;
-        }
-      }
-      const base = boardConfig.zonePositions.bottomPlayer.deck.clone();
-      const L = this.bottomPlayer.deck?.cards.length ?? 0;
-      const deckSizeBefore = L + totalDeckDrawsFull - deckOrd;
-      base.y += Math.max(0, deckSizeBefore - 1) * 0.015;
-      return base;
-    };
-
-    let stableKRun = stableKStart;
-    let globalBase = 0;
-
-    for (const seg of segments) {
-      const drawCount = seg.ids.length;
-      const drawFlightPreset = seg.preset;
-
-      if (drawCount === 1) {
-        const batchOkSingle = this.handService.beginBatchDrawPrepare();
-        if (!batchOkSingle) {
-          return false;
-        }
-        try {
-          const flightStart = flightStartAtGlobal(globalBase);
-          const flyCardId = fullIncoming[globalBase];
-          const prep = await this.handService.prepareBatchDrawFlightStep(
-            this.bottomPlayerHand,
-            isOwner,
-            this.handSlot,
-            this.worldContentRoot,
-            flightStart,
-            playableCardIds,
-            stableKRun,
-            0,
-            true,
-            flyCardId,
-          );
-          if (!prep) {
-            return false;
-          }
-          const stage = getDrawFlightStageCenterWorld(aspect, this.isUpsideDown);
-          await this.animationService.playDrawFromDeckToHand(
-            prep.flyingCard,
-            stage,
-            prep.handSlotWorld,
-            {
-              onRevealFace: () => {
-                this.handService.revealDrawFlightFace(prep.flyingCard);
-              },
-              visualPreset: drawFlightPreset,
-            },
-          );
-          this.handService.finishDrawFlight(prep.flyingCard, finalTotal);
-        } finally {
-          this.handService.endBatchDrawPrepare();
-        }
-      } else {
-        const stageBase = getDrawFlightStageCenterWorld(aspect, this.isUpsideDown);
-        const maxRowWidth = getMaxDrawStageRowWidthWorld(aspect, this.isUpsideDown);
-        const { stageScale: batchStageScale, centerSpread: spread } = getMultiDrawBatchStageLayout(
-          drawCount,
-          maxRowWidth,
-        );
-
-        let prizePrefixLenSeg = 0;
-        while (
-          prizePrefixLenSeg < drawCount &&
-          isFromPrize(fullIncoming[globalBase + prizePrefixLenSeg])
-        ) {
-          prizePrefixLenSeg++;
-        }
-        let prizeFirstIncomingBlock = true;
-        for (let p = prizePrefixLenSeg; p < drawCount; p++) {
-          if (isFromPrize(fullIncoming[globalBase + p])) {
-            prizeFirstIncomingBlock = false;
-            break;
-          }
-        }
-        const deckInSeg = drawCount - prizePrefixLenSeg;
-        const usePrizeThenDeckPhases =
-          prizeFirstIncomingBlock && prizePrefixLenSeg > 0 && deckInSeg > 0;
-
-        const batchOk = this.handService.beginBatchDrawPrepare();
-        if (!batchOk) {
-          return false;
-        }
-        try {
-          let aborted = false;
-          let globalFirstStep = true;
-          const staged: Object3D[] = new Array(drawCount);
-
-          const runCardToStageOnly = async (localStep: number) => {
-            const g = globalBase + localStep;
-            const flightStart = flightStartAtGlobal(g);
-            const flyCardId = fullIncoming[g];
-            const prep = await this.handService.prepareBatchDrawFlightStep(
-              this.bottomPlayerHand,
-              isOwner,
-              this.handSlot,
-              this.worldContentRoot,
-              flightStart,
-              playableCardIds,
-              stableKRun,
-              localStep,
-              globalFirstStep,
-              flyCardId,
-            );
-            globalFirstStep = false;
-            if (!prep) {
-              aborted = true;
-              return;
-            }
-            const stagePos = stageBase.clone();
-            stagePos.x += (localStep - (drawCount - 1) / 2) * spread;
-            await this.animationService.playDrawDeckToStage(prep.flyingCard, stagePos, {
-              onRevealFace: () => {
-                this.handService.revealDrawFlightFace(prep.flyingCard);
-              },
-              omitPhasePad: true,
-              targetStageScale: batchStageScale,
-              visualPreset: drawFlightPreset,
-            });
-            staged[localStep] = prep.flyingCard;
-          };
-
-          if (usePrizeThenDeckPhases) {
-            for (let i = 0; i < prizePrefixLenSeg && !aborted; i++) {
-              await runCardToStageOnly(i);
-            }
-            for (let i = prizePrefixLenSeg; i < drawCount && !aborted; i++) {
-              await runCardToStageOnly(i);
-            }
-          } else {
-            for (let i = 0; i < drawCount && !aborted; i++) {
-              await runCardToStageOnly(i);
-            }
-          }
-
-          const allStaged = !aborted && staged.every((c) => c != null);
-          if (!allStaged) {
-            return false;
-          }
-
-          await new Promise<void>((resolve) => {
-            setTimeout(resolve, getMultiDrawSharedHoldSec(drawFlightPreset) * 1000);
-          });
-          await Promise.all(
-            staged.map((card, i) =>
-              this.animationService.playDrawStageToHand(
-                card,
-                this.handService.getHandSlotWorld(stableKRun + i, finalTotal),
-                {
-                  burst: true,
-                  visualPreset: drawFlightPreset,
-                  delay: i * MULTI_DRAW_STAGE_TO_HAND_STAGGER_SEC,
-                },
-              ),
-            ),
-          );
-          for (let i = 0; i < drawCount; i++) {
-            this.handService.finishDrawFlight(staged[i], finalTotal);
-          }
-        } finally {
-          this.handService.endBatchDrawPrepare();
-        }
-      }
-
-      globalBase += drawCount;
-      stableKRun += drawCount;
-    }
-
-    return true;
-  }
-
-  private async runSyncHandOnce(opts?: { immediate?: boolean }): Promise<void> {
-    const genAtStart = this.handSyncInvalidationGen;
-    try {
-      if (!this.bottomPlayerHand || !this.bottomPlayer) {
-        return;
-      }
-
-      if (
-        this.lastHandOwnerPlayerId !== undefined &&
-        this.bottomPlayer.id !== this.lastHandOwnerPlayerId
-      ) {
-        this.lastHandCardIds = [];
-        this.lastHandSyncActivePlayerId = undefined;
-      }
-
-      const nextIds = this.bottomPlayerHand.cards.map((c) => c.id);
-
-      if (opts?.immediate) {
-        if (genAtStart !== this.handSyncInvalidationGen) {
-          return;
-        }
-        const isOwnerImm = this.isHandVisibleToViewer();
-        const playableImm = this.getHandPlayableCardIdsForDisplay();
-        await this.handService.updateHand(
-          this.bottomPlayerHand,
-          isOwnerImm,
-          this.handSlot,
-          playableImm,
-          this.getHandSyncOmitIndices(),
-        );
-        if (genAtStart !== this.handSyncInvalidationGen) {
-          return;
-        }
-        this.lastHandCardIds = nextIds;
-        this.lastHandOwnerPlayerId = this.bottomPlayer.id;
-        this.refreshBottomPrizeSnapshotFromCurrentState();
-        if (this.gameState?.state) {
-          const s = this.gameState.state;
-          this.lastHandSyncActivePlayerId = s.players[s.activePlayer]?.id;
-        }
-        this.interactionService.updateInteractiveObjects(this.scene);
-        this.refreshHandSelectionVisualsIfNeeded();
-        this.markDirty();
-        return;
-      }
-
-      const prevIds = this.lastHandCardIds;
-      const prevLen = prevIds.length;
-
-      const {
-        incomingDrawIds,
-        stableK,
-        drawCount,
-        incomingFormsContiguousSuffix,
-        effectivePrevCardCount,
-      } = this.computeHandDrawDelta(prevIds, nextIds);
-
-      const handIdsSameMultiset = (a: number[], b: number[]): boolean => {
-        if (a.length !== b.length) {
-          return false;
-        }
-        const sa = [...a].sort((x, y) => x - y);
-        const sb = [...b].sort((x, y) => x - y);
-        for (let i = 0; i < sa.length; i++) {
-          if (sa[i] !== sb[i]) {
-            return false;
-          }
-        }
-        return true;
-      };
-
-      const looksLikeHandReorderOnly =
-        drawCount > 0 && prevLen === nextIds.length && handIdsSameMultiset(prevIds, nextIds);
-
-      // Playing a card removes from hand with no new ids (drawCount stays 0). Draws that also discard
-      // (e.g. Prism Tower: −2 + draw 1) can shrink net size but still animate when the delta balances.
-      // Empty→full draws (shuffle hand into deck, then draw) have prevLen 0 after hand→deck sync.
-      const nextIdSet = new Set(nextIds);
-      const removedCount = prevIds.filter((id) => !nextIdSet.has(id)).length;
-      const netGrowth = nextIds.length - effectivePrevCardCount;
-      const handShrank = netGrowth < 0;
-
-      const gs = this.gameState?.state;
-      // Setup also emits deck-shuffle WaitPrompts — don't treat those as Lillie-style refill cues.
-      if (gs?.phase !== GamePhase.SETUP && gs?.prompts) {
-        for (const p of gs.prompts) {
-          if (p.type !== 'WaitPrompt' || p.result !== undefined) {
-            continue;
-          }
-          const msg = String((p as { message?: string }).message ?? '').toLowerCase();
-          if (msg.includes('hand to deck animation') || msg.includes('deck shuffle animation')) {
-            this.expectPostShuffleDraw = true;
-            break;
-          }
-        }
-      }
-
-      const emptyHandRefillDraw =
-        this.expectPostShuffleDraw &&
-        prevLen === 0 &&
-        drawCount >= 1 &&
-        drawCount === nextIds.length &&
-        incomingFormsContiguousSuffix;
-      const shouldAnimateDraw =
-        drawCount >= 1 &&
-        incomingFormsContiguousSuffix &&
-        !looksLikeHandReorderOnly &&
-        (emptyHandRefillDraw ||
-          (effectivePrevCardCount > 0 && removedCount + netGrowth === drawCount));
-
-      const isOwner = this.isHandVisibleToViewer();
-      const playableCardIds = this.getHandPlayableCardIdsForDisplay();
-      const aspect = this.canvasEl.clientWidth / Math.max(this.canvasEl.clientHeight, 1);
-      const boardConfig = getBoardConfig(aspect);
-
-      const nowActivePlayerId = gs ? gs.players[gs.activePlayer]?.id : undefined;
-      const bottomId = this.bottomPlayer?.id;
-      const ourTurnJustBegan =
-        !!gs &&
-        (gs.phase === GamePhase.PLAYER_TURN || gs.phase === GamePhase.DRAW) &&
-        bottomId !== undefined &&
-        nowActivePlayerId === bottomId &&
-        this.lastHandSyncActivePlayerId !== undefined &&
-        this.lastHandSyncActivePlayerId !== bottomId;
-
-      // Option A (setup UX): never deck-flight the hand during SETUP — avoids 7× mulligan
-      // parades when an empty-hand stateChange is missed and diff looks like a full redraw.
-      const shouldAnimateDrawEffective = shouldAnimateDraw && gs?.phase !== GamePhase.SETUP;
-
-      const incomingDiscardIds = this.computeDiscardedFromHandIds(prevIds, nextIds);
-      const pendingHandDiscard = this.evaluateHandDiscardAnimation(prevIds, nextIds);
-      const shouldAnimateDiscard = pendingHandDiscard != null;
-
-      const incomingToDeckIds = this.computeReturnedToDeckFromHandIds(prevIds, nextIds);
-      const shouldAnimateHandToDeck =
-        incomingToDeckIds.length > 0 &&
-        !shouldAnimateDiscard &&
-        effectivePrevCardCount > 0 &&
-        gs?.phase !== GamePhase.SETUP;
-
-      if (import.meta.env.DEV && gs?.phase === GamePhase.SETUP) {
-        const incomingPreview =
-          incomingDrawIds.length <= 6
-            ? incomingDrawIds
-            : [...incomingDrawIds.slice(0, 3), '…', ...incomingDrawIds.slice(-2)];
-        console.debug('[Board3D] hand sync (SETUP)', {
-          prevLen,
-          nextLen: nextIds.length,
-          stableK,
-          drawCount,
-          handShrank,
-          shouldAnimateDraw,
-          shouldAnimateDrawEffective,
-          handClearedToEmpty: prevLen > 0 && nextIds.length === 0,
-          incomingPreview,
-        });
-      }
-
-      let handUpdatedByAnimation = false;
-      let discardAnimationRan = false;
-      let handToDeckAnimationRan = false;
-
-      if (!shouldAnimateDiscard && this.discardHandFlightBaseStack != null) {
-        this.clearHandDiscardFlightFreeze();
-      }
-
-      const willAnimateDiscard = shouldAnimateDiscard && incomingDiscardIds.length > 0;
-      const willAnimateDraw = shouldAnimateDrawEffective && incomingDrawIds.length > 0;
-
-      // Cover discard→draw (Research) and empty→draw refill so WaitPrompts / trainer
-      // discard wait for the full batch, not only the draw segment.
-      // No-op default avoids `null` + `?.()` CFA `never` under tsc -b.
-      let resolveHandEffectBatch: () => void = () => {};
-      if (willAnimateDiscard || willAnimateDraw) {
-        const batchPromise = new Promise<void>((resolve) => {
-          resolveHandEffectBatch = () => resolve();
-        });
-        this.boardInteractionService.setPendingDrawAnimationPromise(batchPromise);
-        if (willAnimateDraw) {
-          this.handDrawAnimationLock = true;
-        }
-      }
-
-      try {
-      if (shouldAnimateHandToDeck) {
-        handToDeckAnimationRan = await this.runAnimatedHandToDeckFlights(incomingToDeckIds);
-        if (genAtStart !== this.handSyncInvalidationGen) {
-          return;
-        }
-        if (!handToDeckAnimationRan && !shouldAnimateDrawEffective) {
-          await this.handService.updateHand(
-            this.bottomPlayerHand,
-            isOwner,
-            this.handSlot,
-            playableCardIds,
-            this.getHandSyncOmitIndices(),
-          );
-          handUpdatedByAnimation = true;
-        }
-      }
-
-      if (willAnimateDiscard) {
-        discardAnimationRan = await this.runAnimatedHandDiscardFlights(incomingDiscardIds);
-        if (genAtStart !== this.handSyncInvalidationGen) {
-          return;
-        }
-        if (!discardAnimationRan && !shouldAnimateDrawEffective) {
-          await this.handService.updateHand(
-            this.bottomPlayerHand,
-            isOwner,
-            this.handSlot,
-            playableCardIds,
-            this.getHandSyncOmitIndices(),
-          );
-          handUpdatedByAnimation = true;
-        }
-      }
-
-      if (
-        discardAnimationRan &&
-        willAnimateDraw
-      ) {
-        await new Promise<void>(resolve => {
-          setTimeout(resolve, HAND_DISCARD_TO_DRAW_HOLD_SEC * 1000);
-        });
-        if (genAtStart !== this.handSyncInvalidationGen) {
-          return;
-        }
-      }
-
-      if (willAnimateDraw) {
-        try {
-          const prizeFlightOrigins = this.buildPrizeFlightOrigins(incomingDrawIds);
-          const isFromPrizeForSegments = (id: number) => prizeFlightOrigins.has(id);
-          const totalDeckDrawsThisSync = incomingDrawIds.filter(id => !prizeFlightOrigins.has(id)).length;
-          const segments = this.buildHandDrawFlightSegments(
-            incomingDrawIds,
-            isFromPrizeForSegments,
-            gs,
-            ourTurnJustBegan,
-            bottomId,
-            nowActivePlayerId
-          );
-          const animated = await this.runAnimatedHandDrawSegments(
-            segments,
-            incomingDrawIds,
-            stableK,
-            nextIds.length,
-            isOwner,
-            playableCardIds,
-            aspect,
-            boardConfig,
-            prizeFlightOrigins,
-            totalDeckDrawsThisSync
-          );
-          if (genAtStart !== this.handSyncInvalidationGen) {
-            return;
-          }
-          if (animated) {
-            handUpdatedByAnimation = true;
-          } else {
-            await this.handService.updateHand(
-              this.bottomPlayerHand,
-              isOwner,
-              this.handSlot,
-              playableCardIds,
-              this.getHandSyncOmitIndices(),
-            );
-            handUpdatedByAnimation = true;
-          }
-        } finally {
-          this.expectPostShuffleDraw = false;
-        }
-      } else if (!handUpdatedByAnimation) {
-        await this.handService.updateHand(
-          this.bottomPlayerHand,
-          isOwner,
-          this.handSlot,
-          playableCardIds,
-          this.getHandSyncOmitIndices(),
-        );
-        if (nextIds.length > 0) {
-          this.expectPostShuffleDraw = false;
-        }
-      }
-      } finally {
-        if (willAnimateDraw) {
-          this.handDrawAnimationLock = false;
-        }
-        resolveHandEffectBatch();
-        this.promoteDeferredTrainerDiscard();
-      }
-
-      if (genAtStart !== this.handSyncInvalidationGen) {
-        return;
-      }
-      this.lastHandCardIds = nextIds;
-      this.lastHandOwnerPlayerId = this.bottomPlayer.id;
-      this.refreshBottomPrizeSnapshotFromCurrentState();
-      if (this.gameState?.state) {
-        const s = this.gameState.state;
-        this.lastHandSyncActivePlayerId = s.players[s.activePlayer]?.id;
-      }
-      this.interactionService.updateInteractiveObjects(this.scene);
-      this.refreshHandSelectionVisualsIfNeeded();
-      this.markDirty();
-      if (this.r3fMode) {
-        this.stateSync.publishSceneModel(this.handService.getHandSlotSnapshots());
-        requestAnimationFrame(() => {
-          this.handService.drainPendingR3fHandDisposals();
-        });
-      }
-    } catch (error) {
-      console.error('[Board3D] Failed to sync 3D hand:', error);
-    } finally {
-      this.pendingPrizeEmptiedBottom = [];
-      this.pendingPrizeEmptiedTop = [];
-    }
   }
 
   private addEventListeners(): void {
@@ -3458,7 +2767,6 @@ export class Board3dController {
     }
 
     canvas.style.cursor = 'default';
-    this.flushPendingHandSyncAfterDrag();
     this.markDirty();
   };
 
@@ -3504,7 +2812,7 @@ export class Board3dController {
     const ejected = this.handService.detachCardForBoardPlay(handIndex, this.worldContentRoot);
     this.trackHandPlayFlightCard(ejected);
     void this.gameActions
-      .playCardAction(this.gameState.gameId, handIndex, zone)
+      .playCardAction(this.gameState.gameId, this.serverHandIndex(handIndex), zone)
       .then(() => {
         this.clearHandPlayFlightCard(ejected);
         if (ejected) {
@@ -3614,7 +2922,7 @@ export class Board3dController {
     };
 
     void this.gameActions
-      .playCardAction(this.gameState.gameId, handIndex, playTarget)
+      .playCardAction(this.gameState.gameId, this.serverHandIndex(handIndex), playTarget)
       .then(() => {
         playSucceeded = true;
         maybeComplete();
@@ -3661,7 +2969,6 @@ export class Board3dController {
   private releaseSetupHandSyncIfIdle(): void {
     if (this.setupPlacementInFlight.size === 0) {
       this.setupHandSyncBlocked = false;
-      this.flushPendingHandSyncAfterDrag();
     }
   }
 
@@ -3806,12 +3113,36 @@ export class Board3dController {
     gsap.killTweensOf(group.rotation);
     gsap.killTweensOf(group.scale);
 
+    const sleevePath = (this.bottomPlayer?.deck as { sleeveImagePath?: string } | undefined)
+      ?.sleeveImagePath;
+    const sleeveUrl = sleevePath ? this.cardsAdapter.getSleeveUrl(sleevePath) : undefined;
+    const texturesPromise = Promise.all([
+      sleeveUrl ? this.assetLoader.loadSleeveTexture(sleeveUrl) : this.assetLoader.loadCardBack(),
+      this.assetLoader.loadCardMaskTexture(),
+    ]);
+
     void this.animationService
       .playHandCardDropOnBoard(group, targetWorld, {
         endScale: animEndScale,
         endRotationY: animEndRotationY,
+        // Flip face-down while flying to the slot (click and drag both use this path).
+        flipFaceDownDuringTravel: {
+          onHideFace: () => {
+            void texturesPromise.then(([cardBack, mask]) => {
+              board3dCard!.updateTexture(cardBack, cardBack, mask);
+              board3dCard!.setHolo(null);
+              group.userData.isFaceDown = true;
+            });
+          },
+        },
       })
-      .then(() => {
+      .then(async () => {
+        const [cardBack, mask] = await texturesPromise;
+        board3dCard!.updateTexture(cardBack, cardBack, mask);
+        board3dCard!.setHolo(null);
+        group.userData.isFaceDown = true;
+        group.rotation.z = 0;
+
         this.setupPlacementInFlight.delete(handIndex);
         this.stateSync.adoptSetupPreviewCard(
           board3dCard!,
@@ -3845,7 +3176,7 @@ export class Board3dController {
     const triggered = handCards[playHandIndex];
     if (!triggered || !cardCanAssembleLegendFromHand(triggered, handCards)) {
       void this.gameActions
-        .playCardAction(this.gameState.gameId, playHandIndex, playTarget)
+        .playCardAction(this.gameState.gameId, this.serverHandIndex(playHandIndex), playTarget)
         .catch(() => this.forceHandResyncAfterFailedPlay());
       return;
     }
@@ -3853,7 +3184,7 @@ export class Board3dController {
     const partnerIndex = findLegendAssemblyPartnerHandIndex(handCards, playHandIndex);
     if (partnerIndex === null) {
       void this.gameActions
-        .playCardAction(this.gameState.gameId, playHandIndex, playTarget)
+        .playCardAction(this.gameState.gameId, this.serverHandIndex(playHandIndex), playTarget)
         .catch(() => this.forceHandResyncAfterFailedPlay());
       return;
     }
@@ -3865,7 +3196,7 @@ export class Board3dController {
     );
     if (!halfIndices) {
       void this.gameActions
-        .playCardAction(this.gameState.gameId, playHandIndex, playTarget)
+        .playCardAction(this.gameState.gameId, this.serverHandIndex(playHandIndex), playTarget)
         .catch(() => this.forceHandResyncAfterFailedPlay());
       return;
     }
@@ -3904,7 +3235,7 @@ export class Board3dController {
       bottomHalf?.getGroup().removeFromParent();
       bottomHalf?.dispose();
       void this.gameActions
-        .playCardAction(this.gameState.gameId, playHandIndex, playTarget)
+        .playCardAction(this.gameState.gameId, this.serverHandIndex(playHandIndex), playTarget)
         .catch(() => this.forceHandResyncAfterFailedPlay());
       this.forceHandResyncAfterFailedPlay();
       return;
@@ -3953,7 +3284,7 @@ export class Board3dController {
     };
 
     void this.gameActions
-      .playCardAction(this.gameState.gameId, playHandIndex, playTarget)
+      .playCardAction(this.gameState.gameId, this.serverHandIndex(playHandIndex), playTarget)
       .catch(() => {
         gsap.killTweensOf(topGroup.position);
         gsap.killTweensOf(bottomGroup.position);
@@ -3982,8 +3313,8 @@ export class Board3dController {
       return;
     }
 
-    const playedHandCard =
-      result.handIndex >= 0 ? this.bottomPlayerHand.cards[result.handIndex] : undefined;
+    const playedHandCard = this.droppedHandCard(result);
+    const serverIndex = this.serverHandIndex(result.handIndex, playedHandCard);
 
     if (
       playedHandCard &&
@@ -4000,11 +3331,10 @@ export class Board3dController {
       !cardIsFossilLikeTrainer(playedHandCard)
     ) {
       this.boardInteractionService.beginTrainerPlayEffectPromptDelay();
-      if (cardIsSupporter(playedHandCard)) {
-        this.pendingTrainerEffectPlayerId = this.bottomPlayer.id;
-      }
     }
-    const trainerBoardHandPlay = cardIsTrainerBoardHandPlay(playedHandCard);
+    const stadiumHandPlay = cardIsStadium(playedHandCard);
+    // Stadiums never use the Item/Supporter play-zone adopt path (CardsInfo can omit the getter).
+    const trainerBoardHandPlay = !stadiumHandPlay && cardIsTrainerBoardHandPlay(playedHandCard);
     const playTarget: CardTarget = trainerBoardHandPlay
       ? {
           player: result.zone.player,
@@ -4023,7 +3353,7 @@ export class Board3dController {
       if (flight.holdForAttach) {
         this.trackHandPlayFlightCard(flight.board3dCard);
         void this.gameActions
-          .playCardAction(this.gameState.gameId, result.handIndex, playTarget)
+          .playCardAction(this.gameState.gameId, serverIndex, playTarget)
           .then(() => {
             this.clearHandPlayFlightCard(flight.board3dCard);
             const g = flight.board3dCard.getGroup();
@@ -4043,17 +3373,7 @@ export class Board3dController {
 
       const group = flight.board3dCard.getGroup();
       let flightDisposed = false;
-      const handCard = playedHandCard;
-      const resolvedTrainerType =
-        handCard?.superType === SuperType.TRAINER
-          ? (handCard as TrainerCard).trainerType
-          : flight.trainerType;
-
-      const itemHandPlayFlight = trainerBoardHandPlay && !cardIsSupporter(playedHandCard);
-      if (itemHandPlayFlight) {
-        this.discardVisualFreezePlayerId =
-          playTarget.player === PlayerType.BOTTOM_PLAYER ? this.bottomPlayer.id : this.topPlayer.id;
-      }
+      const resolvedTrainerType = resolveTrainerType(playedHandCard) ?? flight.trainerType;
 
       const supporterSlotMeshId = trainerBoardHandPlay
         ? board3dMeshIdForPlayTarget(
@@ -4066,7 +3386,15 @@ export class Board3dController {
         : null;
 
       const flightHiddenMeshIds: string[] = [];
-      if (cardIsSupporter(playedHandCard)) {
+      if (stadiumHandPlay) {
+        flightHiddenMeshIds.push(...SHARED_STADIUM_MESH_IDS);
+        const stadiumLanding = ZONE_POSITIONS.stadium.clone();
+        stadiumLanding.y = Math.max(stadiumLanding.y, 0.08);
+        flight.targetWorld.copy(stadiumLanding);
+        flight.endScale = 1.0;
+        flight.endRotationY = 0;
+        flight.dropZoneType = DropZoneType.STADIUM;
+      } else if (cardIsSupporter(playedHandCard)) {
         if (supporterSlotMeshId) {
           flightHiddenMeshIds.push(supporterSlotMeshId);
         }
@@ -4090,12 +3418,14 @@ export class Board3dController {
       const hiddenForThisFlight = flightHiddenMeshIds;
       this.beginHandPlayFlightHiddenMeshes(hiddenForThisFlight);
 
-      const trainerBoardLanding =
-        supporterSlotMeshId && worldPositionForSupporterMeshId(supporterSlotMeshId);
-      if (trainerBoardLanding && supporterSlotMeshId) {
-        flight.targetWorld.copy(trainerBoardLanding);
-        flight.endScale = 1.0;
-        flight.endRotationY = supporterSlotMeshId.startsWith('topPlayer_') ? Math.PI : 0;
+      if (!stadiumHandPlay) {
+        const trainerBoardLanding =
+          supporterSlotMeshId && worldPositionForSupporterMeshId(supporterSlotMeshId);
+        if (trainerBoardLanding && supporterSlotMeshId) {
+          flight.targetWorld.copy(trainerBoardLanding);
+          flight.endScale = 1.0;
+          flight.endRotationY = supporterSlotMeshId.startsWith('topPlayer_') ? Math.PI : 0;
+        }
       }
 
       const disposeFlight = (): void => {
@@ -4105,22 +3435,57 @@ export class Board3dController {
         flightDisposed = true;
         this.clearHandPlayFlightCard(flight.board3dCard);
         this.endHandPlayFlightHiddenMeshes(hiddenForThisFlight);
-        this.discardVisualFreezePlayerId = null;
         flight.board3dCard.dispose();
         this.interactionService.updateInteractiveObjects(this.scene);
         this.syncGameState();
         this.markDirty();
       };
 
+      // Items/Supporters stay on the play zone until the transition queue resolves them.
+      // Stadiums dispose on land so sync owns the shared stadium mesh (never adopt to supporter).
+      const trainerCardId =
+        !stadiumHandPlay && trainerBoardHandPlay && supporterSlotMeshId
+          ? playedHandCard?.id
+          : undefined;
+      let markLanded: () => void = () => {};
+      if (trainerCardId != null) {
+        const landed = new Promise<void>((resolve) => {
+          markLanded = resolve;
+        });
+        this.localTrainerFlights.set(trainerCardId, {
+          playerId: this.bottomPlayer.id,
+          board3dCard: flight.board3dCard,
+          landed,
+          endHiding: () => {
+            this.clearHandPlayFlightCard(flight.board3dCard);
+            this.endHandPlayFlightHiddenMeshes(hiddenForThisFlight);
+          },
+          dispose: () => {
+            if (flightDisposed) {
+              return;
+            }
+            flightDisposed = true;
+            const g = flight.board3dCard.getGroup();
+            gsap.killTweensOf(g.position);
+            gsap.killTweensOf(g.rotation);
+            gsap.killTweensOf(g.scale);
+            g.removeFromParent();
+            flight.board3dCard.dispose();
+            this.interactionService.updateInteractiveObjects(this.scene);
+            this.markDirty();
+          },
+        });
+      }
+
       const abortFlightToHand = (): void => {
         if (flightDisposed) {
           return;
         }
         flightDisposed = true;
+        if (trainerCardId != null) {
+          this.localTrainerFlights.delete(trainerCardId);
+        }
         this.endHandPlayFlightHiddenMeshes(hiddenForThisFlight);
-        this.discardVisualFreezePlayerId = null;
-        this.pendingTrainerEffectPlayerId = null;
-        this.deferredTrainerDiscardPlayerId = null;
         this.interactionService.updateInteractiveObjects(this.scene);
         void this.returnFailedPlayCardToHand(flight.board3dCard, result.handIndex!);
         this.markDirty();
@@ -4138,13 +3503,13 @@ export class Board3dController {
           abortFlightToHand();
           return;
         }
-        if (dropAnimDone) {
+        if (dropAnimDone && trainerCardId == null) {
           disposeFlight();
         }
       };
 
       void this.gameActions
-        .playCardAction(this.gameState.gameId, result.handIndex, playTarget)
+        .playCardAction(this.gameState.gameId, serverIndex, playTarget)
         .then(() => {
           playSucceeded = true;
           maybeComplete();
@@ -4161,11 +3526,12 @@ export class Board3dController {
         })
         .then(() => {
           dropAnimDone = true;
+          markLanded();
           maybeComplete();
         });
     } else {
       void this.gameActions
-        .playCardAction(this.gameState.gameId, result.handIndex, playTarget)
+        .playCardAction(this.gameState.gameId, serverIndex, playTarget)
         .catch(() => this.forceHandResyncAfterFailedPlay());
     }
   }
@@ -4173,7 +3539,6 @@ export class Board3dController {
   private onMouseLeave = (): void => {
     this.interactionService.cancelDrag();
     this.currentHoveredCard = null;
-    this.flushPendingHandSyncAfterDrag();
     this.markDirty();
   };
 

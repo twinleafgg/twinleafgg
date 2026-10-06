@@ -234,9 +234,14 @@ export function TablePage() {
         cardId: number | string;
         slot: string;
         index?: number;
+        source?: 'deck' | 'hand' | 'discard';
       }) => {
         boardInteraction.triggerBasicAnimation(data);
-        playSfx('pokemonplay');
+        // Deck plays sound when that card actually leaves the deck, so a multi-card
+        // search does not ding every Pokémon at once.
+        if (data.source !== 'deck') {
+          playSfx('pokemonplay');
+        }
       };
       const onEvo = (data: {
         playerId: number;

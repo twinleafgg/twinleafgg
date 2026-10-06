@@ -16,24 +16,51 @@ import { DropZoneType } from './board-3d-drop-zone';
 import { SHARED_STADIUM_MESH_ID } from './dual-stadium.utils';
 import { ZONE_POSITIONS } from './board-3d-zone-positions';
 
-export function trainerTypeIsSupporter(tt: TrainerType | undefined | null): boolean {
+/**
+ * CardsInfo JSON keeps `_trainerType` but drops the TrainerCard getter, so client
+ * hand/board cards often have `trainerType === undefined`. Prefer the getter, then the field.
+ */
+export function resolveTrainerType(card: Card | undefined | null): TrainerType | undefined {
+  if (!card || card.superType !== SuperType.TRAINER) {
+    return undefined;
+  }
+  const t = card as TrainerCard & { _trainerType?: TrainerType };
+  const value = t.trainerType ?? t._trainerType;
+  return value === undefined || value === null ? undefined : value;
+}
+
+function trainerTypeMatches(tt: TrainerType | undefined | null, expected: TrainerType, label: string): boolean {
   if (tt === undefined || tt === null) {
     return false;
   }
-  if (tt === TrainerType.SUPPORTER) {
+  if (tt === expected) {
     return true;
   }
-  if (typeof tt === 'string' && (tt as string).toUpperCase() === 'SUPPORTER') {
+  if (typeof tt === 'string' && (tt as string).toUpperCase() === label) {
     return true;
   }
-  return Number(tt) === TrainerType.SUPPORTER;
+  const n = Number(tt);
+  return !Number.isNaN(n) && n === expected;
+}
+
+export function trainerTypeIsSupporter(tt: TrainerType | undefined | null): boolean {
+  return trainerTypeMatches(tt, TrainerType.SUPPORTER, 'SUPPORTER');
+}
+
+export function trainerTypeIsStadium(tt: TrainerType | undefined | null): boolean {
+  return trainerTypeMatches(tt, TrainerType.STADIUM, 'STADIUM');
+}
+
+export function trainerTypeIsTool(tt: TrainerType | undefined | null): boolean {
+  return trainerTypeMatches(tt, TrainerType.TOOL, 'TOOL');
 }
 
 export function cardIsSupporter(card: Card | undefined | null): boolean {
-  if (!card || card.superType !== SuperType.TRAINER) {
-    return false;
-  }
-  return trainerTypeIsSupporter((card as TrainerCard).trainerType);
+  return trainerTypeIsSupporter(resolveTrainerType(card));
+}
+
+export function cardIsStadium(card: Card | undefined | null): boolean {
+  return trainerTypeIsStadium(resolveTrainerType(card));
 }
 
 /**
@@ -99,18 +126,8 @@ export function cardIsTrainerBoardHandPlay(card: Card | undefined | null): boole
   if (cardIsFossilLikeTrainer(card)) {
     return false;
   }
-  const tt = (card as TrainerCard).trainerType;
-  if (tt === TrainerType.STADIUM || tt === TrainerType.TOOL) {
-    return false;
-  }
-  if (typeof tt === 'string') {
-    const u = (tt as string).toUpperCase();
-    if (u === 'STADIUM' || u === 'TOOL') {
-      return false;
-    }
-  }
-  const ttNum = Number(tt);
-  if (!Number.isNaN(ttNum) && (ttNum === TrainerType.STADIUM || ttNum === TrainerType.TOOL)) {
+  const tt = resolveTrainerType(card);
+  if (trainerTypeIsStadium(tt) || trainerTypeIsTool(tt)) {
     return false;
   }
   return true;
