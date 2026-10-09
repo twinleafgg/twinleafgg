@@ -4,43 +4,33 @@ import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
-
 export class Heracross extends PokemonCard {
-
   public stage: Stage = Stage.BASIC;
-
-  public cardType: CardType[] = [CardType.GRASS];
-
+  public cardType: CardType[] = [G];
   public hp: number = 120;
-
-  public weakness = [{ type: CardType.FIRE }];
-
-  public retreat = [CardType.COLORLESS, CardType.COLORLESS];
+  public weakness = [{ type: R }];
+  public retreat = [C, C];
 
   public attacks = [
     {
       name: 'Tackle',
-      cost: [CardType.COLORLESS],
+      cost: [C],
       damage: 20,
-      text: ''
+      text: '',
     },
     {
       name: 'Powerful Friends',
-      cost: [CardType.GRASS, CardType.COLORLESS],
+      cost: [G, C],
       damage: 30,
       damageCalculation: '+',
-      text: 'If you have any Stage 2 Pokémon on your Bench, this attack does 90 more damage.'
+      text: 'If you have any Stage 2 Pokémon on your Bench, this attack does 90 more damage.',
     },
   ];
 
-  public set: string = 'BRS';
-
+  public set: string = 'LOT';
   public cardImage: string = 'assets/cardback.png';
-
-  public setNumber: string = '12';
-
+  public setNumber: string = '18';
   public name: string = 'Heracross';
-
   public fullName: string = 'Heracross BRS';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
