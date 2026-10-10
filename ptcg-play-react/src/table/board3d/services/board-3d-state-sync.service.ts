@@ -1119,6 +1119,21 @@ export class Board3dStateSyncService {
     return newKey;
   }
 
+  /**
+   * Show attack / lethal damage on a board (or KO ghost) card. Prefer this over waiting for
+   * state sync — KO often clears damage in the same push that removes the Pokémon.
+   */
+  applyDamageCounterVisual(meshId: string, damage: number): void {
+    if (damage <= 0) {
+      return;
+    }
+    this.overlayService.setDamageCounter(meshId, damage);
+  }
+
+  getDamageCounterValue(meshId: string): number {
+    return this.overlayService.getDamageCounterValue(meshId);
+  }
+
   /** Remove a board card and its overlays (e.g. after KO ghost animation). */
   removeBoardCardById(cardId: string): void {
     this.removeCard(cardId);

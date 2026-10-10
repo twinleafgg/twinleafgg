@@ -647,14 +647,32 @@ export function gameReducer(store: StoreLike, state: State, effect: Effect): Sta
           state = MOVE_CARDS(store, state, lostZoned, effect.player.lostzone);
         }
       } else {
-        // Default behavior - move to discard
+        // Attachments first, Pokémon last so the KO'd Pokémon is the top discard card
+        // (same order as bench-overflow discard / MOVE_POKEMON_OFF_BOARD).
+        const pokemons = effect.target.getPokemons();
         const tools = [...effect.target.tools];
-        // Move tools to discard BEFORE clearing effects (directly)
-        for (const tool of tools) {
-          effect.target.moveCardTo(tool, effect.player.discard);
+        const otherCards = effect.target.cards.filter(
+          c =>
+            !(c instanceof PokemonCard) &&
+            !pokemons.includes(c as PokemonCard) &&
+            !tools.includes(c),
+        );
+
+        if (otherCards.length > 0) {
+          state = MOVE_CARDS(store, state, effect.target, effect.player.discard, {
+            cards: otherCards,
+          });
         }
-        effect.target.clearEffects();
-        state = MOVE_CARDS(store, state, effect.target, effect.player.discard);
+        for (const tool of tools) {
+          state = MOVE_CARDS(store, state, effect.target, effect.player.discard, {
+            cards: [tool],
+          });
+        }
+        if (pokemons.length > 0) {
+          state = MOVE_CARDS(store, state, effect.target, effect.player.discard, {
+            cards: pokemons,
+          });
+        }
       }
     }
   }

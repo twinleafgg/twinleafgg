@@ -30,6 +30,7 @@ import { ShellButton } from '../components/ui/ShellButton';
 import { selfPlayFocusPlayerId } from '../table/selfPlayFocusPlayerId';
 import { playAttackSfx, playSfx, useTableSfx } from '../sfx';
 import promptStyles from '../table/prompts/TablePromptLayer.module.css';
+import { shouldSuppressChoosePrizeForKoAnimation } from '../table/choosePrizeKoGate';
 
 const RECONNECT_GAME_ID_KEY = 'ptcg_reconnect_gameId';
 const CHOOSE_PRIZE_POST_KO_DELAY_MS = 350;
@@ -97,6 +98,8 @@ export function TablePage() {
   });
   const clientIdRef = useRef(clientId);
   clientIdRef.current = clientId;
+  const localGameRef = useRef(localGame);
+  localGameRef.current = localGame;
   const choosePrizeRevealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const boardInteraction = useMemo(() => new BoardInteractionService(), []);
@@ -209,24 +212,28 @@ export function TablePage() {
         isDiff?: boolean;
         viewKey?: string;
       }) => {
-        setLocalGame((g) => {
-          if (!g || g.gameId !== gameId) return g;
-          const next = mergeStateChange(
-            g,
-            data.stateData,
-            data.playerStats,
-            data.isDiff,
-            data.viewKey,
-          );
-          if (shouldCancelCoinFlipAnimation(g, next)) {
-            boardInteraction.cancelCoinFlipAnimation();
-          }
-          boardInteraction.updateGameLogs(next.logs);
-          if (next.state.phase === GamePhase.FINISHED) {
-            clearPersistedGameId();
-          }
-          return next;
-        });
+        const g = localGameRef.current;
+        if (!g || g.gameId !== gameId) return;
+        const next = mergeStateChange(
+          g,
+          data.stateData,
+          data.playerStats,
+          data.isDiff,
+          data.viewKey,
+        );
+        if (shouldCancelCoinFlipAnimation(g, next)) {
+          boardInteraction.cancelCoinFlipAnimation();
+        }
+        // Batch with setLocalGame so Choose prize never paints before suppress.
+        if (use3dBoardDefault && shouldSuppressChoosePrizeForKoAnimation(g, next)) {
+          setSuppressChoosePrizePrompt(true);
+        }
+        boardInteraction.updateGameLogs(next.logs);
+        if (next.state.phase === GamePhase.FINISHED) {
+          clearPersistedGameId();
+        }
+        localGameRef.current = next;
+        setLocalGame(next);
       };
 
       const onBasic = (data: {
@@ -271,6 +278,7 @@ export function TablePage() {
             index: data.index,
             cardType: data.cardType as CardType,
             opponentId: data.opponentId,
+            damage: data.damage,
           });
         }
       };
@@ -314,7 +322,7 @@ export function TablePage() {
         raw.off(`game[${gameId}]:attachEnergy`, onAttachEnergy);
       };
     },
-    [boardInteraction],
+    [boardInteraction, use3dBoardDefault],
   );
 
   // Clear reconnect tracking only when leaving this game route (not on transient disconnect).
@@ -380,8 +388,6 @@ export function TablePage() {
   // if we already have local game state. CoreSession also rejoins seats; this reapplies
   // a full snapshot when listeners may have missed the server push.
   const prevCoreConnectedRef = useRef<boolean | null>(null);
-  const localGameRef = useRef(localGame);
-  localGameRef.current = localGame;
 
   useEffect(() => {
     if (isReplayRoute || !Number.isFinite(serverGameId) || !cardsInfo) {

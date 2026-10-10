@@ -60,6 +60,10 @@ ptcg-server/.nyc_output/processinfo/index.json
 ptcg-server/output
 ptcg-server/dist
 
+# PTCGO local extract dumps / venv (reference only; do not ship)
+tools/ptcgo-extract/.venv/
+tools/ptcgo-extract/out/
+
 # Specific Sets
 ptcg-server/src/sets/set-test/
 /.kiro

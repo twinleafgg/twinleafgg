@@ -498,6 +498,20 @@ export class Board3dCardOverlayService {
     this.cardOverlays.set(newId, overlays);
   }
 
+  /** Paint / bump a damage counter without a full overlay sync (attack finish / KO ghost). */
+  setDamageCounter(cardId: string, damage: number): void {
+    cardId = String(cardId);
+    const overlays = this.cardOverlays.get(cardId);
+    if (!overlays || damage <= 0) {
+      return;
+    }
+    overlays.damageCounter.updateDamage(damage);
+  }
+
+  getDamageCounterValue(cardId: string): number {
+    return this.cardOverlays.get(String(cardId))?.damageCounter.getDamage() ?? 0;
+  }
+
   clearOverlays(cardId: string, scene: Scene): void {
     const overlays = this.cardOverlays.get(cardId);
     if (overlays) {

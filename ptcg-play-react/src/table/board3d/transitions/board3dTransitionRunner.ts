@@ -71,6 +71,8 @@ export interface Board3dTransitionHost {
   render(): Promise<void>;
   setKoActive(active: boolean): void;
   markDirty(): void;
+  /** Pending attack damage for this defending player, or null if none / already applied. */
+  consumePendingAttackDamage?(defenderId: number): number | null;
 }
 
 export interface TransitionRunResult {
@@ -166,6 +168,8 @@ export class Board3dTransitionRunner {
   async run(): Promise<TransitionRunResult> {
     try {
       this.primeOverrides();
+      // Suppress Choose prize before any await / paint so the prompt cannot flash.
+      this.activateKoSuppressIfNeeded();
       const ghostKeys = this.detachGhosts();
       this.prepareHandRows();
       await this.render();
@@ -299,6 +303,17 @@ export class Board3dTransitionRunner {
     this.refreshPileOverrides();
   }
 
+  private activateKoSuppressIfNeeded(): void {
+    if (this.koActive) {
+      return;
+    }
+    if (!this.steps.some((s) => s.kind === 'boardGhostToPile')) {
+      return;
+    }
+    this.koActive = true;
+    this.host.setKoActive(true);
+  }
+
   private detachGhosts(): Map<TransitionStep, string | null> {
     const out = new Map<TransitionStep, string | null>();
     for (const step of this.steps) {
@@ -306,13 +321,38 @@ export class Board3dTransitionRunner {
         continue;
       }
       const meshId = boardSlotMeshId(this.seatOf(step.playerId), step.playerId, step.loc);
+      // Paint lethal damage on the live slot before re-key so overlays follow the ghost.
+      this.ensureKoDamageCounter(meshId, step.playerId);
       out.set(step, this.host.stateSync.detachBoardCardAsGhost(meshId));
-      if (step.loc.slot === 'active' && !this.koActive) {
-        this.koActive = true;
-        this.host.setKoActive(true);
-      }
     }
+    this.activateKoSuppressIfNeeded();
     return out;
+  }
+
+  /**
+   * Keep damage visible on a KO'd Pokémon for the discard flight. Server often clears
+   * damage in the same state that removes the card, so the board never syncs the total.
+   */
+  private ensureKoDamageCounter(meshId: string, ownerPlayerId: number): void {
+    const boardCard = this.host.stateSync.getCardById(meshId);
+    if (!boardCard) {
+      return;
+    }
+    const cardList = boardCard.getGroup().userData.cardList as { damage?: number } | undefined;
+    const shown = this.host.stateSync.getDamageCounterValue(meshId);
+    const base = Math.max(0, cardList?.damage ?? 0, shown);
+    // Only consume pending once (first call before re-key); second call keeps the painted total.
+    const pending = this.host.consumePendingAttackDamage?.(ownerPlayerId) ?? null;
+    const next = Math.max(shown, base + (pending ?? 0));
+    if (next <= 0) {
+      return;
+    }
+    if (next !== shown) {
+      this.host.stateSync.applyDamageCounterVisual(meshId, next);
+    }
+    if (cardList) {
+      cardList.damage = next;
+    }
   }
 
   /** Cards that left a hand without a flight disappear before the first step. */

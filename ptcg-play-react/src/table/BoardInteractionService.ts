@@ -105,8 +105,17 @@ export interface AttackEffectEvent {
   index?: number;
   cardType: CardType;
   opponentId: number;
+  /** Attack damage after cost/weakness prep (client paints this onto the defender). */
+  damage?: number;
   opponentPlayerType?: PlayerType; // Optional: opponent's PlayerType for easier identification
 }
+
+/** Pending attack damage so the defender's counter can update before the KO state lands. */
+export type PendingAttackDamage = {
+  attackerId: number;
+  opponentId: number;
+  damage: number;
+};
 
 export class BoardInteractionService {
   // Tracks whether the board is in selection mode
@@ -1071,6 +1080,31 @@ export class BoardInteractionService {
   }
 
   /**
+   * Damage from the latest `game:attack` socket. Applied to the defender's counter when the
+   * attack motion finishes — the server often KO's in the same state push, so the board never
+   * syncs lethal damage otherwise.
+   */
+  private pendingAttackDamage: PendingAttackDamage | null = null;
+
+  public setPendingAttackDamage(info: PendingAttackDamage | null): void {
+    this.pendingAttackDamage = info;
+  }
+
+  public peekPendingAttackDamage(): PendingAttackDamage | null {
+    return this.pendingAttackDamage;
+  }
+
+  /** Consume pending damage aimed at this defending player (owner of the KO'd Pokémon). */
+  public consumePendingAttackDamageForDefender(defenderId: number): number | null {
+    const pending = this.pendingAttackDamage;
+    if (!pending || pending.opponentId !== defenderId || pending.damage <= 0) {
+      return null;
+    }
+    this.pendingAttackDamage = null;
+    return pending.damage;
+  }
+
+  /**
    * Latest 3D ability activation promise (set when the motion starts).
    * {@link abilityAnimationStartedAt} must be checked so settled promises from prior abilities are ignored.
    */
@@ -1211,6 +1245,13 @@ export class BoardInteractionService {
   }
 
   public triggerAttackEffect(event: AttackEffectEvent) {
+    if (event.damage != null && event.damage > 0) {
+      this.setPendingAttackDamage({
+        attackerId: event.playerId,
+        opponentId: event.opponentId,
+        damage: event.damage,
+      });
+    }
     this.attackEffectSubject.next(event);
   }
 

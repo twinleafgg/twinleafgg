@@ -697,10 +697,6 @@ export class Board3dController {
 
   private async processFrame(frame: Board3dFrame, options: ProcessStateOptions): Promise<void> {
     try {
-      await this.waitForHandInteractionIdle(options.isStale);
-      if (options.isStale()) {
-        return;
-      }
       const { props } = frame;
       const prevProps = this.displayedProps;
       const prevSnapshot = this.displayedSnapshot;
@@ -711,20 +707,41 @@ export class Board3dController {
         prevProps.clientId !== props.clientId;
       const seatChanged = !!prevProps && prevProps.bottomPlayer?.id !== props.bottomPlayer?.id;
 
+      // Plan KO before any await so Choose prize can stay suppressed during hand-idle wait.
+      let koGhostPlan: ReturnType<typeof planTransition> | null = null;
+      let koGhostSteps: TransitionStep[] = [];
+      const upcomingSnapshot = this.captureBoardSnapshot(props);
+      if (prevSnapshot && upcomingSnapshot) {
+        koGhostPlan = planTransition(prevSnapshot, upcomingSnapshot, {
+          preFlownCardIds: new Set(this.localTrainerFlights.keys()),
+          deckLimboByPlayer: this.deckLimboByPlayer,
+        });
+        koGhostSteps = seatChanged
+          ? this.stepsWithoutHandOrigins(koGhostPlan.steps)
+          : koGhostPlan.steps;
+        if (koGhostSteps.some((s) => s.kind === 'boardGhostToPile')) {
+          this.onKoSequenceActiveChange?.(true);
+        }
+      }
+
+      await this.waitForHandInteractionIdle(options.isStale);
+      if (options.isStale()) {
+        if (koGhostSteps.some((s) => s.kind === 'boardGhostToPile')) {
+          this.onKoSequenceActiveChange?.(false);
+        }
+        return;
+      }
+
       this.setProps(props);
       this.displayedProps = props;
       if (this.camera && perspectiveChanged) {
         this.updatePerspective();
       }
-      const snapshot = this.captureBoardSnapshot(props);
+      const snapshot = upcomingSnapshot ?? this.captureBoardSnapshot(props);
       this.displayedSnapshot = snapshot;
 
-      if (options.animate && prevSnapshot && snapshot) {
-        const plan = planTransition(prevSnapshot, snapshot, {
-          preFlownCardIds: new Set(this.localTrainerFlights.keys()),
-          deckLimboByPlayer: this.deckLimboByPlayer,
-        });
-        let steps = seatChanged ? this.stepsWithoutHandOrigins(plan.steps) : plan.steps;
+      if (options.animate && prevSnapshot && snapshot && koGhostPlan) {
+        let steps = koGhostSteps;
         if (this.outstandingDeckEntrances > 0) {
           const held = steps.filter(
             (step): step is Extract<TransitionStep, { kind: 'trainerToDiscard' }> =>
@@ -747,7 +764,7 @@ export class Board3dController {
             this.transitionHost(),
             prevSnapshot,
             snapshot,
-            plan,
+            koGhostPlan,
             steps,
             seatChanged,
             options.isStale,
@@ -758,7 +775,12 @@ export class Board3dController {
           if (result.topHandTouched) {
             this.lastTopHandSignature = '';
           }
+        } else if (koGhostPlan.steps.some((s) => s.kind === 'boardGhostToPile')) {
+          this.onKoSequenceActiveChange?.(false);
         }
+      } else if (koGhostSteps.some((s) => s.kind === 'boardGhostToPile')) {
+        // Fast-forward / no animation: release any early suppress from TablePage / above.
+        this.onKoSequenceActiveChange?.(false);
       }
       if (options.isStale()) {
         return;
@@ -968,6 +990,8 @@ export class Board3dController {
       render: () => this.renderDisplay(),
       setKoActive: (active) => this.onKoSequenceActiveChange?.(active),
       markDirty: () => this.markDirty(),
+      consumePendingAttackDamage: (defenderId) =>
+        this.boardInteractionService.consumePendingAttackDamageForDefender(defenderId),
     };
   }
 
@@ -1923,16 +1947,61 @@ export class Board3dController {
   private playBoardAttackAnimation(ev: BasicEntranceAnimationEvent): void {
     const meshId = this.boardMeshIdFromAnimationEvent(ev);
     if (!meshId) {
-      this.boardInteractionService.setPendingAttackAnimationPromise(Promise.resolve());
+      this.boardInteractionService.setPendingAttackAnimationPromise(
+        Promise.resolve().then(() => this.applyPendingAttackDamageVisual()),
+      );
       return;
     }
     const boardCard = this.stateSync.getCardById(meshId);
     if (!boardCard) {
-      this.boardInteractionService.setPendingAttackAnimationPromise(Promise.resolve());
+      this.boardInteractionService.setPendingAttackAnimationPromise(
+        Promise.resolve().then(() => this.applyPendingAttackDamageVisual()),
+      );
       return;
     }
-    const p = this.animationService.playAttackAnimation(boardCard.getGroup());
+    const p = this.animationService.playAttackAnimation(boardCard.getGroup()).then(() => {
+      // Paint defender damage as soon as the lunge finishes — before the WaitPrompt
+      // resolves and the server pushes a same-tick KO that never syncs the counter.
+      this.applyPendingAttackDamageVisual();
+    });
     this.boardInteractionService.setPendingAttackAnimationPromise(p);
+  }
+
+  /** Apply {@link BoardInteractionService} pending attack damage onto the defender's Active. */
+  private applyPendingAttackDamageVisual(): void {
+    const pending = this.boardInteractionService.peekPendingAttackDamage();
+    if (!pending || pending.damage <= 0) {
+      return;
+    }
+    const defenderId = pending.opponentId;
+    const seat =
+      this.bottomPlayer?.id === defenderId
+        ? 'bottomPlayer'
+        : this.topPlayer?.id === defenderId
+          ? 'topPlayer'
+          : null;
+    if (!seat) {
+      return;
+    }
+    const meshId = `${seat}_${defenderId}_active`;
+    const boardCard = this.stateSync.getCardById(meshId);
+    if (!boardCard) {
+      return;
+    }
+    const cardList = boardCard.getGroup().userData.cardList as { damage?: number } | undefined;
+    const prevDamage = Math.max(
+      0,
+      cardList?.damage ?? 0,
+      this.stateSync.getDamageCounterValue(meshId),
+    );
+    const nextDamage = prevDamage + pending.damage;
+    this.stateSync.applyDamageCounterVisual(meshId, nextDamage);
+    if (cardList) {
+      cardList.damage = nextDamage;
+    }
+    // Keep pending until KO ghost can reuse it if the Active mesh was already detached.
+    // Non-KO attacks: next sync overwrites with the authoritative total; clear here.
+    this.boardInteractionService.setPendingAttackDamage(null);
   }
 
   private playBoardAbilityAnimation(ev: AbilityAnimationEvent): void {
