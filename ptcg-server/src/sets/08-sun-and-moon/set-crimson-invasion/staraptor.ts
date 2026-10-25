@@ -56,7 +56,7 @@ export class Staraptor extends PokemonCard {
     }
 
     if (effect instanceof KnockOutEffect && this.usedSkyHunting) {
-      if (state.phase === GamePhase.ATTACK) {
+      if (state.phase === GamePhase.ATTACK && effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
         const player = StateUtils.findOwner(state, effect.target);
         const attacker = StateUtils.getOpponent(state, player);
 

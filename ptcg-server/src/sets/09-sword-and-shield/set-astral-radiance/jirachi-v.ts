@@ -68,6 +68,9 @@ export class JirachiV extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       // The KO'd Pokemon must be a Basic Pokemon V
       const pokemonCard = target.getPokemonCard();

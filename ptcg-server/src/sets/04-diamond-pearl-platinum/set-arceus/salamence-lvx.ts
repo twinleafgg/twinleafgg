@@ -60,6 +60,9 @@ export class SalamenceLVX extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== attacker) {
         return state;
       }
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       if (attacker.active.getPokemonCard() !== this) {
         return state;
       }

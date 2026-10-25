@@ -50,6 +50,9 @@ export class Gengar extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       if (player.deck.cards.length === 0) {
         return state;

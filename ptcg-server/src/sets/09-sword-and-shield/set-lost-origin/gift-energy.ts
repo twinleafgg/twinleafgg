@@ -41,6 +41,9 @@ export class GiftEnergy extends EnergyCard {
       if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       if (IS_SPECIAL_ENERGY_BLOCKED(store, state, player, this, effect.target)) {
         return state;

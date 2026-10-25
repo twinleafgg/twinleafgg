@@ -103,7 +103,7 @@ export class GiratinaLVX extends PokemonCard {
       });
     }
 
-    if (effect instanceof KnockOutEffect && effect.target.marker.hasMarker(this.DARKNESS_LOST_MARKER, this)) {
+    if (effect instanceof KnockOutEffect && effect.target.marker.hasMarker(this.DARKNESS_LOST_MARKER, this) && effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
       // just using the already existing code for lost city because i can't be bothered to do an engine change
       effect.target.marker.addMarker('LOST_CITY_MARKER', this);
     }

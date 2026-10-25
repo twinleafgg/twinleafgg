@@ -79,6 +79,9 @@ export class HerosMedal extends TrainerCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       if (!sourceCard) {
         return state;

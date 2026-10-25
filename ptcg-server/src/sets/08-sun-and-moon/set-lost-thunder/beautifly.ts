@@ -4,8 +4,11 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike, State } from '../../../game';
+import { GamePhase, PlayerType, StateUtils, StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
+import { AbstractAttackEffect } from '../../../game/store/effects/attack-effects';
+import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
+import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
@@ -38,17 +41,51 @@ export class Beautifly extends PokemonCard {
   public name: string = 'Beautifly';
   public fullName: string = 'Beautifly LOT';
 
+  private readonly PREVENT_ALL_DAMAGE_AND_EFFECTS = 'PREVENT_ALL_DAMAGE_AND_EFFECTS';
+  private readonly CLEAR_PREVENT_ALL_DAMAGE_AND_EFFECTS = 'CLEAR_PREVENT_ALL_DAMAGE_AND_EFFECTS';
+  private usedButterflyEdge = false;
+
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Attack 1: Skill Dive
-    // Ref: set-dragons-majesty/salamence-gx.ts (Skill Dive)
     if (WAS_ATTACK_USED(effect, 0, this)) {
       THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_POKEMON(50, effect, store, state);
     }
 
-    // Attack 2: Butterfly Edge
-    // TODO: "If your opponent's Pokemon is Knocked Out by damage from this attack, prevent all effects of attacks, including damage, done to this Pokemon during your opponent's next turn." - KO-conditional damage prevention is not implementable with current prefabs. Damage is applied automatically.
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      // Damage only - conditional prevention on KO too complex
+      this.usedButterflyEdge = true;
+    }
+
+    if (effect instanceof KnockOutEffect && this.usedButterflyEdge) {
+      const koOwner = effect.player;
+      const attacker = StateUtils.getOpponent(state, koOwner);
+
+      if (
+        state.phase === GamePhase.ATTACK
+        && attacker.active.cards.includes(this)
+        && koOwner.marker.hasMarker(koOwner.DAMAGE_DEALT_MARKER)
+      ) {
+        attacker.active.marker.addMarker(this.PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
+        koOwner.marker.addMarker(this.CLEAR_PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
+      }
+      this.usedButterflyEdge = false;
+    }
+
+    if (effect instanceof AbstractAttackEffect
+      && effect.target.cards.includes(this)
+      && effect.target.marker.hasMarker(this.PREVENT_ALL_DAMAGE_AND_EFFECTS, this)) {
+      effect.preventDefault = true;
+      return state;
+    }
+
+    if (effect instanceof EndTurnEffect && effect.player.marker.hasMarker(this.CLEAR_PREVENT_ALL_DAMAGE_AND_EFFECTS, this)) {
+      effect.player.marker.removeMarker(this.CLEAR_PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
+      const opponent = StateUtils.getOpponent(state, effect.player);
+      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
+        cardList.marker.removeMarker(this.PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
+      });
+    }
+
+    if (effect instanceof EndTurnEffect) {
+      this.usedButterflyEdge = false;
     }
 
     return state;

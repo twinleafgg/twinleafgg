@@ -54,6 +54,9 @@ export class Weezing extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       if (state.players[state.activePlayer] !== opponent) {
         return state;
       }

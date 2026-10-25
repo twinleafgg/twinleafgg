@@ -42,12 +42,16 @@ export class Marshadow extends PokemonCard {
 
     // If opponent's Pokemon KO'd by this attack, add prevention marker
     if (effect instanceof KnockOutEffect && this.usedShadowySideKick) {
-      const player = effect.player;
-      const opponent = StateUtils.getOpponent(state, player);
+      const koOwner = effect.player;
+      const attacker = StateUtils.getOpponent(state, koOwner);
 
-      if (state.phase === GamePhase.ATTACK && effect.target === opponent.active && effect.target.getPokemonCard()) {
-        player.active.marker.addMarker(this.PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
-        opponent.marker.addMarker(this.CLEAR_PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
+      if (
+        state.phase === GamePhase.ATTACK
+        && attacker.active.cards.includes(this)
+        && koOwner.marker.hasMarker(koOwner.DAMAGE_DEALT_MARKER)
+      ) {
+        attacker.active.marker.addMarker(this.PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
+        koOwner.marker.addMarker(this.CLEAR_PREVENT_ALL_DAMAGE_AND_EFFECTS, this);
       }
       this.usedShadowySideKick = false;
     }

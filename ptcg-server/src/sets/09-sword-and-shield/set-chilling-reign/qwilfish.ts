@@ -6,14 +6,14 @@ import {
   ADD_POISON_TO_PLAYER_ACTIVE,
   AFTER_ATTACK,
   IS_ABILITY_BLOCKED,
-  ON_DAMAGED_BY_OPPONENT_ATTACK_EVEN_IF_KNOCKED_OUT,
 } from '../../../game/store/prefabs/prefabs';
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { StateUtils } from '../../../game/store/state-utils';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
-import { PowerType, State, StoreLike } from '../../../game';
+import { KnockOutEffect, PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
+import { GamePhase, PowerType, State, StoreLike } from '../../../game';
+
 export class Qwilfish extends PokemonCard {
   protected _tags = [CardTag.SINGLE_STRIKE];
   public stage: Stage = Stage.BASIC;
@@ -47,27 +47,33 @@ export class Qwilfish extends PokemonCard {
   public fullName: string = 'Qwilfish CRE';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Ability: Bursting Needles
-    // Ref: set-flashfire/qwilfish.ts (Counterattack Quills - ON_DAMAGED_BY_OPPONENT_ATTACK_EVEN_IF_KNOCKED_OUT)
-    if (ON_DAMAGED_BY_OPPONENT_ATTACK_EVEN_IF_KNOCKED_OUT(state, effect, { source: this })) {
-      const abilityOwner = StateUtils.findOwner(state, effect.target);
+    // Ability: Bursting Needles — Ref: set-pokemon-151/weezing.ts
+    if (
+      effect instanceof KnockOutEffect &&
+      effect.target.cards.includes(this) &&
+      effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
+    ) {
+      const abilityOwner = effect.player;
+      const attackerOwner = StateUtils.getOpponent(state, abilityOwner);
+
+      if (state.phase !== GamePhase.ATTACK ||
+        abilityOwner.active.getPokemonCard() !== this ||
+        state.players[state.activePlayer] !== attackerOwner
+      ) {
+        return state;
+      }
 
       if (IS_ABILITY_BLOCKED(store, state, abilityOwner, this)) {
         return state;
       }
 
-      const placeCounters = new PlaceDamageCountersEffect(
-        abilityOwner,
-        effect.source,
-        60,
-        this,
-        this.powers[0],
+      store.reduceEffect(
+        state,
+        new PlaceDamageCountersEffect(abilityOwner, attackerOwner.active, 60, this, this.powers[0]),
       );
-      store.reduceEffect(state, placeCounters);
     }
 
     // Attack 1: Poison Jab
-    // Ref: set-flashfire/qwilfish.ts (Poison Sting - YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED)
     if (AFTER_ATTACK(effect, 0, this)) {
       ADD_POISON_TO_PLAYER_ACTIVE(store, state, effect.opponent, this);
     }

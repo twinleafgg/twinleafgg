@@ -161,6 +161,7 @@ export class ArceusDialgaPalkiaGX extends PokemonCard {
         effect.target === knockedOutOwner.active &&
         state.phase === GamePhase.ATTACK &&
         state.players[state.activePlayer] === attacker &&
+        knockedOutOwner.marker.hasMarker(knockedOutOwner.DAMAGE_DEALT_MARKER) &&
         attacker.usedAlteredCreation === true &&
         !effect.prizeIncreased
       ) {

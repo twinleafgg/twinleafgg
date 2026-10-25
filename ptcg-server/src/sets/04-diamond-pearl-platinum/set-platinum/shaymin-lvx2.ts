@@ -58,6 +58,9 @@ export class ShayminLVX2 extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       let isInPlay = false;
       owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_list, card) => {

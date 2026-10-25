@@ -36,6 +36,9 @@ export class Entei extends PokemonCard {
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Burning Coat
     if (effect instanceof KnockOutAttackEffect && effect.attack === this.attacks[0]) {
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       const knockedOutOwner = effect.player;
       const cardList = StateUtils.findCardList(state, this);
       const enteiOwner = StateUtils.findOwner(state, cardList);

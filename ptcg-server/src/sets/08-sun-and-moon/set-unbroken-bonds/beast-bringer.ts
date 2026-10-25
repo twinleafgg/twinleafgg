@@ -22,6 +22,9 @@ export class BeastBringer extends TrainerCard {
   // Ref: set-team-up/black-market.ts (Black Market - KnockOutEffect prize modification)
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof KnockOutEffect) {
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       // Find which Pokemon this tool is attached to
       const attachedTo = StateUtils.findCardList(state, this) as PokemonCardList;
       if (!attachedTo || !attachedTo.tools || !attachedTo.tools.includes(this)) {

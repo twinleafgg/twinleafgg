@@ -29,6 +29,9 @@ export class Sandile2 extends PokemonCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof KnockOutAttackEffect && effect.attack === this.attacks[0]) {
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       const cardOwner = StateUtils.findOwner(state, StateUtils.findCardList(state, this));
       if (effect.player !== cardOwner) {
         ARM_NEXT_TURN_ATTACK_BONUS_ALL_ATTACKS(cardOwner.active, this, 120);

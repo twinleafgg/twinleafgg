@@ -68,6 +68,9 @@ export class MegaGengarex extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       // Ability must be in play on player's side and not blocked
       let hasThisInPlay = false;

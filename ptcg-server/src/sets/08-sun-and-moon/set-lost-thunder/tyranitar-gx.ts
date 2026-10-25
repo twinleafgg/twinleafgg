@@ -63,6 +63,9 @@ export class TyranitarGx extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       // Check if the KO was from Tyranitar-GX's attack
       if (opponent.active.getPokemonCard() === this) {
         if (IS_ABILITY_BLOCKED(store, state, opponent, this)) {
