@@ -13,14 +13,12 @@ export class ArceusLightning extends PokemonCard {
   public retreat = [C];
   protected _tags = [CardTag.ARCEUS];
 
-  public attacks = [
-    {
-      name: 'Lightning Turn',
-      cost: [L, C],
-      damage: 30,
-      text: 'Switch Arceus with 1 of your Benched Pokémon.',
-    },
-  ];
+  public attacks = [{
+    name: 'Lightning Turn',
+    cost: [L, C],
+    damage: 30,
+    text: 'Switch Arceus with 1 of your Benched Pokémon.',
+  }];
 
   public set: string = 'AR';
   public cardImage: string = 'assets/cardback.png';

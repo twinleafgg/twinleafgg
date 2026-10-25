@@ -14,7 +14,7 @@ export class ArceusFire extends PokemonCard {
   protected _tags = [CardTag.ARCEUS];
 
   public attacks = [{
-    name: 'Bright FLame',
+    name: 'Bright Flame',
     cost: [R, C, C],
     damage: 80,
     text: 'Flip a coin. If tails, discard 2 Energy attached to Arceus.',

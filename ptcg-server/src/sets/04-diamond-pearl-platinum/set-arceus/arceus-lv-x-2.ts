@@ -1,27 +1,8 @@
-import {
-  GameError,
-  GameMessage,
-  PlayerType,
-  PowerType,
-  State,
-  StateUtils,
-  StoreLike,
-} from '../../../game';
-import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import {
-  CheckPokemonAttacksEffect,
-  CheckPokemonPowersEffect,
-  CheckPokemonStatsEffect,
-  CheckTableStateEffect,
-} from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import {
-  COIN_FLIP_PROMPT,
-  IS_POKEBODY_BLOCKED,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { PokemonCard, Stage, CardType, CardTag, PowerType, StoreLike, State, StateUtils, GameError, GameMessage, PlayerType, SuperType } from "../../../game";
+import { CheckPokemonStatsEffect, CheckTableStateEffect, CheckPokemonAttacksEffect, CheckPokemonPowersEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { PlayPokemonEffect } from "../../../game/store/effects/play-card-effects";
+import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED, COIN_FLIP_PROMPT } from "../../../game/store/prefabs/prefabs";
 
 export class ArceusLvX2 extends PokemonCard {
   public stage: Stage = Stage.LV_X;

@@ -2,7 +2,7 @@ import { PlayerType, State, StoreLike } from '../../../game';
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
-import { DealDamageEffect } from '../../../game/store/effects/attack-effects';
+import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class ArceusFighting extends PokemonCard {
@@ -14,14 +14,12 @@ export class ArceusFighting extends PokemonCard {
   public retreat = [C, C];
   protected _tags = [CardTag.ARCEUS];
 
-  public attacks = [
-    {
-      name: 'Break Ground',
-      cost: [F, C, C],
-      damage: 60,
-      text: "Does 10 damage to each of your Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)",
-    },
-  ];
+  public attacks = [{
+    name: 'Break Ground',
+    cost: [F, C, C],
+    damage: 60,
+    text: "Does 10 damage to each of your Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)",
+  }];
 
   public set: string = 'AR';
   public cardImage: string = 'assets/cardback.png';
@@ -36,7 +34,7 @@ export class ArceusFighting extends PokemonCard {
 
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (card) => {
         if (card !== player.active) {
-          const damage = new DealDamageEffect(effect, 10);
+          const damage = new PutDamageEffect(effect, 10);
           damage.target = card;
           store.reduceEffect(state, damage);
         }

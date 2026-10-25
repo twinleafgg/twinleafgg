@@ -1,24 +1,17 @@
+import { DamageMap, GameError, GameMessage, MoveDamagePrompt, PlayerType, PowerType, SlotType, State, StateUtils, StoreLike } from '../../../game';
+import { CardType, Stage } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike } from '../../../game/store/store-like';
-import { State } from '../../../game/store/state/state';
-import { Effect } from '../../../game/store/effects/effect';
-import { StateUtils } from '../../../game/store/state-utils';
-import { PowerType } from '../../../game/store/card/pokemon-types';
 import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-import { PlayerType, SlotType } from '../../../game/store/actions/play-card-action';
-import { MoveDamagePrompt, DamageMap } from '../../../game/store/prompts/move-damage-prompt';
-import { GameMessage } from '../../../game/game-message';
-import { ABILITY_USED, ADD_MARKER, AFTER_ATTACK, BLOCK_IF_HAS_SPECIAL_CONDITION, CONFIRMATION_PROMPT, HAS_MARKER, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SWITCH_ACTIVE_WITH_BENCHED, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { GameError } from '../../../game';
 import { THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_BENCHED_POKEMON } from '../../../game/store/prefabs/attack-effects';
+import { ABILITY_USED, ADD_MARKER, AFTER_ATTACK, BLOCK_IF_HAS_SPECIAL_CONDITION, CONFIRMATION_PROMPT, HAS_MARKER, IS_POKEPOWER_BLOCKED, REMOVE_MARKER, REMOVE_MARKER_AT_END_OF_TURN, SWITCH_ACTIVE_WITH_BENCHED, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Gengar extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
-  public evolvesFrom = 'Haunter';
-  public cardType: CardType[] = [P];
+  public evolvesFrom: string = 'Haunter';
   public hp: number = 110;
+  public cardType: CardType[] = [P];
   public weakness = [{ type: D, value: +30 }];
   public resistance = [{ type: C, value: -20 }];
   public retreat = [];
@@ -38,27 +31,28 @@ export class Gengar extends PokemonCard {
   }];
 
   public set: string = 'AR';
-  public name: string = 'Gengar';
-  public fullName: string = 'Gengar AR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '16';
+  public name: string = 'Gengar';
+  public fullName: string = 'Gengar AR';
 
   public readonly CURSE_MARKER = 'CURSE_MARKER';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
-      REMOVE_MARKER(this.CURSE_MARKER, this);
+      REMOVE_MARKER(this.CURSE_MARKER, effect.player, this);
     }
 
     REMOVE_MARKER_AT_END_OF_TURN(effect, this.CURSE_MARKER, this);
 
+    // Curse
     if (WAS_POWER_USED(effect, 0, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      const damagedPokemon: DamageMap[] = [];
-      let hasDamagedPokemon = false;
+      if (IS_POKEPOWER_BLOCKED(store, state, player, this)) {
+        throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
+      }
 
       if (HAS_MARKER(this.CURSE_MARKER, player, this)) {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
@@ -66,13 +60,12 @@ export class Gengar extends PokemonCard {
 
       BLOCK_IF_HAS_SPECIAL_CONDITION(player, this);
 
-      opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList, card, target) => {
+      let hasDamagedPokemon = false;
+      opponent.forEachPokemon(PlayerType.TOP_PLAYER, cardList => {
         if (cardList.damage > 0) {
           hasDamagedPokemon = true;
-          damagedPokemon.push({ target, damage: cardList.damage });
         }
       });
-
       if (!hasDamagedPokemon) {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
@@ -85,20 +78,18 @@ export class Gengar extends PokemonCard {
       });
 
       return store.prompt(state, new MoveDamagePrompt(
-        effect.player.id,
+        player.id,
         GameMessage.MOVE_DAMAGE,
         PlayerType.TOP_PLAYER,
         [SlotType.ACTIVE, SlotType.BENCH],
         maxAllowedDamage,
         { allowCancel: true, min: 1, max: 1 }
       ), transfers => {
-        ADD_MARKER(this.CURSE_MARKER, player, this);
-        ABILITY_USED(player, this);
-
         if (transfers === null) {
           return;
         }
-
+        ADD_MARKER(this.CURSE_MARKER, player, this);
+        ABILITY_USED(player, this);
         for (const transfer of transfers) {
           const source = StateUtils.getTarget(state, player, transfer.from);
           const target = StateUtils.getTarget(state, player, transfer.to);
@@ -110,6 +101,7 @@ export class Gengar extends PokemonCard {
       });
     }
 
+    // Shadow Skip
     if (WAS_ATTACK_USED(effect, 0, this)) {
       THIS_ATTACK_DOES_X_DAMAGE_TO_1_OF_YOUR_OPPONENTS_BENCHED_POKEMON(10, effect, store, state);
     }
@@ -124,5 +116,4 @@ export class Gengar extends PokemonCard {
 
     return state;
   }
-
 }
