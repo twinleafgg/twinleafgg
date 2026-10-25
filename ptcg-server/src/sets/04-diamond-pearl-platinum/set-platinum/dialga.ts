@@ -1,10 +1,10 @@
-import { Effect } from '../../../game/store/effects/effect';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType, EnergyType } from '../../../game/store/card/card-types';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { PowerType, StoreLike, State, GameMessage, CardList, ChooseCardsPrompt, ShowCardsPrompt, StateUtils, EnergyCard, OrderCardsPrompt } from '../../../game';
-import { ABILITY_USED, CONFIRMATION_PROMPT, DRAW_CARDS_UNTIL_CARDS_IN_HAND, IS_POKEPOWER_BLOCKED, MOVE_CARD_TO, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { CardType, EnergyType, Stage } from '../../../game/store/card/card-types';
+import { CardList, ChooseCardsPrompt, EnergyCard, GameMessage, OrderCardsPrompt, PowerType, ShowCardsPrompt, State, StateUtils, StoreLike } from '../../../game';
+import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
+import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { ABILITY_USED, CONFIRMATION_PROMPT, DRAW_CARDS_UNTIL_CARDS_IN_HAND, IS_POKEPOWER_BLOCKED, MOVE_CARD_TO, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Dialga extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -34,7 +34,7 @@ export class Dialga extends PokemonCard {
   public fullName: string = 'Dialga PL';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
+    // Reverse Time
     if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
@@ -70,7 +70,9 @@ export class Dialga extends PokemonCard {
             {},
             { min: 1, max: 3, allowCancel: false, blocked }
           ), selected => {
-            if (selected.length === 0) return;
+            if (selected.length === 0) {
+              return;
+            }
 
             selected.forEach(card => {
               MOVE_CARD_TO(state, card, deckTop);
@@ -82,7 +84,9 @@ export class Dialga extends PokemonCard {
               deckTop,
               { allowCancel: false }
             ), order => {
-              if (order === null) return state;
+              if (order === null) {
+                return state;
+              }
 
               deckTop.applyOrder(order);
               deckTop.moveToTopOfDestination(player.deck);
@@ -99,6 +103,7 @@ export class Dialga extends PokemonCard {
       }, GameMessage.WANT_TO_USE_ABILITY);
     }
 
+    // Time-Space Traveling
     if (WAS_ATTACK_USED(effect, 0, this)) {
       DRAW_CARDS_UNTIL_CARDS_IN_HAND(effect.player, 7);
     }

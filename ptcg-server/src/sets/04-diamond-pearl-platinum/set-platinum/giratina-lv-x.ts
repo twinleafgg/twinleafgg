@@ -1,57 +1,36 @@
-import {
-  ChooseCardsPrompt,
-  GameError,
-  GameMessage,
-  PlayerType,
-  PowerType,
-  State,
-  StateUtils,
-  StoreLike,
-} from '../../../game';
+import { ChooseCardsPrompt, GameError, GameMessage, PlayerType, PowerType, State, StateUtils, StoreLike } from '../../../game';
 import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import {
-  CheckPokemonAttacksEffect,
-  CheckPokemonPowersEffect,
-  CheckTableStateEffect,
-} from '../../../game/store/effects/check-effects';
+import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
+import { CheckPokemonAttacksEffect, CheckPokemonPowersEffect, CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect, KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  IS_POKEBODY_BLOCKED,
-  MOVE_CARDS,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { IS_POKEBODY_BLOCKED, MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class GiratinaLVX extends PokemonCard {
   public stage: Stage = Stage.LV_X;
   public evolvesFrom = 'Giratina';
-  public cardType: CardType[] = [P];
   protected _tags = [CardTag.POKEMON_LV_X];
   public hp: number = 130;
+  public cardType: CardType[] = [P];
   public weakness = [{ type: D }];
   public resistance = [{ type: C, value: -20 }];
   public retreat = [C, C, C];
 
-  public powers = [
-    {
-      name: 'Invisible Tentacles',
-      powerType: PowerType.POKEBODY,
-      text: "Whenever your opponent's Pokémon tries to attack, your opponent discards 1 card from his or her hand. (If your opponent can't discard 1 card, your opponent's Pokémon can't attack.) You can't use more than 1 Invisible Tentacles Poké-Body each turn.",
-    },
-  ];
+  public powers = [{
+    name: 'Invisible Tentacles',
+    powerType: PowerType.POKEBODY,
+    text: 'Whenever your opponent\'s Pokémon tries to attack, your opponent discards 1 card from his or her hand. (If your opponent can\'t discard 1 card, your opponent\'s Pokémon can\'t attack.) You can\'t use more than 1 Invisible Tentacles Poké-Body each turn.'
+  }];
 
-  public attacks = [
-    {
-      name: 'Darkness Lost',
-      cost: [P, P, C, C],
-      damage: 0,
-      text: "This attack does 30 damage to each of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.) If any of your opponent's Pokémon would be Knocked Out by damage from this attack, put that Pokémon and all cards attached to it in the Lost Zone instead of discarding it.",
-    },
-  ];
+  public attacks = [{
+    name: 'Darkness Lost',
+    cost: [P, P, C, C],
+    damage: 0,
+    text: 'This attack does 30 damage to each of your opponent\'s Pokémon. (Don\'t apply Weakness and Resistance for Benched Pokémon.) If any of your opponent\'s Pokémon would be Knocked Out by damage from this attack, put that Pokémon and all cards attached to it in the Lost Zone instead of discarding it.'
+  }];
 
   public set: string = 'PL';
   public cardImage: string = 'assets/cardback.png';
@@ -73,7 +52,7 @@ export class GiratinaLVX extends PokemonCard {
         return state;
       }
       let isGiratinaInPlay = false;
-      opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, (card) => {
+      opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, card => {
         if (card.getPokemonCard() === this) {
           isGiratinaInPlay = true;
         }
@@ -92,50 +71,46 @@ export class GiratinaLVX extends PokemonCard {
       if (player.hand.cards.length === 0) {
         throw new GameError(GameMessage.BLOCKED_BY_ABILITY);
       }
-      return store.prompt(
-        state,
-        new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          player.hand,
-          {},
-          { min: 1, max: 1, allowCancel: false },
-        ),
-        (selected) => {
-          if (selected) {
-            effect.invisibleTentacles = true;
-            MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected });
-          }
-        },
-      );
+      return store.prompt(state, new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_DISCARD,
+        player.hand,
+        {},
+        { min: 1, max: 1, allowCancel: false }
+      ), selected => {
+        if (selected) {
+          effect.invisibleTentacles = true;
+          MOVE_CARDS(store, state, player.hand, player.discard, { cards: selected });
+        }
+      });
     }
 
     // Darkness Lost
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const opponent = effect.opponent;
 
-      opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, (card) => {
-        if (card !== opponent.active) {
-          const damage = new PutDamageEffect(effect, 30);
-          damage.target = card;
+      opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+        if (cardList === opponent.active) {
+          const damage = new DealDamageEffect(effect, 30);
+          damage.target = cardList;
           store.reduceEffect(state, damage);
-
-          card.marker.addMarker(this.DARKNESS_LOST_MARKER, this);
+        } else {
+          const damage = new PutDamageEffect(effect, 30);
+          damage.target = cardList;
+          store.reduceEffect(state, damage);
         }
+        cardList.marker.addMarker(this.DARKNESS_LOST_MARKER, this);
       });
     }
 
-    if (
-      effect instanceof KnockOutEffect &&
-      effect.target.marker.hasMarker(this.DARKNESS_LOST_MARKER, this)
-    ) {
+    if (effect instanceof KnockOutEffect && effect.target.marker.hasMarker(this.DARKNESS_LOST_MARKER, this)) {
       // just using the already existing code for lost city because i can't be bothered to do an engine change
       effect.target.marker.addMarker('LOST_CITY_MARKER', this);
     }
 
     // removing the marker
     if (effect instanceof EndTurnEffect) {
-      effect.player.forEachPokemon(PlayerType.ANY, (card) => {
+      effect.player.forEachPokemon(PlayerType.ANY, card => {
         if (card.marker.hasMarker(this.DARKNESS_LOST_MARKER, this)) {
           card.marker.removeMarker(this.DARKNESS_LOST_MARKER, this);
         }
@@ -160,7 +135,7 @@ export class GiratinaLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
           player.showAllStageAbilities = true;
@@ -182,7 +157,7 @@ export class GiratinaLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }
@@ -192,7 +167,6 @@ export class GiratinaLVX extends PokemonCard {
         return state;
       }
 
-      // Add attacks from the previous stage to this one
       for (const evolutionCard of cardList.cards) {
         if (
           evolutionCard.superType === SuperType.POKEMON &&
@@ -214,7 +188,7 @@ export class GiratinaLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }
@@ -224,7 +198,6 @@ export class GiratinaLVX extends PokemonCard {
         return state;
       }
 
-      // Adds the powers from the previous stage
       for (const evolutionCard of cardList.cards) {
         if (
           evolutionCard.superType === SuperType.POKEMON &&

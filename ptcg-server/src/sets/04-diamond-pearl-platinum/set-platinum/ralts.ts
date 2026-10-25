@@ -1,9 +1,9 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, GameMessage, GameError, CardList, OrderCardsPrompt, SelectPrompt } from '../../../game';
+import { CardType, Stage } from '../../../game/store/card/card-types';
+import { CardList, GameError, GameMessage, OrderCardsPrompt, SelectPrompt, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {COIN_FLIP_PROMPT, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
-import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED } from '../../../game/store/prefabs/attack-effects';
+import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_ASLEEP } from '../../../game/store/prefabs/attack-effects';
+import { COIN_FLIP_PROMPT, MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Ralts extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -25,13 +25,13 @@ export class Ralts extends PokemonCard {
   }];
 
   public set: string = 'PL';
-  public name: string = 'Ralts';
-  public fullName: string = 'Ralts PL';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '89';
+  public name: string = 'Ralts';
+  public fullName: string = 'Ralts PL';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
+    // Future Sight
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
@@ -40,7 +40,6 @@ export class Ralts extends PokemonCard {
         {
           message: GameMessage.ORDER_YOUR_DECK,
           action: () => {
-
             if (player.deck.cards.length === 0) {
               throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
             }
@@ -52,17 +51,14 @@ export class Ralts extends PokemonCard {
               player.id,
               GameMessage.CHOOSE_CARDS_ORDER,
               deckTop,
-              { allowCancel: false },
+              { allowCancel: false }
             ), order => {
               if (order === null) {
                 return state;
               }
-
               deckTop.applyOrder(order);
               deckTop.moveToTopOfDestination(player.deck);
-
             });
-
           }
         },
         {
@@ -79,17 +75,14 @@ export class Ralts extends PokemonCard {
               player.id,
               GameMessage.CHOOSE_CARDS_ORDER,
               deckTop,
-              { allowCancel: false },
+              { allowCancel: false }
             ), order => {
               if (order === null) {
                 return state;
               }
-
               deckTop.applyOrder(order);
               deckTop.moveToTopOfDestination(opponent.deck);
-
             });
-
           }
         }
       ];
@@ -105,10 +98,11 @@ export class Ralts extends PokemonCard {
       });
     }
 
+    // Hypnoblast
     if (WAS_ATTACK_USED(effect, 1, this)) {
       COIN_FLIP_PROMPT(store, state, effect.player, result => {
         if (result) {
-          YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED(store, state, effect);
+          YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_ASLEEP(store, state, effect);
         }
       });
     }

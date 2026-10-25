@@ -1,11 +1,9 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike } from '../../../game/store/store-like';
-import { State } from '../../../game/store/state/state';
+import { CardType, Stage } from '../../../game/store/card/card-types';
+import { GameMessage, State, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { AfterAttackEffect } from '../../../game/store/effects/game-phase-effects';
 import { CONFIRMATION_PROMPT, SWITCH_ACTIVE_WITH_BENCHED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { GameMessage } from '../../../game';
 
 export class Kirlia extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -20,8 +18,7 @@ export class Kirlia extends PokemonCard {
     cost: [P, C],
     damage: 30,
     text: 'You may switch Kirlia with 1 of your Benched Pokémon.'
-  },
-  {
+  }, {
     name: 'Super Psy Bolt',
     cost: [P, C, C],
     damage: 60,
@@ -37,7 +34,6 @@ export class Kirlia extends PokemonCard {
   private usedTeleportationBurstTurn = false;
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
     if (WAS_ATTACK_USED(effect, 0, this)) {
       CONFIRMATION_PROMPT(store, state, effect.player, result => {
         if (result) {
@@ -47,12 +43,10 @@ export class Kirlia extends PokemonCard {
     }
 
     if (effect instanceof AfterAttackEffect && this.usedTeleportationBurstTurn) {
-      const player = effect.player;
-      SWITCH_ACTIVE_WITH_BENCHED(store, state, player);
+      SWITCH_ACTIVE_WITH_BENCHED(store, state, effect.player);
       this.usedTeleportationBurstTurn = false;
     }
 
     return state;
   }
-
 }
