@@ -77,10 +77,13 @@ cardManager.defineSet(sets.setEXCrystalGuardians);
 cardManager.defineSet(sets.setEXDragonFrontiers);
 cardManager.defineSet(sets.setEXPowerKeepers);
 
+cardManager.defineSet(sets.setPOPSeries1);
 cardManager.defineSet(sets.setPOPSeries2);
 cardManager.defineSet(sets.setPOPSeries3);
 cardManager.defineSet(sets.setPOPSeries4);
 cardManager.defineSet(sets.setPOPSeries5);
+cardManager.defineSet(sets.setPOPSeries6);
+cardManager.defineSet(sets.setPOPSeries7);
 cardManager.defineSet(sets.setPOPSeries8);
 
 cardManager.defineSet(sets.setPCGLPromotionalCards);

@@ -1,30 +1,21 @@
-import { PokemonCard } from '../../game/store/card/pokemon-card';
-import { Stage, CardType, CardTag } from '../../game/store/card/card-types';
-import {
-  StoreLike,
-  State,
-  PowerType,
-  StateUtils,
-  CardList,
-  ChooseCardsPrompt,
-  GameMessage,
-} from '../../game';
+import { PokemonCard, Stage, CardType, CardTag, StoreLike, State, PowerType, StateUtils, CardList, ChooseCardsPrompt, GameMessage } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import { ABILITY_USED, CONFIRMATION_PROMPT, IS_POKEPOWER_BLOCKED, MOVE_CARD_TO, SHOW_CARDS_TO_PLAYER, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
-import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../game/store/prefabs/effect-of-attack-prefabs';
-import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
 import { PowerEffect } from '../../game/store/effects/game-effects';
+import { PlayPokemonEffect } from '../../game/store/effects/play-card-effects';
+import { PREVENT_DAMAGE, PREVENT_EFFECTS_OF_ATTACKS } from '../../game/store/prefabs/effect-of-attack-prefabs';
+import { ABILITY_USED, CONFIRMATION_PROMPT, IS_POKEPOWER_BLOCKED, MOVE_CARD_TO, SHOW_CARDS_TO_PLAYER, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
 
 export class Celebiex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
   protected _tags = [CardTag.POKEMON_ex];
-  public cardType: CardType[] = [P];
   public hp: number = 80;
+  public cardType: CardType[] = [P];
   public weakness = [{ type: P }];
   public retreat = [C];
 
   public powers = [
     {
+      // Time Reversal
       name: 'Time Reversal',
       powerType: PowerType.POKEPOWER,
       text: 'Once during your turn, when you put Celebi ex from your hand onto your Bench, you may search your discard pile for a card, show it to your opponent, and put it on top of your deck.',
@@ -33,6 +24,7 @@ export class Celebiex extends PokemonCard {
 
   public attacks = [
     {
+      // Psychic Shield
       name: 'Psychic Shield',
       cost: [P, C],
       damage: 30,
@@ -50,15 +42,12 @@ export class Celebiex extends PokemonCard {
     if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-
       if (player.discard.cards.length === 0) {
         return state;
       }
-
       if (IS_POKEPOWER_BLOCKED(store, state, player, this)) {
         return state;
       }
-
       CONFIRMATION_PROMPT(
         store,
         state,
@@ -67,7 +56,6 @@ export class Celebiex extends PokemonCard {
           if (wantToUse) {
             const powerEffect = new PowerEffect(player, this.powers[0], this);
             store.reduceEffect(state, powerEffect);
-
             const deckTop = new CardList();
             return store.prompt(
               state,
@@ -80,13 +68,11 @@ export class Celebiex extends PokemonCard {
               ),
               (selected) => {
                 if (selected.length === 0) return;
-
                 selected.forEach((card) => {
                   MOVE_CARD_TO(state, card, deckTop);
                 });
                 deckTop.moveToTopOfDestination(player.deck);
                 SHOW_CARDS_TO_PLAYER(store, state, opponent, selected);
-
                 ABILITY_USED(player, this);
               },
             );
@@ -95,14 +81,12 @@ export class Celebiex extends PokemonCard {
         GameMessage.WANT_TO_USE_ABILITY,
       );
     }
-
     // Psychic Shield
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const options = { sourceTags: [CardTag.POKEMON_ex] };
       PREVENT_DAMAGE(store, state, effect, this, options);
       PREVENT_EFFECTS_OF_ATTACKS(store, state, effect, this, options);
     }
-
     return state;
   }
 }

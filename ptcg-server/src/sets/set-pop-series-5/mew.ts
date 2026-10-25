@@ -1,31 +1,19 @@
-import { PokemonCard } from '../../game/store/card/pokemon-card';
-import { Stage, CardType, EnergyType, CardTag, SuperType } from '../../game/store/card/card-types';
-import {
-  StoreLike,
-  State,
-  StateUtils,
-  GameMessage,
-  AttachEnergyPrompt,
-  PlayerType,
-  SlotType,
-} from '../../game';
+import { PokemonCard, Stage, CardType, EnergyType, CardTag, SuperType, StoreLike, State, StateUtils, GameMessage, AttachEnergyPrompt, PlayerType, SlotType } from '../../game';
 import { Effect } from '../../game/store/effects/effect';
-import {
-  COPY_ATTACK_FROM_POKEMON_LIST,
-  buildAttackListWithEnergyBlocking,
-} from '../../game/store/prefabs/copy-attack-prefabs';
+import { COPY_ATTACK_FROM_POKEMON_LIST, buildAttackListWithEnergyBlocking } from '../../game/store/prefabs/copy-attack-prefabs';
 import { MOVE_CARD_TO, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../game/store/prefabs/prefabs';
 
 export class Mew extends PokemonCard {
   public stage: Stage = Stage.BASIC;
   protected _tags = [CardTag.DELTA_SPECIES];
-  public cardType: CardType[] = [R];
   public hp: number = 60;
+  public cardType: CardType[] = [R];
   public weakness = [{ type: P }];
   public retreat = [C];
 
   public attacks = [
     {
+      // Copy
       name: 'Copy',
       cost: [C],
       damage: 0,
@@ -33,6 +21,7 @@ export class Mew extends PokemonCard {
       text: "Choose 1 of the Defending Pokémon's attacks. Copy copies that attack. This attack does nothing if Mew doesn't have the Energy necessary to use that attack. (You must still do anything else required for that attack.) Mew performs that attack.",
     },
     {
+      // Extra Draw
       name: 'Extra Draw',
       cost: [R],
       damage: 0,
@@ -51,29 +40,23 @@ export class Mew extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
       const opponentActive = opponent.active.getPokemonCard();
-
       if (!opponentActive) {
         return state;
       }
-
       const { pokemonCards, blocked } = buildAttackListWithEnergyBlocking(state, store, player, {
         extraCards: [opponentActive],
       });
-
       if (pokemonCards.length === 0) {
         return state;
       }
-
       return COPY_ATTACK_FROM_POKEMON_LIST(store, state, effect, pokemonCards, {
         allowCancel: true,
         blocked,
       });
     }
-
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-
       let hasexPokemon = false;
       opponent.forEachPokemon(PlayerType.TOP_PLAYER, (cardList) => {
         const pokemonCard = cardList.getPokemonCard();
@@ -81,7 +64,6 @@ export class Mew extends PokemonCard {
           hasexPokemon = true;
         }
       });
-
       if (hasexPokemon) {
         store.prompt(
           state,
@@ -100,13 +82,11 @@ export class Mew extends PokemonCard {
               const target = StateUtils.getTarget(state, player, transfer.to);
               MOVE_CARD_TO(state, transfer.card, target);
             }
-
             SHUFFLE_DECK(store, state, player);
           },
         );
       }
     }
-
     return state;
   }
 }

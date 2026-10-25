@@ -14,7 +14,7 @@ import {
   type CardSignature,
   type NamedEffect,
 } from './src/cardIdentity';
-import { setDirectoryLookupCodes, toServerSetCode } from './src/data/serverSetCodes';
+import { popSeriesSetDirectory, setDirectoryLookupCodes, toServerSetCode } from './src/data/serverSetCodes';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const dataRoot = join(rootDir, 'data', 'pokemon-tcg-data');
@@ -146,9 +146,10 @@ function escapeRegExp(value: string): string {
 /**
  * Resolve the ptcg-server set folder for a set code (e.g. TEF → set-temporal-forces).
  * Promo catalog codes (PR-SV, PR-SM, …) are rewritten to server codes (SVP, SMP) first.
- * When a code appears in multiple folders (misplaced cards / energy reprints), prefer the
- * directory with the most declaring files. Ties prefer the dedicated *-energy folder for
- * energy set codes (MEE, SVE, …), otherwise the non-energy folder.
+ * POP Series catalog codes (POP1, P6, …) fall back to `set-pop-series-N` when the folder
+ * has no cards yet. When a code appears in multiple folders (misplaced cards / energy reprints),
+ * prefer the directory with the most declaring files. Ties prefer the dedicated *-energy folder
+ * for energy set codes (MEE, SVE, …), otherwise the non-energy folder.
  */
 function findSetDirectory(set: string): string | undefined {
   const lookupCodes = setDirectoryLookupCodes(set);
@@ -164,7 +165,14 @@ function findSetDirectory(set: string): string | undefined {
       counts.set(dir, (counts.get(dir) || 0) + 1);
     }
   }
-  if (counts.size === 0) return undefined;
+  if (counts.size === 0) {
+    const popFolder = popSeriesSetDirectory(set);
+    if (popFolder) {
+      const popDir = join(serverSetsRoot, popFolder);
+      if (existsSync(popDir)) return popDir;
+    }
+    return undefined;
+  }
   if (counts.size === 1) return [...counts.keys()][0];
 
   const serverSet = toServerSetCode(set);

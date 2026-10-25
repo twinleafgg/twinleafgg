@@ -44,6 +44,17 @@ export function setDirectoryLookupCodes(code: string): string[] {
 }
 
 /**
+ * ptcg-server folder for a POP Series catalog or server code (`POP1`/`P1` → `set-pop-series-1`).
+ * POP Series 9 cards use `OP9`.
+ */
+export function popSeriesSetDirectory(code: string): string | undefined {
+  const server = toServerSetCode(code);
+  const match = server.match(/^(?:POP|OP|P)(\d+)$/i);
+  if (!match) return undefined;
+  return `set-pop-series-${Number(match[1])}`;
+}
+
+/**
  * Strip Black Star era prefixes (SM01 → 1, SWSH001 → 1, SM100 → 100).
  * Leaves SVP / PR / NP / DPP / MEP and set-named numbers unchanged.
  */
