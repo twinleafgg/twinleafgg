@@ -1,4 +1,5 @@
 import { Altaria } from './altaria';
+import { AmuletCoin } from './amulet-coin';
 import { Arbok } from './arbok';
 import { Blaziken } from './blaziken';
 import { Butterfree } from './butterfree';
@@ -10,6 +11,7 @@ import { Combusken } from './combusken';
 import { Cresselia } from './cresselia';
 import { CresseliaLVX } from './cresselia-lvx';
 import { Darkrai } from './darkrai';
+import { Darkrai2 } from './darkrai2';
 import { DarkraiLVX } from './darkrai-lvx';
 import { Delibird } from './delibird';
 import { Dialga } from './dialga';
@@ -108,6 +110,7 @@ import { Zangoose } from './zangoose';
 import { Zigzagoon } from './zigzagoon';
 export const setGreatEncounters: Card[] = [
   new Altaria(),
+  new AmuletCoin(),
   new Arbok(),
   new Beedrill(),
   new Blaziken(),
@@ -121,6 +124,7 @@ export const setGreatEncounters: Card[] = [
   new Cresselia(),
   new CresseliaLVX(),
   new Darkrai(),
+  new Darkrai2(),
   new DarkraiLVX(),
   new Delibird(),
   new Dialga(),

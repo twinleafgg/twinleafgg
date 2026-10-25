@@ -1,8 +1,11 @@
 import { Anorith } from './anorith';
 import { Armaldo } from './armaldo';
 import { Beldum } from './beldum';
+import { Beldum2 } from './beldum2';
 import { Bellossom } from './bellossom';
 import { Bellsprout } from './bellsprout';
+import { BubbleCoat } from './bubble-coat';
+import { BucksTraining } from './bucks-training';
 import { Buneary } from './buneary';
 import { Camerupt } from './camerupt';
 import { Castform } from './castform';
@@ -10,6 +13,7 @@ import { CastformRainForm } from './castform-rain-form';
 import { CastformSnowCloudForm } from './castform-snow-cloud-form';
 import { CastformSunnyForm } from './castform-sunny-form';
 import { Chinchou } from './chinchou';
+import { Chinchou2 } from './chinchou2';
 import { ClawFossilLA } from './other-prints';
 import { Card } from '../../../game/store/card/card';
 import { Azelf } from './azelf';
@@ -37,13 +41,17 @@ import { Forretress } from './forretress';
 import { Froslass } from './froslass';
 import { Giratina } from './giratina';
 import { Gligar } from './gligar';
+import { Gligar2 } from './gligar2';
 import { Gliscor } from './gliscor';
+import { Gliscor2 } from './gliscor2';
 import { GliscorLVX } from './gliscor-lvx';
 import { Gloom } from './gloom';
+import { Gloom2 } from './gloom2';
 import { Groudon } from './groudon';
 import { Grumpig } from './grumpig';
 import { Gulpin } from './gulpin';
 import { Heatran } from './heatran';
+import { Heatran2 } from './heatran2';
 import { Hitmonchan } from './hitmonchan';
 import { Hitmonlee } from './hitmonlee';
 import { Hitmontop } from './hitmontop';
@@ -54,6 +62,7 @@ import { Jirachi } from './jirachi';
 import { Kingdra } from './kingdra';
 import { Kyogre } from './kyogre';
 import { Lanturn } from './lanturn';
+import { Lanturn2 } from './lanturn2';
 import { Ledian } from './ledian';
 import { Ledyba } from './ledyba';
 import { Lileep } from './lileep';
@@ -69,6 +78,7 @@ import { Mesprit } from './mesprit';
 import { MespritLVX } from './mesprit-lv-x';
 import { Metagross } from './metagross';
 import { Metang } from './metang';
+import { Metang2 } from './metang2';
 import { Mewtwo } from './mewtwo';
 import { MewtwoLVX } from './mewtwo-lv-x';
 import { Mightyena } from './mightyena';
@@ -78,9 +88,11 @@ import { Ninjask } from './ninjask';
 import { Nosepass } from './nosepass';
 import { Numel } from './numel';
 import { Oddish } from './oddish';
+import { Oddish2 } from './oddish2';
 import { Persian } from './persian';
 import { Piloswine } from './piloswine';
 import { Pineco } from './pineco';
+import { PokeRadar } from './poke-radar';
 import { Politoed } from './politoed';
 import { Poliwag } from './poliwag';
 import { Poliwhirl } from './poliwhirl';
@@ -90,10 +102,12 @@ import { Probopass } from './probopass';
 import { Rayquaza } from './rayquaza';
 import { Regice } from './regice';
 import { Regigigas } from './regigigas';
+import { Regigigas2 } from './regigigas2';
 import { Regirock } from './regirock';
 import { Registeel } from './registeel';
 import { RhyperiorLVX } from './rhyperior-lvx';
 import { Riolu } from './riolu';
+import { RootFossil } from './root-fossil';
 import { Seadra } from './seadra';
 import { Shedinja } from './shedinja';
 import { Shinx } from './shinx';
@@ -110,6 +124,8 @@ import { Swellow } from './swellow';
 import { Swinub } from './swinub';
 import { Taillow } from './taillow';
 import { Tauros } from './tauros';
+import { TechnicalMachineTS1 } from './technical-machine-ts1';
+import { TechnicalMachineTS2 } from './technical-machine-ts2';
 import { Tentacool } from './tentacool';
 import { Tentacruel } from './tentacruel';
 import { Torkoal } from './torkoal';
@@ -135,8 +151,11 @@ export const setLegendsAwakened: Card[] = [
   new Azelf(),
   new AzelfLVX(),
   new Beldum(),
+  new Beldum2(),
   new Bellossom(),
   new Bellsprout(),
+  new BubbleCoat(),
+  new BucksTraining(),
   new Buneary(),
   new Camerupt(),
   new Castform(),
@@ -144,6 +163,7 @@ export const setLegendsAwakened: Card[] = [
   new CastformSnowCloudForm(),
   new CastformSunnyForm(),
   new Chinchou(),
+  new Chinchou2(),
   new Corphish(),
   new Cradily(),
   new Crawdaunt(),
@@ -167,13 +187,17 @@ export const setLegendsAwakened: Card[] = [
   new Froslass(),
   new Giratina(),
   new Gligar(),
+  new Gligar2(),
   new Gliscor(),
+  new Gliscor2(),
   new GliscorLVX(),
   new Gloom(),
+  new Gloom2(),
   new Groudon(),
   new Grumpig(),
   new Gulpin(),
   new Heatran(),
+  new Heatran2(),
   new Hitmonchan(),
   new Hitmonlee(),
   new Hitmontop(),
@@ -184,6 +208,7 @@ export const setLegendsAwakened: Card[] = [
   new Kingdra(),
   new Kyogre(),
   new Lanturn(),
+  new Lanturn2(),
   new Ledian(),
   new Ledyba(),
   new Lileep(),
@@ -199,6 +224,7 @@ export const setLegendsAwakened: Card[] = [
   new MespritLVX(),
   new Metagross(),
   new Metang(),
+  new Metang2(),
   new Mewtwo(),
   new MewtwoLVX(),
   new Mightyena(),
@@ -208,9 +234,11 @@ export const setLegendsAwakened: Card[] = [
   new Nosepass(),
   new Numel(),
   new Oddish(),
+  new Oddish2(),
   new Persian(),
   new Piloswine(),
   new Pineco(),
+  new PokeRadar(),
   new Politoed(),
   new Poliwag(),
   new Poliwhirl(),
@@ -220,10 +248,12 @@ export const setLegendsAwakened: Card[] = [
   new Rayquaza(),
   new Regice(),
   new Regigigas(),
+  new Regigigas2(),
   new Regirock(),
   new Registeel(),
   new RhyperiorLVX(),
   new Riolu(),
+  new RootFossil(),
   new Seadra(),
   new Shedinja(),
   new Shinx(),
@@ -240,6 +270,8 @@ export const setLegendsAwakened: Card[] = [
   new Swinub(),
   new Taillow(),
   new Tauros(),
+  new TechnicalMachineTS1(),
+  new TechnicalMachineTS2(),
   new Tentacool(),
   new Tentacruel(),
   new Torkoal(),

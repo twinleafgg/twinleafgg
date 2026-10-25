@@ -8,7 +8,7 @@ import { IvysaurP2, MrBrineysCompassionP2, MultiTechnicalMachine01P2, TvReporter
 import { Phanpy } from './phanpy';
 import { Pidgeot } from './pidgeot';
 import { Pikachu } from './pikachu';
-import { PokemonPark } from './pok-mon-park';
+import { PokemonPark } from './pokemon-park';
 import { Raikou } from './raikou';
 import { Suicune } from './suicune';
 import { Tauros } from './tauros';

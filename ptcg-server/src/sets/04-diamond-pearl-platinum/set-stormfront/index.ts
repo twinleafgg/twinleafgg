@@ -7,11 +7,19 @@ import { Bronzor } from './bronzor';
 import { Budew } from './budew';
 import { Cherrim } from './cherrim';
 import { Cherubi } from './cherubi';
+import { ConductiveQuarry } from './conductive-quarry';
 import { Drapion } from './drapion';
 import { Drifblim } from './drifblim';
 import { Drifloon } from './drifloon';
+import { Drifloon2 } from './drifloon2';
+import { Dusknoir } from './dusknoir';
+import { Dusknoir2 } from './dusknoir2';
+import { Duskull2 } from './duskull2';
+import { Duskull3 } from './duskull3';
 import { Electrode } from './electrode';
+import { Electrode2 } from './electrode2';
 import { Empoleon } from './empoleon';
+import { EnergyLink } from './energy-link';
 import { EnergySwitchPKSF, GreatBallSF, PotionSF, SwitchSF, CharmanderSF, CharmeleonSF, CharizardSF } from './other-prints';
 import { Card } from '../../../game/store/card/card';
 import { Combee } from './combee';
@@ -37,8 +45,11 @@ import { MachampLVX } from './machamp-lv-x';
 import { Machop } from './machop';
 import { Magikarp } from './magikarp';
 import { Magnemite } from './magnemite';
+import { Magnemite2 } from './magnemite2';
 import { Magneton } from './magneton';
+import { Magneton2 } from './magneton2';
 import { Magnezone } from './magnezone';
+import { Magnezone2 } from './magnezone2';
 import { Mamoswine } from './mamoswine';
 import { MarleysRequest } from './marleys-request';
 import { Miltank } from './miltank';
@@ -50,6 +61,7 @@ import { Pikachu } from './pikachu';
 import { Piloswine } from './piloswine';
 import { PokeBlower } from './poke-blower';
 import { PokeDrawer } from './poke-drawer';
+import { PokeHealer } from './poke-healer';
 import { Ponyta } from './ponyta';
 import { Pupitar } from './pupitar';
 import { Raichu } from './raichu';
@@ -90,6 +102,8 @@ import { Treecko } from './treecko';
 import { Tyranitar } from './tyranitar';
 import { Vespiquen } from './vespiquen';
 import { Voltorb } from './voltorb';
+import { Voltorb2 } from './voltorb2';
+import { Voltorb3 } from './voltorb3';
 export const setStormfront: Card[] = [
   new Abomasnow(),
   new Bagon(),
@@ -101,15 +115,23 @@ export const setStormfront: Card[] = [
   new Cherrim(),
   new Cherubi(),
   new Combee(),
+  new ConductiveQuarry(),
   new Drapion(),
   new Drifblim(),
   new Drifloon(),
+  new Drifloon2(),
   new Dusclops(),
   new Dusclops2(),
+  new Dusknoir(),
+  new Dusknoir2(),
   new DusknoirLVX(),
   new Duskull(),
+  new Duskull2(),
+  new Duskull3(),
   new Electrode(),
+  new Electrode2(),
   new Empoleon(),
+  new EnergyLink(),
   new Farfetchd(),
   new Finneon(),
   new Gengar(),
@@ -127,8 +149,11 @@ export const setStormfront: Card[] = [
   new Machop(),
   new Magikarp(),
   new Magnemite(),
+  new Magnemite2(),
   new Magneton(),
+  new Magneton2(),
   new Magnezone(),
+  new Magnezone2(),
   new Mamoswine(),
   new MarleysRequest(),
   new Miltank(),
@@ -140,6 +165,7 @@ export const setStormfront: Card[] = [
   new Piloswine(),
   new PokeBlower(),
   new PokeDrawer(),
+  new PokeHealer(),
   new Ponyta(),
   new Pupitar(),
   new Raichu(),
@@ -176,6 +202,8 @@ export const setStormfront: Card[] = [
   new Tyranitar(),
   new Vespiquen(),
   new Voltorb(),
+  new Voltorb2(),
+  new Voltorb3(),
   new WarpEnergySF(),
   new EnergySwitchPKSF(),
   new GreatBallSF(),

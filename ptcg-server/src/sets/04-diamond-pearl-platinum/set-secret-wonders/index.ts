@@ -3,7 +3,7 @@ import { Ampharos } from './ampharos';
 import { Arcanine } from './arcanine';
 import { Bagon } from './bagon';
 import { Banette } from './banette';
-import { BebesSearchSW, PlusPowerSW, PotionSW, SwitchSW, DarknessEnergySpecialSW, MetalEnergyN1SW } from './other-prints';
+import { BebesSearchSW, PlusPowerSW, PotionSW, SwitchSW, DarknessEnergySpecialSW, MetalEnergyN1SW, ProfessorRowanSW, RivalSW } from './other-prints';
 import { Card } from '../../../game/store/card/card';
 import { Blastoise } from './blastoise';
 import { Breloom } from './breloom';
@@ -72,6 +72,7 @@ import { Pidgeotto } from './pidgeotto';
 import { Pidgey } from './pidgey';
 import { Pinsir } from './pinsir';
 import { Plusle } from './plusle';
+import { ProfessorOaksVisit } from './professor-oaks-visit';
 import { Psyduck } from './psyduck';
 import { Quagsire } from './quagsire';
 import { Qwilfish } from './qwilfish';
@@ -102,6 +103,7 @@ import { Stantler } from './stantler';
 import { Suicune } from './suicune';
 import { Sunflora } from './sunflora';
 import { Sunkern } from './sunkern';
+import { TeamGalacticsMars } from './team-galactics-mars';
 import { Trapinch } from './trapinch';
 
 // Other Prints
@@ -194,6 +196,8 @@ export const setSecretWonders: Card[] = [
   new Pidgey(),
   new Pinsir(),
   new Plusle(),
+  new ProfessorOaksVisit(),
+  new ProfessorRowanSW(),
   new Psyduck(),
   new Quagsire(),
   new Qwilfish(),
@@ -205,6 +209,7 @@ export const setSecretWonders: Card[] = [
   new Hoppip(),
   new Raticate(),
   new Rattata(),
+  new RivalSW(),
   new RoseannesResearch(),
   new Roselia(),
   new Roserade(),
@@ -228,6 +233,7 @@ export const setSecretWonders: Card[] = [
   new Suicune(),
   new Sunflora(),
   new Sunkern(),
+  new TeamGalacticsMars(),
   new Trapinch(),
 
   new UnownK(),

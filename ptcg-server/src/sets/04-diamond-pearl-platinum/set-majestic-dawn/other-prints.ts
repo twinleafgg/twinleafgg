@@ -5,6 +5,8 @@ import { EnergySearch } from '../../set-fossil/energy-search';
 import { DarknessEnergySpecial } from '../../set-neo-genesis/darkness-energy-special';
 import { MetalEnergyN1 } from '../../set-neo-genesis/other-prints';
 import { EscapeRope } from '../../06-black-and-white/set-plasma-storm/escape-rope';
+import { EnergyRestore } from '../set-diamond-and-pearl/energy-restore';
+import { FossilExcavator } from '../set-mysterious-treasures/fossil-excavator';
 
 export class WarpPointMD extends EscapeRope {
   public fullName = 'Warp Point MD';
@@ -46,5 +48,17 @@ export class DarknessEnergySpecialMD extends DarknessEnergySpecial {
 export class MetalEnergyN1MD extends MetalEnergyN1 {
   public setNumber = '95';
   public fullName: string = 'Metal Energy MD';
+  public set = 'MD';
+}
+
+export class EnergyRestoreMD extends EnergyRestore {
+  public setNumber = '81';
+  public fullName: string = 'Energy Restore MD';
+  public set = 'MD';
+}
+
+export class FossilExcavatorMD extends FossilExcavator {
+  public setNumber = '82';
+  public fullName: string = 'Fossil Excavator MD';
   public set = 'MD';
 }

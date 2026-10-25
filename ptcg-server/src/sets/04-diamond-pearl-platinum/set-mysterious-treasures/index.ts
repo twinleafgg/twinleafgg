@@ -5,6 +5,7 @@ import { Aipom } from './aipom';
 import { Alakazam } from './alakazam';
 import { Ambipom } from './ambipom';
 import { Ariados } from './ariados';
+import { ArmorFossil } from './armor-fossil';
 import { Aron } from './aron';
 import { Barboach } from './barboach';
 import { Bastiodon } from './bastiodon';
@@ -38,6 +39,7 @@ import { Exeggcute } from './exeggcute';
 import { Exeggutor } from './exeggutor';
 import { Feraligatr } from './feraligatr';
 import { Finneon } from './finneon';
+import { FossilExcavator } from './fossil-excavator';
 import { Gabite } from './gabite';
 import { Garchomp } from './garchomp';
 import { Geodude } from './geodude';
@@ -52,6 +54,7 @@ import { Honchkrow } from './honchkrow';
 import { Kricketot } from './kricketot';
 import { Kricketune } from './kricketune';
 import { Lairon } from './lairon';
+import { LakeBoundary } from './lake-boundary';
 import { Larvitar } from './larvitar';
 import { LucarioLVX } from './lucario-lvx';
 import { Lumineon } from './lumineon';
@@ -87,6 +90,7 @@ import { Sealeo } from './sealeo';
 import { Seel } from './seel';
 import { Shieldon } from './shieldon';
 import { Shinx } from './shinx';
+import { SkullFossil } from './skull-fossil';
 import { Slaking } from './slaking';
 import { Slakoth } from './slakoth';
 import { Snorunt } from './snorunt';
@@ -126,6 +130,7 @@ export const setMysteriousTreasures: Card[] = [
   new Alakazam(),
   new Ambipom(),
   new Ariados(),
+  new ArmorFossil(),
   new Aron(),
   new Azelf(),
   new Barboach(),
@@ -157,6 +162,7 @@ export const setMysteriousTreasures: Card[] = [
   new Exeggutor(),
   new Feraligatr(),
   new Finneon(),
+  new FossilExcavator(),
   new Gabite(),
   new Garchomp(),
   new Geodude(),
@@ -171,6 +177,7 @@ export const setMysteriousTreasures: Card[] = [
   new Kricketot(),
   new Kricketune(),
   new Lairon(),
+  new LakeBoundary(),
   new Larvitar(),
   new LucarioLVX(),
   new Lumineon(),
@@ -206,6 +213,7 @@ export const setMysteriousTreasures: Card[] = [
   new Seel(),
   new Shieldon(),
   new Shinx(),
+  new SkullFossil(),
   new Slaking(),
   new Slakoth(),
   new Snorunt(),
