@@ -14,6 +14,7 @@ import {
   type CardSignature,
   type NamedEffect,
 } from './src/cardIdentity';
+import { setDirectoryLookupCodes, toServerSetCode } from './src/data/serverSetCodes';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const dataRoot = join(rootDir, 'data', 'pokemon-tcg-data');
@@ -138,17 +139,27 @@ function isEnergySetDirectory(dir: string): boolean {
   return /(?:^|[/\\])set-[^/\\]*-energy$/i.test(dir);
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Resolve the ptcg-server set folder for a set code (e.g. TEF → set-temporal-forces).
+ * Promo catalog codes (PR-SV, PR-SM, …) are rewritten to server codes (SVP, SMP) first.
  * When a code appears in multiple folders (misplaced cards / energy reprints), prefer the
  * directory with the most declaring files. Ties prefer the dedicated *-energy folder for
  * energy set codes (MEE, SVE, …), otherwise the non-energy folder.
  */
 function findSetDirectory(set: string): string | undefined {
+  const lookupCodes = setDirectoryLookupCodes(set);
+  if (lookupCodes.length === 0) return undefined;
+  const setPattern = new RegExp(
+    `public set(?:\\s*:\\s*string)?\\s*=\\s*['"](?:${lookupCodes.map(escapeRegExp).join('|')})['"]`
+  );
   const counts = new Map<string, number>();
   for (const file of collectTsFiles(serverSetsRoot)) {
     const source = readFileSync(file, 'utf8');
-    if (new RegExp(`public set(?:\\s*:\\s*string)?\\s*=\\s*['"]${set}['"]`).test(source)) {
+    if (setPattern.test(source)) {
       const dir = dirname(file);
       counts.set(dir, (counts.get(dir) || 0) + 1);
     }
@@ -156,7 +167,8 @@ function findSetDirectory(set: string): string | undefined {
   if (counts.size === 0) return undefined;
   if (counts.size === 1) return [...counts.keys()][0];
 
-  const preferEnergyFolder = /E$/i.test(set) && set.length === 3 && set.toUpperCase() !== 'BS';
+  const serverSet = toServerSetCode(set);
+  const preferEnergyFolder = /E$/i.test(serverSet) && serverSet.length === 3 && serverSet !== 'BS';
   const ranked = [...counts.entries()].sort((a, b) => {
     if (b[1] !== a[1]) return b[1] - a[1];
     const aEnergy = isEnergySetDirectory(a[0]);
@@ -334,7 +346,12 @@ function findReprintCandidates(
       };
     })
     .filter(candidate => {
-      if (candidate.set !== set || candidate.name.trim().toLowerCase() !== normalizedName) return false;
+      if (
+        toServerSetCode(candidate.set) !== toServerSetCode(set) ||
+        candidate.name.trim().toLowerCase() !== normalizedName
+      ) {
+        return false;
+      }
       return !(normalizedSetNumber && candidate.setNumber === normalizedSetNumber);
     })
     .filter((candidate, index, all) => all.findIndex(other =>
@@ -658,10 +675,6 @@ async function serveRemoveCard(req: IncomingMessage, res: ServerResponse, next: 
   } catch (error) {
     jsonResponse(res, 400, { error: error instanceof Error ? error.message : String(error) });
   }
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function hasExportedClass(source: string, className: string): boolean {

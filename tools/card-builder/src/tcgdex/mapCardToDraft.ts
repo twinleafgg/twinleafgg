@@ -7,6 +7,7 @@ import type {
   StageName,
   WeaknessValue,
 } from '../types';
+import { normalizePromoSetNumber, toServerSetCode } from '../data/serverSetCodes';
 import type { TcgDexAbility, TcgDexAttack, TcgDexCard } from './client';
 
 function uid(prefix: string): string {
@@ -172,9 +173,12 @@ function mapAbility(a: TcgDexAbility): PowerDraft {
 
 function setAbbreviation(card: TcgDexCard): string {
   const official = card.set?.abbreviations?.official;
-  if (official) return official.toUpperCase();
-  if (card.set?.tcgOnline) return String(card.set.tcgOnline).toUpperCase();
-  return (card.set?.id || '').toUpperCase();
+  const raw = official
+    ? official.toUpperCase()
+    : card.set?.tcgOnline
+      ? String(card.set.tcgOnline).toUpperCase()
+      : (card.set?.id || '').toUpperCase();
+  return toServerSetCode(raw);
 }
 
 function mapTrainerType(
@@ -195,7 +199,7 @@ export function mapTcgDexCardToDraft(card: TcgDexCard): CardDraft {
   const category = (card.category || '').toLowerCase();
   const name = card.name || '';
   const set = setAbbreviation(card);
-  const setNumber = String(card.localId || '');
+  const setNumber = normalizePromoSetNumber(set, String(card.localId || ''));
 
   const base: CardDraft = {
     className: toPascalCase(name),

@@ -1,0 +1,67 @@
+{
+  "catalogToServer": {
+    "BASEP": "PR",
+    "PR": "PR",
+
+    "NP": "NP",
+    "PR-NP": "NP",
+
+    "DPP": "DPP",
+    "PR-DPP": "DPP",
+
+    "HSP": "HSP",
+    "PR-HS": "HSP",
+    "HGSSP": "HSP",
+
+    "BWP": "BWP",
+    "PR-BLW": "BWP",
+
+    "XYP": "XYP",
+    "PR-XY": "XYP",
+
+    "SMP": "SMP",
+    "PR-SM": "SMP",
+
+    "SWSH": "SWSH",
+    "SWSHP": "SWSH",
+    "PR-SW": "SWSH",
+    "PR-SH": "SWSH",
+    "SP": "SWSH",
+
+    "SVP": "SVP",
+    "PR-SV": "SVP",
+    "SV-P": "SVP",
+
+    "MEP": "MEP",
+    "M-P": "MEP",
+    "MEBSP": "MEP",
+
+    "POP2": "P2",
+    "P2": "P2",
+    "POP3": "P3",
+    "P3": "P3",
+    "POP4": "P4",
+    "P4": "P4",
+    "POP5": "P5",
+    "P5": "P5",
+    "POP8": "P8",
+    "P8": "P8",
+
+    "SI1": "SI",
+    "SI": "SI",
+
+    "DET1": "DET",
+    "DET": "DET",
+
+    "E1": "EX",
+    "E2": "AQ",
+    "E3": "SK"
+  },
+  "numberPrefixes": {
+    "HSP": "HGSS",
+    "BWP": "BW",
+    "XYP": "XY",
+    "SMP": "SM",
+    "SWSH": "SWSH"
+  }
+}
