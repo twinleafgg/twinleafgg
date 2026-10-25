@@ -1,4 +1,5 @@
 import type { PrefabDefinition, PrefabParamDef, PrefabScope } from '../types';
+import { extractNumbers, substituteCallCaptures } from '../textAccuracy';
 
 export interface EnginePrefabRecord {
   id: string;
@@ -151,6 +152,10 @@ export function engineRecordToPrefab(record: EnginePrefabRecord): PrefabDefiniti
       : [];
 
   const callLine = pickCallTemplate(record);
+  const paramCaptures: Record<number, string> = {};
+  for (let i = 1; i <= 8; i++) {
+    paramCaptures[i] = `n${i}`;
+  }
 
   return {
     id: record.id,
@@ -163,9 +168,24 @@ export function engineRecordToPrefab(record: EnginePrefabRecord): PrefabDefiniti
     importFrom: record.importFrom,
     importNames: record.importNames,
     params: record.params,
+    paramCaptures,
     patterns,
-    generateCall: () => ({
-      lines: [callLine],
-    }),
+    generateCall: (params) => {
+      const captured = Object.keys(params)
+        .filter(key => /^n\d+$/.test(key) && /^\d+$/.test(params[key] || ''))
+        .sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))
+        .map(key => params[key]);
+      const example =
+        record.exampleTexts.find(text => extractNumbers(text).length === captured.length) ||
+        record.exampleTexts[0] ||
+        '';
+      const namedAmounts = ['amount', 'damage', 'count', 'bonus', 'coins', 'x']
+        .map(key => params[key])
+        .filter((value): value is string => Boolean(value) && /^\d+$/.test(value));
+      const numbers = captured.length > 0 ? captured : namedAmounts;
+      return {
+        lines: [substituteCallCaptures(callLine, example, numbers)],
+      };
+    },
   };
 }

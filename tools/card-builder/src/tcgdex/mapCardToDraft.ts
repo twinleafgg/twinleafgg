@@ -7,23 +7,12 @@ import type {
   StageName,
   WeaknessValue,
 } from '../types';
+import { toPascalClassName } from '../cardIdentity';
 import { normalizePromoSetNumber, toServerSetCode } from '../data/serverSetCodes';
 import type { TcgDexAbility, TcgDexAttack, TcgDexCard } from './client';
 
 function uid(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-/** "Hop's Phantump" → "HopsPhantump" (possessive 's stays with the name). */
-function toPascalCase(str: string): string {
-  return str
-    .replace(/[''\u2019]s\b/gi, 's')
-    .replace(/[''\u2019]/g, '')
-    .replace(/[^a-zA-Z0-9 ]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join('');
 }
 
 const TYPE_MAP: Record<string, EnergyShort> = {
@@ -129,6 +118,9 @@ function mapTags(card: TcgDexCard): string {
   if (stage === 'vstar' || name.includes('vstar')) tags.push('POKEMON_VSTAR');
   if (stage === 'mega') tags.push('MEGA');
   if (/\blv\.?x\b/i.test(card.name) || stage.includes('level')) tags.push('POKEMON_LV_X');
+  if (/δ|delta species|\(delta/i.test(card.name) || suffix.includes('delta')) tags.push('DELTA_SPECIES');
+  if (/\bstar\b|☆/.test(card.name) || suffix.includes('star')) tags.push('STAR');
+  if (/\s+g$/i.test(card.name) || suffix === 'g' || suffix.includes('sp')) tags.push('POKEMON_SP');
 
   // Deduplicate
   return [...new Set(tags)].join(', ');
@@ -202,7 +194,7 @@ export function mapTcgDexCardToDraft(card: TcgDexCard): CardDraft {
   const setNumber = normalizePromoSetNumber(set, String(card.localId || ''));
 
   const base: CardDraft = {
-    className: toPascalCase(name),
+    className: toPascalClassName(name),
     extends: 'PokemonCard',
     stage: 'BASIC',
     evolvesFrom: '',
@@ -238,6 +230,14 @@ export function mapTcgDexCardToDraft(card: TcgDexCard): CardDraft {
     base.hasPowers = false;
     base.trainerType = mapTrainerType(card.trainerType);
     base.trainerText = card.effect || '';
+    if (/^technical machine/i.test(name) || /may use this card'?s attack/i.test(base.trainerText)) {
+      base.trainerType = 'TOOL';
+    }
+    const trainerAttacks = (card.attacks || []).map(mapAttack);
+    if (trainerAttacks.length > 0) {
+      base.hasAttacks = true;
+      base.attacks = trainerAttacks;
+    }
     return base;
   }
 

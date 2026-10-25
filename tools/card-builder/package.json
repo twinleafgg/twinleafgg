@@ -7,6 +7,7 @@
   "scripts": {
     "sync-data": "node scripts/sync-data.mjs",
     "index-engine": "node lib/engineIndex.mjs",
+    "test": "npx tsx --test src/textAccuracy.test.ts",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
