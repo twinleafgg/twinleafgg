@@ -1,8 +1,13 @@
-import { PokemonCard, Stage, CardType, StoreLike, State, Card } from "../../../game";
-import { DiscardCardsEffect } from "../../../game/store/effects/attack-effects";
-import { CheckProvidedEnergyEffect } from "../../../game/store/effects/check-effects";
-import { Effect } from "../../../game/store/effects/effect";
-import { WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
+import { Card } from '../../../game';
+import { CardType } from '../../../game';
+import { PokemonCard } from '../../../game';
+import { Stage } from '../../../game';
+import { State } from '../../../game';
+import { StoreLike } from '../../../game';
+import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
+import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
+import { Effect } from '../../../game/store/effects/effect';
+import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Entei extends PokemonCard {
   public stage: Stage = Stage.BASIC;
