@@ -24,6 +24,12 @@ export function clearImplementedCache(): void {
   cached = null;
 }
 
+/** Session-only: grey out a card immediately after a successful save. */
+export function markImplemented(cardId: string): void {
+  if (!cached) cached = new Set();
+  cached.add(cardId);
+}
+
 export function isImplemented(ids: Set<string>, cardId: string): boolean {
   return ids.has(cardId);
 }
