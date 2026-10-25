@@ -7,7 +7,7 @@ export class FloatzelGL extends PokemonCard {
   protected _tags = [CardTag.POKEMON_SP];
   public hp: number = 80;
   public cardType: CardType[] = [W];
-  public weakness = [{ type: L }];
+  public weakness = [{ type: L, value: +20 }];
   public retreat = [C];
 
   public attacks = [{
@@ -15,8 +15,7 @@ export class FloatzelGL extends PokemonCard {
     cost: [],
     damage: 0,
     text: 'Search your discard pile for up to 2 Supporter cards, show them to your opponent, and put them into your hand.',
-  },
-  {
+  }, {
     name: 'Giant Wave',
     cost: [W, W],
     damage: 50,
@@ -35,30 +34,25 @@ export class FloatzelGL extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
       const hasSupporter = player.discard.cards.some(
-        (c) => c instanceof TrainerCard && c.trainerType === TrainerType.SUPPORTER,
+        c => c instanceof TrainerCard && c.trainerType === TrainerType.SUPPORTER,
       );
-
       if (!hasSupporter) {
         return state;
       }
 
-      return store.prompt(
-        state,
-        new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_HAND,
-          player.discard,
-          { superType: SuperType.TRAINER, trainerType: TrainerType.SUPPORTER },
-          { min: 0, max: 2, allowCancel: true },
-        ),
-        (selected) => {
-          const cards = selected || [];
-          if (cards.length > 0) {
-            MOVE_CARDS(store, state, player.discard, player.hand, { cards });
-            SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
-          }
-        },
-      );
+      return store.prompt(state, new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_HAND,
+        player.discard,
+        { superType: SuperType.TRAINER, trainerType: TrainerType.SUPPORTER },
+        { min: 0, max: 2, allowCancel: true },
+      ), selected => {
+        const cards = selected || [];
+        if (cards.length > 0) {
+          MOVE_CARDS(store, state, player.discard, player.hand, { cards });
+          SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
+        }
+      });
     }
 
     // Giant Wave

@@ -2,6 +2,7 @@ import { BebesSearch } from '../set-mysterious-treasures/bebes-search';
 import { DarknessEnergySpecial } from '../../set-neo-genesis/darkness-energy-special';
 import { MetalEnergyN1 } from '../../set-neo-genesis/other-prints';
 import { Pikachu } from '../../set-base-set/pikachu';
+
 export class BebesSearchRR extends BebesSearch {
   public setNumber = '89';
   public fullName: string = 'Bebe\'s Search RR';

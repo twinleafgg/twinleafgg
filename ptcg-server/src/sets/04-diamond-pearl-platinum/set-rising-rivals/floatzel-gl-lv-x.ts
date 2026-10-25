@@ -1,22 +1,12 @@
 import { Card, ChooseCardsPrompt, EnergyCard, GameError, GameMessage, GamePhase, PlayerType, PowerType, State, StateUtils, StoreLike, pokemonHasCardTypeOptional } from '../../../game';
 import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import {
-  CheckPokemonAttacksEffect,
-  CheckPokemonPowersEffect,
-  CheckTableStateEffect,
-} from '../../../game/store/effects/check-effects';
+import { CheckPokemonAttacksEffect, CheckPokemonPowersEffect, CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { BetweenTurnsEffect } from '../../../game/store/effects/game-phase-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  IS_POKEBODY_BLOCKED,
-  MOVE_CARDS,
-  SHOW_CARDS_TO_PLAYER,
-  SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { IS_POKEBODY_BLOCKED, MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class FloatzelGLLVX extends PokemonCard {
   public stage: Stage = Stage.LV_X;
@@ -24,26 +14,22 @@ export class FloatzelGLLVX extends PokemonCard {
   public cardType: CardType[] = [W];
   protected _tags = [CardTag.POKEMON_LV_X, CardTag.POKEMON_SP];
   public hp: number = 100;
-  public weakness = [{ type: L }];
+  public weakness = [{ type: L, value: +30 }];
   public retreat = [];
 
-  public powers = [
-    {
-      name: 'Water Rescue',
-      powerType: PowerType.POKEBODY,
-      text: "Whenever any of your [W] Pokémon (excluding any Floatzel GL) is Knocked Out by damage from your opponent's attack, you may put that Pokémon and all cards that were attached to it from your discard pile into your hand.",
-    },
-  ];
+  public powers = [{
+    name: 'Water Rescue',
+    powerType: PowerType.POKEBODY,
+    text: 'Whenever any of your [W] Pokémon (excluding any Floatzel GL) is Knocked Out by damage from your opponent\'s attack, you may put that Pokémon and all cards that were attached to it from your discard pile into your hand.'
+  }];
 
-  public attacks = [
-    {
-      name: 'Energy Cyclone',
-      cost: [W, W],
-      damage: 20,
-      damageCalculation: 'x',
-      text: 'Choose as many Energy cards from your hand as you like and show them to your opponent. This attack does 20 damage times the number of Energy cards you chose. Put those Energy cards on top of your deck. Shuffle your deck afterward.',
-    },
-  ];
+  public attacks = [{
+    name: 'Energy Cyclone',
+    cost: [W, W],
+    damage: 20,
+    damageCalculation: 'x',
+    text: 'Choose as many Energy cards from your hand as you like and show them to your opponent. This attack does 20 damage times the number of Energy cards you chose. Put those Energy cards on top of your deck. Shuffle your deck afterward.'
+  }];
 
   public set: string = 'RR';
   public cardImage: string = 'assets/cardback.png';
@@ -89,10 +75,7 @@ export class FloatzelGLLVX extends PokemonCard {
       });
     }
 
-    if (
-      effect instanceof BetweenTurnsEffect &&
-      effect.player.marker.hasMarker(this.WATER_RESCUE_MARKER)
-    ) {
+    if (effect instanceof BetweenTurnsEffect && effect.player.marker.hasMarker(this.WATER_RESCUE_MARKER)) {
       state.players.forEach((player) => {
         if (!player.marker.hasMarker(this.WATER_RESCUE_MARKER)) {
           return;
@@ -110,36 +93,28 @@ export class FloatzelGLLVX extends PokemonCard {
     // Energy Cyclone
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
-
       const energiesInHand = player.hand.cards.filter(
         (card) => card instanceof EnergyCard && card.superType === SuperType.ENERGY,
       );
 
-      // Prompt player to choose cards to discard
-      return store.prompt(
-        state,
-        new ChooseCardsPrompt(
-          player,
-          GameMessage.CHOOSE_CARD_TO_DISCARD,
-          player.hand,
-          { superType: SuperType.ENERGY },
-          { allowCancel: false, min: 0, max: energiesInHand.length },
-        ),
-        (cards) => {
-          cards = cards || [];
-          if (cards.length === 0) {
-            return;
-          }
+      return store.prompt(state, new ChooseCardsPrompt(
+        player,
+        GameMessage.CHOOSE_CARD_TO_DISCARD,
+        player.hand,
+        { superType: SuperType.ENERGY },
+        { allowCancel: false, min: 0, max: energiesInHand.length },
+      ), cards => {
+        cards = cards || [];
+        if (cards.length === 0) {
+          return;
+        }
 
-          MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards });
-          SHOW_CARDS_TO_PLAYER(store, state, effect.opponent, cards);
-          
-          SHUFFLE_DECK(store, state, player);
-
-          effect.damage = cards.length * 20;
-          return state;
-        },
-      );
+        MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards });
+        SHOW_CARDS_TO_PLAYER(store, state, effect.opponent, cards);
+        SHUFFLE_DECK(store, state, player);
+        effect.damage = cards.length * 20;
+        return state;
+      });
     }
 
     // making sure it gets put on the active pokemon
@@ -160,7 +135,7 @@ export class FloatzelGLLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
           player.showAllStageAbilities = true;
@@ -182,7 +157,7 @@ export class FloatzelGLLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }
@@ -192,13 +167,8 @@ export class FloatzelGLLVX extends PokemonCard {
         return state;
       }
 
-      // Add attacks from the previous stage to this one
       for (const evolutionCard of cardList.cards) {
-        if (
-          evolutionCard.superType === SuperType.POKEMON &&
-          evolutionCard !== this &&
-          evolutionCard.name === this.evolvesFrom
-        ) {
+        if (evolutionCard.superType === SuperType.POKEMON && evolutionCard !== this && evolutionCard.name === this.evolvesFrom) {
           effect.attacks.push(...(evolutionCard.attacks || []));
         }
       }
@@ -214,7 +184,7 @@ export class FloatzelGLLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }
@@ -224,13 +194,8 @@ export class FloatzelGLLVX extends PokemonCard {
         return state;
       }
 
-      // Adds the powers from the previous stage
       for (const evolutionCard of cardList.cards) {
-        if (
-          evolutionCard.superType === SuperType.POKEMON &&
-          evolutionCard !== this &&
-          evolutionCard.name === this.evolvesFrom
-        ) {
+        if (evolutionCard.superType === SuperType.POKEMON && evolutionCard !== this && evolutionCard.name === this.evolvesFrom) {
           effect.powers.push(...(evolutionCard.powers || []));
         }
       }

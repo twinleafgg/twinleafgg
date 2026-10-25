@@ -1,17 +1,15 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType } from '../../../game/store/card/card-types';
-import { StoreLike } from '../../../game/store/store-like';
-import { State } from '../../../game/store/state/state';
+import { CardType, Stage } from '../../../game/store/card/card-types';
+import { PowerType, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import { PowerType, StateUtils } from '../../../game';
 import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
 import { IS_POKEBODY_BLOCKED, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Kecleon extends PokemonCard {
   public stage: Stage = Stage.BASIC;
-  public cardType: CardType[] = [C];
   public hp: number = 70;
-  public weakness = [{ type: F }];
+  public cardType: CardType[] = [C];
+  public weakness = [{ type: F, value: +20 }];
   public retreat = [C];
 
   public powers = [{
@@ -29,29 +27,22 @@ export class Kecleon extends PokemonCard {
   }];
 
   public set: string = 'RR';
+  public cardImage: string = 'assets/cardback.png';
+  public setNumber: string = '67';
   public name: string = 'Kecleon';
   public fullName: string = 'Kecleon RR';
-  public setNumber: string = '67';
-  public cardImage: string = 'assets/cardback.png';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
-    if (effect instanceof CheckPokemonTypeEffect
-      && effect.target.getPokemonCard() === this
+    // Colorful Body
+    if (effect instanceof CheckPokemonTypeEffect && effect.target.getPokemonCard() === this
       && !IS_POKEBODY_BLOCKED(store, state, StateUtils.findOwner(state, effect.target), this)) {
-
       effect.cardTypes = [G, R, W, L, P, F, D, M, C];
-      return state;
     }
 
+    // Triple Smash
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      return MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 3, results => {
-        let heads: number = 0;
-        results.forEach(r => {
-          if (r) heads++;
-        });
-        effect.damage += 20 * heads;
+      return MULTIPLE_COIN_FLIPS_PROMPT(store, state, effect.player, 3, results => {
+        effect.damage += 20 * results.filter(r => r).length;
       });
     }
 
