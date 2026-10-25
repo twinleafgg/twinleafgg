@@ -8,7 +8,7 @@ export class Murkrow extends PokemonCard {
   public stage: Stage = Stage.BASIC;
   public hp: number = 70;
   public cardType: CardType[] = [D];
-  public weakness = [{ type: L, value: 10 }];
+  public weakness = [{ type: L, value: +10 }];
   public resistance = [{ type: F, value: -20 }];
   public retreat = [C];
 
@@ -17,8 +17,7 @@ export class Murkrow extends PokemonCard {
     cost: [],
     damage: 0,
     text: 'Move a Pokémon Tool card attached to 1 of your opponent\'s Pokémon to another of your opponent\'s Pokémon (excluding Pokémon that already has a Pokémon Tool attached to it). (If an effect of this attack is prevented, this attack does nothing.)'
-  },
-{
+  }, {
     name: 'Flap',
     cost: [D, C],
     damage: 20,

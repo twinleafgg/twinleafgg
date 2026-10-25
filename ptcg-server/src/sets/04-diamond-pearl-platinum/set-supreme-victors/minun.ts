@@ -1,6 +1,4 @@
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { CardType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
-import { AttachEnergyPrompt, EnergyCard, GameMessage, PlayerType, SlotType, State, StateUtils, StoreLike } from '../../../game';
+import { AttachEnergyPrompt, CardType, EnergyType, GameMessage, PlayerType, PokemonCard, SlotType, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MOVE_CARDS, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
@@ -8,7 +6,7 @@ export class Minun extends PokemonCard {
   public stage: Stage = Stage.BASIC;
   public hp: number = 60;
   public cardType: CardType[] = [L];
-  public weakness = [{ type: F, value: 10 }];
+  public weakness = [{ type: F, value: +10 }];
   public resistance = [{ type: M, value: -20 }];
   public retreat = [C];
 
@@ -17,8 +15,7 @@ export class Minun extends PokemonCard {
     cost: [],
     damage: 0,
     text: 'Search your deck for up to 2 Lightning Basic Pokémon and put them onto your Bench. Shuffle your deck afterward.'
-  },
-{
+  }, {
     name: 'Trash Charge',
     cost: [L],
     damage: 10,
@@ -34,39 +31,38 @@ export class Minun extends PokemonCard {
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Call for Family
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
-      SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH(store, state, effect.player, { stage: Stage.BASIC }, { min: 0, max: 2 });
+      SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_ONTO_BENCH(
+        store,
+        state,
+        effect.player,
+        { stage: Stage.BASIC, cardType: [L] },
+        { min: 0, max: 2 }
+      );
     }
 
     // Trash Charge
     if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
-      const hasEnergyInDiscard = player.discard.cards.some(c =>
-      c instanceof EnergyCard &&
-      c.energyType === EnergyType.BASIC &&
-      c.provides.includes(CardType.FIRE)
+      const hasLightning = player.discard.cards.some(c =>
+        c.superType === SuperType.ENERGY && c.name === 'Lightning Energy'
       );
-      if (!hasEnergyInDiscard) {
-      return state;
+      if (!hasLightning) {
+        return state;
       }
       return store.prompt(state, new AttachEnergyPrompt(
-      player.id,
-      GameMessage.ATTACH_ENERGY_CARDS,
-      player.discard,
-      PlayerType.BOTTOM_PLAYER,
-      [SlotType.ACTIVE, SlotType.BENCH],
-      { superType: SuperType.ENERGY, energyType: EnergyType.BASIC, name: 'Fire Energy' },
-      { allowCancel: true, min: 0, max: 1 }
+        player.id,
+        GameMessage.ATTACH_ENERGY_CARDS,
+        player.discard,
+        PlayerType.BOTTOM_PLAYER,
+        [SlotType.ACTIVE, SlotType.BENCH],
+        { superType: SuperType.ENERGY, energyType: EnergyType.BASIC, name: 'Lightning Energy' },
+        { allowCancel: false, min: 1, max: 1 }
       ), transfers => {
-      transfers = transfers || [];
-      for (const transfer of transfers) {
-      const target = StateUtils.getTarget(state, player, transfer.to);
-      MOVE_CARDS(store, state, player.discard, target, {
-      cards: [transfer.card],
-      sourceCard: this,
-      sourceEffect: this.attacks[0],
-      });
-      }
+        transfers = transfers || [];
+        for (const transfer of transfers) {
+          const target = StateUtils.getTarget(state, player, transfer.to);
+          MOVE_CARDS(store, state, player.discard, target, { cards: [transfer.card], sourceCard: this });
+        }
       });
     }
 
