@@ -2,6 +2,8 @@ import { Card } from '../card/card';
 import { PokemonCard } from '../card/pokemon-card';
 import { CARD_TEXT_IDENTICAL } from '../prefabs/formats';
 import { Erratum, GameplayRule } from './format-types';
+import { Format as FormatId } from '../card/card-types';
+import { Rules } from '../state/rules';
 
 type CardNameAndSet = { name: string; set: string; setNumber: string };
 
@@ -12,6 +14,7 @@ export abstract class Format {
   public abstract name: string; // Display name, e.g. "2010 Worlds"
   public shortName: string = ''; // Use for set span identifiers where appropriate, e.g. "DP-UL"
   public abstract fullName: string; // Database identifier. Do not change these!
+  public formatId: FormatId = FormatId.NONE;
 
   public minimumDeckSize = 60;
   public maximumDeckSize = 60;
@@ -23,6 +26,7 @@ export abstract class Format {
   ];
 
   public errata: Erratum[] = [Erratum.TOOLS_ARE_NOT_ITEMS];
+  public ruleOverrides: Partial<Rules> = {};
 }
 
 /**
@@ -31,10 +35,6 @@ export abstract class Format {
 export abstract class ConstructedFormat extends Format {
   constructor() {
     super();
-
-    // For every card on the client
-    // call isCardLegal
-    // if yes, safely add to legalCards
   }
 
   /**
@@ -42,7 +42,7 @@ export abstract class ConstructedFormat extends Format {
    * This should only be used on init, and its results cached in legalCards. Use validateCard() to check if a card is legal during runtime.
    * @param card The card to check
    */
-  abstract isCardLegal(card: Card): boolean;
+  abstract isCardLegal(card: Card, allCards?: Card[]): boolean;
 
   /**
    * Returns `true` if the provided card is legal in this format, `false` otherwise. Handles reprints.

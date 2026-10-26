@@ -15,7 +15,9 @@ import { PlayCardAction } from '../store/actions/play-card-action';
 import { ConcedeAction } from '../store/actions/concede-action';
 import { AppendLogAction } from '../store/actions/append-log-action';
 import { ChangeAvatarAction } from '../store/actions/change-avatar-action';
-import { Format } from '../store/card/card-types';
+import { Format as FormatId } from '../store/card/card-types';
+import { Format } from '../store/format/format';
+import { FormatManager } from '../format/format-manager';
 import { CheckHpEffect } from '../store/effects/check-effects';
 import { ShuffleDeckPrompt } from '../store/prompts/shuffle-prompt';
 import { logger } from '../../utils/logger';
@@ -43,7 +45,8 @@ export class Game implements StoreHandler {
   private matchRecorder: MatchRecorder;
   private timeoutRef: NodeJS.Timeout | undefined;
   private lastActivity: number = Date.now();
-  public format: Format = Format.STANDARD;
+  public format: FormatId = FormatId.STANDARD;
+  public formatDefinition?: Format;
   private periodicSyncRef: NodeJS.Timeout | undefined;
   private lastStateEmitAt: number = 0;
   private readonly periodicSyncIntervalMs: number = 15000;
@@ -59,11 +62,12 @@ export class Game implements StoreHandler {
 
   constructor(private core: Core, id: number, public gameSettings: GameSettings) {
     this.id = id;
-    this.store = new Store(this);
+    this.format = gameSettings.format;
+    this.formatDefinition = FormatManager.getInstance().getFormatById(this.format);
+    this.store = new Store(this, this.formatDefinition, this.format);
     this.store.state.rules = gameSettings.rules;
     this.store.state.gameSettings = gameSettings;
     this.matchRecorder = new MatchRecorder(core, gameSettings);
-    this.format = gameSettings.format;
   }
 
   public get state(): State {

@@ -1298,7 +1298,7 @@ function getValidFormats(card: any, allCards?: any[]): number[] {
 }
 
 // --- isValid ---
-function isValid(
+export function isValid(
   card: any,
   format: number,
   anyPrintingAllowed?: string[],
@@ -1309,8 +1309,6 @@ function isValid(
   }
   if (anyPrintingAllowed && anyPrintingAllowed.includes(card.name)) {
     switch (format) {
-      case Format.STANDARD_MAJORS:
-        return false; // Deprecated format, hidden from UI
       case Format.UNLIMITED:
         return true;
       case Format.ETERNAL:
@@ -1372,16 +1370,12 @@ function isValid(
         return true;
       case Format.RSPK:
         return true;
-      case Format.STANDARD_MAJORS:
-        return false; // Deprecated format, hidden from UI
       case Format.PRE_RELEASE:
         // Pre-Release format allows all cards (like UNLIMITED)
         return true;
     }
   }
   switch (format) {
-    case Format.STANDARD_MAJORS:
-      return false; // Deprecated format, hidden from UI
     case Format.UNLIMITED:
       return true;
     case Format.ETERNAL:

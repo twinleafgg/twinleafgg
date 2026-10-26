@@ -10,7 +10,7 @@ import { Messager } from './messager';
 import { RankingCalculator } from './ranking-calculator';
 import { Scheduler, generateId } from '../../utils';
 import { config } from '../../config';
-import { Format } from '../store/card/card-types';
+import { FormatManager } from '../format/format-manager';
 import { AbortGameAction } from '../store/actions/abort-game-action';
 import { AbortGameReason } from '../store/actions/abort-game-action';
 import { GamePhase } from '../store/state/state';
@@ -19,6 +19,11 @@ import { ReconnectionManager } from '../../backend/services/reconnection-manager
 import { ReconnectionConfig } from '../../backend/interfaces/reconnection.interface';
 import { logger } from '../../utils/logger';
 import { User } from '../../storage';
+
+function applyFormatRuleOverrides(gameSettings: GameSettings): void {
+  const format = FormatManager.getInstance().getFormatById(gameSettings.format);
+  Object.assign(gameSettings.rules, format?.ruleOverrides);
+}
 
 export class Core {
   public clients: Client[] = [];
@@ -155,21 +160,7 @@ export class Core {
         throw new GameError(GameCoreError.ERROR_BOT_FORMAT_NOT_ALLOWED);
       }
     }
-    if (gameSettings.format === Format.RETRO) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = false;
-      gameSettings.rules.supporterCleanupAtEndTurn = true;
-    }
-    if (gameSettings.format === Format.RSPK) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = false;
-      gameSettings.rules.supporterCleanupAtEndTurn = true;
-    }
-    if (gameSettings.format === Format.BW) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = true;
-      gameSettings.rules.firstTurnUseSupporter = true;
-    }
+    applyFormatRuleOverrides(gameSettings);
     const game = new Game(this, generateId(this.games), gameSettings);
     this.games.push(game);
     game.dispatch(client, new AddPlayerAction(client.id, client.name, deck, undefined, deckId1, sleeveImagePath1, deckBoxImagePath1, coinImagePath1));
@@ -214,21 +205,7 @@ export class Core {
 
     gameSettings.selfPlay = true;
 
-    if (gameSettings.format === Format.RETRO) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = false;
-      gameSettings.rules.supporterCleanupAtEndTurn = true;
-    }
-    if (gameSettings.format === Format.RSPK) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = false;
-      gameSettings.rules.supporterCleanupAtEndTurn = true;
-    }
-    if (gameSettings.format === Format.BW) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = true;
-      gameSettings.rules.firstTurnUseSupporter = true;
-    }
+    applyFormatRuleOverrides(gameSettings);
 
     const taken = new Set(this.clients.map(c => c.id));
     let opponentId = generateId(this.clients);
@@ -278,21 +255,7 @@ export class Core {
     }
 
     console.log(`[Matchmaking] Match created between ${client.name} and ${client2.name} (Format: ${gameSettings.format})`);
-    if (gameSettings.format === Format.RETRO) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = false;
-      gameSettings.rules.supporterCleanupAtEndTurn = true;
-    }
-    if (gameSettings.format === Format.RSPK) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = false;
-      gameSettings.rules.supporterCleanupAtEndTurn = true;
-    }
-    if (gameSettings.format === Format.BW) {
-      gameSettings.rules.attackFirstTurn = true;
-      gameSettings.rules.firstTurnDrawCard = true;
-      gameSettings.rules.firstTurnUseSupporter = true;
-    }
+    applyFormatRuleOverrides(gameSettings);
     const game = new Game(this, generateId(this.games), gameSettings);
     this.games.push(game);
     game.dispatch(client, new AddPlayerAction(client.id, client.name, deck, artworksMap1, deckId1, sleeveImagePath1, deckBoxImagePath1, coinImagePath1));

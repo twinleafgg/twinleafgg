@@ -4,8 +4,13 @@ import { Prompt } from './prompts/prompt';
 import { State } from './state/state';
 import { StateLogParam } from './state/state-log';
 import { GameLog } from '../game-message';
+import { Format as FormatDefinition } from './format/format';
+import { Format } from './card/card-types';
 
 export interface StoreLike {
+  readonly formatId: Format;
+  readonly formatDefinition?: FormatDefinition;
+
   dispatch(action: Action): void;
 
   reduceEffect(state: State, effect: Effect): State;

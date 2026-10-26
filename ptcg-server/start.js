@@ -5,6 +5,8 @@ const { BotManager } = require('./output/game/bots/bot-manager');
 const { SimpleBot } = require('./output/simple-bot/simple-bot');
 const { AdvancedBot } = require('./output/advanced-bot/advanced-bot');
 const { CardManager } = require('./output/game/cards/card-manager');
+const { FormatManager } = require('./output/game/format/format-manager');
+const formatDefinitions = require('./output/formats');
 const { StateSerializer } = require('./output/game/serializer/state-serializer');
 const { config } = require('./output/config');
 const { Format } = require('./output/game/store/card/card-types');
@@ -221,6 +223,10 @@ cardManager.defineSet(sets.setMegaXMegaParade);
 cardManager.defineSet(sets.setAuraSeeker);
 
 cardManager.defineSet(sets.setTest);
+
+const formatManager = FormatManager.getInstance();
+formatDefinitions.registerFormats(formatManager);
+formatManager.initialize(cardManager.getAllCards());
 
 StateSerializer.setKnownCards(cardManager.getAllCards());
 

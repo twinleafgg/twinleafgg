@@ -26,6 +26,8 @@ import { ResolvePromptAction } from './actions/resolve-prompt-action';
 import { State, GamePhase } from './state/state';
 import { StateLog, StateLogParam } from './state/state-log';
 import { StoreHandler } from './store-handler';
+import { Format } from './format/format';
+import { Format as FormatId } from './card/card-types';
 import { StoreLike } from './store-like';
 import { generateId, deepClone } from '../../utils/utils';
 import { attackReducer } from './effect-reducers/attack-effect';
@@ -70,7 +72,11 @@ export class Store implements StoreLike {
   /** Prompt ids created by the resolving trainer. Not serialized. */
   private trainerPromptSources = new Map<number, ResolvingTrainerSource>();
 
-  constructor(private handler: StoreHandler) { }
+  constructor(
+    private handler: StoreHandler,
+    public readonly formatDefinition?: Format,
+    public readonly formatId: FormatId = FormatId.STANDARD,
+  ) { }
 
   public dispatch(action: Action, clientRoleId?: number): State {
     let state = this.state;
@@ -539,7 +545,7 @@ export class Store implements StoreLike {
       if ((card as any).trainerType !== undefined) {
         // Import here to avoid circular dependency at module level
         const { getOverriddenReduceEffect } = require('./card/card-effect-overrides');
-        const format = (store as any)?.handler?.gameSettings?.format ?? 0;
+        const format = store.formatId;
         const override = getOverriddenReduceEffect(card, format);
         if (override) {
           return override(store, state, effect);

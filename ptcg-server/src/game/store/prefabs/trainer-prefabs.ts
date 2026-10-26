@@ -128,7 +128,7 @@ export function SHUFFLE_DECK(effect: TrainerEffect, store: Store, state: State) 
 // =============================================================================
 
 export function CLEAN_UP_SUPPORTER(store: StoreLike, effect: TrainerEffect, player: Player) {
-  const format = (store as any).handler.format;
+  const format = (store as any).formatId ?? (store as any).handler.format;
   if (
     !(format === Format.RSPK || format === Format.RETRO) ||
     effect.trainerCard.trainerType !== TrainerType.SUPPORTER
@@ -303,7 +303,7 @@ export function CAN_PLAY_TRAINER_CARD(
     }
 
     // Prefer format-overridden canPlay (same print routing as reduceEffect), then instance canPlay
-    const format = state.gameSettings?.format ?? Format.NONE;
+    const format = (store as any)?.formatId ?? state.gameSettings?.format ?? Format.NONE;
     const canPlayFn =
       getOverriddenCanPlay(trainerCard, format) ??
       (trainerCard.canPlay ? trainerCard.canPlay.bind(trainerCard) : undefined);
