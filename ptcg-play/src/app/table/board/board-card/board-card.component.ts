@@ -73,21 +73,31 @@ export class BoardCardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const dualHalves = resolveDualStadiumDisplayHalves(value.cards);
-    if (dualHalves) {
-      this.dualStadiumLeftCard = dualHalves[0];
-      this.dualStadiumRightCard = dualHalves[1];
-      this.mainCard = undefined;
-      return;
-    }
-
-    this.dualStadiumLeftCard = undefined;
-    this.dualStadiumRightCard = undefined;
-    this.mainCard = value.cards[value.cards.length - 1];
+    this.applyCardListDisplay(value);
   }
 
   get cardList(): CardList | PokemonCardList {
     return this._cardList;
+  }
+
+  /**
+   * Only the stadium slot renders a dual stadium as one card made of two
+   * halves. Anywhere else (discard pile, lost zone, ...) each half is a normal
+   * card of its own.
+   */
+  @Input() set allowDualStadium(value: boolean) {
+    const allowed = !!value;
+    if (allowed === this.dualStadiumAllowed) {
+      return;
+    }
+    this.dualStadiumAllowed = allowed;
+    if (
+      this._cardList &&
+      !this.isEmpty &&
+      !(this._cardList instanceof PokemonCardList)
+    ) {
+      this.applyCardListDisplay(this._cardList);
+    }
   }
 
   @Input() set owner(value: boolean) {
@@ -149,6 +159,7 @@ export class BoardCardComponent implements OnInit, OnDestroy {
   private isSecret = false;
   private isPublic = false;
   private isOwner = false;
+  private dualStadiumAllowed = false;
   private subscriptions: Subscription[] = [];
   private cardTarget: { player: PlayerType; slot: SlotType; index: number };
 
@@ -642,6 +653,22 @@ export class BoardCardComponent implements OnInit, OnDestroy {
     this.showAttackAnimation = false;
     this.showAttackEffect = false;
     this.attackEffectType = null;
+  }
+
+  private applyCardListDisplay(cardList: CardList) {
+    const dualHalves = this.dualStadiumAllowed
+      ? resolveDualStadiumDisplayHalves(cardList.cards)
+      : null;
+    if (dualHalves) {
+      this.dualStadiumLeftCard = dualHalves[0];
+      this.dualStadiumRightCard = dualHalves[1];
+      this.mainCard = undefined;
+      return;
+    }
+
+    this.dualStadiumLeftCard = undefined;
+    this.dualStadiumRightCard = undefined;
+    this.mainCard = cardList.cards[cardList.cards.length - 1];
   }
 
   private initPokemonCardList(cardList: PokemonCardList) {

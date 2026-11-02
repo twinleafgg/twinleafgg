@@ -150,7 +150,7 @@
       <!-- Stadium - Single Slot for both players -->
       <div class="ptcg-board-row ptcg-board-stadium">
         <ptcg-board-card class="stadium-card" [cardList]="stadiumCard" [owner]="stadiumOwner"
-          (cardClick)="onStadiumClick($event)">
+          [allowDualStadium]="true" (cardClick)="onStadiumClick($event)">
         </ptcg-board-card>
       </div>
 
