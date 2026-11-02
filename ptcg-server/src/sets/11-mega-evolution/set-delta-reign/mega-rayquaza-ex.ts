@@ -1,26 +1,8 @@
-import {
-  CardList,
-  CardTag,
-  CardType,
-  ChooseCardsPrompt,
-  ConfirmPrompt,
-  EnergyCard,
-  EnergyType,
-  GameMessage,
-  PlayerType,
-  PokemonCard,
-  PowerType,
-  ShowCardsPrompt,
-  SlotType,
-  Stage,
-  State,
-  StoreLike,
-  SuperType,
-} from '../../../game';
-import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import { AttachEnergyEffect, PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { IS_ABILITY_BLOCKED, MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardTag, CardType, PowerType, StoreLike, State, SlotType, ConfirmPrompt, GameMessage, CardList, EnergyCard, EnergyType, ShowCardsPrompt, ChooseCardsPrompt, SuperType, PlayerType } from "../../../game";
+import { CheckProvidedEnergyEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { PlayPokemonEffect, AttachEnergyEffect } from "../../../game/store/effects/play-card-effects";
+import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class MegaRayquazaex extends PokemonCard {
   public stage: Stage = Stage.BASIC;

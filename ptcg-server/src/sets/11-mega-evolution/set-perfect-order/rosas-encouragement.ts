@@ -1,19 +1,7 @@
-import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { TrainerType, EnergyType, Stage, SuperType } from '../../../game/store/card/card-types';
-import {
-  StoreLike,
-  State,
-  GameMessage,
-  StateUtils,
-  AttachEnergyPrompt,
-  PlayerType,
-  SlotType,
-  Player,
-} from '../../../game';
-import { Effect } from '../../../game/store/effects/effect';
-import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { GameError } from '../../../game/game-error';
-import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { TrainerCard, TrainerType, StoreLike, State, Player, StateUtils, SuperType, EnergyType, PlayerType, Stage, GameError, GameMessage, AttachEnergyPrompt, SlotType, CardTarget } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { TrainerEffect } from "../../../game/store/effects/play-card-effects";
+import { MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class RosasEncouragement extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.SUPPORTER;
@@ -78,16 +66,19 @@ Attach up to 2 Basic Energy cards from your discard pile to 1 of your Stage 2 Po
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      // Check for Stage 2 Pokemon
-      const stage2Pokemon: any[] = [];
-      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
+      // Check for Stage 2 Pokemon, and block every other Pokemon as a target
+      const blockedTo: CardTarget[] = [];
+      let stage2PokemonCount = 0;
+      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
         const pokemonCard = cardList.getPokemonCard();
         if (pokemonCard && pokemonCard.stage === Stage.STAGE_2) {
-          stage2Pokemon.push(cardList);
+          stage2PokemonCount++;
+        } else {
+          blockedTo.push(target);
         }
       });
 
-      if (stage2Pokemon.length === 0) {
+      if (stage2PokemonCount === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
@@ -107,8 +98,8 @@ Attach up to 2 Basic Energy cards from your discard pile to 1 of your Stage 2 Po
           player.discard,
           PlayerType.BOTTOM_PLAYER,
           [SlotType.ACTIVE, SlotType.BENCH],
-          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC, stage: Stage.STAGE_2 },
-          { allowCancel: false, min: 0, max: maxToAttach, sameTarget: true },
+          { superType: SuperType.ENERGY, energyType: EnergyType.BASIC },
+          { allowCancel: false, min: 0, max: maxToAttach, sameTarget: true, blockedTo },
         ),
         (transfers) => {
           transfers = transfers || [];
