@@ -72,7 +72,8 @@ export class DhelmiseV extends PokemonCard {
       if (
         knockedOutCard &&
         pokemonHasCardType(knockedOutCard, G) &&
-        effect.target.marker.hasMarker(this.GRASS_DAMAGED_BY_OPPONENT_MARKER, this)
+        effect.target.marker.hasMarker(this.GRASS_DAMAGED_BY_OPPONENT_MARKER, this) &&
+        effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
       ) {
         const owner = StateUtils.findOwner(state, effect.target);
         owner.marker.addMarker(this.GRASS_KO_MARKER, this);

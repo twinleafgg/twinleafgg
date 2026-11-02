@@ -34,6 +34,9 @@ export class Golisopod extends PokemonCard {
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Critical Slash
     if (effect instanceof KnockOutAttackEffect && effect.attack === this.attacks[0]) {
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       const cardList = StateUtils.findCardList(state, this) as PokemonCardList;
       const cardOwner = StateUtils.findOwner(state, cardList);
       if (effect.player !== cardOwner) {

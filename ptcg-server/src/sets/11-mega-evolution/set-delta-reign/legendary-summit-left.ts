@@ -51,6 +51,9 @@ export class LegendarySummitLeft extends TrainerCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== attacker) {
         return state;
       }
+      if (!knockedOutOwner.marker.hasMarker(knockedOutOwner.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       const checkPokemonTypeEffect = new CheckPokemonTypeEffect(effect.target);
       store.reduceEffect(state, checkPokemonTypeEffect);

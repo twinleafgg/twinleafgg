@@ -1,13 +1,9 @@
+import { GamePhase, State, StoreLike } from '../../../game';
+import { CardTag, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { TrainerType, CardTag } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
-import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import {
-  IS_TOOL_BLOCKED,
-  SEARCH_DECK_FOR_CARDS_TO_HAND,
-} from '../../../game/store/prefabs/prefabs';
+import { IS_TOOL_BLOCKED, SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
 
 export class FarewellBell extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.TOOL;
@@ -18,51 +14,34 @@ export class FarewellBell extends TrainerCard {
   public name: string = 'Farewell Bell';
   public fullName: string = 'Farewell Bell FST 234';
   public text: string =
-    "If the Pokémon VMAX this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, search your deck for a card and put it into your hand. Then, shuffle your deck. You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn't already have a Pokémon Tool attached.";
-  public damageDealt = false;
+    'If the Pokémon VMAX this card is attached to is Knocked Out by damage from an attack from your opponent\'s Pokémon, search your deck for a card and put it into your hand. Then, shuffle your deck. You may play any number of Item cards during your turn. Attach a Pokémon Tool to 1 of your Pokémon that doesn\'t already have a Pokémon Tool attached.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Track if damage was dealt to the attached Pokemon from opponent's attack
-    if (
-      (effect instanceof DealDamageEffect || effect instanceof PutDamageEffect) &&
-      effect.target.tools.includes(this)
-    ) {
-      const player = StateUtils.findOwner(state, effect.target);
-
-      if (IS_TOOL_BLOCKED(store, state, player, this)) {
-        return state;
-      }
-
-      // Only works on VMAX Pokemon
-      const pokemon = effect.target.getPokemonCard();
-      if (pokemon && pokemon.hasTag(CardTag.POKEMON_VMAX)) {
-        this.damageDealt = true;
-      }
-    }
-
-    // When VMAX KO'd by damage from attack, search deck for any card
     if (
       effect instanceof KnockOutEffect &&
       effect.target.tools.includes(this) &&
-      this.damageDealt
+      effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
     ) {
-      const toolOwner = StateUtils.findOwner(state, effect.target);
-
-      // Only works on VMAX Pokemon
+      const player = effect.player;
+      if (IS_TOOL_BLOCKED(store, state, player, this)) {
+        return state;
+      }
+      if (state.phase !== GamePhase.ATTACK) {
+        return state;
+      }
       const pokemon = effect.target.getPokemonCard();
-      if (pokemon && pokemon.hasTag(CardTag.POKEMON_VMAX)) {
-        this.damageDealt = false;
-
-        if (toolOwner.deck.cards.length > 0) {
-          SEARCH_DECK_FOR_CARDS_TO_HAND(
-            store,
-            state,
-            toolOwner,
-            this,
-            {},
-            { min: 1, max: 1, allowCancel: false },
-          );
-        }
+      if (!pokemon || !pokemon.hasTag(CardTag.POKEMON_VMAX)) {
+        return state;
+      }
+      if (player.deck.cards.length > 0) {
+        SEARCH_DECK_FOR_CARDS_TO_HAND(
+          store,
+          state,
+          player,
+          this,
+          {},
+          { min: 1, max: 1, allowCancel: false },
+        );
       }
     }
 

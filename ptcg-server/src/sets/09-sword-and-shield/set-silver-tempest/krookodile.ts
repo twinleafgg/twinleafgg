@@ -4,7 +4,7 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { PowerType, StoreLike, State, StateUtils, ConfirmPrompt, GameMessage } from '../../../game';
+import { PowerType, StoreLike, State, StateUtils, ConfirmPrompt, GameMessage, GamePhase } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
@@ -74,32 +74,34 @@ export class Krookodile extends PokemonCard {
     // Ability (Part 2): If this Pokemon is KO'd while active, discard random from opponent hand
     // Ref: set-silver-tempest/togedemaru.ts (KnockOutEffect targeting this Pokemon)
     if (effect instanceof KnockOutEffect && effect.target.getPokemonCard() === this) {
-      const attacker = effect.player;
-      const defender = StateUtils.getOpponent(state, attacker);
+      const player = effect.player;
+      const opponent = StateUtils.getOpponent(state, player);
 
-      // Must be the active Pokemon of defender
-      if (defender.active.getPokemonCard() !== this) {
+      if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
-
-      if (attacker.hand.cards.length === 0) {
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
         return state;
       }
-
-      // Check if ability is blocked
-      if (IS_ABILITY_BLOCKED(store, state, defender, this)) {
+      if (player.active !== effect.target) {
+        return state;
+      }
+      if (opponent.hand.cards.length === 0) {
+        return state;
+      }
+      if (IS_ABILITY_BLOCKED(store, state, player, this)) {
         return state;
       }
 
       state = store.prompt(state, new ConfirmPrompt(
-        defender.id,
+        player.id,
         GameMessage.WANT_TO_USE_ABILITY,
       ), wantToUse => {
         if (wantToUse) {
-          const handCards = attacker.hand.cards.slice();
+          const handCards = opponent.hand.cards.slice();
           if (handCards.length > 0) {
             const randomIndex = Math.floor(Math.random() * handCards.length);
-            MOVE_CARDS(store, state, attacker.hand, attacker.discard, { cards: [handCards[randomIndex]], sourceCard: this });
+            MOVE_CARDS(store, state, opponent.hand, opponent.discard, { cards: [handCards[randomIndex]], sourceCard: this });
           }
         }
       });

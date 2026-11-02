@@ -24,6 +24,9 @@ export class BlackMarketPrismStar extends TrainerCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof KnockOutEffect && StateUtils.getStadiumCard(state) === this) {
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       const owner = StateUtils.findOwner(state, effect.target);
       const player = effect.player;
       const checkPokemonTypeEffect = new CheckPokemonTypeEffect(effect.target);

@@ -1,10 +1,10 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType } from '../../../game/store/card/card-types';
+import { CardType, Stage } from '../../../game/store/card/card-types';
 
 export class Bulbasaur extends PokemonCard {
   public stage: Stage = Stage.BASIC;
-  public cardType: CardType[] = [G];
   public hp: number = 60;
+  public cardType: CardType[] = [G];
   public weakness = [{ type: R, value: +10 }];
   public retreat = [C];
 
@@ -13,8 +13,7 @@ export class Bulbasaur extends PokemonCard {
     cost: [C],
     damage: 10,
     text: ''
-  },
-  {
+  }, {
     name: 'Vine Whip',
     cost: [G, C],
     damage: 20,
@@ -22,8 +21,8 @@ export class Bulbasaur extends PokemonCard {
   }];
 
   public set: string = 'SV';
-  public setNumber: string = '93';
   public cardImage: string = 'assets/cardback.png';
+  public setNumber: string = '93';
   public name: string = 'Bulbasaur';
   public fullName: string = 'Bulbasaur SV';
 }

@@ -48,6 +48,9 @@ export class Lanturn extends PokemonCard {
       if (state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       // Check if this Lanturn is in play
       let foundLanturn: any = null;
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {

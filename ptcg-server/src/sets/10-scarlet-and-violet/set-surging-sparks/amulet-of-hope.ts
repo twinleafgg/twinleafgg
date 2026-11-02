@@ -39,6 +39,9 @@ export class AmuletofHope extends TrainerCard {
       if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       // Try to reduce ToolEffect, to check if something is blocking the tool from working
       try {

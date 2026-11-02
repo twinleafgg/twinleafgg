@@ -80,6 +80,9 @@ export class SkySealStone extends TrainerCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       // Must be basic V, opponent's active must be VSTAR or VMAX
       const attackingPokemon = opponent.active;

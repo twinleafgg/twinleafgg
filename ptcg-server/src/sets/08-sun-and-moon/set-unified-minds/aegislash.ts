@@ -51,8 +51,7 @@ export class Aegislash extends PokemonCard {
         return state;
       }
 
-      // Only if knocked out by opponent's attack
-      if (effect.player === player) {
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
         return state;
       }
 

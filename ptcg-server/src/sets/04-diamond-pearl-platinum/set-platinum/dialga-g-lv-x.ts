@@ -1,22 +1,16 @@
-import { CardTag, CardType, ChooseCardsPrompt, GameError, GameMessage, PlayerType, PokemonCard, PowerType, Stage, State, StateUtils, StoreLike, SuperType } from "../../../game";
-import { CheckTableStateEffect, CheckPokemonAttacksEffect, CheckPokemonPowersEffect } from "../../../game/store/effects/check-effects";
-import { Effect } from "../../../game/store/effects/effect";
-import { PlayPokemonEffect } from "../../../game/store/effects/play-card-effects";
-import {
-  CAN_APPLY_LOCKER_ABILITY,
-  CAN_APPLY_LOCK_TO_TARGET,
-  HANDLE_ABILITY_BLOCK,
-  IS_ABILITY_LOCKER_IN_PLAY,
-  POKEBODY_TYPES,
-} from "../../../game/store/prefabs/ability-lock";
-import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefabs';
+import { CardTag, CardType, ChooseCardsPrompt, GameError, GameMessage, PlayerType, PokemonCard, PowerType, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
+import { CheckPokemonAttacksEffect, CheckPokemonPowersEffect, CheckTableStateEffect } from '../../../game/store/effects/check-effects';
+import { Effect } from '../../../game/store/effects/effect';
+import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { CAN_APPLY_LOCKER_ABILITY, CAN_APPLY_LOCK_TO_TARGET, HANDLE_ABILITY_BLOCK, IS_ABILITY_LOCKER_IN_PLAY, POKEBODY_TYPES } from '../../../game/store/prefabs/ability-lock';
+import { FLIP_UNTIL_TAILS_AND_COUNT_HEADS, IS_POKEBODY_BLOCKED, MOVE_CARDS, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class DialgaGLVX extends PokemonCard {
   public stage: Stage = Stage.LV_X;
   public evolvesFrom = 'Dialga G';
-  public cardType: CardType[] = [M];
   protected _tags = [CardTag.POKEMON_LV_X, CardTag.POKEMON_SP];
   public hp: number = 120;
+  public cardType: CardType[] = [M];
   public weakness = [{ type: R }];
   public resistance = [{ type: P, value: -20 }];
   public retreat = [C, C];
@@ -24,14 +18,14 @@ export class DialgaGLVX extends PokemonCard {
   public powers = [{
     name: 'Time Crystal',
     powerType: PowerType.POKEBODY,
-    text: "Each Pokémon (both yours and your opponent's) (excluding Pokémon SP) can't use any Poké-Bodies.",
+    text: 'Each Pokémon (both yours and your opponent\'s) (excluding Pokémon SP) can\'t use any Poké-Bodies.'
   }];
 
   public attacks = [{
     name: 'Remove Lost',
     cost: [M, M, C, C],
     damage: 80,
-    text: 'Flip a coin until you get tails. For each heads, remove an Energy card attached to the Defending Pokémon and put it in the Lost Zone.',
+    text: 'Flip a coin until you get tails. For each heads, remove an Energy card attached to the Defending Pokémon and put it in the Lost Zone.'
   }];
 
   public set: string = 'PL';
@@ -66,41 +60,30 @@ export class DialgaGLVX extends PokemonCard {
       },
     );
 
+    // Remove Lost
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const opponent = effect.opponent;
 
-      let numFlips = 0;
+      return FLIP_UNTIL_TAILS_AND_COUNT_HEADS(store, state, player, numFlips => {
+        if (numFlips === 0) {
+          return state;
+        }
 
-      return COIN_FLIP_PROMPT(store, state, player, result => {
-          if (result === true) {
-            numFlips++;
-            return this.reduceEffect(store, state, effect);
+        return store.prompt(state, new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_ENERGIES_TO_DISCARD,
+          opponent.active,
+          { superType: SuperType.ENERGY },
+          { min: 0, max: numFlips, allowCancel: false }
+        ), selected => {
+          const cards = selected || [];
+          if (cards.length > 0) {
+            MOVE_CARDS(store, state, opponent.active, opponent.lostzone, { cards });
           }
-
-          if (numFlips === 0) {
-            return state;
-          }
-
-          return store.prompt(
-            state,
-            new ChooseCardsPrompt(
-              player,
-              GameMessage.CHOOSE_ENERGIES_TO_DISCARD,
-              opponent.active,
-              { superType: SuperType.ENERGY },
-              { min: 0, max: numFlips, allowCancel: false },
-            ),
-            (selected) => {
-              const cards = selected || [];
-              if (cards.length > 0) {
-                MOVE_CARDS(store, state, opponent.active, opponent.lostzone, { cards: cards });
-              }
-              return state;
-            },
-          );
-        },
-      );
+          return state;
+        });
+      });
     }
 
     if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
@@ -119,7 +102,7 @@ export class DialgaGLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
           player.showAllStageAbilities = true;
@@ -141,7 +124,7 @@ export class DialgaGLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }
@@ -172,7 +155,7 @@ export class DialgaGLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }

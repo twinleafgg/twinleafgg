@@ -12,14 +12,12 @@ export class ArceusPsychic extends PokemonCard {
   public retreat = [C];
   protected _tags = [CardTag.ARCEUS];
 
-  public attacks = [
-    {
-      name: 'Mind Bend',
-      cost: [P, C, C],
-      damage: 40,
-      text: 'The Defending Pokémon is now Confused.',
-    },
-  ];
+  public attacks = [{
+    name: 'Mind Bend',
+    cost: [P, C, C],
+    damage: 40,
+    text: 'The Defending Pokémon is now Confused.',
+  }];
 
   public set: string = 'AR';
   public cardImage: string = 'assets/cardback.png';

@@ -770,10 +770,46 @@ button.linkish,
   gap: 0.85rem;
 }
 
+.card-tile-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.card-tile-wrap.is-selected .card-tile {
+  border-color: var(--accent);
+  box-shadow: 0 0 22px rgba(62, 199, 201, 0.28);
+}
+
+.card-select {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  margin: 0;
+  padding: 0;
+  background: rgba(8, 14, 24, 0.86);
+  border: 1px solid rgba(62, 199, 201, 0.45);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.card-select input {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .card-tile {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  width: 100%;
   padding: 0.5rem;
   background: rgba(8, 14, 24, 0.72);
   border: 1px solid rgba(62, 199, 201, 0.2);
@@ -831,6 +867,39 @@ button.linkish,
 .browse-impl-summary {
   margin: 0 0 0.65rem;
   font-size: 0.8rem;
+}
+
+.bulk-bar {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(10, 18, 32, 0.94);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px 14px 4px 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.bulk-count {
+  margin-right: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.bulk-status {
+  flex: 1 1 12rem;
+  min-width: 0;
+  font-size: 0.82rem;
+}
+
+.bulk-bar button {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.82rem;
 }
 
 .card-tile img {

@@ -1,12 +1,11 @@
-import { ChoosePokemonPrompt, ConfirmPrompt, GameError, GameMessage, PlayerType, PokemonCard, PowerType, SlotType, StateUtils, StoreLike, SuperType } from '../../../game';
-import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
+import { ChoosePokemonPrompt, ConfirmPrompt, GameError, GameMessage, PlayerType, PokemonCard, PowerType, SlotType, State, StateUtils, StoreLike } from '../../../game';
+import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { CheckPokemonAttacksEffect, CheckPokemonPowersEffect, CheckTableStateEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { GUST_OPPONENT_BENCHED_POKEMON_FROM_ABILITY } from '../../../game/store/prefabs/effect-of-ability-prefabs';
 import { IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { State } from '../../../game/store/state/state';
 
 export class LuxrayGLLVX extends PokemonCard {
   public stage: Stage = Stage.LV_X;
@@ -14,21 +13,21 @@ export class LuxrayGLLVX extends PokemonCard {
   protected _tags = [CardTag.POKEMON_LV_X, CardTag.POKEMON_SP];
   public cardType: CardType[] = [L];
   public hp: number = 110;
-  public weakness = [{ type: F }];
+  public weakness = [{ type: F, value: +30 }];
   public resistance = [{ type: M, value: -20 }];
   public retreat = [];
 
   public powers = [{
     name: 'Bright Look',
     powerType: PowerType.POKEPOWER,
-    text: "Once during your turn (before your attack), when you put Luxray GL LV.X from your hand onto your Active Luxray GL, you may switch the Defending Pokémon with 1 of your opponent's Benched Pokémon.",
+    text: 'Once during your turn (before your attack), when you put Luxray GL LV.X from your hand onto your Active Luxray GL, you may switch the Defending Pokémon with 1 of your opponent\'s Benched Pokémon.'
   }];
 
   public attacks = [{
     name: 'Flash Impact',
     cost: [L, C],
     damage: 60,
-    text: "Does 30 damage to 1 of your Pokémon, and don't apply Weakness and Resistance to this damage.",
+    text: 'Does 30 damage to 1 of your Pokémon, and don\'t apply Weakness and Resistance to this damage.'
   }];
 
   public set: string = 'RR';
@@ -100,6 +99,7 @@ export class LuxrayGLLVX extends PokemonCard {
       );
     }
 
+    // Trying to get all of the previous stage's attacks and powers
     if (effect instanceof CheckTableStateEffect) {
       const player = effect.player;
       const cardList = StateUtils.findCardList(state, this);
@@ -110,7 +110,7 @@ export class LuxrayGLLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (list, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
           player.showAllStageAbilities = true;
@@ -132,7 +132,7 @@ export class LuxrayGLLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (list, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }
@@ -143,11 +143,7 @@ export class LuxrayGLLVX extends PokemonCard {
       }
 
       for (const evolutionCard of cardList.cards) {
-        if (
-          evolutionCard.superType === SuperType.POKEMON &&
-          evolutionCard !== this &&
-          evolutionCard.name === this.evolvesFrom
-        ) {
+        if (evolutionCard.superType === SuperType.POKEMON && evolutionCard !== this && evolutionCard.name === this.evolvesFrom) {
           effect.attacks.push(...(evolutionCard.attacks || []));
         }
       }
@@ -163,7 +159,7 @@ export class LuxrayGLLVX extends PokemonCard {
       }
 
       let isThisInPlay = false;
-      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (list, card) => {
+      owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card) => {
         if (card === this) {
           isThisInPlay = true;
         }
@@ -174,11 +170,7 @@ export class LuxrayGLLVX extends PokemonCard {
       }
 
       for (const evolutionCard of cardList.cards) {
-        if (
-          evolutionCard.superType === SuperType.POKEMON &&
-          evolutionCard !== this &&
-          evolutionCard.name === this.evolvesFrom
-        ) {
+        if (evolutionCard.superType === SuperType.POKEMON && evolutionCard !== this && evolutionCard.name === this.evolvesFrom) {
           effect.powers.push(...(evolutionCard.powers || []));
         }
       }

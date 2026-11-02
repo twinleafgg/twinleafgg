@@ -5,10 +5,8 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 import { GamePhase, PowerType, StoreLike, State, StateUtils } from '../../../game';
-import { AfterDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { CheckHpEffect } from '../../../game/store/effects/check-effects';
-import { PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
+import { KnockOutEffect, PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
 import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF } from '../../../game/store/prefabs/prefabs';
 
 export class Golem extends PokemonCard {
@@ -42,20 +40,19 @@ export class Golem extends PokemonCard {
   public fullName: string = 'Golem FST 137';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Ability: Desperate Blast (passive - when KO'd in active by opponent's attack, deal 100 to attacker)
-    if (effect instanceof AfterDamageEffect) {
-      if (!effect.target.cards.includes(this) || effect.target.getPokemonCard() !== this) {
-        return state;
-      }
+    // Ability: Desperate Blast — Ref: set-pokemon-151/weezing.ts
+    if (
+      effect instanceof KnockOutEffect &&
+      effect.target.cards.includes(this) &&
+      effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
+    ) {
+      const abilityOwner = effect.player;
+      const attackerOwner = StateUtils.getOpponent(state, abilityOwner);
 
-      if (effect.damage <= 0 || state.phase !== GamePhase.ATTACK) {
-        return state;
-      }
-
-      const abilityOwner = StateUtils.findOwner(state, effect.target);
-      const sourcePlayer = effect.player;
-
-      if (abilityOwner === sourcePlayer || abilityOwner.active !== effect.target) {
+      if (state.phase !== GamePhase.ATTACK ||
+        abilityOwner.active.getPokemonCard() !== this ||
+        state.players[state.activePlayer] !== attackerOwner
+      ) {
         return state;
       }
 
@@ -63,19 +60,10 @@ export class Golem extends PokemonCard {
         return state;
       }
 
-      const checkHp = new CheckHpEffect(abilityOwner, effect.target);
-      store.reduceEffect(state, checkHp);
-
-      if (effect.target.damage >= checkHp.hp) {
-        const placeCounters = new PlaceDamageCountersEffect(
-          abilityOwner,
-          effect.source,
-          100,
-          this,
-          this.powers[0],
-        );
-        store.reduceEffect(state, placeCounters);
-      }
+      store.reduceEffect(
+        state,
+        new PlaceDamageCountersEffect(abilityOwner, attackerOwner.active, 100, this, this.powers[0]),
+      );
     }
 
     // Attack 1: Double-Edge

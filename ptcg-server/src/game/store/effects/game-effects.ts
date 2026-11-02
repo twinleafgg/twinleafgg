@@ -283,6 +283,7 @@ export class EvolveEffect implements Effect {
   public player: Player;
   public target: PokemonCardList;
   public pokemonCard: PokemonCard;
+  public previousPokemonCard?: PokemonCard;
   public darkestImpulseSV?: boolean;
 
   constructor(player: Player, target: PokemonCardList, pokemonCard: PokemonCard) {

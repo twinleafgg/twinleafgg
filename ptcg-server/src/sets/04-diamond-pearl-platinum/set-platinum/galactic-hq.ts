@@ -1,11 +1,7 @@
-import { Effect } from '../../../game/store/effects/effect';
-import { GameError } from '../../../game/game-error';
-import { GameMessage } from '../../../game/game-message';
-import { State } from '../../../game/store/state/state';
-import { StoreLike } from '../../../game/store/store-like';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { TrainerType } from '../../../game/store/card/card-types';
-import { StateUtils } from '../../../game/store/state-utils';
+import { GameError, GameMessage, State, StateUtils, StoreLike } from '../../../game';
+import { Effect } from '../../../game/store/effects/effect';
 import { EvolveEffect, UseStadiumEffect } from '../../../game/store/effects/game-effects';
 import { IS_STADIUM_EFFECT_BLOCKED } from '../../../game/store/prefabs/stadium-effect';
 
@@ -16,8 +12,7 @@ export class GalacticHQ extends TrainerCard {
   public setNumber: string = '106';
   public name: string = 'Galactic HQ';
   public fullName: string = 'Galactic HQ PL';
-  public text: string =
-    'Whenever any player plays any Pokémon from his or her hand to evolve his or her Pokémon, put 2 damage counters on that Pokémon.';
+  public text: string = 'Whenever any player plays any Pokémon from his or her hand to evolve his or her Pokémon, put 2 damage counters on that Pokémon.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

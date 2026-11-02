@@ -65,6 +65,9 @@ export class HonchkrowLVX extends PokemonCard {
 
     // Darkness Wing
     if (effect instanceof KnockOutAttackEffect && effect.attack === this.attacks[1]) {
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       const cardOwner = StateUtils.findOwner(state, StateUtils.findCardList(state, this));
       if (effect.player === cardOwner) {
         return state;

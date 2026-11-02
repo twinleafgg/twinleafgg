@@ -16,8 +16,7 @@ import {
   CheckTableStateEffect,
 } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { COPY_ATTACK_VIA_ABILITY } from '../../../game/store/prefabs/copy-attack-prefabs';
-import { IS_POKEBODY_BLOCKED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import { IS_POKEBODY_BLOCKED } from '../../../game/store/prefabs/prefabs';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 
 export class ArceusLvX3 extends PokemonCard {
@@ -37,7 +36,6 @@ export class ArceusLvX3 extends PokemonCard {
     {
       name: 'Omniscient',
       powerType: PowerType.POKEBODY,
-      useWhenInPlay: true,
       text: 'Arceus can use the attacks of all Arceus you have in play as its own. (You still need the necessary Energy to use each attack.)',
     },
   ];
@@ -64,17 +62,6 @@ export class ArceusLvX3 extends PokemonCard {
           }
           return state;
         }
-      });
-    }
-
-    if (WAS_POWER_USED(effect, 3, this)) {
-      const player = effect.player;
-      if (IS_POKEBODY_BLOCKED(store, state, player, this)) {
-        throw new GameError(GameMessage.ABILITY_BLOCKED);
-      }
-      return COPY_ATTACK_VIA_ABILITY(store, state, effect, {
-        copycatCard: this,
-        filter: (_cardList, card) => card.name === 'Arceus' && !(card instanceof ArceusLvX3),
       });
     }
 
@@ -132,8 +119,16 @@ export class ArceusLvX3 extends PokemonCard {
           evolutionCard !== this &&
           evolutionCard.name === this.evolvesFrom
         ) {
-          effect.attacks.push(...(evolutionCard.attacks || []));
+          effect.attacks.push(...((evolutionCard as PokemonCard).attacks || []));
         }
+      }
+
+      if (owner.active.getPokemonCard() === this && !IS_POKEBODY_BLOCKED(store, state, owner, this)) {
+        owner.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_list, card) => {
+          if (card.name === 'Arceus' && card !== this) {
+            effect.attacks.push(...(card.attacks || []));
+          }
+        });
       }
     }
 

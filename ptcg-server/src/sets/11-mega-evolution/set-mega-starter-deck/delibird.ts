@@ -1,15 +1,6 @@
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType, SuperType } from '../../../game/store/card/card-types';
-import { GameError, GameMessage, PowerType, StoreLike, State } from '../../../game';
-import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
-  IS_ABILITY_BLOCKED,
-  LOOK_AT_TOP_X_CARDS_AND_PUT_UP_TO_Y_MATCHING_CARDS_INTO_HAND,
-  REMOVE_MARKER_AT_END_OF_TURN,
-  USE_ABILITY_ONCE_PER_TURN,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, GameError, GameMessage, SuperType, CardList, ChooseCardsPrompt, ShowCardsPrompt, StateUtils } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from "../../../game/store/prefabs/prefabs";
 
 export class Delibird extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -58,19 +49,62 @@ export class Delibird extends PokemonCard {
       USE_ABILITY_ONCE_PER_TURN(player, this.ENERGY_PRESENT_MARKER, this);
       ABILITY_USED(player, this);
 
-      LOOK_AT_TOP_X_CARDS_AND_PUT_UP_TO_Y_MATCHING_CARDS_INTO_HAND(
-        store, state, player, 6, 1,
-        {
-          filter: { superType: SuperType.ENERGY },
-          revealChosenCards: true,
-          remainderDestination: 'bottom',
-          sourceCard: this
-        }
-      );
+      state = this.lookAtTopCards(store, state, player);
     }
 
     REMOVE_MARKER_AT_END_OF_TURN(effect, this.ENERGY_PRESENT_MARKER, this);
 
     return state;
+  }
+
+  private lookAtTopCards(store: StoreLike, state: State, player: State['players'][number]): State {
+    if (player.deck.cards.length === 0) {
+      return state;
+    }
+
+    const topCards = new CardList();
+    const count = Math.min(6, player.deck.cards.length);
+    state = MOVE_CARDS(store, state, player.deck, topCards, { count, sourceCard: this });
+
+    // Always show the looked-at cards, even when none of them are Energy.
+    return store.prompt(state, new ShowCardsPrompt(player.id, GameMessage.CARDS_SHOWED_BY_EFFECT, topCards.cards), () => {
+      const blocked: number[] = [];
+      topCards.cards.forEach((card, index) => {
+        if (card.superType !== SuperType.ENERGY) {
+          blocked.push(index);
+        }
+      });
+
+      if (blocked.length === topCards.cards.length) {
+        this.putRemainingOnBottom(store, state, player, topCards);
+        return;
+      }
+
+      store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          topCards,
+          { superType: SuperType.ENERGY },
+          { allowCancel: false, min: 0, max: 1, blocked },
+        ),
+        (cards) => {
+          const chosenCard = (cards || [])[0];
+
+          if (chosenCard) {
+            MOVE_CARDS(store, state, topCards, player.hand, { cards: [chosenCard], sourceCard: this });
+            SHOW_CARDS_TO_PLAYER(store, state, StateUtils.getOpponent(state, player), [chosenCard]);
+          }
+
+          this.putRemainingOnBottom(store, state, player, topCards);
+        },
+      );
+    });
+  }
+
+  private putRemainingOnBottom(store: StoreLike, state: State, player: State['players'][number], topCards: CardList): void {
+    state = SHUFFLE_DECK(store, state, player);
+    MOVE_CARDS(store, state, topCards, player.deck, { toBottom: true, sourceCard: this });
   }
 }

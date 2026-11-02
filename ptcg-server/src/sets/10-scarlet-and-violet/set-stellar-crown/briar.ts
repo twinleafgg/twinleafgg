@@ -71,6 +71,9 @@ During this turn, if your opponent's Active Pokémon is Knocked Out by damage fr
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       // Check if the knocked out Pokémon belongs to the opponent and if extra prize should be taken
       if (effect.target === player.active) {

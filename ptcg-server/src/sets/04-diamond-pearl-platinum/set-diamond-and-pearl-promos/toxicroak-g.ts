@@ -1,28 +1,7 @@
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import {
-  GameError,
-  GameMessage,
-  PokemonCardList,
-  PowerType,
-  State,
-  StateUtils,
-  StoreLike,
-} from '../../../game';
-import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
-  ADD_MARKER,
-  BLOCK_IF_HAS_SPECIAL_CONDITION,
-  COIN_FLIP_PROMPT,
-  HAS_MARKER,
-  MOVE_POKEMON_OFF_BOARD,
-  REMOVE_MARKER_AT_END_OF_TURN,
-  WAS_ATTACK_USED,
-  WAS_POWER_USED,
-  WAS_POKEMON_KNOCKED_OUT_DURING_OPPONENTS_LAST_TURN,
-} from '../../../game/store/prefabs/prefabs';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
+import { PokemonCard, Stage, CardTag, CardType, PowerType, StoreLike, State, StateUtils, GameError, GameMessage, PokemonCardList } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { PlayPokemonEffect } from "../../../game/store/effects/play-card-effects";
+import { WAS_POWER_USED, BLOCK_IF_HAS_SPECIAL_CONDITION, HAS_MARKER, ADD_MARKER, ABILITY_USED, COIN_FLIP_PROMPT, MOVE_POKEMON_OFF_BOARD, REMOVE_MARKER_AT_END_OF_TURN, WAS_ATTACK_USED, WAS_POKEMON_KNOCKED_OUT_DURING_OPPONENTS_LAST_TURN } from "../../../game/store/prefabs/prefabs";
 
 export class ToxicroakG extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -32,24 +11,20 @@ export class ToxicroakG extends PokemonCard {
   public weakness = [{ type: P }];
   public retreat = [C, C];
 
-  public powers = [
-    {
-      name: 'Leap Away',
-      useWhenInPlay: true,
-      powerType: PowerType.POKEPOWER,
-      text: "Once during your turn (before your attack), if Toxicroak G is your Active Pokémon, you may flip a coin. If heads, return Toxicroak G and all cards attached to it to your hand. This power can't be used if Toxicroak G is affected by a Special Condition.",
-    },
-  ];
+  public powers = [{
+    name: 'Leap Away',
+    useWhenInPlay: true,
+    powerType: PowerType.POKEPOWER,
+    text: "Once during your turn (before your attack), if Toxicroak G is your Active Pokémon, you may flip a coin. If heads, return Toxicroak G and all cards attached to it to your hand. This power can't be used if Toxicroak G is affected by a Special Condition.",
+  }];
 
-  public attacks = [
-    {
-      name: 'Poison Revenge',
-      cost: [P, C],
-      damage: 20,
-      damageCalculation: '+',
-      text: "If any of your Pokémon were Knocked Out by damage from an opponent's attack during his or her last turn, this attack does 20 damage plus 40 more damage and the Defending Pokémon is now Poisoned.",
-    },
-  ];
+  public attacks = [{
+    name: 'Poison Revenge',
+    cost: [P, C],
+    damage: 20,
+    damageCalculation: '+',
+    text: "If any of your Pokémon were Knocked Out by damage from an opponent's attack during his or her last turn, this attack does 20 damage plus 40 more damage and the Defending Pokémon is now Poisoned.",
+  }];
 
   public set: string = 'DPP';
   public cardImage: string = 'assets/cardback.png';

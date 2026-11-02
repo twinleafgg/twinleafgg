@@ -1,6 +1,8 @@
-/** "Hop's Phantump" → "HopsPhantump" (possessive 's stays with the name). */
+import { asciiCardName } from './textAccuracy';
+
+/** "Hop's Phantump" → "HopsPhantump"; "Poké Healer +" → "PokeHealer". */
 export function toPascalClassName(name: string): string {
-  return name
+  return asciiCardName(name)
     .replace(/[''\u2019]s\b/gi, 's')
     .replace(/[''\u2019]/g, '')
     .replace(/[^a-zA-Z0-9 ]/g, ' ')

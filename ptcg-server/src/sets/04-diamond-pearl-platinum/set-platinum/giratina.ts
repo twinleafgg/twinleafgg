@@ -5,7 +5,7 @@ import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PowerEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {MULTIPLE_COIN_FLIPS_PROMPT, IS_POKEPOWER_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { IS_POKEPOWER_BLOCKED, MOVE_CARDS, MULTIPLE_COIN_FLIPS_PROMPT, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Giratina extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -35,19 +35,18 @@ export class Giratina extends PokemonCard {
   public fullName: string = 'Giratina PL';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-
+    // Let Loose
     if (effect instanceof PlayPokemonEffect && effect.pokemonCard === this) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
-      // Try to reduce PowerEffect, to check if something is blocking our ability
       if (IS_POKEPOWER_BLOCKED(store, state, player, this)) {
         return state;
       }
 
       state = store.prompt(state, new ConfirmPrompt(
         effect.player.id,
-        GameMessage.WANT_TO_USE_ABILITY,
+        GameMessage.WANT_TO_USE_ABILITY
       ), wantToUse => {
         if (wantToUse) {
           const powerEffect = new PowerEffect(player, this.powers[0], this);
@@ -55,7 +54,7 @@ export class Giratina extends PokemonCard {
 
           const cards = player.hand.cards.filter(c => c !== this);
 
-          MOVE_CARDS(store, state, player.hand, player.deck, { cards: cards, sourceCard: this });
+          MOVE_CARDS(store, state, player.hand, player.deck, { cards, sourceCard: this });
           MOVE_CARDS(store, state, opponent.hand, opponent.deck, { sourceCard: this });
 
           store.prompt(state, [
@@ -74,17 +73,17 @@ export class Giratina extends PokemonCard {
       });
     }
 
+    // Earth Power
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const player = effect.player;
       const opponent = effect.opponent;
 
-      MULTIPLE_COIN_FLIPS_PROMPT(store, state, player, 2, results => {
+      MULTIPLE_COIN_FLIPS_PROMPT(store, state, effect.player, 2, results => {
         const heads = results.filter(r => r).length;
         if (heads > 0) {
-          opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, card => {
-            if (card !== opponent.active) {
-              const damage = new PutDamageEffect(effect, (10 * heads));
-              damage.target = card;
+          opponent.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+            if (cardList !== opponent.active) {
+              const damage = new PutDamageEffect(effect, 10 * heads);
+              damage.target = cardList;
               store.reduceEffect(state, damage);
             }
           });

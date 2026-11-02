@@ -1,21 +1,10 @@
-import { CardTarget, GameError, GameMessage, MoveEnergyPrompt, PlayerType, PokemonCard, PowerType, SlotType, StateUtils, SuperType } from '../../../game';
+import { CardTarget, GameError, GameMessage, MoveEnergyPrompt, PlayerType, PokemonCard, PowerType, SlotType, State, StateUtils, StoreLike, SuperType } from '../../../game';
 import { CardTag, CardType, Stage } from '../../../game/store/card/card-types';
 import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import {
-  ABILITY_USED,
-  BLOCK_IF_HAS_SPECIAL_CONDITION,
-  IS_POKEPOWER_BLOCKED,
-  MOVE_CARDS,
-  REMOVE_MARKER_AT_END_OF_TURN,
-  USE_ABILITY_ONCE_PER_TURN,
-  WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
-import { State } from '../../../game/store/state/state';
-import { StoreLike } from '../../../game/store/store-like';
+import { ABILITY_USED, BLOCK_IF_HAS_SPECIAL_CONDITION, IS_POKEPOWER_BLOCKED, MOVE_CARDS, REMOVE_MARKER_AT_END_OF_TURN, USE_ABILITY_ONCE_PER_TURN, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
 
 export class BronzongG extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -30,14 +19,14 @@ export class BronzongG extends PokemonCard {
     name: 'Galactic Switch',
     useWhenInPlay: true,
     powerType: PowerType.POKEPOWER,
-    text: "Once during your turn (before your attack), you may move an Energy card attached to 1 of your Pokémon SP to another of your Pokémon. Then, put 2 damage counters on Bronzong G. This power can't be used if Bronzong G is affected by a Special Condition.",
+    text: 'Once during your turn (before your attack), you may move an Energy card attached to 1 of your Pokémon SP to another of your Pokémon. Then, put 2 damage counters on Bronzong G. This power can\'t be used if Bronzong G is affected by a Special Condition.'
   }];
 
   public attacks = [{
     name: 'Psychic Pulse',
     cost: [M, C, C],
     damage: 40,
-    text: "Does 10 damage to each of your opponent's Benched Pokémon that has any damage counters on it. (Don't apply Weakness and Resistance for Benched Pokémon.)",
+    text: 'Does 10 damage to each of your opponent\'s Benched Pokémon that has any damage counters on it. (Don\'t apply Weakness and Resistance for Benched Pokémon.)'
   }];
 
   public set: string = 'PL';
@@ -71,8 +60,8 @@ export class BronzongG extends PokemonCard {
       player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card) => {
         pokemonCount += 1;
         if (card.hasTag(CardTag.POKEMON_SP)) {
-          const basicEnergyAttached = cardList.cards.some((c) => c.superType === SuperType.ENERGY);
-          hasEnergy = hasEnergy || basicEnergyAttached;
+          const energyAttached = cardList.cards.some(c => c.superType === SuperType.ENERGY);
+          hasEnergy = hasEnergy || energyAttached;
         }
       });
 
@@ -81,56 +70,46 @@ export class BronzongG extends PokemonCard {
       }
 
       const blockedFrom: CardTarget[] = [];
-      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList, card, target) => {
+      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (_cardList, card, target) => {
         if (!card.hasTag(CardTag.POKEMON_SP)) {
           blockedFrom.push(target);
         }
       });
 
-      return store.prompt(
-        state,
-        new MoveEnergyPrompt(
-          effect.player.id,
-          GameMessage.MOVE_ENERGY_CARDS,
-          PlayerType.BOTTOM_PLAYER,
-          [SlotType.ACTIVE, SlotType.BENCH],
-          { superType: SuperType.ENERGY },
-          { min: 1, max: 1, allowCancel: false, blockedFrom },
-        ),
-        (transfers) => {
-          if (transfers === null) {
-            return;
-          }
+      return store.prompt(state, new MoveEnergyPrompt(
+        effect.player.id,
+        GameMessage.MOVE_ENERGY_CARDS,
+        PlayerType.BOTTOM_PLAYER,
+        [SlotType.ACTIVE, SlotType.BENCH],
+        { superType: SuperType.ENERGY },
+        { min: 1, max: 1, allowCancel: false, blockedFrom }
+      ), transfers => {
+        if (transfers === null) {
+          return;
+        }
 
-          for (const transfer of transfers) {
-            ABILITY_USED(player, this);
+        for (const transfer of transfers) {
+          ABILITY_USED(player, this);
 
-            player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
-              if (cardList.getPokemonCard() === effect.card) {
-                store.reduceEffect(
-                  state,
-                  new PlaceDamageCountersEffect(player, cardList, 20, this, this.powers[0]),
-                );
-              }
-            });
+          player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+            if (cardList.getPokemonCard() === effect.card) {
+              store.reduceEffect(state, new PlaceDamageCountersEffect(player, cardList, 20, this, this.powers[0]));
+            }
+          });
 
-            const source = StateUtils.getTarget(state, player, transfer.from);
-            const target = StateUtils.getTarget(state, player, transfer.to);
-            MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
-          }
+          const source = StateUtils.getTarget(state, player, transfer.from);
+          const target = StateUtils.getTarget(state, player, transfer.to);
+          MOVE_CARDS(store, state, source, target, { cards: [transfer.card], sourceCard: this });
+        }
 
-          return state;
-        },
-      );
+        return state;
+      });
     }
 
     // Psychic Pulse
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      const opponent = effect.opponent;
-      const benched = opponent.bench.filter((b) => b.cards.length > 0);
-
-      benched.forEach((target) => {
-        if (target.damage !== 0) {
+      effect.opponent.bench.forEach(target => {
+        if (target.cards.length > 0 && target.damage !== 0) {
           const damageEffect = new PutDamageEffect(effect, 10);
           damageEffect.target = target;
           store.reduceEffect(state, damageEffect);

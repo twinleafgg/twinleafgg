@@ -16,6 +16,7 @@ import { Clefable } from './clefable';
 import { Clefairy } from './clefairy';
 import { Combee } from './combee';
 import { Dialga } from './dialga';
+import { DoubleFullHeal } from './double-full-heal';
 import { Drapion } from './drapion';
 import { Drifblim } from './drifblim';
 import { Drifloon } from './drifloon';
@@ -26,6 +27,7 @@ import { Electabuzz } from './electabuzz';
 import { Electivire } from './electivire';
 import { Elekid } from './elekid';
 import { EmpoleonLVX } from './empoleon-lvx';
+import { EnergyRestore } from './energy-restore';
 import { EnergySwitchPKDP, PokeBallDP, WarpPointG2DP, EnergySearchDP, PotionDP } from './other-prints';
 import { Card } from '../../../game/store/card/card';
 import { Floatzel } from './floatzel';
@@ -66,6 +68,7 @@ import { Misdreavus } from './misdreavus';
 import { Mismagius } from './mismagius';
 import { Monferno } from './monferno';
 import { Munchlax } from './munchlax';
+import { NightPokemonCenter } from './night-pokemon-center';
 import { Noctowl } from './noctowl';
 import { Nuzleaf } from './nuzleaf';
 import { Onix } from './onix';
@@ -76,12 +79,14 @@ import { PlusPower } from './pluspower';
 import { PokedexHandy } from './pokedex-handy';
 import { Ponyta } from './ponyta';
 import { Prinplup } from './prinplup';
+import { ProfessorRowan } from './professor-rowan';
 import { Purugly } from './purugly';
 import { Rapidash } from './rapidash';
 import { Rhydon } from './rhydon';
 import { Rhyhorn } from './rhyhorn';
 import { Rhyperior } from './rhyperior';
 import { Riolu } from './riolu';
+import { Rival } from './rival';
 import { Roselia } from './roselia';
 import { Roserade } from './roserade';
 import { Seaking } from './seaking';
@@ -137,6 +142,7 @@ export const setDiamondAndPearl: Card[] = [
   new Cleffa(),
   new Combee(),
   new Dialga(),
+  new DoubleFullHeal(),
   new Drapion(),
   new Drifblim(),
   new Drifloon(),
@@ -149,6 +155,7 @@ export const setDiamondAndPearl: Card[] = [
   new Elekid(),
   new Empoleon(),
   new EmpoleonLVX(),
+  new EnergyRestore(),
   new Floatzel(),
   new Gastly(),
   new Gengar(),
@@ -182,6 +189,7 @@ export const setDiamondAndPearl: Card[] = [
   new Mismagius(),
   new Monferno(),
   new Munchlax(),
+  new NightPokemonCenter(),
   new Noctowl(),
   new Nuzleaf(),
   new Onix(),
@@ -192,12 +200,14 @@ export const setDiamondAndPearl: Card[] = [
   new PokedexHandy(),
   new Ponyta(),
   new Prinplup(),
+  new ProfessorRowan(),
   new Purugly(),
   new Rapidash(),
   new Rhydon(),
   new Rhyhorn(),
   new Rhyperior(),
   new Riolu(),
+  new Rival(),
   new Roselia(),
   new Roserade(),
   new Seaking(),

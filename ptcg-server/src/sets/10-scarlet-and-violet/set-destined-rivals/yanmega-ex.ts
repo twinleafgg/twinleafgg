@@ -1,28 +1,10 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import {
-  Stage,
-  CardType,
-  CardTag,
-  SuperType,
-  EnergyType,
-} from '../../../game/store/card/card-types';
-import {
-  StoreLike,
-  State,
-  PlayerType,
-  SlotType,
-  PowerType,
-  ConfirmPrompt,
-  AttachEnergyPrompt,
-  StateUtils,
-} from '../../../game';
+import { Stage, CardType, CardTag, SuperType, EnergyType } from '../../../game/store/card/card-types';
+import { StoreLike, State, PlayerType, SlotType, PowerType, ConfirmPrompt, AttachEnergyPrompt, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { GameMessage } from '../../../game/game-message';
 import { MovedToActiveEffect, PowerEffect } from '../../../game/store/effects/game-effects';
-import {MOVED_TO_ACTIVE_THIS_TURN,
-  REMOVE_MARKER_AT_END_OF_TURN,
-  SHUFFLE_DECK,
-  WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { MOVED_TO_ACTIVE_THIS_TURN, REMOVE_MARKER_AT_END_OF_TURN, SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Yanmegaex extends PokemonCard {
   protected _tags = [CardTag.POKEMON_ex];
@@ -35,22 +17,18 @@ export class Yanmegaex extends PokemonCard {
   public resistance = [{ type: F, value: -30 }];
   public retreat = [C];
 
-  public powers = [
-    {
-      name: 'Buzz Boost',
-      powerType: PowerType.ABILITY,
-      text: 'Once during your turn, when this Pokémon moves from your Bench to the Active Spot, you may search your deck for up to 3 Basic [G] Energy and attach them to this Pokémon. Then, shuffle your deck.',
-    },
-  ];
+  public powers = [{
+    name: 'Buzz Boost',
+    powerType: PowerType.ABILITY,
+    text: 'Once during your turn, when this Pokémon moves from your Bench to the Active Spot, you may search your deck for up to 3 Basic [G] Energy and attach them to this Pokémon. Then, shuffle your deck.',
+  }];
 
-  public attacks = [
-    {
-      name: 'Jet Cyclone',
-      cost: [G, G, G, C],
-      damage: 210,
-      text: 'Move 3 Energy from this Pokémon to 1 of your Benched Pokémon.',
-    },
-  ];
+  public attacks = [{
+    name: 'Jet Cyclone',
+    cost: [G, G, G, C],
+    damage: 210,
+    text: 'Move 3 Energy from this Pokémon to 1 of your Benched Pokémon.',
+  }];
 
   public set: string = 'DRI';
   public cardImage: string = 'assets/cardback.png';
@@ -131,6 +109,14 @@ export class Yanmegaex extends PokemonCard {
 
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
+      const movableEnergy = player.active.cards.filter(c => c.superType === SuperType.ENERGY).length;
+      const hasBench = player.bench.some(b => b.cards.length > 0);
+      const moveCount = hasBench ? Math.min(3, movableEnergy) : 0;
+
+      if (moveCount === 0) {
+        return state;
+      }
+
       return store.prompt(
         state,
         new AttachEnergyPrompt(
@@ -140,7 +126,7 @@ export class Yanmegaex extends PokemonCard {
           PlayerType.BOTTOM_PLAYER,
           [SlotType.BENCH],
           { superType: SuperType.ENERGY },
-          { allowCancel: false, min: 3, max: 3, sameTarget: true },
+          { allowCancel: false, min: moveCount, max: moveCount, sameTarget: true },
         ),
         (transfers) => {
           transfers = transfers || [];
@@ -151,6 +137,7 @@ export class Yanmegaex extends PokemonCard {
         },
       );
     }
+
     return state;
   }
 }

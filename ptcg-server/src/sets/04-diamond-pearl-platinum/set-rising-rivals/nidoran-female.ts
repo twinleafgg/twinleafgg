@@ -1,13 +1,11 @@
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike, State, StateUtils, ChooseCardsPrompt, GameMessage } from '../../../game';
-import { AttackEffect } from '../../../game/store/effects/game-effects';
+import { CardType, ChooseCardsPrompt, GameMessage, PokemonCard, Stage, State, StateUtils, StoreLike, SuperType, TrainerType } from '../../../game';
+import { Effect } from '../../../game/store/effects/effect';
 import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class NidoranFemale extends PokemonCard {
   public stage: Stage = Stage.BASIC;
-  public cardType: CardType[] = [P];
   public hp: number = 60;
+  public cardType: CardType[] = [P];
   public weakness = [{ type: P, value: +10 }];
   public retreat = [C];
 
@@ -30,22 +28,25 @@ export class NidoranFemale extends PokemonCard {
   public name: string = 'Nidoran \u2640';
   public fullName: string = 'Nidoran \u2640 RR';
 
-  public reduceEffect(store: StoreLike, state: State, effect: AttackEffect): State {
-
-    if (WAS_ATTACK_USED(effect, 0, this)) {
+  public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
+    // Offer Help
+    if (WAS_ATTACK_USED(effect, 1, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
-
-      if (player.deck.cards.length === 0)
+      if (player.deck.cards.length === 0) {
         return state;
+      }
 
       store.prompt(state, new ChooseCardsPrompt(
-        player, GameMessage.CHOOSE_CARD_TO_HAND, player.deck, { superType: SuperType.TRAINER, trainerType: TrainerType.SUPPORTER }, { min: 0, max: 1 },
+        player,
+        GameMessage.CHOOSE_CARD_TO_HAND,
+        player.deck,
+        { superType: SuperType.TRAINER, trainerType: TrainerType.SUPPORTER },
+        { min: 0, max: 1, allowCancel: true }
       ), selected => {
         const cards = selected || [];
         MOVE_CARDS(store, state, player.deck, player.hand, { cards });
         SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
-        
         SHUFFLE_DECK(store, state, player);
       });
     }

@@ -60,7 +60,8 @@ export class Accelgor extends PokemonCard {
       const knockedOutCard = effect.target.getPokemonCard();
       if (
         knockedOutCard?.name === 'Escavalier' &&
-        effect.target.marker.hasMarker(this.ESCAVALIER_DAMAGED_BY_OPPONENT_ATTACK_MARKER, this)
+        effect.target.marker.hasMarker(this.ESCAVALIER_DAMAGED_BY_OPPONENT_ATTACK_MARKER, this) &&
+        effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
       ) {
         const owner = StateUtils.findOwner(state, effect.target);
         owner.marker.addMarker(this.ESCAVALIER_KO_MARKER, this);

@@ -1,15 +1,14 @@
-import { PokemonCard, PowerType, StateUtils, StoreLike } from '../../../game';
+import { PokemonCard, PowerType, State, StateUtils, StoreLike } from '../../../game';
 import { CardType, SpecialCondition, Stage } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { APPLY_SPECIAL_CONDITIONS_FROM_ABILITY } from '../../../game/store/prefabs/effect-of-ability-prefabs';
 import { CONFIRMATION_PROMPT, IS_POKEPOWER_BLOCKED, JUST_EVOLVED } from '../../../game/store/prefabs/prefabs';
-import { State } from '../../../game/store/state/state';
 
 export class Ivysaur extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
-  public evolvesFrom = 'Bulbasaur';
-  public cardType: CardType[] = [G];
+  public evolvesFrom: string = 'Bulbasaur';
   public hp: number = 80;
+  public cardType: CardType[] = [G];
   public weakness = [{ type: R, value: +20 }];
   public retreat = [C, C];
 
@@ -35,7 +34,7 @@ export class Ivysaur extends PokemonCard {
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Evolutionary Pollen
     if (JUST_EVOLVED(effect, this) && !IS_POKEPOWER_BLOCKED(store, state, effect.player, this)) {
-      if (CONFIRMATION_PROMPT(store, state, effect.player, result => {
+      CONFIRMATION_PROMPT(store, state, effect.player, result => {
         if (result) {
           const player = effect.player;
           const opponent = StateUtils.getOpponent(state, player);
@@ -49,9 +48,7 @@ export class Ivysaur extends PokemonCard {
             [SpecialCondition.ASLEEP],
           );
         }
-      })) {
-        return state;
-      }
+      });
     }
     return state;
   }

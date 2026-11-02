@@ -36,6 +36,10 @@ export interface BrowseState {
   searchHasMore: boolean;
   implementedIds: Set<string>;
   hideImplemented: boolean;
+  selectedIds: Set<string>;
+  overwriteExisting: boolean;
+  bulkRunning: boolean;
+  bulkStatus: string;
 }
 
 export function createBrowseState(): BrowseState {
@@ -56,7 +60,15 @@ export function createBrowseState(): BrowseState {
     searchHasMore: false,
     implementedIds: new Set(),
     hideImplemented: false,
+    selectedIds: new Set(),
+    overwriteExisting: false,
+    bulkRunning: false,
+    bulkStatus: '',
   };
+}
+
+export function clearBrowseSelection(state: BrowseState): void {
+  state.selectedIds = new Set();
 }
 
 export async function ensureImplementedLoaded(state: BrowseState): Promise<void> {
@@ -214,24 +226,60 @@ function renderBrowseBody(state: BrowseState): string {
       .map(c => {
         const img = cardImageUrl(c.image, 'low');
         const done = isImplemented(state.implementedIds, c.id);
-        return `<button type="button" class="card-tile${done ? ' is-implemented' : ''}" data-browse="pick-card" data-id="${escapeHtml(c.id)}" ${done ? 'title="Already implemented"' : ''}>
-          ${done ? '<span class="impl-badge">Implemented</span>' : ''}
-          ${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(c.name)}" loading="lazy" onerror="this.src=''; this.classList.add('missing')" />` : '<div class="card-missing">No art</div>'}
-          <div class="card-meta">
-            <strong>${escapeHtml(c.name)}</strong>
-            <small>#${escapeHtml(c.localId)}${c.localId ? ' · ' : ''}${escapeHtml(c.id.length > 18 ? `${c.id.slice(0, 14)}…` : c.id)}</small>
-          </div>
-        </button>`;
+        const selected = state.selectedIds.has(c.id);
+        return `<div class="card-tile-wrap${selected ? ' is-selected' : ''}${done ? ' is-implemented' : ''}" data-card-wrap="${escapeHtml(c.id)}">
+          <label class="card-select" title="Select for bulk generate">
+            <input type="checkbox" data-browse-select="${escapeHtml(c.id)}" ${selected ? 'checked' : ''} ${state.bulkRunning ? 'disabled' : ''} />
+          </label>
+          <button type="button" class="card-tile${done ? ' is-implemented' : ''}" data-browse="pick-card" data-id="${escapeHtml(c.id)}" ${done ? 'title="Already implemented"' : ''}>
+            ${done ? '<span class="impl-badge">Implemented</span>' : ''}
+            ${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(c.name)}" loading="lazy" onerror="this.src=''; this.classList.add('missing')" />` : '<div class="card-missing">No art</div>'}
+            <div class="card-meta">
+              <strong>${escapeHtml(c.name)}</strong>
+              <small>#${escapeHtml(c.localId)}${c.localId ? ' · ' : ''}${escapeHtml(c.id.length > 18 ? `${c.id.slice(0, 14)}…` : c.id)}</small>
+            </div>
+          </button>
+        </div>`;
       })
       .join('')}
   </div>
-  ${searchPagination}`;
+  ${searchPagination}
+  ${renderBulkBar(state)}`;
+}
+
+function renderBulkBar(state: BrowseState): string {
+  if (state.level !== 'cards' && state.level !== 'search') return '';
+  if (state.cards.length === 0 && state.selectedIds.size === 0) return '';
+  const selected = state.selectedIds.size;
+  const noun = selected === 1 ? 'card' : 'cards';
+  const busy = state.bulkRunning;
+  return `
+    <div class="bulk-bar" data-bulk-bar>
+      <strong class="bulk-count">${selected} selected</strong>
+      <button type="button" data-browse="select-unimplemented" ${busy ? 'disabled' : ''}>Select unimplemented</button>
+      <button type="button" data-browse="select-all-visible" ${busy ? 'disabled' : ''}>Select all visible</button>
+      <button type="button" data-browse="clear-selection" ${busy || selected === 0 ? 'disabled' : ''}>Clear</button>
+      <label class="check-inline">
+        <input type="checkbox" data-browse-overwrite ${state.overwriteExisting ? 'checked' : ''} ${busy ? 'disabled' : ''} />
+        Overwrite existing files
+      </label>
+      <button type="button" class="primary" data-browse="bulk-save" ${busy || selected === 0 ? 'disabled' : ''}>
+        Generate and save ${selected} ${noun}
+      </button>
+      ${
+        state.bulkStatus
+          ? `<span class="bulk-status muted" data-bulk-status>${escapeHtml(state.bulkStatus)}</span>`
+          : '<span class="bulk-status muted" data-bulk-status hidden></span>'
+      }
+    </div>
+  `;
 }
 
 export async function loadSeries(state: BrowseState): Promise<void> {
   state.loading = true;
   state.error = '';
   state.level = 'series';
+  clearBrowseSelection(state);
   try {
     state.series = await listSeries();
   } catch (e) {
@@ -249,6 +297,7 @@ export async function loadSerieSets(state: BrowseState, serieId: string, serieNa
   state.activeSerieName = serieName;
   state.level = 'sets';
   state.filter = '';
+  clearBrowseSelection(state);
   try {
     const serie = await getSerie(serieId);
     state.sets = serie.sets || [];
@@ -265,6 +314,7 @@ export async function loadSetCards(state: BrowseState, setId: string): Promise<v
   state.loading = true;
   state.error = '';
   state.level = 'cards';
+  clearBrowseSelection(state);
   try {
     const set = await getSet(setId);
     state.activeSet = set;
@@ -305,6 +355,23 @@ export function visibleBrowseCards(state: BrowseState): TcgDexCardResume[] {
     return state.cards.filter(c => !isImplemented(state.implementedIds, c.id));
   }
   return state.cards;
+}
+
+export function unimplementedVisibleCards(state: BrowseState): TcgDexCardResume[] {
+  return visibleBrowseCards(state).filter(c => !isImplemented(state.implementedIds, c.id));
+}
+
+/** Selected cards in visible order, then any other selected ids (e.g. other search pages). */
+export function selectedBrowseCards(state: BrowseState): TcgDexCardResume[] {
+  if (state.selectedIds.size === 0) return [];
+  const visibleSelected = visibleBrowseCards(state).filter(c => state.selectedIds.has(c.id));
+  const visibleIds = new Set(visibleSelected.map(c => c.id));
+  const hiddenSelected = state.cards.filter(c => state.selectedIds.has(c.id) && !visibleIds.has(c.id));
+  const knownIds = new Set(state.cards.map(c => c.id));
+  const unknown = [...state.selectedIds]
+    .filter(id => !knownIds.has(id))
+    .map(id => ({ id, localId: '', name: id }));
+  return [...visibleSelected, ...hiddenSelected, ...unknown];
 }
 
 export async function pickCardToDraft(cardId: string): Promise<{

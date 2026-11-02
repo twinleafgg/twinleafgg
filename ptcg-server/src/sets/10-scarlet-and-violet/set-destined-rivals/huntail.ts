@@ -47,6 +47,9 @@ export class Huntail extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       if (IS_ABILITY_BLOCKED(store, state, player, this)) { return state; }
       if (!pokemonHasCardTypeOptional(effect.target.getPokemonCard(), CardType.WATER)) { return state; }
 

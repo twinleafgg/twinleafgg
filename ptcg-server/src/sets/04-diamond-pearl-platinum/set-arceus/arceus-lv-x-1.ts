@@ -1,27 +1,9 @@
-import {
-  Card,
-  ChooseEnergyPrompt,
-  GameError,
-  GameMessage,
-  PlayerType,
-  PowerType,
-  State,
-  StateUtils,
-  StoreLike,
-} from '../../../game';
-import { CardTag, CardType, Stage, SuperType } from '../../../game/store/card/card-types';
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import {
-  CheckPokemonAttacksEffect,
-  CheckPokemonPowersEffect,
-  CheckPokemonStatsEffect,
-  CheckProvidedEnergyEffect,
-  CheckTableStateEffect,
-} from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
+import { PokemonCard, Stage, CardType, CardTag, PowerType, StoreLike, State, StateUtils, ChooseEnergyPrompt, GameMessage, Card, GameError, PlayerType, SuperType } from "../../../game";
+import { DiscardCardsEffect } from "../../../game/store/effects/attack-effects";
+import { CheckPokemonStatsEffect, CheckProvidedEnergyEffect, CheckTableStateEffect, CheckPokemonAttacksEffect, CheckPokemonPowersEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { PlayPokemonEffect } from "../../../game/store/effects/play-card-effects";
+import { IS_POKEBODY_BLOCKED, WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
 
 export class ArceusLvX1 extends PokemonCard {
   public stage: Stage = Stage.LV_X;
@@ -31,22 +13,18 @@ export class ArceusLvX1 extends PokemonCard {
   public hp: number = 120;
   public retreat = [C];
 
-  public powers = [
-    {
-      name: 'Multitype',
-      powerType: PowerType.POKEBODY,
-      text: "Arceus LV.X's type is the same type as its previous Level.",
-    },
-  ];
+  public powers = [{
+    name: 'Multitype',
+    powerType: PowerType.POKEBODY,
+    text: "Arceus LV.X's type is the same type as its previous Level.",
+  }];
 
-  public attacks = [
-    {
-      name: 'Psychic Bolt',
-      cost: [L, P, C],
-      damage: 100,
-      text: 'Discard a [L] Energy and a [P] Energy attached to Arceus.',
-    },
-  ];
+  public attacks = [{
+    name: 'Psychic Bolt',
+    cost: [L, P, C],
+    damage: 100,
+    text: 'Discard a [L] Energy and a [P] Energy attached to Arceus.',
+  }];
 
   public set: string = 'AR';
   public cardImage: string = 'assets/cardback.png';

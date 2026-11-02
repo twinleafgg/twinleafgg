@@ -53,14 +53,17 @@ export class Arceus extends PokemonCard {
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
 
+      const types = new Set<string>();
       let arceusInPlay = 0;
-      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (card) => {
-        if (card.getPokemonCard()?.name === 'Arceus') {
+      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, list => {
+        const card = list.getPokemonCard();
+        if (card?.name === 'Arceus') {
           arceusInPlay++;
+          card.cardType.forEach(t => types.add(String(t)));
         }
       });
 
-      if (arceusInPlay !== 6) {
+      if (arceusInPlay !== 6 || types.size !== 6) {
         return state;
       }
 

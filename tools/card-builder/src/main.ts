@@ -31,6 +31,7 @@ import {
   resolveEffectHybrid,
 } from './generator/generateCard';
 import {
+  clearBrowseSelection,
   createBrowseState,
   ensureImplementedLoaded,
   loadSerieSets,
@@ -39,8 +40,15 @@ import {
   pickCardToDraft,
   renderBrowse,
   runSearch,
+  selectedBrowseCards,
+  unimplementedVisibleCards,
   visibleBrowseCards,
 } from './tcgdex/browse';
+import {
+  generateAndSaveCatalogCards,
+  saveCardToServer,
+  summarizeBulkSave,
+} from './saveCard';
 import type { BrowseSourceMeta } from './tcgdex/mapCardToDraft';
 import {
   cardImageUrl,
@@ -49,7 +57,7 @@ import {
   TcgDexApiError,
   resetDataSource,
 } from './tcgdex/client';
-import { clearImplementedCache, isImplemented } from './data/implemented';
+import { clearImplementedCache, isImplemented, markImplemented } from './data/implemented';
 import {
   applyRemovedDuplicate,
   createDuplicatesState,
@@ -915,7 +923,7 @@ function render(scrollMode: RenderScrollMode = 'preserve') {
     view === 'browse' ? 'Browse cards' : view === 'duplicates' ? 'Duplicate cards' : 'Card Builder';
   const lede =
     view === 'browse'
-      ? 'Pick a series → set → card to pre-fill the generator. Effect text can be matched to prefabs when available.'
+      ? 'Pick a series → set → card to pre-fill the generator, or check cards in a set and generate + save them to ptcg-server in one click.'
       : view === 'duplicates'
         ? 'Cards that share a set number, fullName, index entry, or reprint slot. Compare each copy side by side with catalog art.'
         : 'Scaffold card TypeScript from form fields. Attack/ability effects emit reduceEffect code when a matching prefab exists.';
@@ -1001,6 +1009,7 @@ function bindBrowseEvents() {
     browse.searchOffset = 0;
     browse.searchHasMore = false;
     browse.cards = [];
+    clearBrowseSelection(browse);
     statusMessage = '';
     outputError = '';
     browse.loading = true;
@@ -1030,6 +1039,26 @@ function bindBrowseEvents() {
   hideImpl?.addEventListener('change', () => {
     browse.hideImplemented = hideImpl.checked;
     render();
+  });
+
+  app.querySelectorAll<HTMLInputElement>('[data-browse-select]').forEach(el => {
+    el.addEventListener('click', e => e.stopPropagation());
+    el.addEventListener('change', () => {
+      const id = el.getAttribute('data-browse-select');
+      if (!id || browse.bulkRunning) return;
+      if (el.checked) browse.selectedIds.add(id);
+      else browse.selectedIds.delete(id);
+      render();
+    });
+  });
+
+  app.querySelectorAll<HTMLLabelElement>('.card-select').forEach(label => {
+    label.addEventListener('click', e => e.stopPropagation());
+  });
+
+  const overwrite = app.querySelector<HTMLInputElement>('[data-browse-overwrite]');
+  overwrite?.addEventListener('change', () => {
+    browse.overwriteExisting = overwrite.checked;
   });
 }
 
@@ -1061,6 +1090,7 @@ async function handleBrowse(action: string | null, btn: HTMLButtonElement) {
       browse.level = 'series';
       browse.filter = '';
       browse.error = '';
+      clearBrowseSelection(browse);
       if (browse.series.length === 0) {
         browse.loading = true;
         render();
@@ -1069,6 +1099,7 @@ async function handleBrowse(action: string | null, btn: HTMLButtonElement) {
       render();
       break;
     case 'go-sets':
+      clearBrowseSelection(browse);
       if (browse.activeSerieId) {
         browse.level = 'sets';
         browse.filter = '';
@@ -1099,6 +1130,71 @@ async function handleBrowse(action: string | null, btn: HTMLButtonElement) {
       const id = btn.getAttribute('data-id')!;
       browseScrollY = window.scrollY;
       await openCardInEditor(id);
+      break;
+    }
+    case 'select-unimplemented': {
+      for (const card of unimplementedVisibleCards(browse)) {
+        browse.selectedIds.add(card.id);
+      }
+      render();
+      break;
+    }
+    case 'select-all-visible': {
+      for (const card of visibleBrowseCards(browse)) {
+        browse.selectedIds.add(card.id);
+      }
+      render();
+      break;
+    }
+    case 'clear-selection':
+      clearBrowseSelection(browse);
+      render();
+      break;
+    case 'bulk-save': {
+      if (browse.bulkRunning) return;
+      const cards = selectedBrowseCards(browse);
+      if (cards.length === 0) return;
+      browse.bulkRunning = true;
+      browse.bulkStatus = `Saving 1/${cards.length}…`;
+      statusMessage = browse.bulkStatus;
+      outputError = '';
+      render();
+      try {
+        const results = await generateAndSaveCatalogCards(
+          cards.map(card => card.id),
+          {
+            overwrite: browse.overwriteExisting,
+            onProgress: ({ index, total, cardId }) => {
+              const name = cards.find(card => card.id === cardId)?.name || cardId;
+              browse.bulkStatus = `Saving ${index}/${total}: ${name}…`;
+              const statusEl = app.querySelector<HTMLElement>('[data-bulk-status]');
+              if (statusEl) {
+                statusEl.hidden = false;
+                statusEl.textContent = browse.bulkStatus;
+              }
+            },
+          }
+        );
+        for (const result of results) {
+          if ((result.outcome === 'saved' || result.outcome === 'reprint') && result.cardId) {
+            browse.implementedIds.add(result.cardId);
+            markImplemented(result.cardId);
+            browse.selectedIds.delete(result.cardId);
+          }
+        }
+        statusMessage = summarizeBulkSave(results);
+        const failed = results.filter(result => result.outcome === 'failed');
+        outputError = failed.length
+          ? failed.map(result => `${result.name || result.cardId}: ${result.message}`).join(' · ')
+          : '';
+      } catch (error) {
+        outputError = error instanceof Error ? error.message : String(error);
+        statusMessage = '';
+      } finally {
+        browse.bulkRunning = false;
+        browse.bulkStatus = '';
+        render();
+      }
       break;
     }
   }
@@ -1488,53 +1584,31 @@ async function handleAction(action: string | null, btn: HTMLButtonElement) {
           : undefined;
       const resolvedClassName =
         draft.className.trim() || computedClassName().replace(/[^A-Za-z0-9]/g, '');
-      const save = async (overwrite: boolean) => {
-        let source = outputCode;
-        if (!reprint) {
-          const occurrence = effectiveVariantOccurrence();
-          const classMatches = Boolean(
-            source && new RegExp(`export class\\s+${resolvedClassName}\\b`).test(source)
-          );
-          const fullName = computedFullName();
-          const fullNameMatches = Boolean(
-            source &&
-              (source.includes(`fullName: string = '${fullName}'`) ||
-                source.includes(`fullName = '${fullName}'`))
-          );
-          if (!source || !classMatches || !fullNameMatches) {
-            source = await generateCardSource(draft, { occurrence });
-            outputCode = source;
+      void saveCardToServer({
+        draft,
+        source: outputCode,
+        className: resolvedClassName,
+        occurrence: effectiveVariantOccurrence(),
+        reprint,
+        onConflict: () => window.confirm('That card file already exists. Overwrite it?'),
+      })
+        .then(result => {
+          if (result.source) outputCode = result.source;
+          if (result.outcome === 'cancelled') return;
+          if (result.outcome === 'failed') {
+            outputError = result.message;
+            statusMessage = '';
+          } else {
+            statusMessage = result.message;
+            outputError = '';
           }
-        }
-        if (!source && !reprint) return;
-        const response = await fetch('/save-card', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            set: draft.set,
-            className: resolvedClassName,
-            source,
-            overwrite,
-            ...(reprint ? { reprint } : {}),
-          }),
+          render();
+        })
+        .catch(err => {
+          outputError = err instanceof Error ? err.message : String(err);
+          statusMessage = '';
+          render();
         });
-        const result = (await response.json()) as { message?: string; error?: string };
-        if (response.status === 409 && !overwrite) {
-          if (window.confirm('That card file already exists. Overwrite it?')) {
-            await save(true);
-          }
-          return;
-        }
-        if (!response.ok) throw new Error(result.error || `Save failed (${response.status})`);
-        statusMessage = result.message || 'Saved to ptcg-server.';
-        outputError = '';
-        render();
-      };
-      void save(false).catch(err => {
-        outputError = err instanceof Error ? err.message : String(err);
-        statusMessage = '';
-        render();
-      });
       break;
     }
     case 'reset':

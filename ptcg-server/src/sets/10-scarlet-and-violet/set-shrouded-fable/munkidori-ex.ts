@@ -46,6 +46,9 @@ export class Munkidoriex extends PokemonCard {
       if (IS_ABILITY_BLOCKED(store, state, player, this)) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       if (player.pecharuntexIsInPlay == true) {
         effect.prizeCount -= 1;

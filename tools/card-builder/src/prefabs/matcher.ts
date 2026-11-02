@@ -1,4 +1,5 @@
 import { PREFAB_CATALOG, getPrefabById, prefabsForScope } from './catalog';
+import { joinRelatedClauses, normalizeMatchText } from '../textAccuracy';
 import type {
   EffectKind,
   MatchedPrefab,
@@ -17,14 +18,7 @@ export class MissingPrefabError extends Error {
 
 /** Normalize card text for pattern matching. */
 export function normalizeEffectText(text: string): string {
-  return text
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[’‘]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/Pokémon/gi, 'Pokemon')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return normalizeMatchText(text);
 }
 
 /**
@@ -148,7 +142,7 @@ export function matchEffectTextPartial(
   }
 
   // 2) Split into clauses and match each; gather unmatched
-  const clauses = splitClauses(normalized);
+  const clauses = joinRelatedClauses(splitClauses(normalized));
   const unmatched: string[] = [];
 
   for (const clause of clauses) {

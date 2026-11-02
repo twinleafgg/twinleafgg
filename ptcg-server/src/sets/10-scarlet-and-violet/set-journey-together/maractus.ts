@@ -1,8 +1,6 @@
 import { CardType, GamePhase, PokemonCard, PowerType, Stage, State, StateUtils, StoreLike } from '../../../game';
-import { PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { CheckHpEffect } from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
-import { PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
+import { KnockOutEffect, PlaceDamageCountersEffect } from '../../../game/store/effects/game-effects';
 import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 import { BLOCK_RETREAT } from '../../../game/store/prefabs/effect-of-attack-prefabs';
 
@@ -34,30 +32,32 @@ export class Maractus extends PokemonCard {
   public fullName: string = 'Maractus JTG';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Explosive Needle
-    if (effect instanceof PutDamageEffect && effect.target.cards.includes(this)) {
-      const abilityOwner = StateUtils.findOwner(state, effect.target);
-      const pokemonCard = effect.target.getPokemonCard();
+    // Explosive Needle — Ref: set-pokemon-151/weezing.ts
+    if (
+      effect instanceof KnockOutEffect &&
+      effect.target.cards.includes(this) &&
+      effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
+    ) {
+      const abilityOwner = effect.player;
+      const attackerOwner = StateUtils.getOpponent(state, abilityOwner);
 
-      if (pokemonCard !== this || state.phase !== GamePhase.ATTACK || IS_ABILITY_BLOCKED(store, state, abilityOwner, this)) {
+      if (state.phase !== GamePhase.ATTACK ||
+        abilityOwner.active.getPokemonCard() !== this ||
+        state.players[state.activePlayer] !== attackerOwner
+      ) {
         return state;
       }
 
-      const checkHpEffect = new CheckHpEffect(abilityOwner, effect.target);
-      store.reduceEffect(state, checkHpEffect);
-      const currentHp = checkHpEffect.hp - effect.target.damage;
-
-      if (effect.damage >= currentHp) {
-        const placeCounters = new PlaceDamageCountersEffect(
-          abilityOwner,
-          effect.source,
-          60,
-          this,
-          this.powers[0],
-        );
-        store.reduceEffect(state, placeCounters);
+      if (IS_ABILITY_BLOCKED(store, state, abilityOwner, this)) {
+        return state;
       }
+
+      store.reduceEffect(
+        state,
+        new PlaceDamageCountersEffect(abilityOwner, attackerOwner.active, 60, this, this.powers[0]),
+      );
     }
+
     // Corner
     if (WAS_ATTACK_USED(effect, 0, this)) {
       return BLOCK_RETREAT(store, state, effect, this);

@@ -285,6 +285,10 @@ export class PokemonCardList extends CardList {
         result.push(card as PokemonCard);
       } else if (card.name === 'Root Fossil') {
         result.push(card as PokemonCard);
+      } else if (card.name === 'Armor Fossil') {
+        result.push(card as PokemonCard);
+      } else if (card.name === 'Skull Fossil') {
+        result.push(card as PokemonCard);
       }
     }
     return result;

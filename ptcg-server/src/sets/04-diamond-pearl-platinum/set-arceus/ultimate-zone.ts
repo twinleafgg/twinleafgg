@@ -16,9 +16,7 @@ export class UltimateZone extends TrainerCard {
   public setNumber: string = '91';
   public name = 'Ultimate Zone';
   public fullName = 'Ultimate Zone AR';
-
-  public text =
-    "During each player's turn, the player may move an Energy card attached to 1 of his or her Benched Pokémon to his or her Active Arceus as often as he or she likes.";
+  public text = "During each player's turn, the player may move an Energy card attached to 1 of his or her Benched Pokémon to his or her Active Arceus as often as he or she likes.";
 
   reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {

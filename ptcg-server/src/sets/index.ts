@@ -51,10 +51,13 @@ export * from './set-nintendo-promos';
 export * from './set-unnumbered-promos';
 
 //POP Series
+export * from './set-pop-series-1';
 export * from './set-pop-series-2';
 export * from './set-pop-series-3';
 export * from './set-pop-series-4';
 export * from './set-pop-series-5';
+export * from './set-pop-series-6';
+export * from './set-pop-series-7';
 export * from './set-pop-series-8';
 
 //Japan Promos ex-era
@@ -72,7 +75,7 @@ export * from './04-diamond-pearl-platinum/set-mysterious-treasures';
 export * from './04-diamond-pearl-platinum/set-supreme-victors';
 export * from './04-diamond-pearl-platinum/set-secret-wonders';
 export * from './04-diamond-pearl-platinum/set-great-encounters';
-export * from './set-op9';
+export * from './set-pop-series-9';
 export * from './04-diamond-pearl-platinum/set-platinum';
 export * from './04-diamond-pearl-platinum/set-rising-rivals';
 

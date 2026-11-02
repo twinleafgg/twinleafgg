@@ -48,6 +48,9 @@ export class Komala extends PokemonCard {
       if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       const pokemonCard = effect.target.getPokemonCard();
       if (pokemonCard !== this) {

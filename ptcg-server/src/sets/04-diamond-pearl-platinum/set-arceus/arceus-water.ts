@@ -13,15 +13,13 @@ export class ArceusWater extends PokemonCard {
   public retreat = [C, C];
   protected _tags = [CardTag.ARCEUS];
 
-  public attacks = [
-    {
-      name: 'Fastwave',
-      cost: [W, C, C],
-      damage: 50,
-      shredAttack: true,
-      text: "This attack's damage isn't affected by Resistance, Poké-Powers, Poké-Bodies, or any other effects on the Defending Pokémon.",
-    },
-  ];
+  public attacks = [{
+    name: 'Fastwave',
+    cost: [W, C, C],
+    damage: 50,
+    shredAttack: true,
+    text: "This attack's damage isn't affected by Resistance, Poké-Powers, Poké-Bodies, or any other effects on the Defending Pokémon.",
+  }];
 
   public set: string = 'AR';
   public cardImage: string = 'assets/cardback.png';

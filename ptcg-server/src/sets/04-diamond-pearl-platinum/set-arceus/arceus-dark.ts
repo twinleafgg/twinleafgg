@@ -13,15 +13,13 @@ export class ArceusDark extends PokemonCard {
   public retreat = [C];
   protected _tags = [CardTag.ARCEUS];
 
-  public attacks = [
-    {
-      name: 'Prize Count',
-      cost: [D, C],
-      damage: 20,
-      damageCalculation: '+',
-      text: 'If you have more Prize cards left than your opponent, this attack does 20 damage plus 60 more damage. ',
-    },
-  ];
+  public attacks = [{
+    name: 'Prize Count',
+    cost: [D, C],
+    damage: 20,
+    damageCalculation: '+',
+    text: 'If you have more Prize cards left than your opponent, this attack does 20 damage plus 60 more damage. ',
+  }];
 
   public set: string = 'AR';
   public cardImage: string = 'assets/cardback.png';

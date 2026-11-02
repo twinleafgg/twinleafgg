@@ -40,6 +40,9 @@ export class RescueEnergy extends EnergyCard {
       if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       const target = effect.target;
       const cards = target.getPokemons();

@@ -4,7 +4,7 @@
 
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType, CardTag } from '../../../game/store/card/card-types';
-import { PowerType, StoreLike, State, StateUtils } from '../../../game';
+import { PowerType, StoreLike, State, StateUtils, GamePhase } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { WAS_ATTACK_USED, IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
@@ -46,19 +46,23 @@ export class Jynx extends PokemonCard {
     // Ability: Selfish Lips
     // Ref: set-silver-tempest/togedemaru.ts (prizeCount = 0 when KO'd by certain condition)
     // Ref: set-paldea-evolved/glimmora.ts (IS_ABILITY_BLOCKED on KnockOutEffect passive)
-    // If this Pokemon is KO'd by damage from a V Pokemon's attack, opponent takes no prizes
-    // effect.player is the player who KO'd the target (the attacker)
     if (
       effect instanceof KnockOutEffect &&
       effect.target.cards.includes(this) &&
       effect.target.getPokemonCard() === this
     ) {
-      const owner = StateUtils.getOpponent(state, effect.player);
-      if (IS_ABILITY_BLOCKED(store, state, owner, this)) {
+      const player = effect.player;
+      const opponent = StateUtils.getOpponent(state, player);
+      if (state.phase !== GamePhase.ATTACK) {
         return state;
       }
-      // Check if the attacker's active Pokemon is a Pokemon V
-      const attackerCard = effect.player.active.getPokemonCard();
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
+      if (IS_ABILITY_BLOCKED(store, state, player, this)) {
+        return state;
+      }
+      const attackerCard = opponent.active.getPokemonCard();
       if (
         attackerCard &&
         (attackerCard.hasTag(CardTag.POKEMON_V) ||

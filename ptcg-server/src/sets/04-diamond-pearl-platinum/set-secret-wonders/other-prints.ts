@@ -5,6 +5,8 @@ import { Switch } from '../../set-base-set/switch';
 import { DarknessEnergySpecial } from '../../set-neo-genesis/darkness-energy-special';
 import { MetalEnergyN1 } from '../../set-neo-genesis/other-prints';
 import { SuperRod } from '../../10-scarlet-and-violet/set-paldea-evolved/super-rod';
+import { ProfessorRowan } from '../set-diamond-and-pearl/professor-rowan';
+import { Rival } from '../set-diamond-and-pearl/rival';
 
 export class NightMaintenanceSW extends SuperRod {
   public fullName = 'Night Maintenance SW';
@@ -46,5 +48,17 @@ export class DarknessEnergySpecialSW extends DarknessEnergySpecial {
 export class MetalEnergyN1SW extends MetalEnergyN1 {
   public setNumber = '130';
   public fullName: string = 'Metal Energy SW';
+  public set = 'SW';
+}
+
+export class ProfessorRowanSW extends ProfessorRowan {
+  public setNumber = '123';
+  public fullName: string = 'Professor Rowan SW';
+  public set = 'SW';
+}
+
+export class RivalSW extends Rival {
+  public setNumber = '124';
+  public fullName: string = 'Rival SW';
   public set = 'SW';
 }

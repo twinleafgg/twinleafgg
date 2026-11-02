@@ -30,6 +30,9 @@ export class RescueScarf extends TrainerCard {
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof KnockOutEffect && effect.target.tools.includes(this)) {
+      if (!effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
       const player = effect.player;
       const target = effect.target;
       const cards = target.getPokemons();

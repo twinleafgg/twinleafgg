@@ -1,13 +1,11 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
-import { Card, ChooseEnergyPrompt, ChoosePokemonPrompt, GameMessage, PlayerType, PowerType, SlotType, State, StateUtils, StoreLike } from '../../../game';
+import { Card, ChooseEnergyPrompt, ChoosePokemonPrompt, GameMessage, GamePhase, PlayerType, PowerType, SlotType, State, StateUtils, StoreLike } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
 import { KnockOutEffect } from '../../../game/store/effects/game-effects';
 import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { DealDamageEffect, PutDamageEffect } from '../../../game/store/effects/attack-effects';
-import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {DAMAGE_OPPONENT_POKEMON, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DAMAGE_OPPONENT_POKEMON, IS_ABILITY_BLOCKED, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Stoutland extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -36,8 +34,6 @@ export class Stoutland extends PokemonCard {
   public setNumber: string = '176';
   public name = 'Stoutland';
   public fullName = 'Stoutland CEC';
-
-  public damageDealt = false;
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
 
@@ -70,21 +66,16 @@ export class Stoutland extends PokemonCard {
       });
     }
 
-    if ((effect instanceof DealDamageEffect || effect instanceof PutDamageEffect) &&
-      effect.target.cards.includes(this)) {
-      const player = StateUtils.getOpponent(state, effect.player);
-
-      console.log('Entered check for DealDamageEffect/PutDamageEffect');
-
-      if (player.active.getPokemonCard() === this) {
-        this.damageDealt = true;
-        console.log('this.damageDealt inside the DealDamageEffect/PutDamageEffect check: ' + this.damageDealt);
-      }
-    }
-
-    if (effect instanceof KnockOutEffect && effect.target.cards.includes(this) && this.damageDealt) {
+    if (
+      effect instanceof KnockOutEffect &&
+      effect.target.cards.includes(this) &&
+      effect.player.marker.hasMarker(effect.player.DAMAGE_DEALT_MARKER)
+    ) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
+      if (state.phase !== GamePhase.ATTACK || player.active.getPokemonCard() !== this) {
+        return state;
+      }
 
       // Check to see if anything is blocking our Ability
       if (IS_ABILITY_BLOCKED(store, state, player, this)) {
@@ -133,15 +124,6 @@ export class Stoutland extends PokemonCard {
       });
 
       return state;
-    }
-
-    if (effect instanceof EndTurnEffect && effect.player === StateUtils.getOpponent(state, effect.player)) {
-      const cardList = StateUtils.findCardList(state, this);
-      const owner = StateUtils.findOwner(state, cardList);
-
-      if (owner === effect.player) {
-        this.damageDealt = false;
-      }
     }
 
     return state;

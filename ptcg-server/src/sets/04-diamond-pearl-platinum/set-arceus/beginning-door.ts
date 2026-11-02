@@ -1,14 +1,7 @@
-import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { TrainerType } from '../../../game/store/card/card-types';
-import { StoreLike } from '../../../game/store/store-like';
-import { State } from '../../../game/store/state/state';
-import { Effect } from '../../../game/store/effects/effect';
-import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import {
-  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND,
-  MOVE_CARDS,
-} from '../../../game/store/prefabs/prefabs';
-import { PokemonCard } from '../../../game';
+import { TrainerCard, TrainerType, StoreLike, State, PokemonCard } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { MOVE_CARDS, SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND } from "../../../game/store/prefabs/prefabs";
+import { WAS_TRAINER_USED } from "../../../game/store/prefabs/trainer-prefabs";
 
 export class BeginningDoor extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
@@ -17,9 +10,7 @@ export class BeginningDoor extends TrainerCard {
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Beginning Door';
   public fullName: string = 'Beginning Door AR';
-
-  public text: string =
-    'Search your deck for Arceus, show it to your opponent, and put it into your hand. Shuffle your deck afterward.';
+  public text: string = 'Search your deck for Arceus, show it to your opponent, and put it into your hand. Shuffle your deck afterward.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {

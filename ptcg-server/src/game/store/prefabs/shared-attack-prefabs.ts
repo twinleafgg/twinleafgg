@@ -41,8 +41,8 @@ function hasAttackNamed(card: Card, attackName: string): boolean {
 
 /**
  * Reveal the bottom 7 cards of your deck. This attack does 50 damage for each Pokémon
- * revealed that has the Bug Out attack. Matching Pokémon are shuffled back into the
- * deck; other revealed cards are discarded.
+ * revealed that has the Bug Out attack. All revealed Pokémon are shuffled back into
+ * the deck; only the other revealed cards (non-Pokémon) are discarded.
  */
 export function BUG_OUT(
   store: StoreLike,
@@ -60,10 +60,11 @@ export function BUG_OUT(
 
   effect.damage = BUG_OUT_DAMAGE_PER_POKEMON * bugOutPokemon.length;
 
-  bugOutPokemon.forEach(card => player.deck.cards.push(card));
-  revealed
-    .filter(card => !bugOutPokemon.includes(card))
-    .forEach(card => player.discard.cards.push(card));
+  const pokemon = revealed.filter(card => card instanceof PokemonCard);
+  const nonPokemon = revealed.filter(card => !(card instanceof PokemonCard));
+
+  pokemon.forEach(card => player.deck.cards.push(card));
+  nonPokemon.forEach(card => player.discard.cards.push(card));
   SHUFFLE_DECK(store, state, player);
 }
 

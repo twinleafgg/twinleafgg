@@ -1,4 +1,4 @@
-import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, StateUtils, GameLog, Card } from '../../../game';
+import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, StateUtils, GameLog, Card, GamePhase } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { DiscardCardsEffect } from '../../../game/store/effects/attack-effects';
 import { CheckTableStateEffect } from '../../../game/store/effects/check-effects';
@@ -44,8 +44,12 @@ export class Gengar extends PokemonCard {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);
 
+      if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
+        return state;
+      }
+
       // Check if KO was from opponent's attack
-      if (opponent.marker.hasMarker(opponent.DAMAGE_DEALT_MARKER)) {
+      if (player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
         const target = effect.target;
         const pokemonCard = target.getPokemonCard();
 

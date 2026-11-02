@@ -55,8 +55,7 @@ export class Reuniclus extends PokemonCard {
         return state;
       }
 
-      // Only triggers if KO'd by opponent's attack (not your own attack)
-      if (effect.player === player) {
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
         return state;
       }
 

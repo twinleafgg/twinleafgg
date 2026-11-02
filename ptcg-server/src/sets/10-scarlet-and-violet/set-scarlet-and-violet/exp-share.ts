@@ -47,6 +47,9 @@ export class ExpShare extends TrainerCard {
       if (state.phase !== GamePhase.ATTACK || state.players[state.activePlayer] !== opponent) {
         return state;
       }
+      if (!player.marker.hasMarker(player.DAMAGE_DEALT_MARKER)) {
+        return state;
+      }
 
       if (active.marker.hasMarker(this.EXP_SHARE_MARKER)) {
         return state;

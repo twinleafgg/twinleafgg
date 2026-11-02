@@ -1,5 +1,10 @@
 import type { EffectKind, HybridEffectResolution, ServerEffect } from './types';
 import { matchEffectTextPartial, matchedToSelected } from './prefabs/matcher';
+import {
+  energyTypesCompatible,
+  numbersCompatible,
+  substituteNumbersInLines,
+} from './textAccuracy';
 
 let cached: ServerEffect[] | null = null;
 
@@ -137,6 +142,8 @@ function distinctiveTokens(text: string): string[] {
  */
 function isConfidentTextMatch(query: string, effectText: string, score: number): boolean {
   if (score < 0.85) return false;
+  if (!numbersCompatible(query, effectText)) return false;
+  if (!energyTypesCompatible(query, effectText)) return false;
   const qNorm = normalize(query);
   const eNorm = normalize(effectText);
   if (!qNorm || !eNorm) return false;
@@ -144,11 +151,23 @@ function isConfidentTextMatch(query: string, effectText: string, score: number):
   const lenRatio = Math.min(qNorm.length, eNorm.length) / Math.max(qNorm.length, eNorm.length);
   if (lenRatio < 0.45) return false;
 
-  const qDist = distinctiveTokens(query);
+  // Numbers are substituted into copied code; ignore them for token overlap.
+  const qDist = distinctiveTokens(query).filter(token => !/^\d+$/.test(token));
   if (qDist.length === 0) return score >= 0.9;
-  const eDist = new Set(distinctiveTokens(effectText));
+  const eDist = new Set(distinctiveTokens(effectText).filter(token => !/^\d+$/.test(token)));
   const shared = qDist.filter(t => eDist.has(t)).length;
   return shared / qDist.length >= 0.4;
+}
+
+function withSubstitutedNumbers(effect: ServerEffect, query: string): ServerEffect {
+  const effectText = effect.effectText || effect.attackText || '';
+  return {
+    ...effect,
+    body: substituteNumbersInLines(effect.body, effectText, query),
+    helpers: effect.helpers
+      ? substituteNumbersInLines(effect.helpers, effectText, query)
+      : effect.helpers,
+  };
 }
 
 /**
@@ -226,7 +245,7 @@ export async function findServerEffect(
     });
   const best = ranked[0];
   if (!best) return undefined;
-  return { ...best.effect, similarity: best.primary };
+  return withSubstitutedNumbers({ ...best.effect, similarity: best.primary }, text);
 }
 
 /**

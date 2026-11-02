@@ -1,3 +1,8 @@
+import {
+  catalogNumberCandidates,
+  numbersMatchCatalog,
+  toServerSetCode,
+} from './serverSetCodes';
 import type {
   TcgDexAbility,
   TcgDexAttack,
@@ -327,15 +332,25 @@ export async function searchCardsByName(
   return { cards, hasMore };
 }
 
+function catalogSetMatches(set: LocalSet, setCode: string): boolean {
+  const normalizedSet = setCode.trim().toUpperCase();
+  if (!normalizedSet) return false;
+  const serverCode = toServerSetCode(normalizedSet);
+  return (
+    set.id.toUpperCase() === normalizedSet ||
+    set.ptcgoCode?.toUpperCase() === normalizedSet ||
+    toServerSetCode(set.id) === serverCode ||
+    (Boolean(set.ptcgoCode) && toServerSetCode(set.ptcgoCode!) === serverCode)
+  );
+}
+
 export async function findCardsByNameAndSet(name: string, setCode: string): Promise<TcgDexCardResume[]> {
   const normalizedName = name.trim().toLowerCase();
   const normalizedSet = setCode.trim().toUpperCase();
   if (!normalizedName || !normalizedSet) return [];
 
   const sets = await loadAllSets();
-  const matchingSets = sets.filter(
-    set => set.id.toUpperCase() === normalizedSet || set.ptcgoCode?.toUpperCase() === normalizedSet
-  );
+  const matchingSets = sets.filter(set => catalogSetMatches(set, normalizedSet));
   const results: TcgDexCardResume[] = [];
   for (const set of matchingSets) {
     const cards = await loadSetCards(set.id);
@@ -361,12 +376,14 @@ export async function findCardBySetAndNumber(
   if (!normalizedSet || !normalizedNumber) return undefined;
 
   const sets = await loadAllSets();
-  const matchingSets = sets.filter(
-    set => set.id.toUpperCase() === normalizedSet || set.ptcgoCode?.toUpperCase() === normalizedSet
-  );
+  const matchingSets = sets.filter(set => catalogSetMatches(set, normalizedSet));
+  const serverCode = toServerSetCode(normalizedSet);
+  const wantedNumbers = new Set(catalogNumberCandidates(serverCode, normalizedNumber));
   for (const set of matchingSets) {
     const cards = await loadSetCards(set.id);
-    const card = cards.find(c => c.number === normalizedNumber);
+    const card = cards.find(
+      c => wantedNumbers.has(c.number) || numbersMatchCatalog(serverCode, normalizedNumber, c.number)
+    );
     if (card) {
       return {
         id: card.id,

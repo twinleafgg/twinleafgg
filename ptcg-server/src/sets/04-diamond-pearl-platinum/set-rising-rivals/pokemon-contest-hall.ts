@@ -1,32 +1,18 @@
-import { GameError } from '../../../game/game-error';
-import { GameMessage } from '../../../game/game-message';
-import { StateUtils } from '../../../game/store/state-utils';
-import { TrainerCard } from '../../../game/store/card/trainer-card';
+import { Card, ChooseCardsPrompt, GameError, GameMessage, PokemonCardList, State, StateUtils, StoreLike } from '../../../game';
 import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
-import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
-import { Card, ChooseCardsPrompt, PokemonCardList } from '../../../game';
-import { StoreLike } from '../../../game/store/store-like';
-import { State } from '../../../game/store/state/state';
+import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  COIN_FLIP_PROMPT,
-  CONFIRMATION_PROMPT,
-  MOVE_CARD_TO,
-  SHUFFLE_DECK,
-} from '../../../game/store/prefabs/prefabs';
+import { UseStadiumEffect } from '../../../game/store/effects/game-effects';
+import { COIN_FLIP_PROMPT, CONFIRMATION_PROMPT, MOVE_CARD_TO, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
 
 export class PokemonContestHall extends TrainerCard {
+  protected _trainerType = TrainerType.STADIUM;
+  public set: string = 'RR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '93';
-
-  protected _trainerType = TrainerType.STADIUM;
-
-  public set = 'RR';
-  public name = 'Pokémon Contest Hall';
-  public fullName = 'Pokémon Contest Hall RR';
-
-  public text =
-    "Once during each player's turn, if that player's Bench isn't full, the player may flip a coin. If heads, that player searches his or her deck for a Basic Pokémon and puts it onto his or her Bench. If the player does, he or she may search his or her deck for a Pokémon Tool card and attach it to that Pokémon. If that player searched his or her deck, the player shuffles his or her deck afterward.";
+  public name: string = 'Pokémon Contest Hall';
+  public fullName: string = 'Pokémon Contest Hall RR';
+  public text: string = 'Once during each player\'s turn, if that player\'s Bench isn\'t full, the player may flip a coin. If heads, that player searches his or her deck for a Basic Pokémon and puts it onto his or her Bench. If the player does, he or she may search his or her deck for a Pokémon Tool card and attach it to that Pokémon. If that player searched his or her deck, the player shuffles his or her deck afterward.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof UseStadiumEffect && StateUtils.getStadiumCard(state) === this) {
