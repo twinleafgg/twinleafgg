@@ -883,7 +883,8 @@ export function gameReducer(store: StoreLike, state: State, effect: Effect): Sta
       && effect.pokemonCard.powers.some(power => power.powerType === PowerType.ABILITY)) {
       throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
     }
-    const pokemonCard = effect.target.getPokemonCard();
+    // The evolving card is put into play before card handlers run, so remember the card it evolves from.
+    const pokemonCard = effect.previousPokemonCard ?? effect.target.getPokemonCard();
 
     if (pokemonCard === undefined) {
       throw new GameError(GameMessage.INVALID_TARGET);
@@ -902,7 +903,9 @@ export function gameReducer(store: StoreLike, state: State, effect: Effect): Sta
       pokemon: pokemonCard.name,
       card: effect.pokemonCard.name
     });
-    effect.player.hand.moveCardTo(effect.pokemonCard, effect.target);
+    if (!effect.target.cards.includes(effect.pokemonCard)) {
+      effect.player.hand.moveCardTo(effect.pokemonCard, effect.target);
+    }
     effect.target.pokemonPlayedTurn = state.turn;
     effect.target.marker.markers = [];
 

@@ -9,12 +9,8 @@ import { ChangeAvatarAction } from './actions/change-avatar-action';
 import { Effect } from './effects/effect';
 import { PlayPokemonEffect, TrainerEffect } from './effects/play-card-effects';
 import { CheckAttackCostEffect, CheckPokemonPowersEffect, CheckRetreatCostEffect } from './effects/check-effects';
-import { MovedFromActiveToBenchEffect, MovedToActiveEffect, PowerEffect } from './effects/game-effects';
-import {
-  CLEAR_ABILITY_LOCK_ACTIVATION,
-  STAMP_ABILITY_LOCK_ACTIVATION,
-  APPLY_ATTACK_EFFECT_ABILITY_LOCKS,
-} from './prefabs/ability-lock';
+import { EvolveEffect, MovedFromActiveToBenchEffect, MovedToActiveEffect, PowerEffect } from './effects/game-effects';
+import { CLEAR_ABILITY_LOCK_ACTIVATION, STAMP_ABILITY_LOCK_ACTIVATION, APPLY_ATTACK_EFFECT_ABILITY_LOCKS } from './prefabs/ability-lock';
 import { resolveCopyAttackSessions } from './prefabs/copy-attack-delegation';
 import { effectWasBlocked, logAppliedEffect, logPreventedEffect, logResolvedPrompt, stampEffectBlocker } from './prefabs/auto-log';
 import { filterTrainerPromptResult, ResolvingTrainerSource } from './prefabs/trainer-target';
@@ -138,6 +134,10 @@ export class Store implements StoreLike {
   }
 
   public reduceEffect(state: State, effect: Effect): State {
+    if (effect instanceof EvolveEffect) {
+      this.putEvolvingCardIntoPlay(effect);
+    }
+
     // Track Active ability-lock activation order before card handlers run.
     if (effect instanceof MovedToActiveEffect) {
       STAMP_ABILITY_LOCK_ACTIVATION(state, effect.player.active, effect.pokemonCard);
@@ -520,6 +520,14 @@ export class Store implements StoreLike {
       state = this.callReduceEffect(c, this, state, effect);
     });
     return state;
+  }
+
+  private putEvolvingCardIntoPlay(effect: EvolveEffect): void {
+    if (effect.target.cards.includes(effect.pokemonCard)) {
+      return;
+    }
+    effect.previousPokemonCard = effect.target.getPokemonCard();
+    effect.player.hand.moveCardTo(effect.pokemonCard, effect.target);
   }
 
   // Utility function to call reduceEffect with override support
