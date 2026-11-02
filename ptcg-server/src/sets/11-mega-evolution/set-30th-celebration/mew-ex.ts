@@ -28,9 +28,9 @@ export class Mewex extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6a';
+  public set: string = '30C';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '57';
+  public setNumber: string = '66';
   public name: string = 'Mew ex';
   public fullName: string = 'Mew ex 30C';
 
