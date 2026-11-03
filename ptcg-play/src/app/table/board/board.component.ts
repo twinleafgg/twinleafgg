@@ -574,8 +574,9 @@ export class BoardComponent implements OnDestroy, OnChanges, OnInit {
     const slot = SlotType.ACTIVE;
     const target: CardTarget = { player, slot, index: 0 };
 
+    const oneRetreatPerTurn = this.gameState?.state?.rules?.oneRetreatPerTurn !== false;
     const canRetreat = this.bottomPlayer && this.gameState?.state &&
-      this.bottomPlayer.retreatedTurn !== this.gameState.state.turn;
+      (!oneRetreatPerTurn || this.bottomPlayer.retreatedTurn !== this.gameState.state.turn);
     const options = { enableAbility: { useWhenInPlay: true }, enableAttack: true, enableRetreat: canRetreat };
     this.cardsBaseService.showCardInfo({ card, cardList, options, players: [this.topPlayer, this.bottomPlayer].filter(p => p) })
       .then(result => {

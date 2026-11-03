@@ -46,11 +46,11 @@ export function canPlayDualStadium(
   if (!hasBothDualStadiumHalvesInHand(player, card)) {
     return false;
   }
-  if (player.stadiumPlayedTurn === state.turn) {
+  if (state.rules.oneStadiumPerTurn && player.stadiumPlayedTurn === state.turn) {
     return false;
   }
   const stadium = StateUtils.getStadiumCard(state);
-  if (stadium && stadium.name === card.name) {
+  if (!state.rules.allowSameNameStadium && stadium && stadium.name === card.name) {
     return false;
   }
   return true;
@@ -67,12 +67,12 @@ export function assembleDualStadiumFromHand(
     throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
   }
 
-  if (player.stadiumPlayedTurn === state.turn) {
+  if (state.rules.oneStadiumPerTurn && player.stadiumPlayedTurn === state.turn) {
     throw new GameError(GameMessage.STADIUM_ALREADY_PLAYED);
   }
 
   const stadium = StateUtils.getStadiumCard(state);
-  if (stadium && stadium.name === triggeredCard.name) {
+  if (!state.rules.allowSameNameStadium && stadium && stadium.name === triggeredCard.name) {
     throw new GameError(GameMessage.SAME_STADIUM_ALREADY_IN_PLAY);
   }
 

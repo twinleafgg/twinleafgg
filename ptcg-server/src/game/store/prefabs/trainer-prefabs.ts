@@ -230,11 +230,11 @@ export function CAN_PLAY_TRAINER_CARD(
         const isHyperrogueOverPrismTower =
           trainerCard.name === 'Hyperrogue Ange Floette' && stadium?.name === 'Prism Tower';
         // Can't play stadium if one already played this turn (unless Hyperrogue Ange Floette over Prism Tower)
-        if (player.stadiumPlayedTurn === state.turn && !isHyperrogueOverPrismTower) {
+        if (state.rules.oneStadiumPerTurn && player.stadiumPlayedTurn === state.turn && !isHyperrogueOverPrismTower) {
           return false;
         }
         // Can't play same stadium already in play
-        if (stadium && stadium.name === trainerCard.name) {
+        if (!state.rules.allowSameNameStadium && stadium && stadium.name === trainerCard.name) {
           return false;
         }
         break;

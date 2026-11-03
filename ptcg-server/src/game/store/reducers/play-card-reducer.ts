@@ -122,10 +122,10 @@ export function playCardReducer(store: StoreLike, state: State, action: Action):
             }
             const stadium = StateUtils.getStadiumCard(state);
             const isHyperrogueOverPrismTower = handCard.name === 'Hyperrogue Ange Floette' && stadium?.name === 'Prism Tower';
-            if (player.stadiumPlayedTurn === state.turn && !isHyperrogueOverPrismTower) {
+            if (state.rules.oneStadiumPerTurn && player.stadiumPlayedTurn === state.turn && !isHyperrogueOverPrismTower) {
               throw new GameError(GameMessage.STADIUM_ALREADY_PLAYED);
             }
-            if (stadium && stadium.name === handCard.name) {
+            if (!state.rules.allowSameNameStadium && stadium && stadium.name === handCard.name) {
               throw new GameError(GameMessage.SAME_STADIUM_ALREADY_IN_PLAY);
             }
             player.stadiumPlayedTurn = state.turn;

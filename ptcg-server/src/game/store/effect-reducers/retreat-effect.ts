@@ -12,6 +12,7 @@ import { SpecialCondition } from '../card/card-types';
 import { Player } from '../state/player';
 import { PlayerType, SlotType } from '../actions/play-card-action';
 import { PokemonCardList } from '../state/pokemon-card-list';
+import { COIN_FLIP_PROMPT } from '../prefabs/prefabs';
 
 function assertCanRetreat(player: Player, state: State): void {
   const active = player.active;
@@ -26,6 +27,17 @@ function assertCanRetreat(player: Player, state: State): void {
   if (active.cannotRetreatNextTurn || active.cannotRetreatWhileActive) {
     throw new GameError(GameMessage.BLOCKED_BY_EFFECT);
   }
+}
+
+/**
+ * With the Confused retreat rule enabled, a Confused Active must flip a coin before
+ * paying its retreat cost; tails means the retreat fails and nothing is paid.
+ */
+function needsConfusedRetreatFlip(state: State, effect: RetreatEffect | RetreatStartEffect): boolean {
+  if (!state.rules.confusedRetreatFlip || effect.skipConfusionFlip || effect.ignoreStatusConditions) {
+    return false;
+  }
+  return effect.player.active.specialConditions.includes(SpecialCondition.CONFUSED);
 }
 
 function retreatPokemon(store: StoreLike, state: State, effect: RetreatEffect) {
@@ -89,8 +101,19 @@ export function retreatReducer(store: StoreLike, state: State, effect: Effect): 
       throw new GameError(GameMessage.BLOCKED_BY_SPECIAL_CONDITION);
     }
 
-    if (player.retreatedTurn === state.turn) {
+    if (state.rules.oneRetreatPerTurn && player.retreatedTurn === state.turn) {
       throw new GameError(GameMessage.RETREAT_ALREADY_USED);
+    }
+
+    if (needsConfusedRetreatFlip(state, effect)) {
+      const resumed = new RetreatStartEffect(player);
+      resumed.ignoreStatusConditions = effect.ignoreStatusConditions;
+      resumed.skipConfusionFlip = true;
+      return COIN_FLIP_PROMPT(store, state, player, result => {
+        if (result === true) {
+          store.reduceEffect(state, resumed);
+        }
+      });
     }
 
     const checkRetreatCost = new CheckRetreatCostEffect(player);
@@ -159,8 +182,20 @@ export function retreatReducer(store: StoreLike, state: State, effect: Effect): 
       throw new GameError(GameMessage.BLOCKED_BY_SPECIAL_CONDITION);
     }
 
-    if (player.retreatedTurn === state.turn) {
+    if (state.rules.oneRetreatPerTurn && player.retreatedTurn === state.turn) {
       throw new GameError(GameMessage.RETREAT_ALREADY_USED);
+    }
+
+    if (needsConfusedRetreatFlip(state, effect)) {
+      const resumed = new RetreatEffect(player, effect.benchIndex);
+      resumed.ignoreStatusConditions = effect.ignoreStatusConditions;
+      resumed.moveRetreatCostTo = effect.moveRetreatCostTo;
+      resumed.skipConfusionFlip = true;
+      return COIN_FLIP_PROMPT(store, state, player, result => {
+        if (result === true) {
+          store.reduceEffect(state, resumed);
+        }
+      });
     }
 
     const checkRetreatCost = new CheckRetreatCostEffect(effect.player);

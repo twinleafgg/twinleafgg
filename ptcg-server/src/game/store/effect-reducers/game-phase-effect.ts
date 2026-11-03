@@ -171,6 +171,22 @@ function handleSpecialConditions(store: StoreLike, state: State, effect: Between
         player.active.damage += effect.poisonDamage;
         break;
       case SpecialCondition.BURNED:
+        // Old burn rule (2002-2017): flip between turns; heads deals no damage,
+        // tails deals burn damage, and the Pokémon stays Burned either way.
+        if (state.rules.oldBurnRule) {
+          const applyOldBurnDamage = (result: boolean) => {
+            if (result === false) {
+              player.active.damage += effect.burnDamage;
+            }
+          };
+          if (effect.burnFlipResult === true || effect.burnFlipResult === false) {
+            applyOldBurnDamage(effect.burnFlipResult);
+            break;
+          }
+          COIN_FLIP_PROMPT(store, state, player, applyOldBurnDamage);
+          break;
+        }
+
         player.active.damage += effect.burnDamage;
 
         if (effect.burnFlipResult === true) {
