@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
-import { Format, GameSettings, GameState } from 'ptcg-server';
+import { Router } from '@angular/router';
+import { Archetype, Format, GameSettings, GameState } from 'ptcg-server';
 import { forkJoin, of } from 'rxjs';
 import { finalize, map, switchMap } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 import { ApiError } from '../../api/api.error';
 import { DeckListEntry } from '../../api/interfaces/deck.interface';
@@ -13,18 +13,23 @@ import { MainService } from '../../api/services/main.service';
 import { AlertService } from '../../shared/alert/alert.service';
 import { SessionService } from '../../shared/session/session.service';
 import { SelectPopupOption } from '../../shared/alert/select-popup/select-popup.component';
+import { ArchetypeUtils } from '../../deck/deck-archetype-service/archetype.utils';
 import { FormatValidator } from '../../util/formats-validator';
-import { TranslateService } from '@ngx-translate/core';
+import { GAME_RULE_OPTIONS, RuleOption } from '../game-rules';
 
+/**
+ * Full page for starting a game against yourself, reachable from `/games/self-play`.
+ * Uses the same layout as the create game page.
+ */
 @Component({
-  selector: 'ptcg-self-play-game-dialog',
-  templateUrl: './self-play-game-dialog.component.html',
+  selector: 'ptcg-self-play-page',
+  templateUrl: './self-play-page.component.html',
   styleUrls: [
-    '../create-game-popup/create-game-popup.component.scss',
-    './self-play-game-dialog.component.scss'
+    '../create-game-page/create-game-page.component.scss',
+    './self-play-page.component.scss'
   ]
 })
-export class SelfPlayGameDialogComponent implements OnInit {
+export class SelfPlayPageComponent implements OnInit {
 
   public settings = new GameSettings();
   public isAdmin = false;
@@ -33,11 +38,10 @@ export class SelfPlayGameDialogComponent implements OnInit {
   public error: string | null = null;
   public deckId: number | null = null;
   public secondDeckId: number | null = null;
+  public deckEntries: DeckListEntry[] = [];
   public formatValidDecks: SelectPopupOption<number>[] = [];
-  public sandboxAllPokemonBasic = false;
-  public sandboxAttacksCostNoEnergy = false;
-  public sandboxRetreatCostsNoEnergy = false;
-  public unlimitedEnergyAttachments = false;
+
+  public rules: RuleOption[] = GAME_RULE_OPTIONS;
 
   public formats = [
     { value: Format.STANDARD, label: 'LABEL_STANDARD' },
@@ -64,19 +68,17 @@ export class SelfPlayGameDialogComponent implements OnInit {
     { value: 1800, viewValue: 'GAMES_LIMIT_30_MIN' },
   ];
 
-  private decks: DeckListEntry[] = [];
   private formatDefaultDecks: { [format: string]: number } = {};
   private defaultDeckId: number | null = null;
 
   constructor(
-    private dialogRef: MatDialogRef<SelfPlayGameDialogComponent>,
+    private router: Router,
     private deckService: DeckService,
     private mainService: MainService,
     private gameService: GameService,
     private sessionService: SessionService,
     private alertService: AlertService,
-    private translate: TranslateService,
-    private router: Router
+    private translate: TranslateService
   ) {
     this.settings.format = Format.STANDARD;
     this.settings.timeLimit = 1200;
@@ -84,36 +86,20 @@ export class SelfPlayGameDialogComponent implements OnInit {
 
   ngOnInit() {
     this.loadDefaultDeckPreferences();
-    this.sessionService.get(session => {
-      const loggedUserId = session.loggedUserId;
-      const loggedUser = loggedUserId && session.users[loggedUserId];
-      return loggedUser && loggedUser.roleId === 4;
-    }).subscribe(isAdmin => {
-      this.isAdmin = !!isAdmin;
-      this.settings.recordingEnabled = !this.isAdmin;
-    });
 
-    this.loadingDecks = true;
-    this.deckService.getList({ summary: true })
-      .pipe(finalize(() => { this.loadingDecks = false; }))
-      .subscribe({
-        next: response => {
-          this.decks = response.decks || [];
-          this.onFormatSelected(this.settings.format);
-        },
-        error: () => {
-          this.error = this.translate.instant('REACT_ERROR_LOAD_DECKS');
-          this.decks = [];
-          this.formatValidDecks = [];
-        }
-      });
+    const session = this.sessionService.session;
+    const loggedUserId = session && session.loggedUserId;
+    const loggedUser = session && session.users && session.users[loggedUserId];
+    this.isAdmin = !!loggedUser && loggedUser.roleId === 4;
+    this.settings.recordingEnabled = !this.isAdmin;
+
+    this.loadDecks();
   }
 
   public onFormatSelected(format: Format) {
     this.settings.format = format;
-    this.formatValidDecks = this.decks
-      .filter(deck => deck.format.includes(format) && FormatValidator.isDeckValidForFormat(deck, format))
-      .map(deck => ({ value: deck.id, viewValue: deck.name }));
+    this.deckEntries = this.decksForFormat(format);
+    this.formatValidDecks = this.deckEntries.map(deck => ({ value: deck.id, viewValue: deck.name }));
 
     if (this.formatValidDecks.length === 0) {
       this.deckId = null;
@@ -126,6 +112,38 @@ export class SelfPlayGameDialogComponent implements OnInit {
     const nextId = defaultExists ? defaultDeckId : this.formatValidDecks[0].value;
     this.deckId = nextId;
     this.secondDeckId = nextId;
+  }
+
+  public selectDeck(deckId: number) {
+    this.deckId = deckId;
+  }
+
+  public selectSecondDeck(deckId: number) {
+    this.secondDeckId = deckId;
+  }
+
+  public trackByDeckId(index: number, deck: SelectPopupOption<number>): number {
+    return deck.value;
+  }
+
+  public getDeckArchetype(deckId: number): Archetype | Archetype[] {
+    const deckEntry = this.deckEntries.find(deck => deck.id === deckId);
+    if (!deckEntry) {
+      return Archetype.UNOWN;
+    }
+
+    if (deckEntry.manualArchetype1 || deckEntry.manualArchetype2) {
+      const archetypes = [];
+      if (deckEntry.manualArchetype1) {
+        archetypes.push(deckEntry.manualArchetype1);
+      }
+      if (deckEntry.manualArchetype2) {
+        archetypes.push(deckEntry.manualArchetype2);
+      }
+      return archetypes.length > 0 ? archetypes : Archetype.UNOWN;
+    }
+
+    return ArchetypeUtils.getArchetype(deckEntry.deckItems, false);
   }
 
   public onSandboxModeChange(enabled: boolean) {
@@ -145,7 +163,7 @@ export class SelfPlayGameDialogComponent implements OnInit {
     if (this.submitting) {
       return;
     }
-    this.dialogRef.close(false);
+    this.router.navigate(['/games']);
   }
 
   public confirm() {
@@ -162,15 +180,15 @@ export class SelfPlayGameDialogComponent implements OnInit {
       switchMap(([first, second]) => {
         const deck1 = first.deck;
         const deck2 = second.deck;
-        if (!deck1?.cards?.length || !deck2?.cards?.length) {
+        if (!deck1 || !deck1.cards || deck1.cards.length === 0
+          || !deck2 || !deck2.cards || deck2.cards.length === 0) {
           this.error = this.translate.instant('REACT_ERROR_LOAD_DECKS');
           return of(null);
         }
-        const gameSettings = this.buildGameSettings();
         return this.mainService.createSelfPlayGame({
           deck: deck1.cards,
           secondDeck: deck2.cards,
-          gameSettings,
+          gameSettings: this.buildGameSettings(),
           deckId: deck1.id,
           secondDeckId: deck2.id,
           sleeveImagePath: deck1.sleeveImagePath,
@@ -186,14 +204,12 @@ export class SelfPlayGameDialogComponent implements OnInit {
       finalize(() => { this.submitting = false; })
     ).subscribe({
       next: opened => {
-        if (!opened) {
-          return;
+        if (opened) {
+          this.alertService.toast(this.translate.instant('REACT_SELF_PLAY_SNACKBAR'));
         }
-        this.alertService.toast(this.translate.instant('REACT_SELF_PLAY_SNACKBAR'));
-        this.dialogRef.close(true);
       },
       error: (error: ApiError) => {
-        this.error = error?.message || this.translate.instant('REACT_ERROR_CREATE_GAME');
+        this.error = (error && error.message) || this.translate.instant('REACT_ERROR_CREATE_GAME');
       }
     });
   }
@@ -201,9 +217,9 @@ export class SelfPlayGameDialogComponent implements OnInit {
   private joinAndOpen(gameState: GameState) {
     return this.gameService.join(gameState.gameId).pipe(
       map(() => {
-        const local = this.sessionService.session.gameStates.find(
-          g => g.gameId === gameState.gameId && g.deleted === false
-        );
+        const session = this.sessionService.session;
+        const gameStates = session && session.gameStates ? session.gameStates : [];
+        const local = gameStates.find(g => g.gameId === gameState.gameId && g.deleted === false);
         if (!local) {
           this.error = this.translate.instant('REACT_ERROR_CREATE_GAME');
           return false;
@@ -219,23 +235,48 @@ export class SelfPlayGameDialogComponent implements OnInit {
     gs.format = this.settings.format;
     gs.timeLimit = this.settings.timeLimit;
     gs.recordingEnabled = this.settings.recordingEnabled;
+    gs.rules = this.settings.rules;
     gs.sandboxMode = this.isAdmin && this.settings.sandboxMode === true;
     if (gs.sandboxMode) {
-      gs.sandboxAllPokemonBasic = this.sandboxAllPokemonBasic;
-      gs.sandboxAttacksCostNoEnergy = this.sandboxAttacksCostNoEnergy;
-      gs.sandboxRetreatCostsNoEnergy = this.sandboxRetreatCostsNoEnergy;
-      gs.rules.unlimitedEnergyAttachments = this.unlimitedEnergyAttachments;
+      gs.sandboxAllPokemonBasic = this.settings.sandboxAllPokemonBasic;
+      gs.sandboxAttacksCostNoEnergy = this.settings.sandboxAttacksCostNoEnergy;
+      gs.sandboxRetreatCostsNoEnergy = this.settings.sandboxRetreatCostsNoEnergy;
     }
     gs.selfPlay = true;
     return gs;
   }
 
+  private decksForFormat(format: Format): DeckListEntry[] {
+    return this.decks.filter(deck => {
+      return deck.format.includes(format) && FormatValidator.isDeckValidForFormat(deck, format);
+    });
+  }
+
+  private loadDecks() {
+    this.loadingDecks = true;
+    this.deckService.getList({ summary: true })
+      .pipe(finalize(() => { this.loadingDecks = false; }))
+      .subscribe({
+        next: response => {
+          this.decks = response.decks || [];
+          this.onFormatSelected(this.settings.format);
+        },
+        error: () => {
+          this.decks = [];
+          this.deckEntries = [];
+          this.formatValidDecks = [];
+          this.deckId = null;
+          this.secondDeckId = null;
+          this.error = this.translate.instant('REACT_ERROR_LOAD_DECKS');
+        }
+      });
+  }
+
   private clearSandboxOptions() {
     this.settings.sandboxMode = false;
-    this.sandboxAllPokemonBasic = false;
-    this.sandboxAttacksCostNoEnergy = false;
-    this.sandboxRetreatCostsNoEnergy = false;
-    this.unlimitedEnergyAttachments = false;
+    this.settings.sandboxAllPokemonBasic = false;
+    this.settings.sandboxAttacksCostNoEnergy = false;
+    this.settings.sandboxRetreatCostsNoEnergy = false;
   }
 
   private loadDefaultDeckPreferences() {
@@ -271,4 +312,7 @@ export class SelfPlayGameDialogComponent implements OnInit {
     }
     return this.defaultDeckId;
   }
+
+  private decks: DeckListEntry[] = [];
+
 }
