@@ -901,6 +901,7 @@
   "REACT_MY_GAMES_INVITE_TOAST": "{{name}} invited you to a game",
   "REACT_MY_GAMES_INVITE_TOAST_ACTION": "View",
   "REACT_MY_GAMES_BADGE_ARIA": "{{count}} incoming invites",
+  "REACT_GAME_RULES_TITLE": "Game rules",
   "REACT_SELF_PLAY_TITLE": "Play both sides",
   "REACT_SELF_PLAY_DECK_SIDE_A": "Your deck (player 1)",
   "REACT_SELF_PLAY_DECK_SIDE_B": "Opponent deck (player 2)",
