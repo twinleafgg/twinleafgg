@@ -9,23 +9,20 @@ export class LegendaryLavaLakeRight extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.DUAL_STADIUM];
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '76';
-  public name: string = 'Legendary Lava Lake';
+  public setNumber: string = '95';
+  public name: string = 'Legendary Pyroduct';
   public fullName: string = 'Legendary Lava Lake (Right) M6';
-  public text: string =
-    'You can only put this card into play from your hand with the other half of Legendary Lava Lake, and it counts as one Stadium card while in play.\n\n' +
-    "Evolution Pokemon in play (both yours and your opponent's) have no Abilities.";
-  public powers = [
-    {
-      name: 'Stadium Assembly',
-      text: 'Put this card from your hand into play only with the other half of Legendary Lava Lake.',
-      exemptFromAbilityLock: true,
-      useFromHand: true,
-      powerType: PowerType.TRAINER_ABILITY,
-    },
-  ];
+  public text: string = `Evolution Pokémon in play (both yours and your opponent's) have no Abilities.`;
+
+  public powers = [{
+    name: 'Legendary Pyroduct',
+    text: 'You cannot play this card by itself. You must combine 2 different Legendary Pyroduct from your hand to play it as 1 Stadium card.',
+    exemptFromAbilityLock: true,
+    useFromHand: true,
+    powerType: PowerType.TRAINER_ABILITY,
+  }];
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerPowerEffect && effect.power === this.powers[0]) {

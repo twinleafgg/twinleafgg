@@ -14,13 +14,13 @@ export class Kecleon extends PokemonCard {
     cost: [C, C],
     damage: 30,
     damageCalculation: 'x',
-    text: 'Reveal any number of Pokemon from your hand. This attack does 30 damage for each type of Pokemon you revealed in this way.'
+    text: 'Reveal any number of Pokémon from your hand, and this attack does 30 damage for each different type of Pokémon you revealed in this way.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '57';
+  public setNumber: string = '83';
   public name: string = 'Kecleon';
   public fullName: string = 'Kecleon M6';
 

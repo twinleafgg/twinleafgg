@@ -27,9 +27,9 @@ export class Hypno extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '30';
+  public setNumber: string = '44';
   public name: string = 'Hypno';
   public fullName: string = 'Hypno M6';
 

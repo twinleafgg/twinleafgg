@@ -8,23 +8,20 @@ import { TrainerPowerEffect } from '../../../game/store/effects/game-effects';
 export class LegendarySummitRight extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.DUAL_STADIUM];
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '74';
+  public setNumber: string = '97';
   public name: string = 'Legendary Summit';
   public fullName: string = 'Legendary Summit (Right) M6';
-  public text: string =
-    'You can only put this card into play from your hand with the other half of Legendary Summit, and it counts as one Stadium card while in play.\n\n' +
-    "When Knocked Out by damage from an opponent's attack, both player's [C] Pokémon give up one less Prize card.";
-  public powers = [
-    {
-      name: 'Stadium Assembly',
-      text: 'Put this card from your hand into play only with the other half of Legendary Summit.',
-      exemptFromAbilityLock: true,
-      useFromHand: true,
-      powerType: PowerType.TRAINER_ABILITY,
-    },
-  ];
+  public text: string = `Whenever a [C] Pokémon (yours or your opponent's) is Knocked Out by damage from an attack from the opponent's Pokémon, that player takes 1 fewer Prize card.`;
+
+  public powers = [{
+    name: 'Legendary Summit',
+    text: 'You cannot play this card by itself. You must combine 2 different Legendary Summit from your hand to play it as 1 Stadium card.',
+    exemptFromAbilityLock: true,
+    useFromHand: true,
+    powerType: PowerType.TRAINER_ABILITY,
+  }];
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerPowerEffect && effect.power === this.powers[0]) {

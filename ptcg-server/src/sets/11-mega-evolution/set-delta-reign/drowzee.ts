@@ -17,8 +17,8 @@ export class Drowzee extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '29';
+  public set: string = 'DLR';
+  public setNumber: string = '43';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Drowzee';
   public fullName: string = 'Drowzee M6';

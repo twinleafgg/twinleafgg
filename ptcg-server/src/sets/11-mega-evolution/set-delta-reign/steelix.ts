@@ -14,20 +14,20 @@ export class Steelix extends PokemonCard {
   public powers = [{
     name: 'High Density Armor',
     powerType: PowerType.ABILITY,
-    text: 'If this Pokemon has max HP, the damage this Pokemon receives from your opponent\'s attacks is reduced by 60.'
+    text: 'If this Pokémon has full HP, it takes 60 less damage from attacks from your opponent\'s Pokémon (after applying Weakness and Resistance).'
   }];
 
   public attacks = [{
-    name: 'Hard Swing',
+    name: 'Tough Swing',
     cost: [F, F, C, C],
     damage: 150,
     text: 'This attack\'s damage isn\'t affected by Resistance.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '38';
+  public setNumber: string = '52';
   public name: string = 'Steelix';
   public fullName: string = 'Steelix M6';
 

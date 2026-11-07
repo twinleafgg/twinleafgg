@@ -10,16 +10,16 @@ export class Azurill extends PokemonCard {
   public retreat = [];
 
   public attacks = [{
-    name: 'Charge',
+    name: 'Bouncy-Bounce Charge',
     cost: [],
     damage: 0,
-    text: 'Search your deck for an Energy card and attach it to 1 of your Benched Pokemon. Then, shuffle your deck.'
+    text: 'Search your deck for an Energy card and attach it to 1 of your Benched Pokémon. Then, shuffle your deck.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '54';
+  public setNumber: string = '80';
   public name: string = 'Azurill';
   public fullName: string = 'Azurill M6';
 

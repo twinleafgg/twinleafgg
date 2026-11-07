@@ -21,11 +21,11 @@ export class Vespiquen extends PokemonCard {
     cost: [C, C, C],
     damage: 80,
     damageCalculation: '+',
-    text: 'If your opponent\'s Active Pokemon is an Evolution Pokemon, this attack does 80 more damage.'
+    text: 'If your opponent\'s Active Pokémon is an Evolution Pokémon, this attack does 80 more damage.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '7';
   public name: string = 'Vespiquen';

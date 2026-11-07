@@ -1,21 +1,7 @@
-import {
-  CardTag,
-  CardType,
-  GameError,
-  GameMessage,
-  PokemonCard,
-  PowerType,
-  Stage,
-  State,
-  StoreLike,
-} from '../../../game';
-import { Effect } from '../../../game/store/effects/effect';
-import { AttackEffect } from '../../../game/store/effects/game-effects';
-import {
-  IS_ABILITY_BLOCKED,
-  THIS_POKEMON_DOES_DAMAGE_TO_ITSELF,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardTag, CardType, PowerType, StoreLike, State, GameError, GameMessage } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { AttackEffect } from "../../../game/store/effects/game-effects";
+import { IS_ABILITY_BLOCKED, WAS_ATTACK_USED, THIS_POKEMON_DOES_DAMAGE_TO_ITSELF } from "../../../game/store/prefabs/prefabs";
 
 export class MegaGolurkex extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -27,27 +13,23 @@ export class MegaGolurkex extends PokemonCard {
   public resistance = [{ type: F, value: -30 }];
   public retreat = [C, C, C];
 
-  public powers = [
-    {
-      name: 'Power Limiter',
+  public powers = [{
+      name: 'Restricted Activation',
       powerType: PowerType.ABILITY,
-      text: "This Pokemon can't attack unless you have 10 cards or more in your hand.",
-    },
-  ];
+      text: "This Pokémon can't use attacks unless you have 10 or more cards in your hand.",
+    }];
 
-  public attacks = [
-    {
-      name: 'Goliath Punch',
+  public attacks = [{
+      name: 'Goliath\'s Punch',
       cost: [P, P],
       damage: 300,
-      text: 'This Pokemon does 30 damage to itself.',
-    },
-  ];
+      text: 'This Pokémon also does 30 damage to itself.',
+    }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '33';
+  public setNumber: string = '47';
   public name: string = 'Mega Golurk ex';
   public fullName: string = 'Mega Golurk ex M6';
 

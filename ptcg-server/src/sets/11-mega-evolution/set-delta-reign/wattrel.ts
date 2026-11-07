@@ -15,14 +15,13 @@ export class Wattrel extends PokemonCard {
     name: 'Agility',
     cost: [L],
     damage: 10,
-    text: 'Flip a coin. If heads, during your opponent\'s next turn, prevent all damage from and effects of attacks done to this Pokemon.'
+    text: 'Flip a coin. If heads, during your opponent\'s next turn, prevent all damage from and effects of attacks done to this Pokémon.'
   }];
 
   public regulationMark: string = 'J';
-
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '27';
+  public setNumber: string = '40';
   public name: string = 'Wattrel';
   public fullName: string = 'Wattrel M6';
 

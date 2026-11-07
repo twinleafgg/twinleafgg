@@ -16,17 +16,17 @@ export class Groudon extends PokemonCard {
     text: ''
   },
   {
-    name: 'Savage Ground',
+    name: 'Brutal Lands',
     cost: [F, F, C],
     damage: 0,
     damageCalculation: '+',
-    text: 'If there is a Stadium in play with "Legendary" in its name, this attack does 170 more damage.'
+    text: 'If a Stadium that has "Legendary" in its name is in play, this attack does 170 more damage.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '39';
+  public setNumber: string = '53';
   public name: string = 'Groudon';
   public fullName: string = 'Groudon M6';
 

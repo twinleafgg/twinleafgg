@@ -14,14 +14,13 @@ export class Heatmor extends PokemonCard {
     name: 'Destructive Flame',
     cost: [R],
     damage: 30,
-    text: 'Flip a coin. If heads, discard an Energy from your opponent\'s Active Pokemon.'
+    text: 'Flip a coin. If heads, discard an Energy from your opponent\'s Active Pokémon.'
   }];
 
   public regulationMark: string = 'J';
-
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '16';
+  public setNumber: string = '24';
   public name: string = 'Heatmor';
   public fullName: string = 'Heatmor M6';
 

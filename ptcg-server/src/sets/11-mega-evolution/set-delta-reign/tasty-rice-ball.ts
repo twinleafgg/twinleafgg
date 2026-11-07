@@ -8,13 +8,13 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 export class DeliciousRiceBalls extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '63';
+  public set: string = 'DLR';
+  public setNumber: string = '101';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Delicious Rice Balls';
+  public name: string = 'Tasty Rice Ball';
   public fullName: string = 'Delicious Rice Balls M6';
   public text: string =
-    'Heal 30 damage from your Active Pokémon. Heal 30 more damage for each Delicious Rice Balls card in your discard pile (not including this card).';
+    'Heal 30 damage from your Active Pokémon. For each Tasty Rice Ball card (not including this card) in your discard pile, heal 30 more damage.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     return player.active.damage > 0;

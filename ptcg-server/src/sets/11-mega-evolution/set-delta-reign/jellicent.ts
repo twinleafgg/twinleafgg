@@ -1,6 +1,6 @@
 import { CardType, ChooseCardsPrompt, GameError, GameMessage, PokemonCard, PowerType, Stage, State, StoreLike, WaitPrompt } from "../../../game";
 import { Effect } from "../../../game/store/effects/effect";
-import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, DRAW_CARDS, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
+import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, DRAW_CARDS, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 /** Keep in sync with board draw flight (~0.7s deck→stage + ~0.3s stage→hand). */
 const DRAW_ANIMATION_WAIT_MS = 1100;
@@ -17,20 +17,20 @@ export class Jellicent extends PokemonCard {
     name: 'Deep Sea Draw',
     powerType: PowerType.ABILITY,
     useWhenInPlay: true,
-    text: 'You may use this Ability once during your turn. Draw a card. If you do, you may then put a card from your hand at the bottom of your deck.'
+    text: 'Once during your turn, you may use this Ability. Draw a card. If you do, you may put a card from your hand on the bottom of your deck.'
   }];
 
   public attacks = [{
-    name: 'Slap',
+    name: 'Gentle Slap',
     cost: [W, C, C],
     damage: 100,
     text: ''
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '20';
+  public setNumber: string = '28';
   public name: string = 'Jellicent';
   public fullName: string = 'Jellicent M6';
 

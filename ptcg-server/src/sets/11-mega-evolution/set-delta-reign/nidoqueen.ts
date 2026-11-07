@@ -12,23 +12,23 @@ export class Nidoqueen extends PokemonCard {
   public retreat = [C, C, C];
 
   public powers = [{
-    name: 'Motherly Summon',
+    name: 'Maternal Call',
     powerType: PowerType.ABILITY,
     useWhenInPlay: true,
-    text: 'Once during your turn, you may flip a coin. If heads, switch 1 of your opponent\'s Benched Pokemon with their Active Pokemon.'
+    text: 'Once during your turn, you may use this Ability. Flip a coin. If heads, switch in 1 of your opponent\'s Benched Pokémon to the Active Spot.'
   }];
 
   public attacks = [{
     name: 'Giga Impact',
     cost: [D, C, C],
     damage: 150,
-    text: 'This Pokemon can\'t attack during your next turn.'
+    text: 'During your next turn, this Pokémon can\'t use attacks.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '43';
+  public setNumber: string = '57';
   public name: string = 'Nidoqueen';
   public fullName: string = 'Nidoqueen M6';
 

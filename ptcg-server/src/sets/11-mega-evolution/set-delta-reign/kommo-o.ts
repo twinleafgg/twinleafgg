@@ -1,7 +1,7 @@
 import { AttachEnergyPrompt, CardList, CardType, ChooseCardsPrompt, EnergyType, GameError, GameMessage, PlayerType, PokemonCard, PowerType, SlotType, Stage, State, StateUtils, StoreLike, SuperType } from "../../../game";
 import { CheckPokemonTypeEffect } from "../../../game/store/effects/check-effects";
 import { Effect } from "../../../game/store/effects/effect";
-import {WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
+import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK, REMOVE_MARKER_AT_END_OF_TURN, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class KommoO extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -12,10 +12,10 @@ export class KommoO extends PokemonCard {
   public retreat = [C, C];
 
   public powers = [{
-    name: 'Scale Beat',
+    name: 'Beat Scales',
     powerType: PowerType.ABILITY,
     useWhenInPlay: true,
-    text: 'Once during your turn, you may look at the top 6 cards of your deck and attach any number of Basic Energy cards you find there to your Dragon Pokemon in any way you like. Then, shuffle the other cards back into your deck.'
+    text: 'Once during your turn, you may use this Ability. Look at the top 6 cards of your deck and attach any number of Basic Energy cards you find there to your [N] Pokémon in any way you like. Shuffle the other cards back into your deck.'
   }];
 
   public attacks = [{
@@ -26,7 +26,7 @@ export class KommoO extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '52';
   public name: string = 'Kommo-o';

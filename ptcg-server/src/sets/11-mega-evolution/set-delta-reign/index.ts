@@ -10,7 +10,7 @@ import { Cacturne } from './cacturne';
 import { Combee } from './combee';
 import { CustomVest } from './custom-vest';
 import { Cyclizar } from './cyclizar';
-import { DeliciousRiceBalls } from './delicious-rice-balls';
+import { DeliciousRiceBalls } from './tasty-rice-ball';
 import { Druddigon } from './druddigon';
 import { Drowzee } from './drowzee';
 import { Electabuzz } from './electabuzz';

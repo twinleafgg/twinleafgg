@@ -14,7 +14,7 @@ export class Swablu extends PokemonCard {
     name: 'Run Around',
     cost: [C],
     damage: 0,
-    text: 'Switch this Pokemon with 1 of your Benched Pokemon.'
+    text: 'Switch this Pokémon with 1 of your Benched Pokémon.'
   },
   {
     name: 'Peck',
@@ -24,9 +24,9 @@ export class Swablu extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '55';
+  public setNumber: string = '81';
   public name: string = 'Swablu';
   public fullName: string = 'Swablu M6';
 

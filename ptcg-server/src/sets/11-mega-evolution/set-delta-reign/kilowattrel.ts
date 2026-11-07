@@ -16,7 +16,7 @@ export class Kilowattrel extends PokemonCard {
     cost: [L],
     damage: 30,
     damageCalculation: '+',
-    text: 'If this Pokemon evolved from Wattrel this turn, this attack does 90 more damage.'
+    text: 'If this Pokémon evolved from Wattrel during this turn, this attack does 90 more damage.'
   },
   {
     name: 'Speed Dive',
@@ -26,9 +26,9 @@ export class Kilowattrel extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '28';
+  public setNumber: string = '41';
   public name: string = 'Kilowattrel';
   public fullName: string = 'Kilowattrel M6';
 

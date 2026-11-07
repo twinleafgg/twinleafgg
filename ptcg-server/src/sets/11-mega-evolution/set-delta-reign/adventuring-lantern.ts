@@ -87,13 +87,12 @@ function* playCard(
 export class AdventuringLantern extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '64';
+  public set: string = 'DLR';
+  public setNumber: string = '90';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Adventuring Lantern';
+  public name: string = 'Adventure Lantern';
   public fullName: string = 'Adventuring Lantern M6';
-  public text: string =
-    'Search your deck for a Basic [R] Energy and a Basic [L] Energy, reveal them, and put them into your hand. Then, shuffle your deck.';
+  public text: string = 'Search your deck for a Basic [R] Energy card and a Basic [L] Energy card, reveal them, and put them into your hand. Then, shuffle your deck.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.deck.cards.length === 0) {

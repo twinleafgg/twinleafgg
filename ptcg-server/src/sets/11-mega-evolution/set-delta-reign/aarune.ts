@@ -21,13 +21,12 @@ import {
 export class Aarune extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '68';
+  public set: string = 'DLR';
+  public setNumber: string = '89';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Aarune';
   public fullName: string = 'Aarune M6';
-  public text: string =
-    'Search your deck for up to 3 Supporter or Stadium cards in any combination, reveal them, and put them into your hand. Then, shuffle your deck.';
+  public text: string = 'Search your deck for up to 3 in any combination of Supporter and Stadium cards, reveal them, and put them into your hand. Then, shuffle your deck.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {
@@ -80,7 +79,7 @@ export class Aarune extends TrainerCard {
           if (cards.length > 0) {
             MOVE_CARDS(store, state, player.deck, player.hand, { cards, sourceCard: this });
             SHOW_CARDS_TO_PLAYER(store, state, opponent, cards);
-            
+
           }
 
           MOVE_CARDS(store, state, player.supporter, player.discard, {

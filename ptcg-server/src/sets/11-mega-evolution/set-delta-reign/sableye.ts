@@ -1,25 +1,8 @@
-import {
-  CardList,
-  CardType,
-  ChooseCardsPrompt,
-  ChoosePokemonPrompt,
-  GameMessage,
-  PlayerType,
-  SlotType,
-  Stage,
-  State,
-  StoreLike,
-  SuperType,
-} from '../../../game';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
-import {
-  SHOW_CARDS_TO_PLAYER,
-  MOVE_CARDS,
-  SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { SHOW_CARDS_TO_PLAYER, MOVE_CARDS, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { Stage, CardType, StoreLike, State, CardList, ChooseCardsPrompt, GameMessage, SuperType, ChoosePokemonPrompt, PlayerType, SlotType } from '../../../game';
 
 export class Sableye extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -32,18 +15,18 @@ export class Sableye extends PokemonCard {
     name: 'Lure Out',
     cost: [D],
     damage: 0,
-    text: 'Reveal the top 5 cards of your opponent\'s deck. You may choose any number of Basic Pokémon you find there and put them onto their Bench. Your opponent shuffles the other cards back into their deck.',
+    text: 'Reveal the top 5 cards of your opponent\'s deck. You may choose any number of Basic Pokémon you find there and put those Pokémon onto their Bench. Your opponent shuffles the other cards back into their deck.',
   },
   {
-    name: 'Sinister Eyes',
+    name: 'Ominous Eyes',
     cost: [D, C],
     damage: 0,
     text: 'Put 5 damage counters on 1 of your opponent\'s Pokémon.',
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '46';
+  public set: string = 'DLR';
+  public setNumber: string = '60';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Sableye';
   public fullName: string = 'Sableye M6';

@@ -19,10 +19,9 @@ export class HakamoO extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '51';
+  public setNumber: string = '74';
   public name: string = 'Hakamo-o';
   public fullName: string = 'Hakamo-o M6';
 

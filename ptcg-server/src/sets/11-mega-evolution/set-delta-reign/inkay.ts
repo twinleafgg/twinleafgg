@@ -18,8 +18,8 @@ export class Inkay extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '47';
+  public set: string = 'DLR';
+  public setNumber: string = '68';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Inkay';
   public fullName: string = 'Inkay M6';

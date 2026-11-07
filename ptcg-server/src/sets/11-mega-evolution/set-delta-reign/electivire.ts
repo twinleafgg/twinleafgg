@@ -15,20 +15,20 @@ export class Electivire extends PokemonCard {
     name: 'Body Slam',
     cost: [C, C],
     damage: 30,
-    text: 'Flip a coin. If heads, your opponent\'s Active Pokemon is now Paralyzed.'
+    text: 'Flip a coin. If heads, your opponent\'s Active Pokémon is now Paralyzed.'
   }, {
-    name: 'Voltage Hammer',
+    name: 'Voltaic Hammer',
     cost: [L, L, C, C],
     damage: 60,
     damageCalculation: 'x',
-    text: 'Discard any number of Basic Energy from this Pokemon. This attack does 60 damage for each Energy discarded in this way.'
+    text: 'Discard any amount of Basic Energy from this Pokémon, and this attack does 60 damage for each card you discarded in this way.'
   }];
 
   public regulationMark: string = 'J';
 
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '23';
+  public setNumber: string = '31';
   public name: string = 'Electivire';
   public fullName: string = 'Electivire M6';
 

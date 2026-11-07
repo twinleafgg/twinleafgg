@@ -14,13 +14,13 @@ export class Pincurchin extends PokemonCard {
     cost: [C, C],
     damage: 20,
     damageCalculation: 'x',
-    text: 'This attack does 20 damage for each Energy attached to all of your opponent\'s Pokemon.'
+    text: 'This attack does 20 damage for each Energy attached to all of your opponent\'s Pokémon.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '26';
+  public setNumber: string = '36';
   public name: string = 'Pincurchin';
   public fullName: string = 'Pincurchin M6';
 

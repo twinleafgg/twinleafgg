@@ -13,21 +13,21 @@ export class Thundurus extends PokemonCard {
   public retreat = [C];
 
   public powers = [{
-    name: 'Incarnate Union',
+    name: 'Incarnate Solidarity',
     powerType: PowerType.ABILITY,
-    text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the cost of attacks used by this Pokémon.',
+    text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the costs of attacks used by this Pokémon.',
   }];
 
   public attacks = [{
-    name: 'Thunder Edge',
+    name: 'Thunderous Edge',
     cost: [L, C, C],
     damage: 90,
-    text: 'Ignore all effects on your opponent\'s Active Pokémon for this attack\'s damage.',
+    text: 'This attack\'s damage isn\'t affected by any effects on your opponent\'s Active Pokémon.',
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '25';
+  public set: string = 'DLR';
+  public setNumber: string = '35';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Thundurus';
   public fullName: string = 'Thundurus M6';

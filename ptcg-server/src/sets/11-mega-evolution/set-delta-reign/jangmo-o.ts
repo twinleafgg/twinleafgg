@@ -13,13 +13,13 @@ export class JangmoO extends PokemonCard {
     name: 'Hard Head',
     cost: [L, F],
     damage: 30,
-    text: 'During your opponent\'s next turn, this Pokemon takes 30 less damage from attacks (after applying Weakness and Resistance).'
+    text: 'During your opponent\'s next turn, this Pokémon takes 30 less damage from attacks(after applying Weakness and Resistance).'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '50';
+  public setNumber: string = '73';
   public name: string = 'Jangmo-o';
   public fullName: string = 'Jangmo-o M6';
 

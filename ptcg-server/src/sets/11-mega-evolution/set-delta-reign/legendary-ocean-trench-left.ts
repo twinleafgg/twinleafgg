@@ -10,23 +10,20 @@ export class LegendaryOceanTrenchLeft extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.STADIUM;
   protected _tags = [CardTag.DUAL_STADIUM];
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '71';
-  public name: string = 'Legendary Ocean Trench';
+  public name: string = 'Legendary Trench';
   public fullName: string = 'Legendary Ocean Trench (Left) M6';
-  public text: string =
-    "You can only put this card into play from your hand with the other half of Legendary Ocean Trench, and it counts as one Stadium card while in play.\n\nWhen a Pokémon in play is healed (both yours or your opponent's), double the amount of damage healed.";
+  public text: string = `Whenever a Pokémon (yours or your opponent's) is healed, double the amount of damage healed.`;
 
-  public powers = [
-    {
-      name: 'Stadium Assembly',
-      text: 'Put this card from your hand into play only with the other half of Legendary Ocean Trench.',
-      exemptFromAbilityLock: true,
-      useFromHand: true,
-      powerType: PowerType.TRAINER_ABILITY,
-    },
-  ];
+  public powers = [{
+    name: 'Legendary Trench',
+    text: 'You cannot play this card by itself. You must combine 2 different Legendary Trench from your hand to play it as 1 Stadium card.',
+    exemptFromAbilityLock: true,
+    useFromHand: true,
+    powerType: PowerType.TRAINER_ABILITY,
+  }];
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerPowerEffect && effect.power === this.powers[0]) {

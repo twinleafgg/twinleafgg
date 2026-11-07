@@ -1,27 +1,9 @@
-import {
-  AttachEnergyPrompt,
-  Attack,
-  CardTarget,
-  GameError,
-  GameMessage,
-  PlayerType,
-  ShuffleDeckPrompt,
-  SlotType,
-  State,
-  StateUtils,
-  StoreLike,
-  SuperType,
-} from '../../../game';
-import { CardType, EnergyType, TrainerType } from '../../../game/store/card/card-types';
-import { ColorlessCostReducer } from '../../../game/store/card/pokemon-interface';
-import { TrainerCard } from '../../../game/store/card/trainer-card';
-import {
-  CheckAttackCostEffect,
-  CheckPokemonAttacksEffect,
-} from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import { AttackEffect } from '../../../game/store/effects/game-effects';
-import { IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { State, CardTarget, PlayerType, TrainerCard, TrainerType, Attack, CardType, StoreLike, GameError, GameMessage, ShuffleDeckPrompt, AttachEnergyPrompt, SlotType, SuperType, EnergyType, StateUtils } from "../../../game";
+import { ColorlessCostReducer } from "../../../game/store/card/pokemon-interface";
+import { CheckAttackCostEffect, CheckPokemonAttacksEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { AttackEffect } from "../../../game/store/effects/game-effects";
+import { IS_TOOL_BLOCKED, MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 function buildCapHolderBlockedTo(player: State['players'][number], capName: string): CardTarget[] {
   const blocked: CardTarget[] = [];
@@ -46,22 +28,19 @@ function countCapHolders(player: State['players'][number], capName: string): num
 export class MegaRayquazaCap extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '66';
+  public set: string = 'DLR';
+  public setNumber: string = '100';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mega Rayquaza Cap';
   public fullName: string = 'Mega Rayquaza Cap M6';
+    public text: string = 'The Pokémon this card is attached to can use the attack on this card. (You still need the necessary Energy to use this attack.)';
 
-  public attacks: Attack[] = [
-    {
+  public attacks: Attack[] = [{
       name: 'Delta Gift',
       cost: [CardType.COLORLESS],
       damage: 0,
-      text: 'For each of your Pokémon in play that has a Mega Rayquaza Cap attached to it, search your deck for a Basic Energy and attach it to that Pokémon. Then, shuffle your deck.',
-    },
-  ];
-
-  public text: string = 'The Pokémon this card is attached to can use the attack on this card.';
+      text: 'For each of your Pokémon that has a Mega Rayquaza Cap attached, search your deck for a Basic Energy card and attach it to that Pokémon. Then, shuffle your deck.',
+    }];
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     // Ref: set-paradox-rift/technical-machine-blindside.ts (tool attack grant)

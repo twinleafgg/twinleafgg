@@ -1,25 +1,7 @@
-import {
-  CardTag,
-  CardType,
-  GameError,
-  GameMessage,
-  PokemonCard,
-  PokemonCardList,
-  PowerType,
-  Stage,
-  State,
-  StateUtils,
-  StoreLike,
-} from '../../../game';
-import { Effect } from '../../../game/store/effects/effect';
-import { HealEffect } from '../../../game/store/effects/game-effects';
-import {
-  WAS_POWER_USED,
-  IS_ABILITY_BLOCKED,
-  USE_ABILITY_ONCE_PER_TURN,
-  ABILITY_USED,
-  REMOVE_MARKER_AT_END_OF_TURN,
-} from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardTag, CardType, PowerType, StoreLike, State, GameError, GameMessage, StateUtils, PokemonCardList } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { HealEffect } from "../../../game/store/effects/game-effects";
+import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, REMOVE_MARKER_AT_END_OF_TURN } from "../../../game/store/prefabs/prefabs";
 
 export class Wishiwashiex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -29,27 +11,23 @@ export class Wishiwashiex extends PokemonCard {
   public weakness = [{ type: L }];
   public retreat = [C, C, C];
 
-  public powers = [
-    {
+  public powers = [{
       name: 'Ocean Gain',
       useWhenInPlay: true,
       powerType: PowerType.ABILITY,
-      text: 'You may use this Ability once during your turn if this Pokémon is in the Active Spot. Heal 50 damage from this Pokémon.',
-    },
-  ];
+      text: 'Once during your turn, if this Pokémon is in the Active Spot, you may use this Ability. Heal 50 damage from this Pokémon.',
+    }];
 
-  public attacks = [
-    {
+  public attacks = [{
       name: 'Hydro Splash',
       cost: [W, W, W, C],
       damage: 220,
       text: '',
-    },
-  ];
+    }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '21';
+  public set: string = 'DLR';
+  public setNumber: string = '29';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Wishiwashi ex';
   public fullName: string = 'Wishiwashi ex M6';

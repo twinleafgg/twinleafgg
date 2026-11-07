@@ -17,16 +17,16 @@ export class Kyogre extends PokemonCard {
     text: ''
   },
   {
-    name: 'Savage Whirlpool',
+    name: 'Brutal Whirlpool',
     cost: [W, W, C],
     damage: 100,
-    text: 'If there is a Stadium in play with "Legendary" in its name, this attack also does 50 damage to each of your opponent\'s Benched Pokemon.'
+    text: 'If a Stadium that has "Legendary" in its name is in play, this attack also does 50 damage to each of your opponent\'s Benched Pokémon. (Don\'t apply Weakness and Resistance for Benched Pokémon.)'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '18';
+  public setNumber: string = '26';
   public name: string = 'Kyogre';
   public fullName: string = 'Kyogre M6';
 

@@ -14,22 +14,22 @@ export class MegaRayquazaex extends PokemonCard {
   public retreat = [C, C];
 
   public powers = [{
-    name: 'Champion\'s Roar',
+    name: 'Ruler\'s Roar',
     powerType: PowerType.ABILITY,
-    text: 'When you play this Pokémon from your hand onto your Bench during your turn, you may use this Ability. Look at the top 4 cards of your deck and attach a Basic Energy you find there to this Pokémon. Shuffle the remaining cards and put them on the bottom of your deck.',
+    text: 'Once during your turn, when you play this Pokémon from your hand onto your Bench, you may use this Ability. Look at the top 4 cards of your deck and attach a Basic Energy card you find there to this Pokémon. Shuffle the other cards and put them on the bottom of your deck.',
   }];
 
   public attacks = [{
-    name: 'Storm Emeralda',
+    name: 'Storm Emerald',
     cost: [R, L, C],
     damage: 50,
     damageCalculation: 'x',
-    text: 'This attack does 50 damage times the number of [R] and [L] Energy attached to all of your Pokémon in play.',
+    text: 'This attack does 50 damage for each [R] Energy and each [L] Energy attached to all of your Pokémon.',
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '58';
+  public set: string = 'DLR';
+  public setNumber: string = '84';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mega Rayquaza ex';
   public fullName: string = 'Mega Rayquaza ex M6';

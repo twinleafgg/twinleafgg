@@ -13,22 +13,22 @@ export class Ariados extends PokemonCard {
   public retreat = [C];
 
   public attacks = [{
-    name: 'Sharp Poison',
+    name: 'Tormenting Poison',
     cost: [D],
     damage: 0,
-    text: 'Your opponent\'s Active Pokemon is now Poisoned. During Pokemon Checkup, put 4 damage counters on that Pokemon instead of 1.'
+    text: 'Your opponent\'s Active Pokémon is now Poisoned.During Pokémon Checkup, place 4 damage counters on that Pokémon instead of 1.'
   },
   {
-    name: 'Covert Needle',
+    name: 'Stealthy Sting',
     cost: [C, C, C],
     damage: 80,
-    text: 'During your opponent\'s next turn, prevent all damage done to this Pokemon by attacks from Basic Pokemon.'
+    text: 'During your opponent\'s next turn, prevent all damage done to this Pokémon by attacks from Basic Pokémon.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '45';
+  public setNumber: string = '59';
   public name: string = 'Ariados';
   public fullName: string = 'Ariados M6';
 

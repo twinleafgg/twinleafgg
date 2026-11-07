@@ -20,13 +20,13 @@ export class Torkoal extends PokemonCard {
     name: 'Combustion Blast',
     cost: [R, R, C],
     damage: 120,
-    text: 'During your next turn, this Pokemon can\'t use this attack.'
+    text: 'During your next turn, this Pokémon can\'t use Combustion Blast.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '14';
+  public setNumber: string = '22';
   public name: string = 'Torkoal';
   public fullName: string = 'Torkoal M6';
 
