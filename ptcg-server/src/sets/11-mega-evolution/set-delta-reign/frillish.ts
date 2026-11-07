@@ -17,7 +17,7 @@ export class Frillish extends PokemonCard {
 
   public regulationMark = 'J';
   public set: string = 'DLR';
-  public setNumber: string = '19';
+  public setNumber: string = '27';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Frillish';
   public fullName: string = 'Frillish M6';

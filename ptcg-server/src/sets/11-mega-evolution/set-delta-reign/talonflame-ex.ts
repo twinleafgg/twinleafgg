@@ -14,23 +14,23 @@ export class Talonflameex extends PokemonCard {
   public retreat = [];
 
   public powers = [{
-      name: 'Excited Dive',
-      powerType: PowerType.ABILITY,
-      useFromHand: true,
-      useFromHandToBench: true,
-      text: 'Once during your turn, if this Pokémon is in your hand, and if you have any [C] Mega Evolution Pokémon ex in play, you may use this Ability. Put this Pokémon onto your Bench.',
-    }];
+    name: 'Excited Dive',
+    powerType: PowerType.ABILITY,
+    useFromHand: true,
+    useFromHandToBench: true,
+    text: 'Once during your turn, if this Pokémon is in your hand, and if you have any [C] Mega Evolution Pokémon ex in play, you may use this Ability. Put this Pokémon onto your Bench.',
+  }];
 
   public attacks = [{
-      name: 'Talon Hunt',
-      cost: [C, C],
-      damage: 150,
-      text: 'You may search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck.',
-    }];
+    name: 'Talon Hunt',
+    cost: [C, C],
+    damage: 150,
+    text: 'You may search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck.',
+  }];
 
   public regulationMark: string = 'J';
   public set: string = 'DLR';
-  public setNumber: string = '62';
+  public setNumber: string = '88';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Talonflame ex';
   public fullName: string = 'Talonflame ex M6';

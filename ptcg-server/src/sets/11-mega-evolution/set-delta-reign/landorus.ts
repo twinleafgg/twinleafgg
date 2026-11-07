@@ -26,7 +26,7 @@ export class Landorus extends PokemonCard {
 
   public regulationMark: string = 'J';
   public set: string = 'DLR';
-  public setNumber: string = '40';
+  public setNumber: string = '54';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Landorus';
   public fullName: string = 'Landorus M6';

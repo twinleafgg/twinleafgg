@@ -28,7 +28,7 @@ export class KommoO extends PokemonCard {
   public regulationMark: string = 'J';
   public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '52';
+  public setNumber: string = '75';
   public name: string = 'Kommo-o';
   public fullName: string = 'Kommo-o M6';
 

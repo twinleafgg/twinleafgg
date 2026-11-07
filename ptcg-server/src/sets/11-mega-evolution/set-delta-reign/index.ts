@@ -51,7 +51,47 @@ import { MegaGolisopodex } from './mega-golisopod-ex';
 import { MegaMalamarex } from './mega-malamar-ex';
 import { MegaRayquazaCap } from './mega-rayquaza-cap';
 import { MegaRayquazaex } from './mega-rayquaza-ex';
-import { EeveeIR, EmceesHypeM6, SprigatitoIR, ZoruaIR } from './other-prints';
+import {
+  AaruneSIR,
+  AaruneUR,
+  AdventuringLanternUR,
+  AltariaIR,
+  AzurillIR,
+  BubbleWaterEnergyUR,
+  CustomVestUR,
+  EeveeIR,
+  ElectivireIR,
+  EmceesHypeM6,
+  EmceesHypeUR,
+  EnamorusIR,
+  GroudonIR,
+  GrowingGrassEnergyUR,
+  GrowlitheIR,
+  HeatRotomexUR,
+  InkayIR,
+  KecleonIR,
+  MagmortarIR,
+  MasquerainIR,
+  MegaGolisopodexSIR,
+  MegaGolisopodexUR,
+  MegaGolurkexSIR,
+  MegaGolurkexUR,
+  MegaMalamarexUR,
+  MegaRayquazaexMHR,
+  MegaRayquazaexSIR,
+  NitroFireEnergyUR,
+  PincurchinIR,
+  PokemonCatcherUR,
+  RaikouexSIR,
+  RaikouexUR,
+  SprigatitoIR,
+  TalonflameexUR,
+  TateAndLizasTrainingUR,
+  WishiwashiexUR,
+  ZinniasTrustSIR,
+  ZinniasTrustUR,
+  ZoruaIR,
+} from './other-prints';
 import { Nidoqueen } from './nidoqueen';
 import { NidoranFemale } from './nidoran-f';
 import { Nidorina } from './nidorina';
@@ -209,7 +249,42 @@ export const setDeltaReign: Card[] = [
   new Tauros(),
 
   // Other Prints
-  new SprigatitoIR(),
-  new ZoruaIR(),
-  new EeveeIR(),
+  new MasquerainIR(), // 104
+  new SprigatitoIR(), // 105
+  new GrowlitheIR(), // 106
+  new MagmortarIR(), // 107
+  new ElectivireIR(), // 108
+  new PincurchinIR(), // 109
+  new EnamorusIR(), // 110
+  new GroudonIR(), // 111
+  new ZoruaIR(), // 112
+  new InkayIR(), // 113
+  new EeveeIR(), // 114
+  new AzurillIR(), // 115
+  new AltariaIR(), // 116
+  new KecleonIR(), // 117
+  new MegaGolisopodexUR(), // 118
+  new HeatRotomexUR(), // 119
+  new WishiwashiexUR(), // 120
+  new RaikouexUR(), // 121
+  new MegaGolurkexUR(), // 122
+  new MegaMalamarexUR(), // 123
+  new TalonflameexUR(), // 124
+  new AaruneUR(), // 125
+  new AdventuringLanternUR(), // 126
+  new CustomVestUR(), // 127
+  new EmceesHypeUR(), // 128
+  new PokemonCatcherUR(), // 129
+  new TateAndLizasTrainingUR(), // 130
+  new ZinniasTrustUR(), // 131
+  new BubbleWaterEnergyUR(), // 132
+  new GrowingGrassEnergyUR(), // 133
+  new NitroFireEnergyUR(), // 134
+  new MegaGolisopodexSIR(), // 135
+  new RaikouexSIR(), // 136
+  new MegaGolurkexSIR(), // 137
+  new MegaRayquazaexSIR(), // 138
+  new AaruneSIR(), // 139
+  new ZinniasTrustSIR(), // 140
+  new MegaRayquazaexMHR(), // 141
 ];

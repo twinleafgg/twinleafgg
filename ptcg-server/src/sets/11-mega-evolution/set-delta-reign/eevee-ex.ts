@@ -31,7 +31,7 @@ export class Eeveeex extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'DLR';
+  public set: string = 'MEE';
   public setNumber: string = '9';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Eevee ex';

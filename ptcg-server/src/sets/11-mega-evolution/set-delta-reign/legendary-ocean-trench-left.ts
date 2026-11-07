@@ -12,7 +12,7 @@ export class LegendaryOceanTrenchLeft extends TrainerCard {
   public regulationMark: string = 'J';
   public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '71';
+  public setNumber: string = '98';
   public name: string = 'Legendary Trench';
   public fullName: string = 'Legendary Ocean Trench (Left) M6';
   public text: string = `Whenever a Pokémon (yours or your opponent's) is healed, double the amount of damage healed.`;

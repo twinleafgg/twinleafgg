@@ -26,7 +26,7 @@ export class Pawmot extends PokemonCard {
 
   public regulationMark = 'J';
   public set: string = 'DLR';
-  public setNumber: string = '5';
+  public setNumber: string = '39';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Pawmot';
   public fullName: string = 'Pawmot MEE';
