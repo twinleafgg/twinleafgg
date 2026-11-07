@@ -18,18 +18,18 @@ export class Zoroarkex extends PokemonCard {
     cost: [D],
     damage: 20,
     damageCalculation: 'x',
-    text: 'This attack does 20 damage times the number of Pokémon you have in play.',
+    text: 'This attack does 20 damage for each of your Pokémon in play.',
   },
   {
-    name: 'Slash Down',
+    name: 'Slashing Strike',
     cost: [D, C, C],
     damage: 210,
-    text: "During your next turn, this Pokémon can't use Slash Down.",
+    text: "During your next turn, this Pokémon can't use Slashing Strike.",
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEZ';
-  public setNumber: string = '7';
+  public set: string = 'DLR';
+  public setNumber: string = '67';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Zoroark ex';
   public fullName: string = 'Zoroark ex MEZ';
@@ -44,9 +44,9 @@ export class Zoroarkex extends PokemonCard {
       effect.damage = 20 * pokemonInPlay;
     }
 
-    // Slash Down
+    // Slashing Strike
     if (WAS_ATTACK_USED(effect, 1, this)) {
-      effect.player.active.cannotUseAttacksNextTurnPending.push('Slash Down');
+      effect.player.active.cannotUseAttacksNextTurnPending.push('Slashing Strike');
     }
 
     return state;

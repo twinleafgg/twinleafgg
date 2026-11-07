@@ -1,15 +1,6 @@
-import { PokemonCard } from '../../../game/store/card/pokemon-card';
-import { Stage, CardType, EnergyType, SuperType } from '../../../game/store/card/card-types';
-import { EnergyCard, GameError, GameMessage, PowerType, SlotType, StoreLike, State } from '../../../game';
-import { Effect } from '../../../game/store/effects/effect';
-import {
-  ABILITY_USED,
-  ATTACH_X_TYPE_ENERGY_FROM_DISCARD_TO_1_OF_YOUR_POKEMON,
-  IS_ABILITY_BLOCKED,
-  REMOVE_MARKER_AT_END_OF_TURN,
-  USE_ABILITY_ONCE_PER_TURN,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, GameError, GameMessage, SuperType, EnergyCard, EnergyType, SlotType } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { WAS_POWER_USED, IS_ABILITY_BLOCKED, USE_ABILITY_ONCE_PER_TURN, ABILITY_USED, ATTACH_X_TYPE_ENERGY_FROM_DISCARD_TO_1_OF_YOUR_POKEMON, REMOVE_MARKER_AT_END_OF_TURN } from "../../../game/store/prefabs/prefabs";
 
 export class Pawmot extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -20,10 +11,10 @@ export class Pawmot extends PokemonCard {
   public retreat = [C];
 
   public powers = [{
-    name: 'Power Plant Touch',
+    name: 'Generator\'s Touch',
     useWhenInPlay: true,
     powerType: PowerType.ABILITY,
-    text: 'Once during your turn, you may attach a Basic [L] Energy from your discard pile to 1 of your Pokémon.'
+    text: 'Once during your turn, you may use this Ability. Attach a Basic [L] Energy card from your discard pile to 1 of your Pokémon.'
   }];
 
   public attacks = [{
@@ -34,7 +25,7 @@ export class Pawmot extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
+  public set: string = 'DLR';
   public setNumber: string = '5';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Pawmot';

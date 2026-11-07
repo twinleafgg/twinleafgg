@@ -22,12 +22,12 @@ export class Jolteon extends PokemonCard {
     name: 'Thunderbolt',
     cost: [L, L, L],
     damage: 220,
-    text: 'Discard all Energy attached to this Pokémon.'
+    text: 'Discard all Energy from to this Pokémon.'
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
-  public setNumber: string = '1';
+  public set: string = 'DLR';
+  public setNumber: string = '32';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Jolteon';
   public fullName: string = 'Jolteon MEE';

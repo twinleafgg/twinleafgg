@@ -3,38 +3,40 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { HEAL_X_DAMAGE_FROM_THIS_POKEMON } from '../../../game/store/prefabs/attack-effects';
 
-export class Miraidon extends PokemonCard {
+export class Eevee extends PokemonCard {
+
   public stage: Stage = Stage.BASIC;
-  public cardType: CardType[] = [L];
-  public hp: number = 120;
+  public cardType: CardType[] = [C];
+  public hp: number = 70;
   public weakness = [{ type: F }];
   public retreat = [C];
 
   public attacks = [{
-    name: 'Claw Slash',
-    cost: [L, C],
-    damage: 50,
-    text: ''
+    name: 'Nap',
+    cost: [C],
+    damage: 0,
+    text: 'Heal 20 damage from this Pokémon.'
   },
   {
-    name: 'Flash Bolt',
-    cost: [L, L, C],
-    damage: 120,
-    text: 'During your next turn, this Pokémon can\'t use this attack.'
+    name: 'Headbutt',
+    cost: [C],
+    damage: 10,
+    text: ''
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
-  public setNumber: string = '6';
+  public set: string = 'DLR';
+  public setNumber: string = '8';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Miraidon';
-  public fullName: string = 'Miraidon MEE';
+  public name: string = 'Eevee';
+  public fullName: string = 'Eevee MEE';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Flash Bolt
-    if (WAS_ATTACK_USED(effect, 1, this)) {
-      effect.player.active.cannotUseAttacksNextTurnPending.push('Flash Bolt');
+    // Nap
+    if (WAS_ATTACK_USED(effect, 0, this)) {
+      HEAL_X_DAMAGE_FROM_THIS_POKEMON(20, effect, store, state);
     }
 
     return state;

@@ -13,11 +13,11 @@ export class Liepard extends PokemonCard {
   public retreat = [C];
 
   public attacks = [{
-    name: 'Pursuit Claw',
+    name: 'Follow-Up Claw',
     cost: [D],
     damage: 20,
     damageCalculation: 'x',
-    text: 'This attack does 20 damage times the number of damage counters on your opponent\'s Active Pokémon.'
+    text: 'This attack does 20 damage for each damage counter on your opponent\'s Active Pokémon.'
   },
   {
     name: 'Slash',
@@ -27,8 +27,8 @@ export class Liepard extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEZ';
-  public setNumber: string = '5';
+  public set: string = 'DLR';
+  public setNumber: string = '65';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Liepard';
   public fullName: string = 'Liepard MEZ';

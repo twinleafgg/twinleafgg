@@ -11,10 +11,10 @@ export class Delibird extends PokemonCard {
   public retreat = [C];
 
   public powers = [{
-    name: 'Energy Present',
+    name: 'Energizing Present',
     useWhenInPlay: true,
     powerType: PowerType.ABILITY,
-    text: 'Once during your turn, if this Pokémon is in the Active Spot, you may look at the top 6 cards of your deck, choose an Energy you find there, reveal it, and put it into your hand. Shuffle the remaining cards and put them on the bottom of your deck.'
+    text: 'Once during your turn, if this Pokémon is in the Active Spot, you may use this Ability. Look at the top 6 cards of your deck, reveal an Energy card you find there, and put it into your hand. Shuffle the other cards and put them on the bottom of your deck.'
   }];
 
   public attacks = [{
@@ -25,8 +25,8 @@ export class Delibird extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
-  public setNumber: string = '10';
+  public set: string = 'DLR';
+  public setNumber: string = '79';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Delibird';
   public fullName: string = 'Delibird MEE';

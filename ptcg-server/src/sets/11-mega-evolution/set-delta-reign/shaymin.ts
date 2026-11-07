@@ -20,8 +20,8 @@ export class Shaymin extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEM';
-  public setNumber: string = '1';
+  public set: string = 'DLR';
+  public setNumber: string = '8';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Shaymin';
   public fullName: string = 'Shaymin MEM';

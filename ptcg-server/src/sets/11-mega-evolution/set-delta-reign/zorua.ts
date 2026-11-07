@@ -22,8 +22,8 @@ export class Zorua extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEZ';
-  public setNumber: string = '6';
+  public set: string = 'DLR';
+  public setNumber: string = '66';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Zorua';
   public fullName: string = 'Zorua MEZ';

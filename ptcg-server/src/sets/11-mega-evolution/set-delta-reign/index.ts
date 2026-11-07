@@ -51,7 +51,7 @@ import { MegaGolisopodex } from './mega-golisopod-ex';
 import { MegaMalamarex } from './mega-malamar-ex';
 import { MegaRayquazaCap } from './mega-rayquaza-cap';
 import { MegaRayquazaex } from './mega-rayquaza-ex';
-import { EmceesHypeM6 } from './other-prints';
+import { EeveeIR, EmceesHypeM6, SprigatitoIR, ZoruaIR } from './other-prints';
 import { Nidoqueen } from './nidoqueen';
 import { NidoranFemale } from './nidoran-f';
 import { Nidorina } from './nidorina';
@@ -75,6 +75,33 @@ import { Wattrel } from './wattrel';
 import { Wimpod } from './wimpod';
 import { Wishiwashiex } from './wishiwashi-ex';
 import { ZinniasTrust } from './zinnias-trust';
+import { Arboliva } from './arboliva';
+import { Carvanha } from './carvanha';
+import { Darkrai } from './darkrai';
+import { Delibird } from './delibird';
+import { Dolliv } from './dolliv';
+import { Eevee } from './eevee';
+import { Eeveeex } from './eevee-ex';
+import { Floragato } from './floragato';
+import { Jolteon } from './jolteon';
+import { Liepard } from './liepard';
+import { Meowscaradaex } from './meowscarada-ex';
+import { Miraidon } from './miraidon';
+import { Morpeko } from './morpeko';
+import { Pawmi } from './pawmi';
+import { Pawmo } from './pawmo';
+import { Pawmot } from './pawmot';
+import { Purrloin } from './purrloin';
+import { Rotom } from './rotom';
+import { Sharpedo } from './sharpedo';
+import { Shaymin } from './shaymin';
+import { Smoliv } from './smoliv';
+import { Sprigatito } from './sprigatito';
+import { Tauros } from './tauros';
+import { Virizion } from './virizion';
+import { Zarude } from './zarude';
+import { Zoroarkex } from './zoroark-ex';
+import { Zorua } from './zorua';
 
 export const setDeltaReign: Card[] = [
   new Heracross(),
@@ -153,4 +180,36 @@ export const setDeltaReign: Card[] = [
   new LegendarySummitRight(),
   new LegendaryLavaLakeLeft(),
   new LegendaryLavaLakeRight(),
+    new Eevee(),
+  new Jolteon(),
+  new Pawmi(),
+  new Pawmo(),
+  new Pawmot(),
+  new Eeveeex(),
+  new Delibird(),
+  new Sprigatito(),
+  new Floragato(),
+  new Meowscaradaex(),
+  new Smoliv(),
+  new Dolliv(),
+  new Arboliva(),
+  new Carvanha(),
+  new Sharpedo(),
+  new Darkrai(),
+  new Purrloin(),
+  new Liepard(),
+  new Zorua(),
+  new Zoroarkex(),
+  new Morpeko(),
+  new Zarude(),
+  new Shaymin(),
+  new Virizion(),
+  new Rotom(),
+  new Miraidon(),
+  new Tauros(),
+
+  // Other Prints
+  new SprigatitoIR(),
+  new ZoruaIR(),
+  new EeveeIR(),
 ];

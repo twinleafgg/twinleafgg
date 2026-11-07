@@ -22,10 +22,10 @@ export class Arboliva extends PokemonCard {
   public retreat = [C, C];
 
   public powers = [{
-    name: 'Oil Slip',
+    name: 'Slippery Oil',
     useWhenInPlay: true,
     powerType: PowerType.ABILITY,
-    text: 'Once during your turn, you may switch your opponent\'s Active Pokémon with 1 of their Benched Pokémon. (Your opponent chooses which Benched Pokémon to switch.)'
+    text: 'Once during your turn, you may use this Ability. Switch out your opponent\'s Active Pokémon to the Bench. (Your opponent chooses the new Active Pokémon.)'
   }];
 
   public attacks = [{
@@ -36,8 +36,8 @@ export class Arboliva extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEM';
-  public setNumber: string = '8';
+  public set: string = 'DLR';
+  public setNumber: string = '17';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Arboliva';
   public fullName: string = 'Arboliva MEM';

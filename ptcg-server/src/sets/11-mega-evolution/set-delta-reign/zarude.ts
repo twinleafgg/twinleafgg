@@ -18,16 +18,16 @@ export class Zarude extends PokemonCard {
     text: ''
   },
   {
-    name: 'Special Whip',
+    name: 'Deadly Whip',
     cost: [D, C],
     damage: 50,
     damageCalculation: '+',
-    text: 'Flip 2 coins. If both are heads, this attack does 150 more damage.'
+    text: 'Flip 2 coins. If both of them are heads, this attack does 150 more damage.'
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEZ';
-  public setNumber: string = '9';
+  public set: string = 'DLR';
+  public setNumber: string = '71';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Zarude';
   public fullName: string = 'Zarude MEZ';

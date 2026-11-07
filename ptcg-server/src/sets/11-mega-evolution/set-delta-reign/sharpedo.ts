@@ -17,12 +17,12 @@ export class Sharpedo extends PokemonCard {
     name: 'Crunch',
     cost: [D, C],
     damage: 60,
-    text: 'Flip a coin. If heads, discard an Energy card attached to your opponent\'s Active Pokémon.'
+    text: 'Flip a coin. If heads, discard an Energy from your opponent\'s Active Pokémon.'
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEZ';
-  public setNumber: string = '2';
+  public set: string = 'DLR';
+  public setNumber: string = '62';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Sharpedo';
   public fullName: string = 'Sharpedo MEZ';

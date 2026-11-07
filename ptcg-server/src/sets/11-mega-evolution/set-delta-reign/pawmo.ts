@@ -17,8 +17,8 @@ export class Pawmo extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
-  public setNumber: string = '4';
+  public set: string = 'DLR';
+  public setNumber: string = '38';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Pawmo';
   public fullName: string = 'Pawmo MEE';

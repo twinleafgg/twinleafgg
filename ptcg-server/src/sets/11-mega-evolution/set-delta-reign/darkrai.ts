@@ -12,10 +12,10 @@ export class Darkrai extends PokemonCard {
   public retreat = [C, C];
 
   public attacks = [{
-    name: 'Shadow Cloak',
+    name: 'Shadow-Clad',
     cost: [D],
     damage: 0,
-    text: 'Search your deck for 2 Basic [D] Energy and attach them to this Pokémon. Then, shuffle your deck.'
+    text: 'Search your deck for up to 2 Basic [D] Energy cards and attach them to this Pokémon. Then, shuffle your deck.'
   },
   {
     name: 'Dark Cutter',
@@ -25,8 +25,8 @@ export class Darkrai extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEZ';
-  public setNumber: string = '3';
+  public set: string = 'DLR';
+  public setNumber: string = '63';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Darkrai';
   public fullName: string = 'Darkrai MEZ';

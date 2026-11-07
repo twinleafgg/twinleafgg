@@ -19,8 +19,8 @@ export class Rotom extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
-  public setNumber: string = '2';
+  public set: string = 'DLR';
+  public setNumber: string = '34';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Rotom';
   public fullName: string = 'Rotom MEE';

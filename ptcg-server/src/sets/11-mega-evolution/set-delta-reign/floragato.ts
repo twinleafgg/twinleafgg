@@ -1,25 +1,25 @@
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Stage, CardType } from '../../../game/store/card/card-types';
 
-export class Dolliv extends PokemonCard {
+export class Floragato extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
-  public evolvesFrom = 'Smoliv';
+  public evolvesFrom = 'Sprigatito';
   public cardType: CardType[] = [G];
   public hp: number = 90;
   public weakness = [{ type: R }];
   public retreat = [C];
 
   public attacks = [{
-    name: 'Leaf Step',
-    cost: [G],
-    damage: 40,
+    name: 'Slash',
+    cost: [G, G],
+    damage: 60,
     text: ''
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEM';
-  public setNumber: string = '7';
+  public set: string = 'DLR';
+  public setNumber: string = '13';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Dolliv';
-  public fullName: string = 'Dolliv MEM';
+  public name: string = 'Floragato';
+  public fullName: string = 'Floragato MEM';
 }

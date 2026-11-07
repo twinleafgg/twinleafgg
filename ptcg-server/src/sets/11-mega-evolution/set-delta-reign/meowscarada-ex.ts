@@ -25,8 +25,8 @@ export class Meowscaradaex extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEM';
-  public setNumber: string = '5';
+  public set: string = 'DLR';
+  public setNumber: string = '14';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Meowscarada ex';
   public fullName: string = 'Meowscarada ex MEM';

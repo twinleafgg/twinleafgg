@@ -25,8 +25,8 @@ export class Virizion extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEM';
-  public setNumber: string = '2';
+  public set: string = 'DLR';
+  public setNumber: string = '9';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Virizion';
   public fullName: string = 'Virizion MEM';

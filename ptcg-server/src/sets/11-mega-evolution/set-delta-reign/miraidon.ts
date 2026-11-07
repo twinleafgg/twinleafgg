@@ -4,32 +4,37 @@ import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
-export class Tauros extends PokemonCard {
+export class Miraidon extends PokemonCard {
   public stage: Stage = Stage.BASIC;
-  public cardType: CardType[] = [C];
-  public hp: number = 130;
+  public cardType: CardType[] = [L];
+  public hp: number = 120;
   public weakness = [{ type: F }];
-  public retreat = [C, C];
+  public retreat = [C];
 
   public attacks = [{
-    name: 'Raging Horns',
-    cost: [C, C],
+    name: 'Claw Slash',
+    cost: [L, C],
     damage: 50,
-    damageCalculation: '+',
-    text: 'This attack does 10 more damage for each damage counter on this Pokémon.'
+    text: ''
+  },
+  {
+    name: 'Flashing Bolt',
+    cost: [L, L, C],
+    damage: 120,
+    text: 'During your next turn, this Pokémon can\'t use Flashing Bolt.'
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
-  public setNumber: string = '7';
+  public set: string = 'DLR';
+  public setNumber: string = '42';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Tauros';
-  public fullName: string = 'Tauros MEE';
+  public name: string = 'Miraidon';
+  public fullName: string = 'Miraidon MEE';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Raging Horns
-    if (WAS_ATTACK_USED(effect, 0, this)) {
-      effect.damage += effect.player.active.damage;
+    // Flash Bolt
+    if (WAS_ATTACK_USED(effect, 1, this)) {
+      effect.player.active.cannotUseAttacksNextTurnPending.push('Flashing Bolt');
     }
 
     return state;

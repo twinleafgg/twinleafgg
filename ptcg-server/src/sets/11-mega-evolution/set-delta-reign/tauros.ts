@@ -3,34 +3,33 @@ import { Stage, CardType } from '../../../game/store/card/card-types';
 import { StoreLike, State } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
-import { FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE } from '../../../game/store/prefabs/attack-effects';
 
-export class Pawmi extends PokemonCard {
+export class Tauros extends PokemonCard {
   public stage: Stage = Stage.BASIC;
-  public cardType: CardType[] = [L];
-  public hp: number = 60;
+  public cardType: CardType[] = [C];
+  public hp: number = 130;
   public weakness = [{ type: F }];
-  public retreat = [C];
+  public retreat = [C, C];
 
   public attacks = [{
-    name: 'Quick Attack',
-    cost: [L],
-    damage: 10,
+    name: 'Raging Horns',
+    cost: [C, C],
+    damage: 50,
     damageCalculation: '+',
-    text: 'Flip a coin. If heads, this attack does 20 more damage.'
+    text: 'This attack does 10 more damage for each damage counter on this Pokémon.'
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEE';
-  public setNumber: string = '3';
+  public set: string = 'DLR';
+  public setNumber: string = '77';
   public cardImage: string = 'assets/cardback.png';
-  public name: string = 'Pawmi';
-  public fullName: string = 'Pawmi MEE';
+  public name: string = 'Tauros';
+  public fullName: string = 'Tauros MEE';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Quick Attack
+    // Raging Horns
     if (WAS_ATTACK_USED(effect, 0, this)) {
-      FLIP_A_COIN_IF_HEADS_DEAL_MORE_DAMAGE(store, state, effect, 20);
+      effect.damage += effect.player.active.damage;
     }
 
     return state;

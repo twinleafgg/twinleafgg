@@ -16,8 +16,8 @@ export class Purrloin extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'J-MEZ';
-  public setNumber: string = '4';
+  public set: string = 'DLR';
+  public setNumber: string = '64';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Purrloin';
   public fullName: string = 'Purrloin MEZ';
