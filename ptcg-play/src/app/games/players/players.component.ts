@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { map } from 'rxjs/operators';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 
 import { SessionService } from '../../shared/session/session.service';
@@ -14,7 +13,6 @@ import { AlertService } from '../../shared/alert/alert.service';
 import { DeckService } from '../../api/services/deck.service';
 import { MainService } from '../../api/services/main.service';
 import { GameService } from '../../api/services/game.service';
-import { SelfPlayGameDialogComponent } from '../self-play-game-dialog/self-play-game-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -33,7 +31,6 @@ export class PlayersComponent implements OnInit {
   constructor(
     private alertService: AlertService,
     private deckService: DeckService,
-    private dialog: MatDialog,
     private mainService: MainService,
     private sessionService: SessionService,
     private translate: TranslateService,
@@ -77,15 +74,15 @@ export class PlayersComponent implements OnInit {
   }
 
   public openSelfPlay() {
-    this.dialog.open(SelfPlayGameDialogComponent, {
-      width: '640px',
-      maxWidth: '95vw'
-    });
+    this.router.navigate(['/games/self-play']);
   }
 
   public createGame(invitedId?: number) {
-    // Navigate back to main games page to use matchmaking
-    this.router.navigate(['/games']);
+    if (invitedId) {
+      this.router.navigate(['/games/create', invitedId]);
+    } else {
+      this.router.navigate(['/games/create']);
+    }
   }
 
   banUser(userId: number) {

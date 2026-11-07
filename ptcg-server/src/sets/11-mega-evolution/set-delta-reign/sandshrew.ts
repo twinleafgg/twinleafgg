@@ -1,6 +1,6 @@
 import { Card, CardType, ChooseCardsPrompt, GameMessage, PokemonCard, PokemonCardList, Stage, State, StateUtils, StoreLike, SuperType } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { SHUFFLE_DECK, WAS_ATTACK_USED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class Sandshrew extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -13,13 +13,13 @@ export class Sandshrew extends PokemonCard {
     name: 'Ascension',
     cost: [F],
     damage: 0,
-    text: 'Search your deck for a card that evolves from this Pokemon and put it onto this Pokemon to evolve it. Then, shuffle your deck.'
+    text: 'Search your deck for a card that evolves from this Pokémon and put it onto this Pokémon to evolve it. Then, shuffle your deck.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '35';
+  public setNumber: string = '49';
   public name: string = 'Sandshrew';
   public fullName: string = 'Sandshrew M6';
 

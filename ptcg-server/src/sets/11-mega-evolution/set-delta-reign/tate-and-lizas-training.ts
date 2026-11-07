@@ -3,18 +3,17 @@ import { TrainerType } from '../../../game/store/card/card-types';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import {DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { DRAW_CARDS, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class TateAndLizasTraining extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '70';
+  public set: string = 'DLR';
+  public setNumber: string = '102';
   public cardImage: string = 'assets/cardback.png';
   public name: string = "Tate & Liza's Training";
   public fullName: string = "Tate & Liza's Training M6";
-  public text: string =
-    'Draw 2 cards. Then, if there is a Stadium in play with "Legendary" in its name, put this card back into your hand instead of discarding it.';
+  public text: string = 'Draw 2 cards. If you drew any cards in this way, and if a Stadium that has "Legendary" in its name is in play, put this Tate & Liza\'s Training into your hand instead of the discard pile.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {

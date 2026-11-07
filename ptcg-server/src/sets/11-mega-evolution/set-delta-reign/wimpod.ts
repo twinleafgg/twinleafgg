@@ -1,17 +1,7 @@
-import {
-  CardTag,
-  CardType,
-  PlayerType,
-  PokemonCard,
-  PowerType,
-  Stage,
-  State,
-  StateUtils,
-  StoreLike,
-} from '../../../game';
-import { CheckRetreatCostEffect } from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import { IS_ABILITY_BLOCKED } from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardType, PowerType, StoreLike, State, StateUtils, PlayerType, CardTag } from "../../../game";
+import { CheckRetreatCostEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { IS_ABILITY_BLOCKED } from "../../../game/store/prefabs/prefabs";
 
 export class Wimpod extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -20,26 +10,22 @@ export class Wimpod extends PokemonCard {
   public weakness = [{ type: R }];
   public retreat = [C, C, C];
 
-  public powers = [
-    {
+  public powers = [{
       name: 'Punk Out',
       powerType: PowerType.ABILITY,
-      text: "If your opponent has any Pokémon ex in play, this Pokémon's Retreat Cost is 0.",
-    },
-  ];
+      text: "If your opponent has any Pokémon ex in play, this Pokémon has no Retreat Cost.",
+    }];
 
-  public attacks = [
-    {
+  public attacks = [{
       name: 'Ram',
       cost: [G],
       damage: 10,
       text: '',
-    },
-  ];
+    }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '8';
+  public set: string = 'DLR';
+  public setNumber: string = '10';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Wimpod';
   public fullName: string = 'Wimpod M6';

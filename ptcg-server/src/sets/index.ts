@@ -187,7 +187,6 @@ export * from './10-scarlet-and-violet/set-black-bolt-white-flare';
 export * from './11-mega-evolution/set-mega-evolution-promos';
 export * from './11-mega-evolution/set-mega-evolution';
 export * from './11-mega-evolution/set-mega-evolution-energy';
-export * from './11-mega-evolution/set-mega-starter-deck';
 export * from './11-mega-evolution/set-phantasmal-flames';
 export * from './11-mega-evolution/set-ascended-heroes';
 export * from './11-mega-evolution/set-perfect-order';

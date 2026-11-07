@@ -17,16 +17,16 @@ export class Cyclizar extends PokemonCard {
     text: ''
   },
   {
-    name: 'Breakthrough',
+    name: 'Break Through',
     cost: [G, D, C],
     damage: 110,
-    text: 'This attack does 30 damage to 1 of your opponent\'s Benched Pokemon. (Don\'t apply Weakness and Resistance for Benched Pokemon.)'
+    text: 'This attack also does 30 damage to 1 of your opponent\'s Benched Pokémon. (Don\'t apply Weakness and Resistance for Benched Pokémon.)'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '53';
+  public setNumber: string = '76';
   public name: string = 'Cyclizar';
   public fullName: string = 'Cyclizar M6';
 

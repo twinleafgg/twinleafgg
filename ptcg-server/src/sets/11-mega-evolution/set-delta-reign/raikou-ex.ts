@@ -1,25 +1,7 @@
-import {
-  AttachEnergyPrompt,
-  CardTag,
-  CardType,
-  EnergyType,
-  GameMessage,
-  PlayerType,
-  PokemonCard,
-  SlotType,
-  Stage,
-  State,
-  StateUtils,
-  StoreLike,
-  SuperType,
-} from '../../../game';
+
+import { PokemonCard, Stage, CardTag, CardType, StoreLike, State, AttachEnergyPrompt, GameMessage, PlayerType, SlotType, SuperType, EnergyType, StateUtils } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
-import {
-  COIN_FLIP_PROMPT,
-  MOVE_CARDS,
-  SHUFFLE_DECK,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { COIN_FLIP_PROMPT, MOVE_CARDS, SHUFFLE_DECK, WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
 
 export class Raikouex extends PokemonCard {
   public stage: Stage = Stage.BASIC;
@@ -29,27 +11,25 @@ export class Raikouex extends PokemonCard {
   public weakness = [{ type: F }];
   public retreat = [];
 
-  public attacks = [
-    {
-      name: 'Gather Lightning',
+  public attacks = [{
+      name: 'Thunder-Clad',
       cost: [L],
       damage: 0,
       canUseOnFirstTurn: true,
-      text: 'If you go first, you can use this attack during your first turn. Search your deck for a [L] Energy card and attach it to this Pokemon. Then, shuffle your deck.',
+      text: 'If you go first, you can use this attack during your first turn. Search your deck for an Energy card and attach it to this Pokémon. Then, shuffle your deck.',
     },
     {
       name: 'Power Rush',
       cost: [L, L, C],
       damage: 200,
-      text: "Flip a coin. If tails, this Pokemon can't attack during your next turn.",
-    },
-  ];
+      text: "Flip a coin. If tails, during your next turn, this Pokémon can't use attacks.",
+    }];
 
   public regulationMark: string = 'J';
 
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '24';
+  public setNumber: string = '33';
   public name: string = 'Raikou ex';
   public fullName: string = 'Raikou ex M6';
 

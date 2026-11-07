@@ -1,0 +1,199 @@
+<!-- Page Header -->
+<div class="create-game-header">
+  <div class="header-content">
+    <div class="title-section">
+      <h2 class="create-game-title" translate>REACT_SELF_PLAY_TITLE</h2>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="create-game-content">
+  <form #form="ngForm" autocomplete="off" class="game-form">
+    <div class="form-layout">
+
+      <!-- Left column -->
+      <div class="form-column">
+
+        <!-- Format Selection -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3 class="section-title">Game Format</h3>
+            <div class="section-description">Choose the format for your game</div>
+          </div>
+
+          <div class="format-selection">
+            <mat-form-field class="modern-form-field">
+              <mat-label translate>GAMES_FORMAT</mat-label>
+              <mat-select [(value)]="settings.format" (selectionChange)="onFormatSelected($event.value)"
+                [disabled]="submitting">
+                <mat-option *ngFor="let option of formats" [value]="option.value">
+                  {{ option.label | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Side A Deck -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3 class="section-title">{{ 'REACT_SELF_PLAY_DECK_SIDE_A' | translate }}</h3>
+            <div class="section-description">Select the deck for the first player</div>
+          </div>
+
+          <div class="deck-selection" *ngIf="formatValidDecks.length > 0">
+            <div class="deck-grid">
+              <div class="deck-card" *ngFor="let deck of formatValidDecks; trackBy: trackByDeckId"
+                [class.selected]="deckId === deck.value" (click)="selectDeck(deck.value)">
+                <div class="deck-card-content">
+                  <div class="deck-artwork">
+                    <ptcg-archetype [class]="getDeckArchetype(deck.value)"
+                      style="transform: scale(2); display: flex; image-rendering: pixelated;"></ptcg-archetype>
+                  </div>
+                  <div class="deck-info">
+                    <div class="deck-name">{{ deck.viewValue }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-decks-message" *ngIf="!loadingDecks && formatValidDecks.length === 0">
+            <div class="no-decks-content">
+              <mat-icon>deck</mat-icon>
+              <p translate>GAMES_NEED_DECK</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side B Deck -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3 class="section-title">{{ 'REACT_SELF_PLAY_DECK_SIDE_B' | translate }}</h3>
+            <div class="section-description">Select the deck for the second player</div>
+          </div>
+
+          <div class="deck-selection" *ngIf="formatValidDecks.length > 0">
+            <div class="deck-grid">
+              <div class="deck-card" *ngFor="let deck of formatValidDecks; trackBy: trackByDeckId"
+                [class.selected]="secondDeckId === deck.value" (click)="selectSecondDeck(deck.value)">
+                <div class="deck-card-content">
+                  <div class="deck-artwork">
+                    <ptcg-archetype [class]="getDeckArchetype(deck.value)"
+                      style="transform: scale(2); display: flex; image-rendering: pixelated;"></ptcg-archetype>
+                  </div>
+                  <div class="deck-info">
+                    <div class="deck-name">{{ deck.viewValue }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-decks-message" *ngIf="!loadingDecks && formatValidDecks.length === 0">
+            <div class="no-decks-content">
+              <mat-icon>deck</mat-icon>
+              <p translate>GAMES_NEED_DECK</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="form-column">
+
+        <!-- Game Settings -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3 class="section-title">Game Settings</h3>
+            <div class="section-description">Configure your game preferences</div>
+          </div>
+
+          <div class="settings-grid">
+            <!-- Time limit -->
+            <div class="setting-item">
+              <mat-form-field class="modern-form-field">
+                <mat-label translate>GAMES_TIME_LIMIT</mat-label>
+                <mat-select [(value)]="settings.timeLimit" [disabled]="submitting">
+                  <mat-option *ngFor="let option of timeLimits" [value]="option.value">
+                    {{ option.viewValue | translate }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Recording (Admin only) -->
+            <div class="setting-item" *ngIf="isAdmin">
+              <div class="checkbox-setting">
+                <mat-checkbox color="primary" name="recordingEnabled" [(ngModel)]="settings.recordingEnabled"
+                  [disabled]="submitting">
+                  {{ 'GAMES_RECORD_GAME' | translate }}
+                </mat-checkbox>
+              </div>
+            </div>
+
+            <!-- Sandbox Mode (Admin only) -->
+            <div class="setting-item sandbox-setting" *ngIf="isAdmin">
+              <div class="checkbox-setting">
+                <mat-checkbox color="primary" name="sandboxMode" [(ngModel)]="settings.sandboxMode"
+                  [disabled]="submitting" (ngModelChange)="onSandboxModeChange($event)">
+                  {{ 'GAMES_SANDBOX_MODE' | translate }}
+                </mat-checkbox>
+              </div>
+              <div class="sandbox-options" *ngIf="settings.sandboxMode">
+                <div class="checkbox-setting">
+                  <mat-checkbox color="primary" name="sandboxAllPokemonBasic"
+                    [(ngModel)]="settings.sandboxAllPokemonBasic" [disabled]="submitting">
+                    {{ 'GAMES_SANDBOX_ALL_POKEMON_BASIC' | translate }}
+                  </mat-checkbox>
+                </div>
+                <div class="checkbox-setting">
+                  <mat-checkbox color="primary" name="sandboxAttacksCostNoEnergy"
+                    [(ngModel)]="settings.sandboxAttacksCostNoEnergy" [disabled]="submitting">
+                    {{ 'GAMES_SANDBOX_ATTACKS_NO_ENERGY' | translate }}
+                  </mat-checkbox>
+                </div>
+                <div class="checkbox-setting">
+                  <mat-checkbox color="primary" name="sandboxRetreatCostsNoEnergy"
+                    [(ngModel)]="settings.sandboxRetreatCostsNoEnergy" [disabled]="submitting">
+                    {{ 'GAMES_SANDBOX_RETREAT_NO_ENERGY' | translate }}
+                  </mat-checkbox>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Rules -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3 class="section-title">{{ 'GAMES_GAME_RULES' | translate }}</h3>
+            <div class="section-description">Customize the rules for this game</div>
+          </div>
+
+          <div class="rules-grid">
+            <div class="rule-item" *ngFor="let rule of rules">
+              <mat-checkbox color="primary" [name]="'self-play-' + rule.key" [(ngModel)]="settings.rules[rule.key]"
+                [disabled]="submitting">
+                {{ rule.label | translate }}
+              </mat-checkbox>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <p class="form-error" *ngIf="error" role="alert">{{ error }}</p>
+</div>
+
+<!-- Action Buttons -->
+<div class="create-game-actions">
+  <button mat-raised-button class="action-button cancel-button" (click)="cancel()" [disabled]="submitting">
+    {{ 'BUTTON_CANCEL' | translate }}
+  </button>
+  <button mat-raised-button class="action-button confirm-button" (click)="confirm()" [disabled]="!canSubmit()">
+    {{ (submitting ? 'REACT_SUBMITTING' : 'BUTTON_SELF_PLAY_START') | translate }}
+  </button>
+</div>

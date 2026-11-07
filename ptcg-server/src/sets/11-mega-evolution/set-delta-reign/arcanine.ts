@@ -11,7 +11,7 @@ export class Arcanine extends PokemonCard {
   public retreat = [C, C, C, C];
 
   public attacks = [{
-    name: 'Energetic Fang',
+    name: 'Fervent Fang',
     cost: [R, C, C],
     damage: 90,
     damageCalculation: '+',
@@ -21,13 +21,13 @@ export class Arcanine extends PokemonCard {
     name: 'Heat Tackle',
     cost: [R, R, C, C],
     damage: 200,
-    text: 'This Pokemon also does 50 damage to itself.'
+    text: 'This Pokémon also does 50 damage to itself.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '11';
+  public setNumber: string = '19';
   public name: string = 'Arcanine';
   public fullName: string = 'Arcanine M6';
 

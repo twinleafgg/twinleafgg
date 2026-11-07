@@ -12,22 +12,22 @@ export class Mantine extends PokemonCard {
   public retreat = [C];
 
   public attacks = [{
-    name: 'Raising Waves',
+    name: 'Make Waves',
     cost: [C],
     damage: 0,
-    text: 'Each player shuffles their hand into their deck and draws 4 cards.'
+    text: 'Each player shuffles their hand into their deck and draws 4 cards..'
   },
   {
     name: 'Bubble Drain',
     cost: [W, C],
     damage: 30,
-    text: 'Heal 30 damage from this Pokemon.'
+    text: 'Heal 30 damage from this Pokémon.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '17';
+  public setNumber: string = '25';
   public name: string = 'Mantine';
   public fullName: string = 'Mantine M6';
 

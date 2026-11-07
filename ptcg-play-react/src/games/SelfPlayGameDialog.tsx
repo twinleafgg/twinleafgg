@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Format, GameSettings } from 'ptcg-server';
+import { Format, GameSettings, Rules } from 'ptcg-server';
 import { useAuth } from '../context/AuthContext';
 import { useCoreSession } from '../context/CoreSessionContext';
 import { useSnackbar } from '../context/SnackbarContext';
@@ -15,6 +15,7 @@ import { CheckboxField } from '../components/ui/CheckboxField';
 import { Modal } from '../components/ui/Modal';
 import { SelectField } from '../components/ui/SelectField';
 import { toGameSettingsPayload } from '../game/gameSettingsPayload';
+import { GAME_RULE_OPTIONS } from './gameRuleOptions';
 import styles from './CreateGameInviteDialog.module.css';
 
 const TIME_LIMIT_OPTIONS: { value: number; labelKey: string }[] = [
@@ -50,7 +51,7 @@ export function SelfPlayGameDialog({ open, onClose }: SelfPlayGameDialogProps) {
   const [sandboxAllPokemonBasic, setSandboxAllPokemonBasic] = useState(false);
   const [sandboxAttacksCostNoEnergy, setSandboxAttacksCostNoEnergy] = useState(false);
   const [sandboxRetreatCostsNoEnergy, setSandboxRetreatCostsNoEnergy] = useState(false);
-  const [unlimitedEnergyAttachments, setUnlimitedEnergyAttachments] = useState(false);
+  const [rules, setRules] = useState<Rules>(() => new Rules());
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function SelfPlayGameDialog({ open, onClose }: SelfPlayGameDialogProps) {
     setSandboxAllPokemonBasic(false);
     setSandboxAttacksCostNoEnergy(false);
     setSandboxRetreatCostsNoEnergy(false);
-    setUnlimitedEnergyAttachments(false);
+    setRules(new Rules());
     setError(null);
     setFormat(Format.STANDARD);
     setTimeLimit(1200);
@@ -75,7 +76,6 @@ export function SelfPlayGameDialog({ open, onClose }: SelfPlayGameDialogProps) {
       setSandboxAllPokemonBasic(false);
       setSandboxAttacksCostNoEnergy(false);
       setSandboxRetreatCostsNoEnergy(false);
-      setUnlimitedEnergyAttachments(false);
     }
   }, [sandboxMode]);
 
@@ -168,8 +168,8 @@ export function SelfPlayGameDialog({ open, onClose }: SelfPlayGameDialogProps) {
         gs.sandboxAllPokemonBasic = sandboxAllPokemonBasic;
         gs.sandboxAttacksCostNoEnergy = sandboxAttacksCostNoEnergy;
         gs.sandboxRetreatCostsNoEnergy = sandboxRetreatCostsNoEnergy;
-        gs.rules.unlimitedEnergyAttachments = unlimitedEnergyAttachments;
       }
+      gs.rules = rules;
       gs.selfPlay = true;
 
       const gameState = await createSelfPlayGame(
@@ -204,7 +204,7 @@ export function SelfPlayGameDialog({ open, onClose }: SelfPlayGameDialogProps) {
     sandboxAllPokemonBasic,
     sandboxAttacksCostNoEnergy,
     sandboxRetreatCostsNoEnergy,
-    unlimitedEnergyAttachments,
+    rules,
     isAdmin,
     createSelfPlayGame,
     navigate,
@@ -367,19 +367,28 @@ export function SelfPlayGameDialog({ open, onClose }: SelfPlayGameDialogProps) {
                 >
                   {t('GAMES_SANDBOX_RETREAT_NO_ENERGY')}
                 </CheckboxField>
-                <CheckboxField
-                  plain
-                  className={styles.checkboxRow}
-                  checked={unlimitedEnergyAttachments}
-                  disabled={submitting}
-                  onChange={(e) => setUnlimitedEnergyAttachments(e.target.checked)}
-                >
-                  {t('GAMES_UNLIMITED_ENERGY')}
-                </CheckboxField>
               </div>
             ) : null}
           </div>
         ) : null}
+
+        <div className={styles.rulesSection}>
+          <h3 className={styles.rulesTitle}>{t('REACT_GAME_RULES_TITLE')}</h3>
+          <div className={styles.rulesGrid}>
+            {GAME_RULE_OPTIONS.map((option) => (
+              <CheckboxField
+                key={option.key}
+                plain
+                className={styles.checkboxRow}
+                checked={rules[option.key] === true}
+                disabled={submitting}
+                onChange={(e) => setRules({ ...rules, [option.key]: e.target.checked })}
+              >
+                {t(option.labelKey)}
+              </CheckboxField>
+            ))}
+          </div>
+        </div>
 
         {error ? (
           <p className={styles.error} role="alert">

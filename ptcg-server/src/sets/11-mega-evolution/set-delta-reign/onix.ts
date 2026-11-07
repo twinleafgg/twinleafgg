@@ -13,13 +13,13 @@ export class Onix extends PokemonCard {
     name: 'Guard Press',
     cost: [C, C, C],
     damage: 80,
-    text: 'During your opponent\'s next turn, this Pokemon takes 30 less damage from attacks (after applying Weakness and Resistance).'
+    text: 'During your opponent\'s next turn, this Pokémon takes 30 less damage from attacks (after applying Weakness and Resistance).'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '37';
+  public setNumber: string = '51';
   public name: string = 'Onix';
   public fullName: string = 'Onix M6';
 

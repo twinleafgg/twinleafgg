@@ -7,6 +7,8 @@ import { DeckEditComponent } from './deck/deck-edit/deck-edit.component';
 import { DeckStatsComponent } from './deck/deck-stats/deck-stats.component';
 import { FriendsComponent } from './friends/friends.component';
 import { GamesComponent } from './games/games.component';
+import { CreateGamePageComponent } from './games/create-game-page/create-game-page.component';
+import { SelfPlayPageComponent } from './games/self-play-page/self-play-page.component';
 import { ActiveGamesComponent } from './games/active-games/active-games.component';
 import { GameHistoryComponent } from './games/game-history/game-history.component';
 import { PlayersComponent } from './games/players/players.component';
@@ -32,6 +34,9 @@ const routes: Routes = [
   { path: 'deck/:deckId', component: DeckEditComponent, canActivate: [canActivateGuard] },
   { path: 'friends', component: FriendsComponent, canActivate: [canActivateGuard] },
   { path: 'games', component: GamesComponent, canActivate: [canActivateGuard] },
+  { path: 'games/create', component: CreateGamePageComponent, canActivate: [canActivateGuard] },
+  { path: 'games/create/:clientId', component: CreateGamePageComponent, canActivate: [canActivateGuard] },
+  { path: 'games/self-play', component: SelfPlayPageComponent, canActivate: [canActivateGuard] },
   { path: 'games/active', component: ActiveGamesComponent, canActivate: [canActivateGuard] },
   { path: 'games/history', component: GameHistoryComponent, canActivate: [canActivateGuard] },
   { path: 'games/players', component: PlayersComponent, canActivate: [canActivateGuard] },

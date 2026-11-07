@@ -21,6 +21,7 @@ import { initNextTurn } from '../effect-reducers/game-phase-effect';
 import { SelectPrompt } from '../prompts/select-prompt';
 import { WhoBeginsEffect } from '../effects/game-phase-effects';
 import { PokemonCard } from '../card/pokemon-card';
+import { TrainerCard } from '../card/trainer-card';
 import { ShowMulliganPrompt } from '../prompts/show-mulligan-prompt';
 import { ConfirmPrompt } from '../prompts/confirm-prompt';
 import { STAMP_STARTING_ABILITY_LOCKS } from '../prefabs/ability-lock';
@@ -29,12 +30,21 @@ function sandboxAllPokemonBasicEnabled(state: State): boolean {
   return Boolean(state.gameSettings?.sandboxMode && state.gameSettings?.sandboxAllPokemonBasic);
 }
 
+// Fossil Trainer cards are played as if they were Basic Pokémon, so they can be
+// selected as a starting Pokémon when the canStartWithFossil rule is enabled.
+function isFossilTrainer(c: Card): boolean {
+  return c instanceof TrainerCard && c.powers.some(power => power.isFossil === true);
+}
+
 function isStartingPokemonCandidate(state: State, c: Card): boolean {
   if (c.tags.includes(CardTag.PLAY_DURING_SETUP)) {
     return true;
   }
   if (c instanceof PokemonCard) {
     return c.stage === Stage.BASIC || sandboxAllPokemonBasicEnabled(state);
+  }
+  if (state.rules.canStartWithFossil && isFossilTrainer(c)) {
+    return true;
   }
   return false;
 }
@@ -71,7 +81,8 @@ function handHasStartingPokemon(state: State, player: Player): boolean {
   const hasSandboxPokemon =
     sandboxAllPokemonBasicEnabled(state) && player.hand.cards.some(card => card instanceof PokemonCard);
   const hasSetupTag = player.hand.cards.some(c => c.tags.includes(CardTag.PLAY_DURING_SETUP));
-  return hasVanillaBasic || hasSandboxPokemon || hasSetupTag;
+  const hasFossil = state.rules.canStartWithFossil && player.hand.cards.some(isFossilTrainer);
+  return hasVanillaBasic || hasSandboxPokemon || hasSetupTag || hasFossil;
 }
 
 function putStartingPokemonsAndPrizes(player: Player, cards: Card[], state: State): void {

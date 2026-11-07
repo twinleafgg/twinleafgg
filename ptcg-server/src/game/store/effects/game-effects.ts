@@ -63,6 +63,8 @@ export class RetreatEffect implements Effect {
   public benchIndex: number;
   public ignoreStatusConditions = false;
   public moveRetreatCostTo: CardList;
+  // Set once the Confused-retreat coin flip has been resolved, to avoid flipping twice.
+  public skipConfusionFlip = false;
 
   constructor(player: Player, benchIndex: number) {
     this.player = player;
@@ -76,6 +78,8 @@ export class RetreatStartEffect implements Effect {
   public preventDefault = false;
   public player: Player;
   public ignoreStatusConditions = false;
+  // Set once the Confused-retreat coin flip has been resolved, to avoid flipping twice.
+  public skipConfusionFlip = false;
 
   constructor(player: Player) {
     this.player = player;

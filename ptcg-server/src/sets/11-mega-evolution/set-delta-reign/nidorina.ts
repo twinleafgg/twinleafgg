@@ -17,8 +17,8 @@ export class Nidorina extends PokemonCard {
   }];
 
   public regulationMark = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '42';
+  public set: string = 'DLR';
+  public setNumber: string = '56';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Nidorina';
   public fullName: string = 'Nidorina M6';

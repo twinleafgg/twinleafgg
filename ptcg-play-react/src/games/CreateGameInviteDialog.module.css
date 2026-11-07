@@ -4,27 +4,38 @@
   z-index: 10000;
   background: rgba(0, 0, 0, 0.45);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
   box-sizing: border-box;
   animation: inviteBackdropEnter 180ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+/* Full-screen panel: the dialog takes over the whole viewport. */
 .panel {
   background: #f8f9fa;
   color: #111;
-  border-radius: 12px;
-  max-width: min(520px, 92vw);
-  width: 100%;
-  max-height: 90vh;
-  overflow: hidden;
+  border-radius: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
-  border: 1px solid #d4d5d6;
+  box-shadow: none;
+  border: none;
   transform-origin: center center;
   animation: invitePanelEnter 180ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Center the content column so the full-screen form stays readable on wide screens. */
+.panel > * {
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
 
 @keyframes inviteBackdropEnter {
@@ -40,7 +51,7 @@
 @keyframes invitePanelEnter {
   from {
     opacity: 0;
-    transform: scale(0.85) translateY(8px);
+    transform: scale(0.98) translateY(8px);
   }
 
   to {
@@ -50,6 +61,10 @@
 }
 
 .title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8f9fa;
   font-size: 1.1rem;
   font-weight: 700;
   padding: 16px 20px 10px;
@@ -93,6 +108,26 @@
   gap: 8px;
 }
 
+.rulesSection {
+  padding: 0 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rulesTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.rulesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px 20px;
+}
+
 .error {
   margin: 0 20px 12px;
   padding: 10px 12px;
@@ -104,12 +139,16 @@
 }
 
 .actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   padding: 14px 20px 18px;
   border-top: 1px solid #e0e0e0;
   background: #fff;
+  margin-top: auto;
 }
 
 .cancelBtn {

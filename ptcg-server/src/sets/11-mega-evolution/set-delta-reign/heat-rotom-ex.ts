@@ -20,26 +20,24 @@ export class HeatRotomex extends PokemonCard {
   public weakness = [{ type: W }];
   public retreat = [C];
 
-  public attacks = [
-    {
-      name: 'Reheat',
-      cost: [C, C],
-      damage: 30,
-      damageCalculation: 'x',
-      text: 'This attack does 30 damage for each Basic [R] Energy card in your discard pile. Then, shuffle those Energy cards into your deck.',
-    },
-    {
-      name: 'Strong Flare',
-      cost: [R, R, C],
-      damage: 170,
-      text: 'Discard 2 Energy from this Pokemon.',
-    },
-  ];
+  public attacks = [{
+    name: 'Rewarm',
+    cost: [C, C],
+    damage: 30,
+    damageCalculation: 'x',
+    text: 'This attack does 30 damage for each Basic [R] Energy card in your discard pile. Then, shuffle those cards into your deck.',
+  },
+  {
+    name: 'Strong Flare',
+    cost: [R, R, C],
+    damage: 170,
+    text: 'Discard 2 Energy from this Pokémon.',
+  }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '15';
+  public setNumber: string = '23';
   public name: string = 'Heat Rotom ex';
   public fullName: string = 'Heat Rotom ex M6';
 

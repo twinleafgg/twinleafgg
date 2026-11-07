@@ -13,7 +13,7 @@ export class Growlithe extends PokemonCard {
     name: 'Roar',
     cost: [C],
     damage: 0,
-    text: 'Switch your opponent\'s Active Pokemon with 1 of their Benched Pokemon.  (Your opponent chooses which Benched Pokemon to switch.)'
+    text: 'Switch out your opponent\'s Active Pokémon to the Bench. (Your opponent chooses the new Active Pokémon.) '
   },
   {
     name: 'Rear Kick',
@@ -23,7 +23,7 @@ export class Growlithe extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '10';
   public name: string = 'Growlithe';

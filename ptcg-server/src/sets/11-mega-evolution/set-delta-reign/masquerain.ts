@@ -13,21 +13,21 @@ export class Masquerain extends PokemonCard {
   public retreat = [C];
 
   public attacks = [{
-    name: 'Scary Patterns',
+    name: 'Frightening Patterns',
     cost: [C],
     damage: 30,
-    text: 'The Defending Pokemon can\'t attack during your next turn.'
+    text: 'During your opponent\'s next turn, the Defending Pokémon can\'t use attacks.'
   },
   {
     name: 'Bug Out',
     cost: [G],
     damage: 50,
     damageCalculation: 'x',
-    text: 'Reveal the bottom 7 cards of your deck, and this attack does 50 damage for each Pokemon you find there that has the Bug Out attack. Then, shuffle any revealed Pokemon back into your deck. Discard the other cards.'
+    text: 'Reveal the bottom 7 cards of your deck, and this attack does 50 damage for each Pokémon you find there that has the Bug Out attack. Then, shuffle any revealed Pokémon back into your deck. Discard the other cards.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '3';
   public name: string = 'Masquerain';

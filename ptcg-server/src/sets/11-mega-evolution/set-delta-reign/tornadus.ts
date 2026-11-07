@@ -14,21 +14,21 @@ export class Tornadus extends PokemonCard {
   public retreat = [C];
 
   public powers = [{
-    name: 'Incarnate Union',
+    name: 'Incarnate Solidarity',
     powerType: PowerType.ABILITY,
-    text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the cost of attacks used by this Pokémon.',
+    text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the costs of attacks used by this Pokémon.',
   }];
 
   public attacks = [{
     name: 'Corkscrew Dive',
     cost: [C, C, C],
     damage: 70,
-    text: 'You may draw cards until you have 6 cards in hand.',
+    text: 'You may draw cards until you have 6 cards in your hand.',
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '59';
+  public set: string = 'DLR';
+  public setNumber: string = '85';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Tornadus';
   public fullName: string = 'Tornadus M6';

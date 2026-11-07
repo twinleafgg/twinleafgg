@@ -12,25 +12,23 @@ export class MegaGolisopodex extends PokemonCard {
   public weakness = [{ type: R }];
   public retreat = [C, C, C];
 
-  public attacks = [
-    {
+  public attacks = [{
       name: 'Finishing Blow',
       cost: [G],
       damage: 60,
       damageCalculation: '+',
-      text: "This attack does 160 more damage if your opponent's Active Pokémon has any damage counters on it.",
+      text: "If your opponent's Active Pokémon already has any damage counters on it, this attack does 160 more damage.",
     },
     {
-      name: 'Quatro Hold',
+      name: 'Quadruple Hold',
       cost: [C, C, C],
       damage: 160,
-      text: "During your opponent's next turn, the Defending Pokémon can't Retreat.",
-    },
-  ];
+      text: "During your opponent's next turn, the Defending Pokémon can't retreat.",
+    }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '9';
+  public set: string = 'DLR';
+  public setNumber: string = '11';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mega Golisopod ex';
   public fullName: string = 'Mega Golisopod ex M6';

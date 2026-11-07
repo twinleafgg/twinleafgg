@@ -1,31 +1,17 @@
-import {
-  ChooseCardsPrompt,
-  ChoosePokemonPrompt,
-  GameError,
-  GameMessage,
-  PlayerType,
-  SlotType,
-  State,
-  StoreLike,
-  SuperType,
-  Player,
-} from '../../../game';
-import { TrainerType } from '../../../game/store/card/card-types';
-import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { Effect } from '../../../game/store/effects/effect';
-import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { TrainerCard, TrainerType, StoreLike, State, Player, GameError, GameMessage, ChoosePokemonPrompt, PlayerType, SlotType, SuperType, ChooseCardsPrompt } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { TrainerEffect } from "../../../game/store/effects/play-card-effects";
+import { MOVE_CARDS } from "../../../game/store/prefabs/prefabs";
 
 export class ZinniasTrust extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.SUPPORTER;
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '69';
+  public set: string = 'DLR';
+  public setNumber: string = '103';
   public cardImage: string = 'assets/cardback.png';
   public name: string = "Zinnia's Trust";
   public fullName: string = "Zinnia's Trust M6";
-  public text: string =
-    'Switch your Active Pokémon with 1 of your Benched Pokémon. If you do, move 1 Energy from your previous Active Pokémon to your new Active Pokémon.';
+  public text: string = 'Switch your Active Pokémon with 1 of your Benched Pokémon. If you do, move an Energy from the Pokémon you moved to your Bench to the new Active Pokémon.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.supporterTurn > 0) {
@@ -38,7 +24,6 @@ export class ZinniasTrust extends TrainerCard {
   }
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Ref: set-chaos-rising/azs-tranquility.ts (switch), set-plasma-storm/scramble-switch.ts (move energy)
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
       const player = effect.player;
 

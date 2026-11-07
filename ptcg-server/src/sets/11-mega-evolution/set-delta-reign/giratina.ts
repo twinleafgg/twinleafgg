@@ -16,13 +16,13 @@ export class Giratina extends PokemonCard {
     name: 'Chaos Crawler',
     cost: [P, P, C],
     damage: 120,
-    text: 'Prevent all damage from attacks done to this Pokemon during your opponent\'s next turn. You can\'t use this attack if any of your Pokemon used Chaos Crawler during your last turn.'
+    text: 'During your opponent\'s next turn, prevent all damage from attacks done to this Pokémon.If 1 of your Pokémon used Chaos Crawler during your last turn, this attack can\'t be used.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '31';
+  public setNumber: string = '45';
   public name: string = 'Giratina';
   public fullName: string = 'Giratina M6';
 

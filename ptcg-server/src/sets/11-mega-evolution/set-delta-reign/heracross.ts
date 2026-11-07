@@ -13,17 +13,17 @@ export class Heracross extends PokemonCard {
     name: 'Spike Draw',
     cost: [G],
     damage: 20,
-    text: 'Draw 2 cards from your deck.'
+    text: 'Draw 2 cards.'
   },
   {
     name: 'High Horsepower',
     cost: [G, G, C],
     damage: 130,
-    text: 'This Pokemon also does 30 damage to itself.'
+    text: 'This Pokémon also does 30 damage to itself.'
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '1';
   public name: string = 'Heracross';

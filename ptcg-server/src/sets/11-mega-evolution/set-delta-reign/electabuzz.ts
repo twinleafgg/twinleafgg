@@ -13,7 +13,7 @@ export class Electabuzz extends PokemonCard {
     name: 'Call for Family',
     cost: [C],
     damage: 0,
-    text: 'Search your deck for up to 2 Basic Pokemon and put them onto your Bench. Then, shuffle your deck.'
+    text: 'Search your deck for up to 2 Basic Pokémon and put them onto your Bench. Then, shuffle your deck.'
   },
   {
     name: 'Headbutt',
@@ -23,9 +23,9 @@ export class Electabuzz extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '22';
+  public setNumber: string = '30';
   public name: string = 'Electabuzz';
   public fullName: string = 'Electabuzz M6';
 

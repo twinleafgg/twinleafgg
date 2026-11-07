@@ -12,9 +12,9 @@ export class Landorus extends PokemonCard {
   public retreat = [C, C];
 
   public powers = [{
-    name: 'Incarnate Union',
+    name: 'Incarnate Solidarity',
     powerType: PowerType.ABILITY,
-    text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the cost of attacks used by this Pokémon.',
+    text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the costs of attacks used by this Pokémon.',
   }];
 
   public attacks = [{
@@ -25,7 +25,7 @@ export class Landorus extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public setNumber: string = '40';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Landorus';

@@ -13,7 +13,7 @@ export class NidoranFemale extends PokemonCard {
     name: 'Find a Friend',
     cost: [C],
     damage: 0,
-    text: 'Search your deck for a Pokemon, reveal it, and put it into your hand. Then, shuffle your deck.'
+    text: 'Search your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.'
   },
   {
     name: 'Gnaw',
@@ -23,9 +23,9 @@ export class NidoranFemale extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '41';
+  public setNumber: string = '55';
   public name: string = 'Nidoran ♀';
   public fullName: string = 'Nidoran ♀ M6';
 

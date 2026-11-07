@@ -14,7 +14,7 @@ export class Sandslash extends PokemonCard {
   public powers = [{
     name: 'Counterattack Quills',
     powerType: PowerType.ABILITY,
-    text: 'If this Pokemon is in the Active Spot and is damaged by an attack from your opponent\'s Pokemon (even if this Pokemon is Knocked Out), put 3 damage counters on the Attacking Pokemon.'
+    text: 'If this Pokémon is in the Active Spot and is damaged by an attack from your opponent\'s Pokémon (even if this Pokémon is Knocked Out), place 3 damage counters on the Attacking Pokémon.'
   }];
 
   public attacks = [{
@@ -25,9 +25,9 @@ export class Sandslash extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '36';
+  public setNumber: string = '50';
   public name: string = 'Sandslash';
   public fullName: string = 'Sandslash M6';
 

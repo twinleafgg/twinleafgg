@@ -15,7 +15,7 @@ export class Druddigon extends PokemonCard {
     name: 'Drag Off',
     cost: [R, W],
     damage: 0,
-    text: 'Switch in 1 of your opponent\'s Benched Pokemon to the Active Spot. This attack does 40 damage to the new Active Pokemon.'
+    text: 'Switch in 1 of your opponent\'s Benched Pokémon to the Active Spot.This attack does 40 damage to the new Active Pokémon.'
   },
   {
     name: 'Claw Slash',
@@ -25,9 +25,9 @@ export class Druddigon extends PokemonCard {
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '49';
+  public setNumber: string = '72';
   public name: string = 'Druddigon';
   public fullName: string = 'Druddigon M6';
 

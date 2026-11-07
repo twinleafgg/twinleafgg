@@ -1,9 +1,6 @@
-import { CardTag, CardType, PokemonCard, Stage, State, StoreLike } from '../../../game';
-import { Effect } from '../../../game/store/effects/effect';
-import {
-  ADD_CONFUSION_TO_PLAYER_ACTIVE,
-  WAS_ATTACK_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardTag, CardType, StoreLike, State } from "../../../game";
+import { Effect } from "../../../game/store/effects/effect";
+import { WAS_ATTACK_USED, ADD_CONFUSION_TO_PLAYER_ACTIVE } from "../../../game/store/prefabs/prefabs";
 
 export class MegaMalamarex extends PokemonCard {
   public stage: Stage = Stage.STAGE_1;
@@ -14,8 +11,7 @@ export class MegaMalamarex extends PokemonCard {
   public weakness = [{ type: G }];
   public retreat = [C, C];
 
-  public attacks = [
-    {
+  public attacks = [{
       name: 'Psychic Marionettes',
       cost: [D, D],
       damage: 70,
@@ -23,16 +19,15 @@ export class MegaMalamarex extends PokemonCard {
       text: "This attack does 70 damage for each of your opponent's Benched Pokémon.",
     },
     {
-      name: 'Eerie Pulse',
+      name: 'Eerie Wave',
       cost: [D, D, D],
       damage: 200,
       text: "Your opponent's Active Pokémon is now Confused.",
-    },
-  ];
+    }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '48';
+  public set: string = 'DLR';
+  public setNumber: string = '69';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Mega Malamar ex';
   public fullName: string = 'Mega Malamar ex M6';

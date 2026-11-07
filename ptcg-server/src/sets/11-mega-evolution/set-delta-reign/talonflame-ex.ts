@@ -1,25 +1,7 @@
-import {
-  CardTag,
-  CardType,
-  GameError,
-  GameMessage,
-  Player,
-  PlayerType,
-  PokemonCard,
-  PowerType,
-  Stage,
-  State,
-  StoreLike,
-} from '../../../game';
-import { CheckPokemonTypeEffect } from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import {
-  IS_ABILITY_BLOCKED,
-  PLAY_POKEMON_FROM_HAND_TO_BENCH,
-  SEARCH_DECK_FOR_CARDS_TO_HAND,
-  WAS_ATTACK_USED,
-  WAS_POWER_USED,
-} from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, Stage, CardTag, CardType, PowerType, StoreLike, State, Player, PlayerType, GameError, GameMessage } from "../../../game";
+import { CheckPokemonTypeEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { WAS_POWER_USED, IS_ABILITY_BLOCKED, PLAY_POKEMON_FROM_HAND_TO_BENCH, WAS_ATTACK_USED, SEARCH_DECK_FOR_CARDS_TO_HAND } from "../../../game/store/prefabs/prefabs";
 
 export class Talonflameex extends PokemonCard {
   public stage: Stage = Stage.STAGE_2;
@@ -31,27 +13,23 @@ export class Talonflameex extends PokemonCard {
   public resistance = [{ type: F, value: -30 }];
   public retreat = [];
 
-  public powers = [
-    {
-      name: 'Excitedive',
+  public powers = [{
+      name: 'Excited Dive',
       powerType: PowerType.ABILITY,
       useFromHand: true,
       useFromHandToBench: true,
-      text: 'If this Pokémon is in your hand, and you have a [C] Mega Evolution Pokémon in play, you may use this Ability. Put this Pokémon onto your Bench.',
-    },
-  ];
+      text: 'Once during your turn, if this Pokémon is in your hand, and if you have any [C] Mega Evolution Pokémon ex in play, you may use this Ability. Put this Pokémon onto your Bench.',
+    }];
 
-  public attacks = [
-    {
-      name: 'Claw Hunt',
+  public attacks = [{
+      name: 'Talon Hunt',
       cost: [C, C],
       damage: 150,
       text: 'You may search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck.',
-    },
-  ];
+    }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public setNumber: string = '62';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Talonflame ex';

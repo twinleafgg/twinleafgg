@@ -13,22 +13,22 @@ export class Altaria extends PokemonCard {
   public retreat = [C];
 
   public powers = [{
-    name: 'Cotton Carrier',
+    name: 'Cottony Carrier',
     powerType: PowerType.ABILITY,
-    text: 'Your Basic Pokemon in play have no Retreat Cost.'
+    text: 'Your Basic Pokémon in play have no Retreat Cost.'
   }];
 
   public attacks = [{
-    name: 'Wing Flap',
+    name: 'Flap',
     cost: [C, C, C],
     damage: 80,
     text: ''
   }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
+  public set: string = 'DLR';
   public cardImage: string = 'assets/cardback.png';
-  public setNumber: string = '56';
+  public setNumber: string = '82';
   public name: string = 'Altaria';
   public fullName: string = 'Altaria M6';
 

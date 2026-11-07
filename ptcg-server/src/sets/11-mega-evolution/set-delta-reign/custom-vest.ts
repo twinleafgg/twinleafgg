@@ -9,13 +9,12 @@ import { GamePhase } from '../../../game/store/state/state';
 export class CustomVest extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.TOOL;
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '65';
+  public set: string = 'DLR';
+  public setNumber: string = '91';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Custom Vest';
   public fullName: string = 'Custom Vest M6';
-  public text: string =
-    "The Pokémon this card is attached to (excluding any Mega Pokémon ex) takes 60 less damage from the attacks of your opponent's Mega Pokémon ex.";
+  public text: string = "If the Pokémon this card is attached to isn't a Mega Evolution Pokémon ex, it takes 60 less damage from attacks from your opponent's Mega Evolution Pokémon ex (after applying Weakness and Resistance).";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof PutDamageEffect && effect.target.tools.includes(this)) {

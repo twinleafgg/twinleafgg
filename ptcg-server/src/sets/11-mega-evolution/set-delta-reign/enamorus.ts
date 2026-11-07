@@ -11,27 +11,23 @@ export class Enamorus extends PokemonCard {
   public weakness = [{ type: M }];
   public retreat = [C];
 
-  public powers = [
-    {
-      name: 'Incarnate Union',
-      powerType: PowerType.ABILITY,
-      text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the cost of attacks used by this Pokémon.',
-    },
-  ];
+  public powers = [{
+    name: 'Incarnate Solidarity',
+    powerType: PowerType.ABILITY,
+    text: 'If you have Tornadus, Thundurus, Landorus, and Enamorus in play, ignore all [C] Energy in the costs of attacks used by this Pokémon.',
+  }];
 
-  public attacks = [
-    {
-      name: 'Rising Heart',
-      cost: [P, P, C, C],
-      damage: 100,
-      damageCalculation: '+',
-      text: "If your opponent's Active Pokémon is a Pokémon ex, this attack does 100 more damage.",
-    },
-  ];
+  public attacks = [{
+    name: 'Rising Heart',
+    cost: [P, P, C, C],
+    damage: 100,
+    damageCalculation: '+',
+    text: "If your opponent's Active Pokémon is a Pokémon ex, this attack does 100 more damage.",
+  }];
 
   public regulationMark: string = 'J';
-  public set: string = 'M6';
-  public setNumber: string = '34';
+  public set: string = 'DLR';
+  public setNumber: string = '48';
   public cardImage: string = 'assets/cardback.png';
   public name: string = 'Enamorus';
   public fullName: string = 'Enamorus M6';
