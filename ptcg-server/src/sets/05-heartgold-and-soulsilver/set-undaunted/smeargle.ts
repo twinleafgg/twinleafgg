@@ -73,8 +73,17 @@ export class Smeargle extends PokemonCard {
           return;
         }
         const trainerCard = cards[0] as TrainerCard;
-        const playTrainerEffect = new TrainerEffect(player, trainerCard);
-        store.reduceEffect(state, playTrainerEffect);
+        // Copy as a Poké-Power effect — do not spend this turn's Supporter.
+        const originalSupporterTurn = player.supporterTurn;
+        player.supporterTurn = 0;
+        try {
+          store.reduceEffect(state, new TrainerEffect(player, trainerCard));
+        } finally {
+          player.supporterTurn = originalSupporterTurn;
+          if (player.supporter.cards.includes(trainerCard)) {
+            player.supporter.moveCardTo(trainerCard, opponent.hand);
+          }
+        }
       });
     }
 
