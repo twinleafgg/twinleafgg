@@ -146,6 +146,8 @@ export function Board2DCanvas(props: Board2DCanvasProps) {
           facedown={cardPrompt.data.facedown}
           catalog={catalog}
           getScanUrl={getScanUrl}
+          showTags={settings.showTags}
+          cardTextKerning={settings.cardTextKerning}
           onClose={() => {
             cardPrompt.resolve(undefined);
             setCardPrompt(null);
@@ -168,6 +170,8 @@ export function Board2DCanvas(props: Board2DCanvasProps) {
           facedown={cardPrompt.data.facedown}
           allowReveal={cardPrompt.data.allowReveal}
           options={cardPrompt.data.options}
+          showTags={settings.showTags}
+          cardTextKerning={settings.cardTextKerning}
           isInGame
           onClose={() => {
             cardPrompt.resolve(undefined);

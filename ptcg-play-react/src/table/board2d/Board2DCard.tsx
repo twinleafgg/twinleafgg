@@ -33,6 +33,8 @@ export type Board2DCardProps = {
   onEnergyClick?: (card: Card) => void;
   onToolClick?: (card: Card) => void;
   cardTarget?: CardTarget;
+  /** Extra HP being placed during Put damage prompt (preview before OK). */
+  pendingPlaceDamage?: number;
 };
 
 export function Board2DCard({
@@ -51,6 +53,7 @@ export function Board2DCard({
   onContextMenu,
   onEnergyClick,
   onToolClick,
+  pendingPlaceDamage = 0,
 }: Board2DCardProps) {
   const model = useMemo(
     () => buildBoard2dCardModel(cardList, owner, faceDown),
@@ -67,10 +70,17 @@ export function Board2DCard({
 
   const cond = model.specialConditions;
   const showLegendStack = !!(model.legendTopCard && model.legendBottomCard);
+  const showVunionStack = !!(
+    model.vunionTopLeftCard &&
+    model.vunionTopRightCard &&
+    model.vunionBottomLeftCard &&
+    model.vunionBottomRightCard
+  );
   const classNames = cn(
     styles.card,
     model.isEmpty && styles.empty,
     model.isFaceDown && styles.faceDown,
+    model.stadiumDirectionDown && styles.upsideDown,
     selectable && styles.selectable,
     selected && styles.selected,
     attachTarget && styles.attachTarget,
@@ -81,11 +91,17 @@ export function Board2DCard({
   );
 
   function handleMainClick(e: MouseEvent) {
+    // Only consume the event when this card has its own handler. Board slots
+    // put click/context-menu on the parent DraggableBoardCard wrapper.
+    if (!onClick) {
+      return;
+    }
     e.stopPropagation();
-    onClick?.(
+    onClick(
       model.mainCard ??
         model.legendTopCard ??
         model.legendBottomCard ??
+        model.vunionTopLeftCard ??
         model.dualStadiumLeftCard,
       cardList,
     );
@@ -101,8 +117,11 @@ export function Board2DCard({
   }
 
   function handleLegendClick(e: MouseEvent, card: Card) {
+    if (!onClick) {
+      return;
+    }
     e.stopPropagation();
-    onClick?.(card, cardList);
+    onClick(card, cardList);
   }
 
   if (model.dualStadiumLeftCard && model.dualStadiumRightCard) {
@@ -199,7 +218,60 @@ export function Board2DCard({
         </div>
       ) : null}
 
-      {!model.isEmpty && !model.isFaceDown && model.mainCard && !showLegendStack ? (
+      {model.vunionTopLeftCard ? (
+        <div
+          className={styles.vunionTopLeft}
+          onClick={(e) => handleLegendClick(e, model.vunionTopLeftCard!)}
+        >
+          <CardFace
+            src={scanUrl(model.vunionTopLeftCard, cardList)}
+            card={model.vunionTopLeftCard}
+            name={model.vunionTopLeftCard.name}
+          />
+        </div>
+      ) : null}
+      {model.vunionTopRightCard ? (
+        <div
+          className={styles.vunionTopRight}
+          onClick={(e) => handleLegendClick(e, model.vunionTopRightCard!)}
+        >
+          <CardFace
+            src={scanUrl(model.vunionTopRightCard, cardList)}
+            card={model.vunionTopRightCard}
+            name={model.vunionTopRightCard.name}
+          />
+        </div>
+      ) : null}
+      {model.vunionBottomLeftCard ? (
+        <div
+          className={styles.vunionBottomLeft}
+          onClick={(e) => handleLegendClick(e, model.vunionBottomLeftCard!)}
+        >
+          <CardFace
+            src={scanUrl(model.vunionBottomLeftCard, cardList)}
+            card={model.vunionBottomLeftCard}
+            name={model.vunionBottomLeftCard.name}
+          />
+        </div>
+      ) : null}
+      {model.vunionBottomRightCard ? (
+        <div
+          className={styles.vunionBottomRight}
+          onClick={(e) => handleLegendClick(e, model.vunionBottomRightCard!)}
+        >
+          <CardFace
+            src={scanUrl(model.vunionBottomRightCard, cardList)}
+            card={model.vunionBottomRightCard}
+            name={model.vunionBottomRightCard.name}
+          />
+        </div>
+      ) : null}
+
+      {!model.isEmpty &&
+      !model.isFaceDown &&
+      model.mainCard &&
+      !showLegendStack &&
+      !showVunionStack ? (
         <CardFace
           className={styles.mainFace}
           src={scanUrl(model.mainCard, cardList)}
@@ -232,6 +304,9 @@ export function Board2DCard({
       ) : null}
 
       {model.damage > 0 ? <div className={styles.damage}>{model.damage}</div> : null}
+      {pendingPlaceDamage > 0 ? (
+        <div className={styles.pendingPlaceDamage}>+{pendingPlaceDamage}</div>
+      ) : null}
 
       {cond.includes(SpecialCondition.POISONED) ? (
         <div className={cn(styles.marker, styles.poison)} />

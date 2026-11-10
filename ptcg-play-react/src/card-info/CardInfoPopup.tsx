@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { Card, CardList, Player } from 'ptcg-server';
 import type { CardInfoPaneOptions, CardInfoTableAction } from './CardInfoPane';
 import { CardInfoPane } from './CardInfoPane';
+import { CardListPopup } from './CardListPopup';
 import { CheckboxField } from '../components/ui/CheckboxField';
 import { CardInfoImageColumn } from './CardInfoImageColumn';
 import paneStyles from './CardInfoPane.module.css';
@@ -81,17 +82,26 @@ export function CardInfoPopup({
 }: CardInfoPopupProps) {
   const { t } = useTranslation();
   const [swapOpen, setSwapOpen] = useState(false);
+  const [attachedListOpen, setAttachedListOpen] = useState(false);
+  /** In-game Attached Cards picker can swap which card in the pile is viewed. */
+  const [viewedCard, setViewedCard] = useState(card);
+
   useEffect(() => {
+    setViewedCard(card);
     setSwapOpen(false);
-  }, [card.fullName]);
+    setAttachedListOpen(false);
+  }, [card]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (attachedListOpen) {
+          return;
+        }
         onClose();
         return;
       }
-      if (swapOpen || isEditableKeyTarget(e.target)) {
+      if (swapOpen || attachedListOpen || isEditableKeyTarget(e.target)) {
         return;
       }
       if (e.key === 'ArrowLeft' && onNavigatePrev) {
@@ -106,15 +116,16 @@ export function CardInfoPopup({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, onNavigatePrev, onNavigateNext, swapOpen]);
+  }, [onClose, onNavigatePrev, onNavigateNext, swapOpen, attachedListOpen]);
 
   const canNavigate = Boolean(onNavigatePrev || onNavigateNext);
+  const showAttachedCards = isInGame && !!cardList;
 
   return createPortal(
     <div
       className={styles.backdrop}
       role="presentation"
-      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+      onMouseDown={(e) => e.target === e.currentTarget && !attachedListOpen && onClose()}
     >
       <div
         className={styles.panel}
@@ -129,8 +140,8 @@ export function CardInfoPopup({
         <div className={styles.content}>
           <div className={paneStyles.pane}>
             <CardInfoImageColumn
-              key={`img-${card.fullName}`}
-              card={card}
+              key={`img-${viewedCard.fullName}-${viewedCard.id}`}
+              card={viewedCard}
               catalog={catalog}
               facedown={facedown}
               getScanUrl={getScanUrl}
@@ -139,8 +150,8 @@ export function CardInfoPopup({
               hideSwapButton={hideSwapButton}
             />
             <CardInfoPane
-              key={card.fullName}
-              card={card}
+              key={`${viewedCard.fullName}-${viewedCard.id}`}
+              card={viewedCard}
               cardList={cardList}
               players={players}
               facedown={facedown}
@@ -168,6 +179,16 @@ export function CardInfoPopup({
           </div>
         </div>
         <div className={styles.footer}>
+          {showAttachedCards ? (
+            <button
+              type="button"
+              className={styles.closeBtn}
+              disabled={!viewedCard}
+              onClick={() => setAttachedListOpen(true)}
+            >
+              {t('CARDS_SHOW_CARD_LIST', { defaultValue: 'Attached Cards' })}
+            </button>
+          ) : null}
           {(canNavigate || onToggleTested || onToggleFlagged) && (
             <div className={styles.footerLeft}>
               {canNavigate && (
@@ -201,6 +222,20 @@ export function CardInfoPopup({
           </button>
         </div>
       </div>
+
+      {attachedListOpen && cardList ? (
+        <CardListPopup
+          cardList={cardList}
+          selected={viewedCard}
+          facedown={facedown}
+          getScanUrl={getScanUrl}
+          onClose={() => setAttachedListOpen(false)}
+          onSelect={(next) => {
+            setViewedCard(next);
+            setAttachedListOpen(false);
+          }}
+        />
+      ) : null}
     </div>,
     document.body,
   );

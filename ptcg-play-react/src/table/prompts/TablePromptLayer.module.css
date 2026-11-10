@@ -241,6 +241,13 @@
   gap: 10px;
 }
 
+/* 2D fallback when floating HUD has no 3D pixel anchor */
+.removeDamageBarAdjust {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .removeDamageRoundBtn {
   width: 46px;
   height: 46px;

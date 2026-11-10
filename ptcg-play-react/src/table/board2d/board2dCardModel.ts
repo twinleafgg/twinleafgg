@@ -54,19 +54,24 @@ function emptyModel(overrides: Partial<Board2dCardModel> = {}): Board2dCardModel
   };
 }
 
+function cardHasTag(card: Card | undefined, tag: CardTag): boolean {
+  // Socket state cards are plain objects — no Card.prototype.hasTag.
+  return !!card?.tags?.includes(tag);
+}
+
 function getBreakDisplay(cardList: PokemonCardList): { mainCard?: Card; breakCard?: Card } {
   const pokemon = cardList.getPokemonCard();
   if (!pokemon) {
     return {};
   }
-  if (pokemon.hasTag(CardTag.BREAK)) {
+  if (cardHasTag(pokemon, CardTag.BREAK)) {
     const prior = [...cardList.cards]
       .reverse()
       .find(
         (c) =>
           c.superType === SuperType.POKEMON &&
           c !== pokemon &&
-          !c.hasTag(CardTag.BREAK),
+          !cardHasTag(c, CardTag.BREAK),
       );
     return { mainCard: prior ?? pokemon, breakCard: pokemon };
   }
@@ -109,7 +114,7 @@ export function buildBoard2dCardModel(
     let vunionTopRightCard: Card | undefined;
     let vunionBottomLeftCard: Card | undefined;
     let vunionBottomRightCard: Card | undefined;
-    if (pokemonCard?.tags.includes(CardTag.POKEMON_VUNION)) {
+    if (cardHasTag(pokemonCard, CardTag.POKEMON_VUNION)) {
       vunionTopLeftCard = cardList.cards.find((c) => c.fullName.includes('(Top Left)'));
       vunionTopRightCard = cardList.cards.find((c) => c.fullName.includes('(Top Right)'));
       vunionBottomLeftCard = cardList.cards.find((c) => c.fullName.includes('(Bottom Left)'));

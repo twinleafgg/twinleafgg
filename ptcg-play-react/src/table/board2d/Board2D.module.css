@@ -188,6 +188,8 @@
 .cellActive {
   grid-area: active;
   align-items: flex-end;
+  /* Active is translateY'd into the bench row — keep it above for hit-testing. */
+  z-index: 4;
 }
 
 /* Same absolute shift for active + zone row so centers stay aligned
@@ -507,7 +509,7 @@
   /* Local bottom = toward hand / bench for both halves (top half is rotated 180°). */
   align-items: flex-end;
   justify-content: center;
-  z-index: 3;
+  z-index: 4;
   padding-bottom: 0;
 }
 

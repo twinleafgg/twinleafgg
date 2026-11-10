@@ -1,0 +1,123 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  /* Above CardInfoPopup (13000). */
+  z-index: 14000;
+  background: rgba(4, 8, 22, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.panel {
+  background: #151927;
+  color: #fafafa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  width: 100%;
+  max-width: min(670px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 20px 24px 20px;
+}
+
+.title {
+  margin: 0 0 16px;
+  text-align: center;
+  font-family: 'Urbanist', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fafafa;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 12px;
+  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 4px 2px 8px;
+}
+
+.cardBtn {
+  padding: 3px;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 10px;
+  line-height: 0;
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.cardBtn:hover {
+  border-color: rgba(69, 144, 88, 0.65);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.cardBtn.selected {
+  border-color: #459058;
+  box-shadow:
+    0 0 0 1px rgba(69, 144, 88, 0.55),
+    0 4px 14px rgba(69, 144, 88, 0.25);
+}
+
+.cardBtn:focus-visible {
+  outline: 2px solid #459058;
+  outline-offset: 2px;
+}
+
+.cardThumb {
+  width: 92px;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.closeBtn {
+  background: linear-gradient(135deg, rgba(112, 114, 120, 0.1), rgba(112, 114, 120, 0.05));
+  border: 1px solid #459058;
+  border-radius: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: #fafafa;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Urbanist', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 20px;
+  min-height: 44px;
+  height: 44px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  background: linear-gradient(135deg, rgba(112, 114, 120, 0.2), rgba(112, 114, 120, 0.1));
+  border-color: #459058;
+  transform: translateY(-1px);
+}

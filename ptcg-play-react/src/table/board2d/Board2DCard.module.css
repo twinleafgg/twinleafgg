@@ -92,6 +92,11 @@
   cursor: pointer;
 }
 
+/* Stadium played by the opponent faces the other way (Angular `isUpsideDown`). */
+.card.upsideDown {
+  transform: rotate(180deg);
+}
+
 .card.asleep {
   transform: rotate(-90deg);
 }
@@ -213,6 +218,33 @@
   pointer-events: none;
 }
 
+.pendingPlaceDamage {
+  position: absolute;
+  top: 18%;
+  right: -10%;
+  z-index: 5;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ff8a80 0%, #e53935 55%, #b71c1c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  border: 1px solid #fff;
+  color: #fff;
+  font-weight: bold;
+  font-size: 9px;
+  text-shadow:
+    -0.5px -0.5px 0 #000,
+    0.5px -0.5px 0 #000,
+    -0.5px 0.5px 0 #000,
+    0.5px 0.5px 0 #000;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .abilityUsed {
   position: absolute;
   top: 50%;
@@ -271,22 +303,22 @@
 }
 
 .poison {
-  background-image: url('/assets/poison-marker.webp');
+  background-image: url('/assets/status-conditions/poison-marker.webp');
 }
 .paralyzedMarker {
-  background-image: url('/assets/paralyzed-marker.webp');
+  background-image: url('/assets/status-conditions/paralyzed-marker.webp');
 }
 .confusedMarker {
-  background-image: url('/assets/confused-marker.webp');
+  background-image: url('/assets/status-conditions/confused-marker.webp');
 }
 .asleepMarker {
-  background-image: url('/assets/asleep-marker.webp');
+  background-image: url('/assets/status-conditions/asleep-marker.webp');
 }
 .burnedMarker {
-  background-image: url('/assets/burned-marker.webp');
+  background-image: url('/assets/status-conditions/burned-marker.webp');
 }
 .imprisonMarker {
-  background-image: url('/assets/imprison-marker.webp');
+  background-image: url('/assets/status-conditions/imprison-marker.webp');
 }
 
 .breakCard {
@@ -314,6 +346,37 @@
   position: absolute;
   transform: translateX(-50%) rotate(90deg) scale(0.75);
   z-index: 1;
+}
+
+.vunionTopLeft,
+.vunionTopRight,
+.vunionBottomLeft,
+.vunionBottomRight {
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.vunionTopLeft {
+  top: -25%;
+  transform: translateX(-25%) scale(0.5);
+}
+
+.vunionTopRight {
+  top: -25%;
+  transform: translateX(25%) scale(0.5);
+}
+
+.vunionBottomLeft {
+  top: 25%;
+  transform: translateX(-25%) scale(0.5);
+}
+
+.vunionBottomRight {
+  top: 25%;
+  transform: translateX(25%) scale(0.5);
 }
 
 .dualStadium {

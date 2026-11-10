@@ -22,6 +22,15 @@ export function slotKey(player: PlayerType, slot: SlotType, index = 0): string {
   return `${player}-${slot}-${index}`;
 }
 
+/** Minimal face-down list for setup previews (card stays secret until game starts). */
+function setupPreviewCardList(card: Card): CardList {
+  return {
+    cards: [card],
+    isSecret: true,
+    isPublic: false,
+  } as CardList;
+}
+
 function DroppableSlot({
   id,
   className,
@@ -98,6 +107,12 @@ export type Board2DPlayerHalfProps = {
   isSelectable: (target: CardTarget) => boolean;
   isSelected: (target: CardTarget) => boolean;
   isAttachTarget: (target: CardTarget) => boolean;
+  getPendingPlaceDamage?: (target: CardTarget) => number;
+  /** Face-down Basics placed during choose-starting setup (Active then Bench). */
+  setupPreviewActive?: Card | null;
+  setupPreviewBench?: ReadonlyMap<number, Card>;
+  /** Empty slots that accept a setup drop / next placement. */
+  isSetupDropTarget?: (target: CardTarget) => boolean;
   onActiveClick: () => void;
   onBenchClick: (index: number) => void;
   onActiveContextMenu?: () => void;
@@ -122,6 +137,10 @@ export function Board2DPlayerHalf({
   isSelectable,
   isSelected,
   isAttachTarget,
+  getPendingPlaceDamage,
+  setupPreviewActive,
+  setupPreviewBench,
+  isSetupDropTarget,
   onActiveClick,
   onBenchClick,
   onActiveContextMenu,
@@ -168,20 +187,34 @@ export function Board2DPlayerHalf({
             onContextMenu={onActiveContextMenu}
           >
             <div data-slot-key={activeKey} data-board2d-active={side} style={{ width: '100%', height: '100%' }}>
-              <Board2DCard
-                cardList={player?.active}
-                owner={isOwner}
-                scanUrl={scanUrl}
-                selectable={isSelectable(activeTarget)}
-                selected={isSelected(activeTarget)}
-                attachTarget={isAttachTarget(activeTarget)}
-                onEnergyClick={(c) =>
-                  player?.active && onEnergyClick(c, activeTarget, player.active)
-                }
-                onToolClick={(c) =>
-                  player?.active && onToolClick(c, activeTarget, player.active)
-                }
-              />
+              {setupPreviewActive && !(player?.active?.cards?.length) ? (
+                <Board2DCard
+                  cardList={setupPreviewCardList(setupPreviewActive)}
+                  owner={isOwner}
+                  faceDown
+                  scanUrl={scanUrl}
+                  sleeveUrl={deckSleeve}
+                  attachTarget={!!isSetupDropTarget?.(activeTarget)}
+                />
+              ) : (
+                <Board2DCard
+                  cardList={player?.active}
+                  owner={isOwner}
+                  scanUrl={scanUrl}
+                  selectable={isSelectable(activeTarget)}
+                  selected={isSelected(activeTarget)}
+                  attachTarget={
+                    isAttachTarget(activeTarget) || !!isSetupDropTarget?.(activeTarget)
+                  }
+                  pendingPlaceDamage={getPendingPlaceDamage?.(activeTarget) ?? 0}
+                  onEnergyClick={(c) =>
+                    player?.active && onEnergyClick(c, activeTarget, player.active)
+                  }
+                  onToolClick={(c) =>
+                    player?.active && onToolClick(c, activeTarget, player.active)
+                  }
+                />
+              )}
             </div>
           </DraggableBoardCard>
         </DroppableSlot>
@@ -215,16 +248,30 @@ export function Board2DPlayerHalf({
                 }
               >
                 <div data-slot-key={key} style={{ width: '100%', height: '100%' }}>
-                  <Board2DCard
-                    cardList={list}
-                    owner={isOwner}
-                    scanUrl={scanUrl}
-                    selectable={isSelectable(target)}
-                    selected={isSelected(target)}
-                    attachTarget={isAttachTarget(target)}
-                    onEnergyClick={(c) => list && onEnergyClick(c, target, list)}
-                    onToolClick={(c) => list && onToolClick(c, target, list)}
-                  />
+                  {setupPreviewBench?.get(i) && !(list?.cards?.length) ? (
+                    <Board2DCard
+                      cardList={setupPreviewCardList(setupPreviewBench.get(i)!)}
+                      owner={isOwner}
+                      faceDown
+                      scanUrl={scanUrl}
+                      sleeveUrl={deckSleeve}
+                      attachTarget={!!isSetupDropTarget?.(target)}
+                    />
+                  ) : (
+                    <Board2DCard
+                      cardList={list}
+                      owner={isOwner}
+                      scanUrl={scanUrl}
+                      selectable={isSelectable(target)}
+                      selected={isSelected(target)}
+                      attachTarget={
+                        isAttachTarget(target) || !!isSetupDropTarget?.(target)
+                      }
+                      pendingPlaceDamage={getPendingPlaceDamage?.(target) ?? 0}
+                      onEnergyClick={(c) => list && onEnergyClick(c, target, list)}
+                      onToolClick={(c) => list && onToolClick(c, target, list)}
+                    />
+                  )}
                 </div>
               </DraggableBoardCard>
             </DroppableSlot>

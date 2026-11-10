@@ -19,6 +19,8 @@ export type CardInfoListPopupProps = {
   allowReveal?: boolean;
   options?: CardInfoPaneOptions;
   isInGame?: boolean;
+  showTags?: boolean;
+  cardTextKerning?: number;
   onClose: () => void;
   onResolve?: (result: CardInfoTableAction & { cardList?: CardList }) => void;
 };
@@ -47,6 +49,8 @@ export function CardInfoListPopup({
   allowReveal = false,
   options,
   isInGame = true,
+  showTags,
+  cardTextKerning,
   onClose,
   onResolve,
 }: CardInfoListPopupProps) {
@@ -129,6 +133,8 @@ export function CardInfoListPopup({
           facedown={faceDownState}
           catalog={catalog}
           getScanUrl={getScanUrl}
+          showTags={showTags}
+          cardTextKerning={cardTextKerning}
           onClose={() => setDetailCard(null)}
           isInGame={isInGame}
           options={options}

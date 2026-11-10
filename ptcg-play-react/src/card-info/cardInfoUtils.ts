@@ -260,6 +260,14 @@ function pokemonCardListTools(cardList: CardList): Card[] {
   return Array.isArray(tools) ? tools : [];
 }
 
+/** Cards + tools on a Pokémon (matches Angular `card-list-pane` allCards). */
+export function getAttachedCardsForList(cardList: CardList | undefined | null): Card[] {
+  if (!cardList) {
+    return [];
+  }
+  return [...(cardList.cards ?? []), ...pokemonCardListTools(cardList)];
+}
+
 export function isToolCardInList(card: Card, cardList?: CardList): boolean {
   if (!cardList) {
     return false;

@@ -19,6 +19,7 @@ import { findItemByTarget, patchDamageForTarget, targetsEqual, cardTargetKey } f
 import { buildPokemonPromptRows, mapPokemonItems } from './pokemonPromptRows';
 import type { PokemonRow } from './pokemonPromptRows';
 import { getPromptPerspectivePlayerId } from './promptPerspective';
+import { useDamageHudAnchorMode } from './useDamageHudAnchorMode';
 import styles from './TablePromptLayer.module.css';
 
 export type PutDamageOverlayProps = {
@@ -41,6 +42,7 @@ export function PutDamageOverlay(props: PutDamageOverlayProps) {
   const [initialDamageMap, setInitialDamageMap] = useState<DamageMap[]>([]);
   const [boardTick, setBoardTick] = useState(0);
   const floatingHudRef = useRef<HTMLDivElement>(null);
+  const { useBarControls } = useDamageHudAnchorMode(boardInteraction);
 
   useEffect(() => {
     const sub = merge(boardInteraction.selectionMode$, boardInteraction.selectedTargets$).subscribe(() =>
@@ -274,6 +276,35 @@ export function PutDamageOverlay(props: PutDamageOverlayProps) {
       <div className={cn(styles.chooseBar, styles.chooseBarWrap)}>
         <div className={styles.chooseBarMessage}>{message}</div>
         <div className={styles.removeDamageBarControls}>
+          {useBarControls ? (
+            <div
+              className={styles.removeDamageBarAdjust}
+              role="group"
+              aria-label={t('PROMPT_PUT_DAMAGE_FLOATING_CONTROLS', {
+                defaultValue: 'Place damage counters',
+              })}
+            >
+              <ShellButton
+                type="button"
+                variant="secondary"
+                className={styles.removeDamageRoundBtn}
+                disabled={removeDisabled}
+                onClick={removeDamage}
+              >
+                −
+              </ShellButton>
+              <span className={styles.removeDamagePending}>{hudDisplayValue}</span>
+              <ShellButton
+                type="button"
+                variant="secondary"
+                className={styles.removeDamageRoundBtn}
+                disabled={addDisabled}
+                onClick={addDamage}
+              >
+                +
+              </ShellButton>
+            </div>
+          ) : null}
           <ShellButton type="button" variant="secondary" onClick={reset}>
             {t('PROMPT_RESET', { defaultValue: 'Reset' })}
           </ShellButton>

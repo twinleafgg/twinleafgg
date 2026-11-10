@@ -12,6 +12,10 @@ export type Board2DHandProps = {
   opponent?: boolean;
   faceDown?: boolean;
   interactive?: boolean;
+  /** When false, clicks still work but drag-to-play is disabled (e.g. during prompts). */
+  dragEnabled?: boolean;
+  /** Hand indices hidden from the row (e.g. Basics already placed during setup). */
+  hiddenHandIndexes?: ReadonlySet<number>;
   playableCardIds?: ReadonlySet<number> | number[];
   selectedHandIndexes?: ReadonlySet<number>;
   selectableHandIndexes?: ReadonlySet<number>;
@@ -26,6 +30,7 @@ function HandCard({
   index,
   src,
   interactive,
+  dragEnabled,
   playable,
   selected,
   selectable,
@@ -37,6 +42,7 @@ function HandCard({
   index: number;
   src: string;
   interactive: boolean;
+  dragEnabled: boolean;
   playable: boolean;
   selected: boolean;
   selectable: boolean;
@@ -44,9 +50,10 @@ function HandCard({
   faceDown: boolean;
   onClick?: () => void;
 }) {
+  const canDrag = interactive && dragEnabled && !faceDown;
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: board2dHandDragId(index),
-    disabled: !interactive || faceDown,
+    disabled: !canDrag,
     data: { type: 'hand', index, card },
   });
 
@@ -64,7 +71,7 @@ function HandCard({
       style={dense && index > 0 ? { marginLeft: -18 } : undefined}
       data-hand-index={index}
       onClick={onClick}
-      {...(interactive ? { ...listeners, ...attributes } : {})}
+      {...(canDrag ? { ...listeners, ...attributes } : {})}
     >
       {faceDown ? (
         <img
@@ -86,6 +93,8 @@ export function Board2DHand({
   opponent = false,
   faceDown = false,
   interactive = false,
+  dragEnabled = true,
+  hiddenHandIndexes,
   playableCardIds,
   selectedHandIndexes,
   selectableHandIndexes,
@@ -98,7 +107,10 @@ export function Board2DHand({
     playableCardIds instanceof Set
       ? playableCardIds
       : new Set(playableCardIds ?? []);
-  const useDense = dense ?? cards.length > 10;
+  const visibleCount = hiddenHandIndexes
+    ? cards.reduce((n, _c, i) => n + (hiddenHandIndexes.has(i) ? 0 : 1), 0)
+    : cards.length;
+  const useDense = dense ?? visibleCount > 10;
 
   return (
     <div
@@ -107,21 +119,27 @@ export function Board2DHand({
     >
       <div className={styles.scroller}>
         <div className={styles.track}>
-          {cards.map((card, index) => (
-            <HandCard
-              key={`${card.id}-${index}`}
-              card={card}
-              index={index}
-              src={scanUrl(card, cardList)}
-              interactive={interactive}
-              playable={!faceDown && playableSet.has(card.id)}
-              selected={!!selectedHandIndexes?.has(index)}
-              selectable={!!selectableHandIndexes?.has(index)}
-              dense={useDense}
-              faceDown={faceDown}
-              onClick={() => onCardClick?.(card, index)}
-            />
-          ))}
+          {cards.map((card, index) => {
+            if (hiddenHandIndexes?.has(index)) {
+              return null;
+            }
+            return (
+              <HandCard
+                key={`${card.id}-${index}`}
+                card={card}
+                index={index}
+                src={scanUrl(card, cardList)}
+                interactive={interactive}
+                dragEnabled={dragEnabled}
+                playable={!faceDown && playableSet.has(card.id)}
+                selected={!!selectedHandIndexes?.has(index)}
+                selectable={!!selectableHandIndexes?.has(index)}
+                dense={useDense}
+                faceDown={faceDown}
+                onClick={() => onCardClick?.(card, index)}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

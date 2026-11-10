@@ -38,6 +38,7 @@ import {
   board2dSlotDropId,
 } from './board2dDropIds';
 import { extraPlayableEvolutionCardIds } from '../evolutionTarget';
+import { getSetupPlaySlotForPickOrder } from '../prompts/chooseCardsHandSelection';
 import {
   handleBoard2dActiveClick,
   handleBoard2dBenchClick,
@@ -309,13 +310,31 @@ export function Board2D(props: Board2DProps) {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedTargets, setSelectedTargets] = useState<CardTarget[]>([]);
   const [dragCard, setDragCard] = useState<Card | null>(null);
+  const [putDamagePreviewTick, setPutDamagePreviewTick] = useState(0);
 
   useEffect(() => {
     const subs = [
       boardInteraction.selectionMode$.subscribe(setSelectionMode),
       boardInteraction.selectedTargets$.subscribe(setSelectedTargets),
+      boardInteraction.putDamagePlacementPreview$.subscribe(() =>
+        setPutDamagePreviewTick((n) => n + 1),
+      ),
     ];
     return () => subs.forEach((s) => s.unsubscribe());
+  }, [boardInteraction]);
+
+  // Cancel click-to-play targeting with Escape (3D cancels on empty click).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') {
+        return;
+      }
+      if (boardInteraction.isHandPlayTargetSelectionActive()) {
+        boardInteraction.cancelHandPlayTargetSelection();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [boardInteraction]);
 
   // 2D board has no card-flight animations — settle WaitPrompts immediately.
@@ -404,6 +423,72 @@ export function Board2D(props: Board2DProps) {
 
   const chooseHandCardsActive = boardInteraction.isChooseHandCardsSelectionActive();
   const legendAssemblyActive = boardInteraction.isLegendAssemblySelectionActive();
+  const startingSetup = boardInteraction.isChooseStartingPokemonsSelectionActive();
+  const setupActiveLocked = boardInteraction.isSetupActiveLocked();
+  const setupSkipActive = boardInteraction.isSetupActivePhaseSkipped();
+
+  const setupHandIndices = useMemo(() => {
+    if (!startingSetup) {
+      return [] as number[];
+    }
+    return boardInteraction.getChooseHandCardSelectionHandIndices();
+  }, [startingSetup, boardInteraction, selectedTargets]);
+
+  const setupHiddenHandIndexes = useMemo(
+    () => (startingSetup ? new Set(setupHandIndices) : undefined),
+    [startingSetup, setupHandIndices],
+  );
+
+  const setupPreviews = useMemo(() => {
+    if (!startingSetup) {
+      return null;
+    }
+    const prompt = boardInteraction.getChooseCardsPrompt();
+    if (!prompt) {
+      return null;
+    }
+    let active: Card | undefined;
+    const bench = new Map<number, Card>();
+    for (let pickOrder = 0; pickOrder < setupHandIndices.length; pickOrder++) {
+      const handIndex = setupHandIndices[pickOrder];
+      const card = bottomCards[handIndex];
+      const slot = getSetupPlaySlotForPickOrder(prompt, pickOrder);
+      if (!card || !slot) {
+        continue;
+      }
+      if (slot.slot === SlotType.ACTIVE) {
+        active = card;
+      } else if (slot.slot === SlotType.BENCH) {
+        bench.set(slot.index, card);
+      }
+    }
+    return { active, bench };
+  }, [startingSetup, boardInteraction, setupHandIndices, bottomCards]);
+
+  const isSetupDropTarget = useCallback(
+    (target: CardTarget) => {
+      if (!startingSetup || target.player !== PlayerType.BOTTOM_PLAYER) {
+        return false;
+      }
+      if (!setupSkipActive && !setupActiveLocked) {
+        return target.slot === SlotType.ACTIVE;
+      }
+      if (target.slot !== SlotType.BENCH) {
+        return false;
+      }
+      const occupied =
+        (bottomPlayer?.bench?.[target.index]?.cards?.length ?? 0) > 0 ||
+        !!setupPreviews?.bench.has(target.index);
+      return !occupied;
+    },
+    [
+      startingSetup,
+      setupSkipActive,
+      setupActiveLocked,
+      bottomPlayer?.bench,
+      setupPreviews,
+    ],
+  );
 
   const handSelectionHighlights = useMemo(() => {
     if (!selectionMode || (!chooseHandCardsActive && !legendAssemblyActive)) {
@@ -413,13 +498,19 @@ export function Board2D(props: Board2DProps) {
     const selected = new Set<number>();
     const selectable = new Set<number>();
 
-    for (const target of selectedTargets) {
-      if (target.player === PlayerType.BOTTOM_PLAYER && target.slot === SlotType.HAND) {
-        selected.add(target.index);
+    // Starting setup: placed Basics leave the hand — no "selected" hand chrome.
+    if (!startingSetup) {
+      for (const target of selectedTargets) {
+        if (target.player === PlayerType.BOTTOM_PLAYER && target.slot === SlotType.HAND) {
+          selected.add(target.index);
+        }
       }
     }
 
     for (let index = 0; index < bottomCards.length; index++) {
+      if (startingSetup && setupHiddenHandIndexes?.has(index)) {
+        continue;
+      }
       const target: CardTarget = {
         player: PlayerType.BOTTOM_PLAYER,
         slot: SlotType.HAND,
@@ -435,6 +526,8 @@ export function Board2D(props: Board2DProps) {
     selectionMode,
     chooseHandCardsActive,
     legendAssemblyActive,
+    startingSetup,
+    setupHiddenHandIndexes,
     selectedTargets,
     bottomCards,
     boardInteraction,
@@ -464,6 +557,23 @@ export function Board2D(props: Board2DProps) {
     [boardInteraction, selectionMode, selectedTargets],
   );
 
+  const getPendingPlaceDamage = useCallback(
+    (target: CardTarget) => {
+      void putDamagePreviewTick;
+      if (!boardInteraction.isPutDamageOverlayActive()) {
+        return 0;
+      }
+      return boardInteraction.getPutDamagePlacementDelta(target);
+    },
+    [boardInteraction, putDamagePreviewTick],
+  );
+
+  const cancelHandPlayIfActive = useCallback(() => {
+    if (boardInteraction.isHandPlayTargetSelectionActive()) {
+      boardInteraction.cancelHandPlayTargetSelection();
+    }
+  }, [boardInteraction]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -474,13 +584,24 @@ export function Board2D(props: Board2DProps) {
     (event: DragStartEvent) => {
       const handIndex = parseBoard2dHandDragId(String(event.active.id));
       if (handIndex != null) {
+        if (
+          boardInteraction.isSelectionActive() &&
+          !boardInteraction.isChooseStartingPokemonsSelectionActive()
+        ) {
+          setDragCard(null);
+          return;
+        }
         const card = bottomPlayerHand?.cards?.[handIndex];
         setDragCard(card ?? null);
         return;
       }
+      if (boardInteraction.isSelectionActive()) {
+        setDragCard(null);
+        return;
+      }
       setDragCard(null);
     },
-    [bottomPlayerHand],
+    [bottomPlayerHand, boardInteraction],
   );
 
   const onDragEnd = useCallback(
@@ -493,6 +614,21 @@ export function Board2D(props: Board2DProps) {
 
       const handIndex = parseBoard2dHandDragId(String(active.id));
       const dropTarget = parseBoard2dDropId(String(over.id));
+
+      if (
+        handIndex != null &&
+        dropTarget &&
+        boardInteraction.isChooseStartingPokemonsSelectionActive()
+      ) {
+        if (isSetupDropTarget(dropTarget)) {
+          boardInteraction.addChooseHandCardForSetup(handIndex);
+        }
+        return;
+      }
+
+      if (boardInteraction.isSelectionActive()) {
+        return;
+      }
 
       if (handIndex != null && dropTarget) {
         void handleBoard2dPlayFromHand(ctx, handIndex, dropTarget);
@@ -515,7 +651,7 @@ export function Board2D(props: Board2DProps) {
         }
       }
     },
-    [canInteract, ctx],
+    [canInteract, ctx, boardInteraction, isSetupDropTarget],
   );
 
   const onHandCardClick = useCallback(
@@ -600,7 +736,11 @@ export function Board2D(props: Board2DProps) {
               className={styles.boardCanvas}
               style={{ transform: boardTransform }}
             >
-              <div className={styles.centerChrome}>
+              <div
+                className={styles.centerChrome}
+                onClick={cancelHandPlayIfActive}
+                role="presentation"
+              >
                 <div className={cn(styles.markerContainer, styles.topMarkers)}>
                   <div
                     className={cn(styles.gxMarker, topPlayer?.usedGX && styles.gxUsed)}
@@ -647,9 +787,11 @@ export function Board2D(props: Board2DProps) {
                   isSelectable={isSelectable}
                   isSelected={isSelected}
                   isAttachTarget={isAttachTarget}
+                  getPendingPlaceDamage={getPendingPlaceDamage}
                   onActiveClick={() => {
                     const list = topPlayer?.active;
-                    const card = list?.cards?.[list.cards.length - 1];
+                    const card =
+                      list?.getPokemonCard?.() ?? list?.cards?.[list.cards.length - 1];
                     if (selectionMode) {
                       const t: CardTarget = {
                         player: PlayerType.TOP_PLAYER,
@@ -671,7 +813,8 @@ export function Board2D(props: Board2DProps) {
                   }}
                   onActiveContextMenu={() => {
                     const list = topPlayer?.active;
-                    const card = list?.cards?.[list.cards.length - 1];
+                    const card =
+                      list?.getPokemonCard?.() ?? list?.cards?.[list.cards.length - 1];
                     if (card && list) {
                       void cardsAdapter.showCardInfo({
                         card,
@@ -726,6 +869,10 @@ export function Board2D(props: Board2DProps) {
                   isSelectable={isSelectable}
                   isSelected={isSelected}
                   isAttachTarget={isAttachTarget}
+                  getPendingPlaceDamage={getPendingPlaceDamage}
+                  setupPreviewActive={setupPreviews?.active}
+                  setupPreviewBench={setupPreviews?.bench}
+                  isSetupDropTarget={isSetupDropTarget}
                   onActiveClick={() => void handleBoard2dActiveClick(ctx)}
                   onBenchClick={(i) => void handleBoard2dBenchClick(ctx, i, 'bottom')}
                   onActiveContextMenu={() => void handleBoard2dActiveInfo(ctx)}
@@ -788,6 +935,8 @@ export function Board2D(props: Board2DProps) {
             cards={bottomCards}
             cardList={bottomPlayerHand ?? bottomPlayer?.hand}
             interactive={canInteract}
+            dragEnabled={!selectionMode || startingSetup}
+            hiddenHandIndexes={setupHiddenHandIndexes}
             playableCardIds={
               chooseHandCardsActive || legendAssemblyActive ? [] : playableIds
             }

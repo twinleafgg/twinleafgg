@@ -72,9 +72,17 @@ async function applyCardInfoResult(
   }
 }
 
+function getActivePokemonCard(list: PokemonCardList | CardList | undefined): Card | undefined {
+  if (!list) {
+    return undefined;
+  }
+  const asPokemon = list as PokemonCardList;
+  return asPokemon.getPokemonCard?.() ?? list.cards?.[list.cards.length - 1];
+}
+
 export async function handleBoard2dActiveClick(ctx: Board2dActionContext): Promise<void> {
   const list = ctx.bottomPlayer?.active;
-  const card = list?.cards?.[list.cards.length - 1];
+  const card = getActivePokemonCard(list);
   if (!card || !list) {
     return;
   }
@@ -97,7 +105,7 @@ export async function handleBoard2dActiveClick(ctx: Board2dActionContext): Promi
 /** Always open card info (e.g. right-click), including during selection. */
 export async function handleBoard2dActiveInfo(ctx: Board2dActionContext): Promise<void> {
   const list = ctx.bottomPlayer?.active;
-  const card = list?.cards?.[list.cards.length - 1];
+  const card = getActivePokemonCard(list);
   if (!card || !list) {
     return;
   }
