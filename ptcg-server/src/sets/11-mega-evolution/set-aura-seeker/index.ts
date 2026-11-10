@@ -10,6 +10,7 @@ import { Gible } from './gible';
 import { Hawlucha } from './hawlucha';
 import { Hitmontop } from './hitmontop';
 import { KorrinasDetermination } from './korrinas-determination';
+import { Kubfu } from './kubfu';
 import { Machamp } from './machamp';
 import { Machoke } from './machoke';
 import { Machop } from './machop';
@@ -20,14 +21,18 @@ import { MegaAbsolZex } from './mega-absol-z-ex';
 import { MegaGarchompZex } from './mega-garchomp-z-ex';
 import { MegaLucarioZex } from './mega-lucario-z-ex';
 import { Meloetta } from './meloetta';
+import { Meowth } from './meowth';
 import { Oricorio } from './oricorio';
 import { Pawmi } from './pawmi';
 import { Pawmo } from './pawmo';
 import { Pawmot } from './pawmot';
+import { Persian } from './persian';
 import { Quagsire } from './quagsire';
+import { RapidStrikeUrshifu } from './rapid-strike-urshifu';
 import { Revavroom } from './revavroom';
 import { Riolu } from './riolu';
 import { Sigilyphex } from './sigilyph-ex';
+import { SingleStrikeUrshifu } from './single-strike-urshifu';
 import { Throh } from './throh';
 import { Trapinch } from './trapinch';
 import { Varoom } from './varoom';
@@ -56,6 +61,9 @@ export const setAuraSeeker: Card[] = [
   new Riolu(),
   new Throh(),
   new Hawlucha(),
+  new Kubfu(),
+  new SingleStrikeUrshifu(),
+  new RapidStrikeUrshifu(),
   new Mawile(),
   new MegaLucarioZex(),
   new Varoom(),
@@ -65,6 +73,8 @@ export const setAuraSeeker: Card[] = [
   new Gible(),
   new Gabite(),
   new MegaGarchompZex(),
+  new Meowth(),
+  new Persian(),
   new Drampa(),
   new CrasherWakesPassion(),
   new KorrinasDetermination(),
