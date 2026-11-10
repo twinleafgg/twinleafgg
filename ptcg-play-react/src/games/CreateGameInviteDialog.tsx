@@ -47,6 +47,8 @@ export function CreateGameInviteDialog({ open, onClose, invitedClientId }: Creat
   const [deckId, setDeckId] = useState<number | null>(null);
   const [timeLimit, setTimeLimit] = useState(1200);
   const [recordingEnabled, setRecordingEnabled] = useState(true);
+  const [undoEnabled, setUndoEnabled] = useState(false);
+  const [deepUndoEnabled, setDeepUndoEnabled] = useState(false);
   const [sandboxMode, setSandboxMode] = useState(false);
   const [sandboxAllPokemonBasic, setSandboxAllPokemonBasic] = useState(false);
   const [sandboxAttacksCostNoEnergy, setSandboxAttacksCostNoEnergy] = useState(false);
@@ -155,6 +157,8 @@ export function CreateGameInviteDialog({ open, onClose, invitedClientId }: Creat
       gs.format = format;
       gs.timeLimit = timeLimit;
       gs.recordingEnabled = recordingEnabled;
+      gs.undoEnabled = undoEnabled;
+      gs.deepUndoEnabled = undoEnabled && deepUndoEnabled;
       gs.sandboxMode = isAdmin ? sandboxMode : false;
       if (gs.sandboxMode) {
         gs.sandboxAllPokemonBasic = sandboxAllPokemonBasic;
@@ -186,6 +190,8 @@ export function CreateGameInviteDialog({ open, onClose, invitedClientId }: Creat
     format,
     timeLimit,
     recordingEnabled,
+    undoEnabled,
+    deepUndoEnabled,
     sandboxMode,
     sandboxAllPokemonBasic,
     sandboxAttacksCostNoEnergy,
@@ -287,6 +293,38 @@ export function CreateGameInviteDialog({ open, onClose, invitedClientId }: Creat
             {t('REACT_CREATE_GAME_RECORDING')}
           </CheckboxField>
         </div>
+
+        <div className={styles.field}>
+          <CheckboxField
+            plain
+            className={styles.checkboxRow}
+            checked={undoEnabled}
+            disabled={submitting}
+            onChange={(e) => {
+              const on = e.target.checked;
+              setUndoEnabled(on);
+              if (!on) {
+                setDeepUndoEnabled(false);
+              }
+            }}
+          >
+            {t('REACT_CREATE_GAME_UNDO', 'Enable Undo')}
+          </CheckboxField>
+        </div>
+
+        {undoEnabled ? (
+          <div className={styles.field}>
+            <CheckboxField
+              plain
+              className={styles.checkboxRow}
+              checked={deepUndoEnabled}
+              disabled={submitting}
+              onChange={(e) => setDeepUndoEnabled(e.target.checked)}
+            >
+              {t('REACT_CREATE_GAME_DEEP_UNDO', 'Allow undo beyond turn start')}
+            </CheckboxField>
+          </div>
+        ) : null}
 
         {isAdmin ? (
           <div className={styles.field}>

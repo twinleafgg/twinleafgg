@@ -8,6 +8,15 @@
       [disabled]="gameState?.deleted">
       {{ 'TABLE_PLAY' | translate }}
     </button>
+    <button class="ptcg-button-colors" mat-stroked-button (click)="shareState()" *ngIf="isPlaying && canShare"
+      [disabled]="gameState?.deleted">
+      {{ 'TABLE_SHARE_STATE' | translate }}
+    </button>
+    <button class="ptcg-button-colors" mat-stroked-button (click)="undo()" *ngIf="isPlaying && undoEnabled"
+      [disabled]="!canUndo || gameState?.deleted"
+      [matTooltip]="!canUndo ? ('TABLE_UNDO_WAIT' | translate) : ''">
+      {{ 'TABLE_UNDO' | translate }}
+    </button>
     <button class="ptcg-button-colors" mat-stroked-button (click)="passTurn()" *ngIf="isPlaying"
       [disabled]="!isYourTurn || gameState?.deleted">
       {{ 'TABLE_END_YOUR_TURN' | translate }}
@@ -20,6 +29,9 @@
   <ng-template #observerActions>
     <button class="ptcg-button-colors" mat-stroked-button (click)="switchSides()" *ngIf="!isSelfPlay">
       {{ 'TABLE_SWITCH_SIDES' | translate }}
+    </button>
+    <button class="ptcg-button-colors" mat-stroked-button (click)="shareState()" *ngIf="canShare">
+      {{ 'TABLE_SHARE_STATE' | translate }}
     </button>
   </ng-template>
 </div>

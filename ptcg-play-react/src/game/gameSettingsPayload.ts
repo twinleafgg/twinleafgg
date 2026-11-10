@@ -11,6 +11,8 @@ export function toGameSettingsPayload(settings: GameSettings): GameSettings {
     sandboxAttacksCostNoEnergy: settings.sandboxAttacksCostNoEnergy === true,
     sandboxRetreatCostsNoEnergy: settings.sandboxRetreatCostsNoEnergy === true,
     selfPlay: settings.selfPlay === true,
+    undoEnabled: settings.undoEnabled === true,
+    deepUndoEnabled: settings.undoEnabled === true && settings.deepUndoEnabled === true,
     rules: { ...settings.rules },
   } as GameSettings;
 }

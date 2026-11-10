@@ -1,4 +1,4 @@
-import { GameSettings, StateSerializer, coerceGameSettings } from '../../game';
+import { GameSettings, StateSerializer, coerceGameSettings, decompressSnapshotPayload } from '../../game';
 import { Client } from '../../game/client/client.interface';
 import { Game } from '../../game/core/game';
 import { isActiveListGame } from '../../game/core/game-list-utils';
@@ -30,6 +30,7 @@ export class CoreSocket {
     this.socket.addListener('core:getInfo', this.getCoreInfo.bind(this));
     this.socket.addListener('core:createGame', this.createGame.bind(this));
     this.socket.addListener('core:createSelfPlayGame', this.createSelfPlayGame.bind(this));
+    this.socket.addListener('core:createSelfPlayFromSnapshot', this.createSelfPlayFromSnapshot.bind(this));
   }
 
   public onConnect(client: Client): void {
@@ -174,6 +175,30 @@ export class CoreSocket {
     response('ok', CoreSocket.buildGameState(game, this.client));
   }
 
+  private createSelfPlayFromSnapshot(
+    params: { stateData?: string; snapshotData?: string },
+    response: Response<GameState>,
+  ): void {
+    try {
+      let payload: Parameters<Core['createSelfPlayFromState']>[1];
+      if (params.snapshotData) {
+        const raw = new Base64().decode(params.snapshotData);
+        payload = decompressSnapshotPayload(raw);
+      } else if (params.stateData) {
+        const base64 = new Base64();
+        payload = params.stateData.includes('[') ? params.stateData : base64.decode(params.stateData);
+      } else {
+        response('error', ApiErrorEnum.VALIDATION_INVALID_PARAM);
+        return;
+      }
+      const game = this.core.createSelfPlayFromState(this.client, payload);
+      response('ok', CoreSocket.buildGameState(game, this.client));
+    } catch (error) {
+      console.error('createSelfPlayFromSnapshot failed:', error);
+      response('error', ApiErrorEnum.SERVER_ERROR);
+    }
+  }
+
   public static buildUserInfo(user: User, connected: boolean = true): UserInfo {
     return {
       connected,
@@ -230,6 +255,7 @@ export class CoreSocket {
       const base64 = new Base64();
       stateData = base64.encode(serializedState);
     }
+    const undo = client ? game.getUndoAvailability(client) : { canUndo: false };
     return {
       gameId: game.id,
       stateData,
@@ -237,7 +263,11 @@ export class CoreSocket {
       recordingEnabled: game.gameSettings.recordingEnabled,
       timeLimit: game.gameSettings.timeLimit,
       playerStats: game.playerStats,
-      format: game.format
+      format: game.format,
+      undoEnabled: game.gameSettings.undoEnabled === true,
+      deepUndoEnabled: game.gameSettings.deepUndoEnabled === true,
+      canUndo: undo.canUndo,
+      undoOwnerId: undo.undoOwnerId,
     };
   }
 
@@ -245,6 +275,7 @@ export class CoreSocket {
     this.socket.removeListener('core:getInfo');
     this.socket.removeListener('core:createGame');
     this.socket.removeListener('core:createSelfPlayGame');
+    this.socket.removeListener('core:createSelfPlayFromSnapshot');
   }
 
   private isBotClient(client: Client): boolean {

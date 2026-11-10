@@ -1,0 +1,35 @@
+<h2 mat-dialog-title translate>REACT_SHARE_STATE_TITLE</h2>
+
+<mat-dialog-content>
+  <mat-progress-bar *ngIf="loading" color="accent" mode="indeterminate" class="ptcg-u-top">
+  </mat-progress-bar>
+
+  <p class="hint" translate>REACT_SHARE_STATE_HINT</p>
+
+  <p class="status" *ngIf="loading && !code" translate>REACT_SHARE_STATE_CREATING</p>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="code-block" *ngIf="code">
+    <div class="code-label" translate>REACT_SHARE_STATE_CODE</div>
+    <code class="code-value">{{ code }}</code>
+  </div>
+
+  <p class="copied" *ngIf="copied" translate>REACT_SHARE_STATE_COPIED</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button color="primary" *ngIf="code" [disabled]="loading" (click)="copyLink()">
+    {{ 'REACT_SHARE_STATE_COPY' | translate }}
+  </button>
+  <button mat-stroked-button color="primary" *ngIf="code && snapshotData" [disabled]="loading" (click)="downloadFile()">
+    {{ 'REACT_SHARE_STATE_DOWNLOAD' | translate }}
+  </button>
+  <button mat-stroked-button color="primary" *ngIf="!loading && error" (click)="createShare()">
+    {{ 'BUTTON_RETRY' | translate }}
+  </button>
+  <span class="spacer"></span>
+  <button mat-stroked-button [disabled]="loading" (click)="close()">
+    {{ 'BUTTON_CLOSE' | translate }}
+  </button>
+</mat-dialog-actions>

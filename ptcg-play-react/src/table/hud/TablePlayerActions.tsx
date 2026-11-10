@@ -24,6 +24,8 @@ export type TablePlayerActionsProps = {
   isPlaying: boolean;
   isObserver: boolean;
   onPassTurn: () => void;
+  onUndo?: () => void;
+  onShareState?: () => void;
   onLeave: () => void;
   onSwitchSides: () => void;
 };
@@ -31,7 +33,17 @@ export type TablePlayerActionsProps = {
 export function TablePlayerActions(props: TablePlayerActionsProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { localGame, clientId, isPlaying, isObserver, onPassTurn, onLeave, onSwitchSides } = props;
+  const {
+    localGame,
+    clientId,
+    isPlaying,
+    isObserver,
+    onPassTurn,
+    onUndo,
+    onShareState,
+    onLeave,
+    onSwitchSides,
+  } = props;
   const state = localGame.state;
   const activePlayer = state.players[state.activePlayer];
   const isYourTurn =
@@ -40,6 +52,8 @@ export function TablePlayerActions(props: TablePlayerActionsProps) {
     state.phase === GamePhase.PLAYER_TURN &&
     !localGame.replay;
   const isAdmin = user?.roleId === 4;
+  const undoEnabled = localGame.undoEnabled === true;
+  const canUndo = localGame.canUndo === true;
 
   const deleted = localGame.deleted;
 
@@ -50,6 +64,11 @@ export function TablePlayerActions(props: TablePlayerActionsProps) {
           <ShellButton type="button" variant="secondary" className={styles.compactBtn} onClick={onSwitchSides}>
             {t('TABLE_SWITCH_SIDES')}
           </ShellButton>
+          {onShareState ? (
+            <ShellButton type="button" variant="secondary" className={styles.compactBtn} onClick={onShareState}>
+              {t('TABLE_SHARE_STATE', 'Share')}
+            </ShellButton>
+          ) : null}
           <ShellButton type="button" variant="secondary" className={styles.compactBtn} onClick={onLeave}>
             {t('BUTTON_LEAVE')}
           </ShellButton>
@@ -60,6 +79,27 @@ export function TablePlayerActions(props: TablePlayerActionsProps) {
           <ShellButton type="button" variant="secondary" className={styles.compactBtn} onClick={onLeave} disabled={!!deleted}>
             {t('BUTTON_LEAVE')}
           </ShellButton>
+          {onShareState ? (
+            <ShellButton type="button" variant="secondary" className={styles.compactBtn} onClick={onShareState} disabled={!!deleted}>
+              {t('TABLE_SHARE_STATE', 'Share')}
+            </ShellButton>
+          ) : null}
+          {undoEnabled && onUndo ? (
+            <ShellButton
+              type="button"
+              variant="secondary"
+              className={styles.compactBtn}
+              onClick={onUndo}
+              disabled={!canUndo || !!deleted}
+              title={
+                canUndo
+                  ? undefined
+                  : t('TABLE_UNDO_WAIT', 'Waiting for opponent to undo')
+              }
+            >
+              {t('TABLE_UNDO', 'Undo')}
+            </ShellButton>
+          ) : null}
           <ShellButton type="button" className={cn(styles.compactBtn, styles.compactPrimary)} onClick={onPassTurn} disabled={!isYourTurn || !!deleted}>
             {t('TABLE_END_YOUR_TURN')}
           </ShellButton>

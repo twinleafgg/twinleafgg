@@ -10,6 +10,7 @@ export * from './messages';
 export * from './profile';
 export * from './ranking';
 export * from './replays';
+export * from './snapshots';
 export * from './reset-password';
 export * from './sleeves';
 export * from './deck-boxes';

@@ -42,6 +42,10 @@ export interface LocalGameState extends GameState {
   logs: StateLog[];
   replayPosition: number;
   replay?: Replay;
+  /** Set when opened from match history / spectate replay. */
+  matchId?: number;
+  /** Set when opened from saved replays. */
+  replayId?: number;
   enhancedPlayerStats?: PlayerGameStats[];
   /** Last full serialized state for applying live diffs. */
   serializedBase?: string;

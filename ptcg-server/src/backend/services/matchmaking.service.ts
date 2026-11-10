@@ -196,6 +196,8 @@ export class MatchmakingService {
         gameSettings.recordingEnabled = true;
         gameSettings.sandboxMode = sandboxMode;
         gameSettings.selfPlay = false;
+        gameSettings.undoEnabled = false;
+        gameSettings.deepUndoEnabled = false;
 
         console.log(`[Matchmaking] Creating game between ${player1.client.name} and ${player2.client.name}`);
 

@@ -97,12 +97,20 @@ export function gameStateToLocal(gs: GameState, replay?: LocalGameState['replay'
   };
 }
 
+export type StateChangeExtras = {
+  undoEnabled?: boolean;
+  deepUndoEnabled?: boolean;
+  canUndo?: boolean;
+  undoOwnerId?: number;
+};
+
 export function mergeStateChange(
   prev: LocalGameState,
   stateData: string,
   playerStats: import('ptcg-server').PlayerStats[] | undefined,
   isDiff?: boolean,
   viewKey?: string,
+  extras?: StateChangeExtras,
 ): LocalGameState {
   // Diffs are only valid against the same sanitized view (self-play focus / seat).
   if (isDiff && viewKey && prev.viewKey && viewKey !== prev.viewKey) {
@@ -130,5 +138,9 @@ export function mergeStateChange(
     enhancedPlayerStats,
     serializedBase,
     viewKey: viewKey ?? prev.viewKey,
+    undoEnabled: extras?.undoEnabled ?? prev.undoEnabled,
+    deepUndoEnabled: extras?.deepUndoEnabled ?? prev.deepUndoEnabled,
+    canUndo: extras?.canUndo ?? prev.canUndo,
+    undoOwnerId: extras?.undoOwnerId ?? prev.undoOwnerId,
   };
 }

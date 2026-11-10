@@ -13,6 +13,7 @@ import { AlertService } from '../../shared/alert/alert.service';
 import { DeckService } from '../../api/services/deck.service';
 import { MainService } from '../../api/services/main.service';
 import { GameService } from '../../api/services/game.service';
+import { PlaySnapshotPopupService } from '../play-snapshot-popup/play-snapshot-popup.service';
 
 @UntilDestroy()
 @Component({
@@ -36,7 +37,8 @@ export class PlayersComponent implements OnInit {
     private translate: TranslateService,
     private router: Router,
     private profileService: ProfileService,
-    private gameService: GameService
+    private gameService: GameService,
+    private playSnapshotPopupService: PlaySnapshotPopupService,
   ) {
     this.clients$ = this.sessionService.get(
       session => session.users,
@@ -75,6 +77,10 @@ export class PlayersComponent implements OnInit {
 
   public openSelfPlay() {
     this.router.navigate(['/games/self-play']);
+  }
+
+  public playFromSharedState() {
+    this.playSnapshotPopupService.openDialog();
   }
 
   public createGame(invitedId?: number) {

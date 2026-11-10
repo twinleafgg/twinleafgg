@@ -13,6 +13,8 @@ import { PlayersComponent } from './players/players.component';
 import { OnlinePlayersComponent } from './online-players/online-players.component';
 import { ChangeDeckDialogComponent } from './change-deck-dialog/change-deck-dialog.component';
 import { SelfPlayPageComponent } from './self-play-page/self-play-page.component';
+import { PlaySnapshotPopupComponent } from './play-snapshot-popup/play-snapshot-popup.component';
+import { PlaySnapshotPageComponent } from './play-snapshot-page/play-snapshot-page.component';
 
 @NgModule({
     declarations: [
@@ -27,7 +29,9 @@ import { SelfPlayPageComponent } from './self-play-page/self-play-page.component
         PlayersComponent,
         OnlinePlayersComponent,
         ChangeDeckDialogComponent,
-        SelfPlayPageComponent
+        SelfPlayPageComponent,
+        PlaySnapshotPopupComponent,
+        PlaySnapshotPageComponent,
     ],
     imports: [
         SharedModule

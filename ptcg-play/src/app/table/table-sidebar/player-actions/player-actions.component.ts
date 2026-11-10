@@ -5,7 +5,9 @@ import { AlertService } from '../../../shared/alert/alert.service';
 import { GameService } from '../../../api/services/game.service';
 import { LocalGameState } from '../../../shared/session/session.interface';
 import { SessionService } from '../../../shared/session/session.service';
+import { ShareStatePopupService } from '../share-state-popup/share-state-popup.service';
 import { GamePhase } from 'ptcg-server';
+
 
 @Component({
   selector: 'ptcg-player-actions',
@@ -23,11 +25,16 @@ export class PlayerActionsComponent implements OnChanges {
   public isPlaying = false;
   public isYourTurn = false;
   public isSelfPlay = false;
+  public isReplay = false;
+  public canShare = false;
+  public undoEnabled = false;
+  public canUndo = false;
 
   constructor(
     private alertService: AlertService,
     private gameService: GameService,
     private sessionService: SessionService,
+    private shareStatePopupService: ShareStatePopupService,
     private translate: TranslateService
   ) { }
 
@@ -55,6 +62,45 @@ export class PlayerActionsComponent implements OnChanges {
       return;
     }
     this.gameService.passTurnAction(this.gameState.gameId);
+  }
+
+  public undo() {
+    if (!this.gameState || !this.gameState.gameId || !this.canUndo) {
+      return;
+    }
+    this.gameService.undoAction(this.gameState.gameId);
+  }
+
+  public shareState() {
+    if (!this.gameState || !this.canShare) {
+      return;
+    }
+
+    if (this.gameState.replay) {
+      if (typeof this.gameState.matchId === 'number') {
+        this.shareStatePopupService.openDialog({
+          matchId: this.gameState.matchId,
+          position: Math.max(0, (this.gameState.replayPosition || 1) - 1),
+        });
+        return;
+      }
+      if (typeof this.gameState.replayId === 'number') {
+        this.shareStatePopupService.openDialog({
+          replayId: this.gameState.replayId,
+          position: Math.max(0, (this.gameState.replayPosition || 1) - 1),
+        });
+        return;
+      }
+      return;
+    }
+
+    if (!this.gameState.gameId || this.gameState.deleted) {
+      return;
+    }
+
+    this.shareStatePopupService.openDialog({
+      gameId: this.gameState.gameId,
+    });
   }
 
   public switchSides() {
@@ -89,13 +135,20 @@ export class PlayerActionsComponent implements OnChanges {
       return;
     }
     this.isSelfPlay = this.gameState.state?.gameSettings?.selfPlay === true;
+    this.isReplay = !!this.gameState.replay;
+    this.undoEnabled = this.gameState.undoEnabled === true;
+    this.canUndo = this.gameState.canUndo === true;
+
     if (this.gameState.replay) {
       this.isObserver = true;
       this.isPlaying = false;
       this.isYourTurn = false;
+      this.canShare = typeof this.gameState.matchId === 'number'
+        || typeof this.gameState.replayId === 'number';
       return;
     }
     if (!this.clientId) {
+      this.canShare = false;
       return;
     }
     const state = this.gameState.state;
@@ -108,6 +161,7 @@ export class PlayerActionsComponent implements OnChanges {
     this.isPlaying = state.players.some(p => p.id === this.clientId);
     const waitingForPlayers = state.players.length < 2;
     this.isObserver = !this.isPlaying && !waitingForPlayers;
+    this.canShare = this.isPlaying && !!this.gameState.gameId && !this.gameState.deleted;
   }
 
 }

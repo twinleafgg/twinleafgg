@@ -1,0 +1,60 @@
+.hint {
+  margin: 0 0 16px;
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
+.status {
+  margin: 0 0 12px;
+  opacity: 0.8;
+}
+
+.error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(180, 40, 40, 0.18);
+  border: 1px solid rgba(220, 100, 100, 0.4);
+  color: #ffd0d0;
+}
+
+.code-block {
+  margin: 8px 0 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  text-align: center;
+}
+
+.code-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.code-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  user-select: all;
+}
+
+.copied {
+  margin: 0 0 8px;
+  text-align: center;
+  color: #8cdcaa;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+mat-dialog-actions {
+  gap: 8px;
+  flex-wrap: wrap;
+}

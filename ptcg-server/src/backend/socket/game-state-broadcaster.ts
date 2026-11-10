@@ -186,11 +186,22 @@ export class GameStateBroadcaster {
       });
 
       const stateData = this.base64.encode(payloadSerialized);
+      const undoEnabled = game.gameSettings.undoEnabled === true;
+      const deepUndoEnabled = game.gameSettings.deepUndoEnabled === true;
+      const selfPlay = game.gameSettings.selfPlay === true;
+      const seatId = viewKey.startsWith('p') ? Number(viewKey.slice(1)) : viewer.playerId;
+      const undo = undoEnabled
+        ? game.getUndoAvailabilityForPlayer(seatId, selfPlay)
+        : { canUndo: false as boolean, undoOwnerId: undefined as number | undefined };
       io.to(gameViewRoom(game.id, viewKey)).emit(`game[${game.id}]:stateChange`, {
         stateData,
         playerStats,
         isDiff,
         viewKey,
+        undoEnabled,
+        deepUndoEnabled,
+        canUndo: undo.canUndo,
+        undoOwnerId: undo.undoOwnerId,
       });
     }
   }
@@ -222,11 +233,16 @@ export class GameStateBroadcaster {
     });
 
     const stateData = this.base64.encode(fullSerialized);
+    const undo = game.getUndoAvailability(client);
     client.socket.emit(`game[${game.id}]:stateChange`, {
       stateData,
       playerStats: game.playerStats,
       isDiff: false,
       viewKey,
+      undoEnabled: game.gameSettings.undoEnabled === true,
+      deepUndoEnabled: game.gameSettings.deepUndoEnabled === true,
+      canUndo: undo.canUndo,
+      undoOwnerId: undo.undoOwnerId,
     });
   }
 

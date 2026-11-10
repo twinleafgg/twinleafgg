@@ -157,6 +157,12 @@ export class CreateGamePageComponent implements OnInit {
     }
   }
 
+  public onUndoEnabledChange(enabled: boolean) {
+    if (!enabled) {
+      this.settings.deepUndoEnabled = false;
+    }
+  }
+
   public onFormatSelected(format: Format) {
     this.settings.format = format;
     this.deckEntries = this.decks.filter(d => {

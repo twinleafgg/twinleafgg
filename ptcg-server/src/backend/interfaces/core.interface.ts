@@ -48,6 +48,10 @@ export interface GameState {
   recordingEnabled: boolean;
   playerStats: PlayerStats[];
   format?: Format;
+  undoEnabled?: boolean;
+  deepUndoEnabled?: boolean;
+  canUndo?: boolean;
+  undoOwnerId?: number;
 }
 
 export interface UserInfo {

@@ -1,0 +1,22 @@
+.hint {
+  margin: 0 0 16px;
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
+.error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(180, 40, 40, 0.18);
+  border: 1px solid rgba(220, 100, 100, 0.4);
+  color: #ffd0d0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-dialog-actions {
+  gap: 8px;
+}

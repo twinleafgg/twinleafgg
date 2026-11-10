@@ -1,4 +1,4 @@
-import { NgModule, forwardRef } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { PlayerBarComponent } from './player-bar/player-bar.component';
@@ -11,6 +11,7 @@ import { ReplayControlsComponent } from './replay-controls/replay-controls.compo
 import { ChooseAvatarPopupComponent } from './choose-avatar-popup/choose-avatar-popup.component';
 import { PlayerAvatarComponent } from './player-avatar/player-avatar.component';
 import { PlayerTimeComponent } from './player-time/player-time.component';
+import { ShareStatePopupComponent } from './share-state-popup/share-state-popup.component';
 
 @NgModule({
     imports: [
@@ -25,6 +26,7 @@ import { PlayerTimeComponent } from './player-time/player-time.component';
         PlayerAvatarComponent,
         PlayerBarComponent,
         ReplayControlsComponent,
+        ShareStatePopupComponent,
         TableSidebarComponent,
         PlayerTimeComponent
     ],

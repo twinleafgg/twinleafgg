@@ -23,6 +23,7 @@ import {
   Profile,
   Ranking,
   Replays,
+  Snapshots,
   ResetPassword,
   BattlePass,
   Sleeves,
@@ -68,7 +69,7 @@ export class App {
     const parseJsonDefault = json({ limit: defaultJsonLimit });
     const parseJsonReplays = json({ limit: config.backend.replayImportJsonBodyLimit });
     app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-      if (req.path.startsWith('/v1/replays')) {
+      if (req.path.startsWith('/v1/replays') || req.path.startsWith('/v1/snapshots')) {
         return parseJsonReplays(req, res, next);
       }
       return parseJsonDefault(req, res, next);
@@ -117,6 +118,7 @@ export class App {
     define('/v1/profile', Profile);
     define('/v1/ranking', Ranking);
     define('/v1/replays', Replays);
+    define('/v1/snapshots', Snapshots);
     define('/v1/resetPassword', ResetPassword);
     define('/v1/battlepass', BattlePass);
     define('/v1/sleeves', Sleeves);

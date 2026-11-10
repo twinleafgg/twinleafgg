@@ -1,0 +1,46 @@
+<h2 mat-dialog-title translate>REACT_SNAPSHOT_PLAY_TITLE</h2>
+
+<mat-dialog-content>
+  <mat-progress-bar *ngIf="loading" color="accent" mode="indeterminate" class="ptcg-u-top">
+  </mat-progress-bar>
+
+  <p class="hint" translate>REACT_SNAPSHOT_PLAY_HINT</p>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <form autocomplete="off" (ngSubmit)="playWithCode()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label translate>REACT_SHARE_STATE_CODE</mat-label>
+      <input
+        matInput
+        name="snapshotCode"
+        [ngModel]="code"
+        (ngModelChange)="onCodeInput($event)"
+        [disabled]="loading"
+        maxlength="16"
+        placeholder="ABCD2345"
+      >
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label translate>REACT_SNAPSHOT_IMPORT_FILE</mat-label>
+      <ptcg-file-input
+        name="snapshotFile"
+        accept=".ptcgsnap,.txt,text/plain"
+        [disabled]="loading"
+        [(ngModel)]="snapshotFile"
+        (ngModelChange)="onFileChange($event)"
+      >
+      </ptcg-file-input>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button [disabled]="loading" (click)="cancel()">
+    {{ 'BUTTON_CANCEL' | translate }}
+  </button>
+  <button mat-flat-button color="primary" [disabled]="loading || !code.trim()" (click)="playWithCode()">
+    {{ 'REACT_SNAPSHOT_PLAY' | translate }}
+  </button>
+</mat-dialog-actions>

@@ -7,6 +7,7 @@ export * from './friend-request';
 export * from './match';
 export * from './message';
 export * from './replay';
+export * from './game-snapshot';
 export * from './sleeve';
 export * from './deck-box';
 export * from './coin';

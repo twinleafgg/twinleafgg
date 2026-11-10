@@ -16,6 +16,10 @@ import styles from './TableGameLogToasts.module.css';
 
 const VISIBLE_MS = 4000;
 const EXIT_MS = 480;
+/** Max toast bubbles on screen at once. */
+const MAX_VISIBLE_TOASTS = 4;
+/** If more than this many new logs arrive in one update, treat as catch-up (join/replay scrub). */
+const CATCH_UP_BATCH_SIZE = 4;
 
 type ToastItem = {
   log: StateLog;
@@ -70,6 +74,8 @@ export function TableGameLogToasts(props: TableGameLogToastsProps) {
   const schedulerGenRef = useRef(0);
   const gameKeyRef = useRef(localGame.localId);
   const committedMaxLogIdRef = useRef(0);
+  /** First log snapshot for a game is baseline history — never toast it. */
+  const hasSyncedRef = useRef(false);
   const runExitSchedulerRef = useRef<() => void>(() => {});
 
   const activePlayerId =
@@ -167,6 +173,7 @@ export function TableGameLogToasts(props: TableGameLogToastsProps) {
       gameKeyRef.current = localGame.localId;
       displayedIdsRef.current.clear();
       committedMaxLogIdRef.current = 0;
+      hasSyncedRef.current = false;
       resetScheduler();
       setToasts([]);
     }
@@ -179,6 +186,19 @@ export function TableGameLogToasts(props: TableGameLogToastsProps) {
 
     const maxLogId = maxLogIdFrom(localGame.logs);
 
+    // Seed from the current snapshot without toasting (join, remount, first paint).
+    if (!hasSyncedRef.current) {
+      hasSyncedRef.current = true;
+      displayedIdsRef.current.clear();
+      for (const log of localGame.logs) {
+        displayedIdsRef.current.add(log.id);
+      }
+      committedMaxLogIdRef.current = maxLogId;
+      resetScheduler();
+      setToasts([]);
+      return;
+    }
+
     if (maxLogId < committedMaxLogIdRef.current) {
       resetScheduler();
       setToasts([]);
@@ -190,25 +210,47 @@ export function TableGameLogToasts(props: TableGameLogToastsProps) {
       return;
     }
 
-    committedMaxLogIdRef.current = Math.max(committedMaxLogIdRef.current, maxLogId);
-
     const newLogs = localGame.logs
       .filter((log) => !displayedIdsRef.current.has(log.id) && !isLogHidden(log, clientId))
       .sort((a, b) => a.id - b.id);
 
     if (newLogs.length === 0) {
+      committedMaxLogIdRef.current = Math.max(committedMaxLogIdRef.current, maxLogId);
       return;
     }
 
-    const batch: ToastItem[] = [];
     for (const log of newLogs) {
       displayedIdsRef.current.add(log.id);
-      const shownAt = Date.now();
-      batch.push({ log, phase: 'visible', shownAt });
-      scheduleExitFor(log.id, shownAt);
+    }
+    committedMaxLogIdRef.current = Math.max(committedMaxLogIdRef.current, maxLogId);
+
+    // Replay scrub / reconnect catch-up: absorb without flooding the screen.
+    if (newLogs.length > CATCH_UP_BATCH_SIZE) {
+      return;
     }
 
-    setToasts((prev) => [...prev, ...batch]);
+    const now = Date.now();
+    const batch: ToastItem[] = newLogs.map((log) => ({
+      log,
+      phase: 'visible' as const,
+      shownAt: now,
+    }));
+    for (const item of batch) {
+      scheduleExitFor(item.log.id, item.shownAt);
+    }
+
+    setToasts((prev) => {
+      const merged = [...prev, ...batch];
+      if (merged.length <= MAX_VISIBLE_TOASTS) {
+        return merged;
+      }
+      const kept = merged.slice(-MAX_VISIBLE_TOASTS);
+      const droppedIds = new Set(
+        merged.slice(0, merged.length - MAX_VISIBLE_TOASTS).map((item) => item.log.id),
+      );
+      pendingExitsRef.current = pendingExitsRef.current.filter((item) => !droppedIds.has(item.logId));
+      return kept;
+    });
   }, [clientId, logCount, logTailId]);
 
   // Repair visible toasts that lost their exit timer (e.g. first toast race on mount).

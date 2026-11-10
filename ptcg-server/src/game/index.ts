@@ -8,6 +8,8 @@ export * from './core/self-play-focus';
 export * from './core/player-stats';
 export * from './core/replay.interface';
 export * from './core/replay';
+export * from './core/game-snapshot';
+export * from './core/undo-history';
 export * from './serializer';
 
 export * from './game-error';

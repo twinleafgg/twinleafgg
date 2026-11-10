@@ -10,6 +10,7 @@ import { SessionService } from '../../shared/session/session.service';
 import { UserInfoMap } from '../../shared/session/session.interface';
 import { FriendsService } from '../../api/services/friends.service';
 import { ProfileService } from '../../api/services/profile.service';
+import { PlaySnapshotPopupService } from '../play-snapshot-popup/play-snapshot-popup.service';
 import { TranslateService } from '@ngx-translate/core';
 
 @UntilDestroy()
@@ -35,6 +36,7 @@ export class OnlinePlayersComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private friendsService: FriendsService,
     private profileService: ProfileService,
+    private playSnapshotPopupService: PlaySnapshotPopupService,
     private translate: TranslateService,
     private router: Router
   ) {
@@ -142,6 +144,10 @@ export class OnlinePlayersComponent implements OnInit, OnDestroy {
 
   public playAgainstYourself() {
     this.selfPlayRequested.emit();
+  }
+
+  public playFromSharedState() {
+    this.playSnapshotPopupService.openDialog();
   }
 
   banUser(userId: number) {

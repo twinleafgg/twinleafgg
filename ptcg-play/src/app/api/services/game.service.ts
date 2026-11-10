@@ -246,6 +246,39 @@ export class GameService {
       .subscribe(() => { }, (error: ApiError) => this.handleError(error));
   }
 
+  public undoAction(gameId: number) {
+    this.socketService.emit('game:action:undo', { gameId })
+      .subscribe(() => { }, (error: ApiError) => this.handleError(error));
+  }
+
+  public createSnapshot(gameId: number) {
+    return this.api.post<{ ok: boolean; code: string; snapshotData: string }>('/v1/snapshots/create', { gameId });
+  }
+
+  public createSnapshotFromMatch(matchId: number, position: number) {
+    return this.api.post<{ ok: boolean; code: string; snapshotData: string }>('/v1/snapshots/create', {
+      matchId,
+      position,
+    });
+  }
+
+  public createSnapshotFromReplay(replayId: number, position: number) {
+    return this.api.post<{ ok: boolean; code: string; snapshotData: string }>('/v1/snapshots/create', {
+      replayId,
+      position,
+    });
+  }
+
+  public getSnapshot(code: string) {
+    return this.api.get<{ ok: boolean; code: string; snapshotData: string }>(
+      '/v1/snapshots/' + encodeURIComponent(code)
+    );
+  }
+
+  public playSnapshot(params: { code?: string; snapshotData?: string }) {
+    return this.api.post<{ ok: boolean; game: GameState }>('/v1/snapshots/play', params);
+  }
+
   public appendLogAction(gameId: number, message: string) {
     this.socketService.emit('game:action:appendLog', { gameId, message })
       .subscribe(() => { }, (error: ApiError) => this.handleError(error));
@@ -272,7 +305,16 @@ export class GameService {
       playerStats: PlayerStats[];
       isDiff?: boolean;
       viewKey?: string;
-    }) => this.onStateChange(id, data.stateData, data.playerStats, data.isDiff, data.viewKey));
+      undoEnabled?: boolean;
+      deepUndoEnabled?: boolean;
+      canUndo?: boolean;
+      undoOwnerId?: number;
+    }) => this.onStateChange(id, data.stateData, data.playerStats, data.isDiff, data.viewKey, {
+      undoEnabled: data.undoEnabled,
+      deepUndoEnabled: data.deepUndoEnabled,
+      canUndo: data.canUndo,
+      undoOwnerId: data.undoOwnerId,
+    }));
     this.socketService.on(`game[${id}]:timerUpdate`, (data: { playerStats: PlayerStats[] }) =>
       this.onTimerUpdate(id, data.playerStats));
 
@@ -347,7 +389,13 @@ export class GameService {
     stateData: string,
     playerStats: PlayerStats[],
     isDiff?: boolean,
-    viewKey?: string
+    viewKey?: string,
+    extras?: {
+      undoEnabled?: boolean;
+      deepUndoEnabled?: boolean;
+      canUndo?: boolean;
+      undoOwnerId?: number;
+    }
   ) {
     const games = this.sessionService.session.gameStates;
     // Prefer the active table, but still accept updates after core:deleteGame marked it deleted
@@ -387,6 +435,10 @@ export class GameService {
         playerStats,
         serializedBase: decoded.serializedBase,
         viewKey: viewKey ?? prev.viewKey,
+        undoEnabled: extras?.undoEnabled ?? prev.undoEnabled,
+        deepUndoEnabled: extras?.deepUndoEnabled ?? prev.deepUndoEnabled,
+        canUndo: extras?.canUndo ?? prev.canUndo,
+        undoOwnerId: extras?.undoOwnerId ?? prev.undoOwnerId,
       };
       this.sessionService.set({ gameStates });
       this.boardInteractionService.updateGameLogs(logs);

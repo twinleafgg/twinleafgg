@@ -235,6 +235,8 @@ export class SelfPlayPageComponent implements OnInit {
     gs.format = this.settings.format;
     gs.timeLimit = this.settings.timeLimit;
     gs.recordingEnabled = this.settings.recordingEnabled;
+    gs.undoEnabled = this.settings.undoEnabled === true;
+    gs.deepUndoEnabled = gs.undoEnabled && this.settings.deepUndoEnabled === true;
     gs.rules = this.settings.rules;
     gs.sandboxMode = this.isAdmin && this.settings.sandboxMode === true;
     if (gs.sandboxMode) {
@@ -244,6 +246,12 @@ export class SelfPlayPageComponent implements OnInit {
     }
     gs.selfPlay = true;
     return gs;
+  }
+
+  public onUndoEnabledChange(enabled: boolean) {
+    if (!enabled) {
+      this.settings.deepUndoEnabled = false;
+    }
   }
 
   private decksForFormat(format: Format): DeckListEntry[] {

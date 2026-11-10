@@ -346,6 +346,16 @@ export class Store implements StoreLike {
     this.state = new State();
   }
 
+  /** Replace live state after undo/snapshot restore. Drops prompt callback chains. */
+  public restoreState(state: State): State {
+    this.promptItems = [];
+    this.waitItems = [];
+    this.trainerPromptSources.clear();
+    this.resolvingTrainer = undefined;
+    this.state = state;
+    return state;
+  }
+
   private reduce(state: State, action: Action): State {
     const stateBackup = deepClone(state, [Card]);
     this.promptItems.length = 0;

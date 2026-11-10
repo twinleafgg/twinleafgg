@@ -12,6 +12,7 @@ import { updateUserRole } from '../api/profileApi';
 import { ApiError } from '../api/apiError';
 import { CreateGameInviteDialog } from './CreateGameInviteDialog';
 import { SelfPlayGameDialog } from './SelfPlayGameDialog';
+import { PlayFromSnapshotDialog } from './PlayFromSnapshotDialog';
 import styles from './OnlinePlayersSidebar.module.css';
 
 const MAX_ROWS = 20;
@@ -59,6 +60,7 @@ export function OnlinePlayersSidebar({
     [onSelfPlayOpenChange],
   );
   const [friendActionUserId, setFriendActionUserId] = useState<number | null>(null);
+  const [snapshotPlayOpen, setSnapshotPlayOpen] = useState(false);
 
   const friendsHeaderId = `${useId()}-friends`;
   const onlineHeaderId = `${useId()}-online`;
@@ -297,6 +299,10 @@ export function OnlinePlayersSidebar({
                         setSelfPlayOpenLocal(true);
                         setOpenMenuKey(null);
                       }}
+                      onPlaySnapshot={() => {
+                        setSnapshotPlayOpen(true);
+                        setOpenMenuKey(null);
+                      }}
                       onSendFriendRequest={() => void onSendFriendRequest(row.user.userId)}
                       onBanToggle={() => void onBanToggle(row.user)}
                     />
@@ -314,6 +320,9 @@ export function OnlinePlayersSidebar({
           invitedClientId={inviteClientId}
           onClose={() => setInviteClientId(null)}
         />
+      ) : null}
+      {snapshotPlayOpen ? (
+        <PlayFromSnapshotDialog open onClose={() => setSnapshotPlayOpen(false)} />
       ) : null}
     </aside>
   );
@@ -503,6 +512,7 @@ type OnlinePlayerRowProps = {
   onCloseMenu: () => void;
   onInvite: () => void;
   onSelfPlay: () => void;
+  onPlaySnapshot: () => void;
   onSendFriendRequest: () => void;
   onBanToggle: () => void;
 };
@@ -525,6 +535,7 @@ function OnlinePlayerRow({
   onCloseMenu,
   onInvite,
   onSelfPlay,
+  onPlaySnapshot,
   onSendFriendRequest,
   onBanToggle,
 }: OnlinePlayerRowProps) {
@@ -641,11 +652,18 @@ function OnlinePlayerRow({
                 </li>
               ) : null}
               {isSelf ? (
-                <li role="none">
-                  <button type="button" role="menuitem" className={styles.menuItem} onClick={onSelfPlay}>
-                    {t('REACT_MENU_SELF_PLAY')}
-                  </button>
-                </li>
+                <>
+                  <li role="none">
+                    <button type="button" role="menuitem" className={styles.menuItem} onClick={onSelfPlay}>
+                      {t('REACT_MENU_SELF_PLAY')}
+                    </button>
+                  </li>
+                  <li role="none">
+                    <button type="button" role="menuitem" className={styles.menuItem} onClick={onPlaySnapshot}>
+                      {t('REACT_MENU_PLAY_SNAPSHOT', 'Play from shared state')}
+                    </button>
+                  </li>
+                </>
               ) : null}
               {!isSelf && showInvite ? (
                 <li role="none">

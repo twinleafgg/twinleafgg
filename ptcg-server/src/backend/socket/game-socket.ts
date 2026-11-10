@@ -50,6 +50,7 @@ export class GameSocket {
     this.socket.addListener('game:action:reorderBench', this.reorderBench.bind(this));
     this.socket.addListener('game:action:reorderHand', this.reorderHand.bind(this));
     this.socket.addListener('game:action:passTurn', this.passTurn.bind(this));
+    this.socket.addListener('game:action:undo', this.undo.bind(this));
     this.socket.addListener('game:action:appendLog', this.appendLog.bind(this));
     this.socket.addListener('game:action:changeAvatar', this.changeAvatar.bind(this));
     // Sandbox actions
@@ -311,6 +312,29 @@ export class GameSocket {
     this.dispatch(params.gameId, action, response);
   }
 
+  private undo(params: { gameId: number }, response: Response<{ canUndo: boolean; undoOwnerId?: number }>) {
+    const game = this.core.games.find(g => g.id === params.gameId);
+    if (game === undefined) {
+      response('error', ApiErrorEnum.GAME_INVALID_ID);
+      return;
+    }
+    const isSeated = game.state.players.some(p => p.id === this.client.id)
+      || game.isSelfPlayForUser(this.client.user.id);
+    if (!isSeated) {
+      response('error', ApiErrorEnum.ACTION_INVALID);
+      return;
+    }
+    try {
+      game.undo(this.client);
+      const undo = game.getUndoAvailability(this.client);
+      response('ok', { canUndo: undo.canUndo, undoOwnerId: undo.undoOwnerId });
+    } catch (error: any) {
+      const message = socketErrorMessage(error);
+      console.error('Game undo failed:', message, error);
+      response('error', message as ApiErrorEnum);
+    }
+  }
+
   private appendLog(params: { gameId: number, message: string }, response: Response<void>) {
     const message = (params.message || '').trim();
     if (message.length === 0 || message.length > 256) {
@@ -490,6 +514,7 @@ export class GameSocket {
     this.socket.removeListener('game:action:reorderBench');
     this.socket.removeListener('game:action:reorderHand');
     this.socket.removeListener('game:action:passTurn');
+    this.socket.removeListener('game:action:undo');
     this.socket.removeListener('game:action:appendLog');
     this.socket.removeListener('game:action:changeAvatar');
     this.socket.removeListener('game:sandbox:modifyPlayer');

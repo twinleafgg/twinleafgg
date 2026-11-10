@@ -4,6 +4,7 @@ import { Base64, Replay, GameState, StateSerializer } from 'ptcg-server';
 
 import { ApiService } from '../api.service';
 import { GameService } from './game.service';
+import { SessionService } from '../../shared/session/session.service';
 import { Response } from '../interfaces/response.interface';
 import { ReplayDataResponse, ReplayListResponse, ReplayResponse } from '../interfaces/replay.interface';
 
@@ -13,7 +14,8 @@ export class ReplayService {
 
   constructor(
     private api: ApiService,
-    private gameService: GameService
+    private gameService: GameService,
+    private sessionService: SessionService,
   ) {}
 
   public getList(page: number = 0, query: string = '') {
@@ -42,7 +44,11 @@ export class ReplayService {
           playerStats: []
         };
 
-        return this.gameService.appendGameState(gameState, replay);
+        const local = this.gameService.appendGameState(gameState, replay);
+        if (local) {
+          this.attachReplaySource(local.localId, { matchId });
+        }
+        return local;
       }));
   }
 
@@ -66,8 +72,23 @@ export class ReplayService {
           playerStats: []
         };
 
-        return this.gameService.appendGameState(gameState, replay);
+        const local = this.gameService.appendGameState(gameState, replay);
+        if (local) {
+          this.attachReplaySource(local.localId, { replayId });
+        }
+        return local;
       }));
+  }
+
+  private attachReplaySource(localId: number, source: { matchId?: number; replayId?: number }) {
+    const games = this.sessionService.session.gameStates;
+    const index = games.findIndex(g => g.localId === localId);
+    if (index === -1) {
+      return;
+    }
+    const gameStates = games.slice();
+    gameStates[index] = { ...gameStates[index], ...source };
+    this.sessionService.set({ gameStates });
   }
 
   public saveMatch(matchId: number, name: string) {

@@ -23,6 +23,7 @@ import { SpectatePage } from './pages/SpectatePage';
 import { ReplaysPage } from './pages/ReplaysPage';
 import { FriendsPage } from './pages/FriendsPage';
 import { MyGamesPage } from './pages/MyGamesPage';
+import { SnapshotPage } from './pages/SnapshotPage';
 import { ParentPage } from './pages/ParentPage';
 import { AdminHubPage } from './pages/admin/AdminHubPage';
 import { AdminBattlePassListPage } from './pages/admin/AdminBattlePassListPage';
@@ -80,6 +81,7 @@ export default function App() {
                 <Route path="/deck/:deckId" element={<DeckEditPage />} />
                 <Route path="/ranking" element={<RankingPage />} />
                 <Route path="/replays" element={<ReplaysPage />} />
+                <Route path="/snapshot/:code" element={<SnapshotPage />} />
                 <Route path="/friends" element={<FriendsPage />} />
                 <Route path="/message" element={<MessagesPage />} />
                 <Route path="/message/:userId" element={<MessagesPage />} />

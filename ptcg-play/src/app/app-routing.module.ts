@@ -9,6 +9,7 @@ import { FriendsComponent } from './friends/friends.component';
 import { GamesComponent } from './games/games.component';
 import { CreateGamePageComponent } from './games/create-game-page/create-game-page.component';
 import { SelfPlayPageComponent } from './games/self-play-page/self-play-page.component';
+import { PlaySnapshotPageComponent } from './games/play-snapshot-page/play-snapshot-page.component';
 import { ActiveGamesComponent } from './games/active-games/active-games.component';
 import { GameHistoryComponent } from './games/game-history/game-history.component';
 import { PlayersComponent } from './games/players/players.component';
@@ -40,6 +41,7 @@ const routes: Routes = [
   { path: 'games/active', component: ActiveGamesComponent, canActivate: [canActivateGuard] },
   { path: 'games/history', component: GameHistoryComponent, canActivate: [canActivateGuard] },
   { path: 'games/players', component: PlayersComponent, canActivate: [canActivateGuard] },
+  { path: 'snapshot/:code', component: PlaySnapshotPageComponent, canActivate: [canActivateGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'message', redirectTo: 'message/', pathMatch: 'full' },
   { path: 'message/:userId', component: MessagesComponent, canActivate: [canActivateGuard] },

@@ -74,6 +74,10 @@
               (click)="playAgainstYourself()">
               {{ 'REACT_MENU_SELF_PLAY' | translate }}
             </button>
+            <button mat-menu-item *ngIf="loggedUserId === client.user?.userId" [disabled]="loading"
+              (click)="playFromSharedState()">
+              {{ 'REACT_MENU_PLAY_SNAPSHOT' | translate }}
+            </button>
             <button mat-menu-item *ngIf="clientId !== client.clientId" [disabled]="loading"
               (click)="createGame(client.clientId)">
               {{ 'BUTTON_INVITE' | translate }}

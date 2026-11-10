@@ -1,0 +1,162 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 12, 20, 0.72);
+  backdrop-filter: blur(6px);
+  animation: shareBackdropEnter 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.panel {
+  width: min(440px, 100%);
+  max-height: min(88vh, 560px);
+  overflow: auto;
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(165deg, rgba(22, 28, 40, 0.98), rgba(14, 18, 28, 0.98));
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  color: rgba(245, 248, 255, 0.94);
+  transform-origin: center center;
+  animation: sharePanelEnter 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+@keyframes shareBackdropEnter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sharePanelEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.title {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.message {
+  margin: 0 0 16px;
+  line-height: 1.45;
+  font-size: 0.95rem;
+  color: rgba(230, 235, 245, 0.88);
+}
+
+.status {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: rgba(180, 200, 230, 0.9);
+}
+
+.error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 120, 120, 0.35);
+  background: rgba(120, 30, 30, 0.35);
+  color: rgba(255, 210, 210, 0.95);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.codeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.codeLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(180, 200, 235, 0.88);
+}
+
+.codeValue {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  color: #fff;
+  user-select: all;
+}
+
+.copied {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: rgba(140, 220, 170, 0.95);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.actionsGrow {
+  flex: 1 1 auto;
+}
+
+/* Match CardInfoPopup `.closeBtn` (Close / Attached Cards). */
+.actionBtn {
+  background: linear-gradient(135deg, rgba(112, 114, 120, 0.1), rgba(112, 114, 120, 0.05));
+  border: 1px solid #459058;
+  border-radius: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: #fafafa;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Urbanist', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 16px;
+  min-height: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(112, 114, 120, 0.2), rgba(112, 114, 120, 0.1));
+  border-color: #459058;
+  transform: translateY(-1px);
+}
+
+.actionBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}

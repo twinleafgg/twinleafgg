@@ -25,6 +25,8 @@ export type TableBoardOverlayProps = {
   adminSpectatorReveal?: AdminSpectatorReveal;
   onAdminSpectatorRevealChange?: (next: AdminSpectatorReveal) => void;
   onPassTurn: () => void;
+  onUndo?: () => void;
+  onShareState?: () => void;
   onLeave: () => void;
   onSwitchSides: () => void;
   onSendChat: (message: string) => void;
@@ -44,6 +46,8 @@ export function TableBoardOverlay(props: TableBoardOverlayProps) {
     isPlaying,
     isObserver,
     onPassTurn,
+    onUndo,
+    onShareState,
     onLeave,
     onSwitchSides,
     onSendChat,
@@ -193,6 +197,8 @@ export function TableBoardOverlay(props: TableBoardOverlayProps) {
           isPlaying={isPlaying}
           isObserver={isObserver}
           onPassTurn={onPassTurn}
+          onUndo={onUndo}
+          onShareState={onShareState}
           onLeave={onLeave}
           onSwitchSides={onSwitchSides}
         />

@@ -13,12 +13,14 @@ import { config } from '../../config';
 import { Format } from '../store/card/card-types';
 import { AbortGameAction } from '../store/actions/abort-game-action';
 import { AbortGameReason } from '../store/actions/abort-game-action';
-import { GamePhase } from '../store/state/state';
+import { GamePhase, State } from '../store/state/state';
 import { BotManager } from '../bots/bot-manager';
 import { ReconnectionManager } from '../../backend/services/reconnection-manager';
 import { ReconnectionConfig } from '../../backend/interfaces/reconnection.interface';
 import { logger } from '../../utils/logger';
 import { User } from '../../storage';
+import { StateSerializer } from '../serializer/state-serializer';
+import { deserializeSnapshotState, GameSnapshotPayload } from './game-snapshot';
 
 export class Core {
   public clients: Client[] = [];
@@ -252,6 +254,97 @@ export class Core {
     return game;
   }
 
+  /**
+   * Start a Play Both Sides game from a mid-game serialized state / snapshot payload.
+   */
+  public createSelfPlayFromState(
+    client: Client,
+    stateOrPayload: State | GameSnapshotPayload | string,
+    gameSettings: Partial<GameSettings> = {}
+  ): Game {
+    if (this.clients.indexOf(client) === -1) {
+      throw new GameError(GameMessage.ERROR_CLIENT_NOT_CONNECTED);
+    }
+
+    let state: State;
+    if (typeof stateOrPayload === 'string') {
+      const serializer = new StateSerializer();
+      try {
+        state = serializer.deserialize(stateOrPayload);
+      } catch {
+        throw new GameError(GameCoreError.ERROR_SNAPSHOT_INVALID);
+      }
+    } else if ('stateData' in stateOrPayload) {
+      state = deserializeSnapshotState(stateOrPayload);
+    } else {
+      state = stateOrPayload;
+    }
+
+    if (!state.players || state.players.length < 2) {
+      throw new GameError(GameCoreError.ERROR_SNAPSHOT_INVALID);
+    }
+
+    const settings = coerceGameSettings({
+      ...(state.gameSettings || {}),
+      ...gameSettings,
+      selfPlay: true,
+      undoEnabled: gameSettings.undoEnabled !== false,
+      deepUndoEnabled: gameSettings.deepUndoEnabled === true
+        || (gameSettings.undoEnabled !== false && state.gameSettings?.deepUndoEnabled === true),
+    });
+    settings.selfPlay = true;
+    if (settings.undoEnabled !== false) {
+      settings.undoEnabled = true;
+    }
+
+    const taken = new Set(this.clients.map(c => c.id));
+    let opponentId = generateId(this.clients);
+    while (taken.has(opponentId) || opponentId === client.id) {
+      opponentId += 1;
+    }
+
+    const oldId0 = state.players[0].id;
+    const oldId1 = state.players[1].id;
+    state.players[0].id = client.id;
+    state.players[0].name = client.name;
+    state.players[1].id = opponentId;
+    state.players[1].name = `${client.name} (2)`;
+
+    for (const prompt of state.prompts) {
+      if (prompt.playerId === oldId0) {
+        prompt.playerId = client.id;
+      } else if (prompt.playerId === oldId1) {
+        prompt.playerId = opponentId;
+      }
+    }
+    // Drop unresolved prompts — Store prompt callbacks cannot be restored.
+    state.prompts = state.prompts.filter(p => p.result !== undefined);
+
+    for (const log of state.logs) {
+      if (log.client === oldId0) {
+        log.client = client.id;
+      } else if (log.client === oldId1) {
+        log.client = opponentId;
+      }
+    }
+
+    state.gameSettings = settings;
+    state.rules = settings.rules;
+
+    const game = new Game(this, generateId(this.games), settings);
+    this.games.push(game);
+    game.loadRestoredState(state);
+    game.initSelfPlay(client.user.id);
+    game.registerPlayer(client);
+
+    if (this.games.indexOf(game) !== -1) {
+      this.emit(c => c.onGameAdd(game));
+      this.joinGame(client, game);
+      game.notifyRestoredState();
+    }
+    return game;
+  }
+
   public createGameWithDecks(
     client: Client,
     deck: string[],
@@ -270,6 +363,9 @@ export class Core {
     coinImagePath2?: string
   ): Game {
     gameSettings = coerceGameSettings(gameSettings);
+    // Matchmaking path: undo is never allowed.
+    gameSettings.undoEnabled = false;
+    gameSettings.deepUndoEnabled = false;
     if (this.clients.indexOf(client) === -1) {
       throw new GameError(GameMessage.ERROR_CLIENT_NOT_CONNECTED);
     }

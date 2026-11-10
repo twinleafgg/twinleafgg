@@ -22,6 +22,7 @@ import { Board2DCanvas } from '../table/board2d/Board2DCanvas';
 import { useSettings } from '../context/SettingsContext';
 import { TablePromptLayer } from '../table/prompts/TablePromptLayer';
 import { TableBoardOverlay } from '../table/hud/TableBoardOverlay';
+import { ShareStateDialog } from '../table/hud/ShareStateDialog';
 import type { AdminSpectatorReveal } from '../table/hud/AdminSpectatorControls';
 import { GameOverOverlay } from '../table/end-game/GameOverOverlay';
 import { MatchResultsSplash } from '../table/end-game/MatchResultsSplash';
@@ -96,6 +97,7 @@ export function TablePage() {
     revealPrizes: false,
     revealHands: false,
   });
+  const [shareOpen, setShareOpen] = useState(false);
   const clientIdRef = useRef(clientId);
   clientIdRef.current = clientId;
   const localGameRef = useRef(localGame);
@@ -211,6 +213,10 @@ export function TablePage() {
         playerStats?: import('ptcg-server').PlayerStats[];
         isDiff?: boolean;
         viewKey?: string;
+        undoEnabled?: boolean;
+        deepUndoEnabled?: boolean;
+        canUndo?: boolean;
+        undoOwnerId?: number;
       }) => {
         const g = localGameRef.current;
         if (!g || g.gameId !== gameId) return;
@@ -220,6 +226,12 @@ export function TablePage() {
           data.playerStats,
           data.isDiff,
           data.viewKey,
+          {
+            undoEnabled: data.undoEnabled,
+            deepUndoEnabled: data.deepUndoEnabled,
+            canUndo: data.canUndo,
+            undoOwnerId: data.undoOwnerId,
+          },
         );
         if (shouldCancelCoinFlipAnimation(g, next)) {
           boardInteraction.cancelCoinFlipAnimation();
@@ -610,6 +622,19 @@ export function TablePage() {
       .catch(onGameSocketError);
   }, [isLiveRoute, onGameSocketError, serverGameId]);
 
+  const onUndo = useCallback(() => {
+    if (!isLiveRoute || !Number.isFinite(serverGameId)) {
+      return;
+    }
+    void getSocketManager()
+      .emit('game:action:undo', { gameId: serverGameId })
+      .catch(onGameSocketError);
+  }, [isLiveRoute, onGameSocketError, serverGameId]);
+
+  const onShareState = useCallback(() => {
+    setShareOpen(true);
+  }, []);
+
   const onLeave = useCallback(() => {
     const isReplay = isReplayRoute || localGame?.replay != null;
     const isSpectatingLive =
@@ -821,11 +846,21 @@ export function TablePage() {
         adminSpectatorReveal={adminSpectatorReveal}
         onAdminSpectatorRevealChange={setAdminSpectatorReveal}
         onPassTurn={onPassTurn}
+        onUndo={isLiveRoute ? onUndo : undefined}
+        onShareState={onShareState}
         onLeave={onLeave}
         onSwitchSides={toggleSwitchSides}
         onSendChat={onSendChat}
         onReplayStep={onReplayStep}
         boardFps={boardFps}
+      />
+      <ShareStateDialog
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        gameId={isLiveRoute ? serverGameId : undefined}
+        matchId={isMatchReplayRoute ? replayMatchId : undefined}
+        replayId={isSavedReplayRoute ? savedReplayId : undefined}
+        replayPosition={Math.max(0, (localGame.replayPosition ?? 1) - 1)}
       />
       <TablePromptLayer
         localGame={localGame}

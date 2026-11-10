@@ -107,6 +107,24 @@
               </div>
             </div>
 
+            <div class="setting-item">
+              <div class="checkbox-setting">
+                <mat-checkbox color="primary" name="undoEnabled" [(ngModel)]="settings.undoEnabled"
+                  [disabled]="submitting" (ngModelChange)="onUndoEnabledChange($event)">
+                  {{ 'REACT_CREATE_GAME_UNDO' | translate }}
+                </mat-checkbox>
+              </div>
+            </div>
+
+            <div class="setting-item" *ngIf="settings.undoEnabled">
+              <div class="checkbox-setting">
+                <mat-checkbox color="primary" name="deepUndoEnabled" [(ngModel)]="settings.deepUndoEnabled"
+                  [disabled]="submitting">
+                  {{ 'REACT_CREATE_GAME_DEEP_UNDO' | translate }}
+                </mat-checkbox>
+              </div>
+            </div>
+
             <!-- Sandbox Mode (Admin only) -->
             <div class="setting-item sandbox-setting" *ngIf="isAdmin">
               <div class="checkbox-setting">

@@ -19,6 +19,12 @@ import { Format } from '../store/card/card-types';
 import { CheckHpEffect } from '../store/effects/check-effects';
 import { ShuffleDeckPrompt } from '../store/prompts/shuffle-prompt';
 import { logger } from '../../utils/logger';
+import { UndoAvailability, UndoHistory } from './undo-history';
+import { GameError } from '../game-error';
+import { GameCoreError, GameLog } from '../game-message';
+import { StateSerializer } from '../serializer/state-serializer';
+import { StateLog } from '../store/state/state-log';
+import { selfPlayFocusPlayerId } from './self-play-focus';
 
 function getBroadcaster(): typeof import('../../backend/socket/game-state-broadcaster') {
   return require('../../backend/socket/game-state-broadcaster');
@@ -56,6 +62,8 @@ export class Game implements StoreHandler {
   private userIdToPlayerId: Map<number, number> = new Map();
   private selfPlayUserId: number | null = null;
   private previousPlayerCount: number = 0;
+  private undoHistory: UndoHistory | undefined;
+  private applyingUndo: boolean = false;
 
   constructor(private core: Core, id: number, public gameSettings: GameSettings) {
     this.id = id;
@@ -64,6 +72,9 @@ export class Game implements StoreHandler {
     this.store.state.gameSettings = gameSettings;
     this.matchRecorder = new MatchRecorder(core, gameSettings);
     this.format = gameSettings.format;
+    if (gameSettings.undoEnabled) {
+      this.undoHistory = new UndoHistory();
+    }
   }
 
   public get state(): State {
@@ -125,6 +136,11 @@ export class Game implements StoreHandler {
       this.matchRecorder.onStateChange(state);
     }
 
+    if (this.undoHistory && !this.applyingUndo) {
+      this.undoHistory.append(state);
+      this.undoHistory.prune(this.gameSettings.deepUndoEnabled === true);
+    }
+
     this.updateIsTimeRunning(state);
     const playerAdded = state.players.length > this.previousPlayerCount;
     this.previousPlayerCount = state.players.length;
@@ -141,7 +157,7 @@ export class Game implements StoreHandler {
     }
 
     if (socketClients.length > 0) {
-      GameStateBroadcaster.broadcast(this, state);
+      GameStateBroadcaster.broadcast(this, state, { forceFull: this.applyingUndo });
       for (const c of socketClients) {
         c.onStateChange(this, state);
       }
@@ -269,6 +285,106 @@ export class Game implements StoreHandler {
 
   public isSelfPlayForUser(userId: number): boolean {
     return this.gameSettings.selfPlay === true && this.selfPlayUserId === userId;
+  }
+
+  public getUndoAvailability(client: Client): UndoAvailability {
+    if (!this.gameSettings.undoEnabled || !this.undoHistory) {
+      return { canUndo: false };
+    }
+    const selfPlay = this.gameSettings.selfPlay === true && this.isSelfPlayForUser(client.user?.id);
+    const actorId = selfPlay ? selfPlayFocusPlayerId(this.store.state) : client.id;
+    return this.getUndoAvailabilityForPlayer(actorId, selfPlay);
+  }
+
+  /** Per-seat undo info for broadcasts (selfPlay treats the viewer as owning both seats). */
+  public getUndoAvailabilityForPlayer(playerId: number, selfPlay: boolean = false): UndoAvailability {
+    if (!this.gameSettings.undoEnabled || !this.undoHistory) {
+      return { canUndo: false };
+    }
+    const deep = this.gameSettings.deepUndoEnabled === true;
+    const hasPrompts = this.store.state.prompts.some(p => p.result === undefined);
+    if (hasPrompts) {
+      const promptOwner = this.store.state.prompts.find(p => p.result === undefined)?.playerId;
+      const baseOwner = this.undoHistory.getNextUndoOwnerId(deep);
+      const undoOwnerId = promptOwner ?? baseOwner;
+      if (selfPlay) {
+        return { canUndo: this.undoHistory.length > 0, undoOwnerId };
+      }
+      return {
+        canUndo: undoOwnerId === playerId && this.undoHistory.length > 0,
+        undoOwnerId,
+      };
+    }
+    return this.undoHistory.getAvailability(playerId, deep, selfPlay);
+  }
+
+  public undo(client: Client): State {
+    if (!this.gameSettings.undoEnabled || !this.undoHistory) {
+      throw new GameError(GameCoreError.ERROR_UNDO_DISABLED);
+    }
+    const availability = this.getUndoAvailability(client);
+    if (!availability.canUndo) {
+      if (availability.undoOwnerId !== undefined) {
+        throw new GameError(GameCoreError.ERROR_UNDO_NOT_YOUR_TURN);
+      }
+      throw new GameError(GameCoreError.ERROR_UNDO_NOT_AVAILABLE);
+    }
+
+    const hasPrompts = this.store.state.prompts.some(p => p.result === undefined);
+    const restored = this.undoHistory.undo(hasPrompts);
+    restored.gameSettings = this.gameSettings;
+    restored.rules = this.gameSettings.rules;
+
+    const player = restored.players.find(p => p.id === this.actorIdForUndo(client))
+      ?? restored.players.find(p => p.id === client.id);
+    const name = player?.name ?? client.name;
+    restored.logs = [
+      ...restored.logs,
+      new StateLog(GameLog.LOG_PLAYER_UNDO, { name }, player?.id)
+    ];
+
+    this.applyingUndo = true;
+    try {
+      this.store.restoreState(restored);
+      this.onStateChange(this.store.state);
+    } finally {
+      this.applyingUndo = false;
+    }
+    return this.store.state;
+  }
+
+  public serializeSnapshot(): string {
+    const serializer = new StateSerializer();
+    return serializer.serialize(this.store.state);
+  }
+
+  /** Load a deserialized mid-game state (used by createSelfPlayFromState). */
+  public loadRestoredState(state: State): void {
+    state.gameSettings = this.gameSettings;
+    state.rules = this.gameSettings.rules;
+    this.store.restoreState(state);
+    this.previousPlayerCount = state.players.length;
+    if (this.undoHistory) {
+      this.undoHistory = new UndoHistory();
+      this.undoHistory.append(state);
+    }
+  }
+
+  /** Broadcast after loading a snapshot into a new self-play game. */
+  public notifyRestoredState(): void {
+    this.applyingUndo = true;
+    try {
+      this.onStateChange(this.store.state);
+    } finally {
+      this.applyingUndo = false;
+    }
+  }
+
+  private actorIdForUndo(client: Client): number {
+    if (this.gameSettings.selfPlay === true) {
+      return selfPlayFocusPlayerId(this.store.state);
+    }
+    return client.id;
   }
 
   public handlePlayerDisconnection(client: Client): void {
