@@ -1,18 +1,8 @@
-import {
-  CardTag,
-  CardType,
-  ConfirmPrompt,
-  GameMessage,
-  PokemonCard,
-  SlotType,
-  Stage,
-  State,
-  StoreLike,
-} from '../../../game';
-import { CheckProvidedEnergyEffect } from '../../../game/store/effects/check-effects';
-import { Effect } from '../../../game/store/effects/effect';
-import { DISCARD_UP_TO_X_TYPE_ENERGY_FROM_YOUR_POKEMON } from '../../../game/store/prefabs/costs';
-import { WAS_ATTACK_USED } from '../../../game/store/prefabs/prefabs';
+import { PokemonCard, CardTag, Stage, CardType, StoreLike, State, ConfirmPrompt, GameMessage, SlotType } from "../../../game";
+import { CheckProvidedEnergyEffect } from "../../../game/store/effects/check-effects";
+import { Effect } from "../../../game/store/effects/effect";
+import { DISCARD_UP_TO_X_TYPE_ENERGY_FROM_YOUR_POKEMON } from "../../../game/store/prefabs/costs";
+import { WAS_ATTACK_USED } from "../../../game/store/prefabs/prefabs";
 
 export class SingleStrikeUrshifu extends PokemonCard {
   protected _tags = [CardTag.SINGLE_STRIKE];
