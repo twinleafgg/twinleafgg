@@ -4,10 +4,11 @@ import en from '../../../ptcg-play/src/assets/i18n/en.json';
 import es from '../../../ptcg-play/src/assets/i18n/es.json';
 import jp from '../../../ptcg-play/src/assets/i18n/jp.json';
 import fr from '../../../ptcg-play/src/assets/i18n/fr.json';
+import { CUBE_EN } from '../cube/cubeStrings';
 import { isSupportedLanguage, type SupportedLanguageCode } from './languages';
 
 const resources = {
-  en: { translation: en },
+  en: { translation: { ...en, ...CUBE_EN } },
   es: { translation: es },
   jp: { translation: jp },
   fr: { translation: fr },

@@ -22,6 +22,12 @@ export const appConfig = {
     if (stored) {
       return stored;
     }
+    // The Vite dev server proxies API, socket and server asset paths (see
+    // vite.config.ts). Keeping them same-origin in development avoids CORS on
+    // whichever dev port is used; production still resolves VITE_API_URL below.
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
+      return window.location.origin.replace(/\/$/, '');
+    }
     const envUrl = import.meta.env.VITE_API_URL;
     if (envUrl) {
       return normalizeDevLocalApiUrl(envUrl);

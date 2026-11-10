@@ -1,0 +1,171 @@
+.infoBar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(62, 199, 201, 0.16);
+  background: rgba(8, 16, 28, 0.55);
+}
+
+.nameField {
+  min-width: 220px;
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+
+.selectField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim, #a0a1a5);
+}
+
+.selectField select {
+  min-width: 140px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(62, 199, 201, 0.28);
+  background: rgba(6, 12, 22, 0.85);
+  color: var(--tl-text, #fafafa);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.checkField {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 320px;
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+  color: var(--tl-text-soft, #c8d0dc);
+  cursor: pointer;
+}
+
+.checkField input {
+  margin-top: 3px;
+}
+
+.checkField strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--tl-text, #fafafa);
+}
+
+.checkField small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--tl-text-dim, #a0a1a5);
+}
+
+.randomControls {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.randomHint {
+  flex: 0 0 auto;
+  padding: 0 14px 8px;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--tl-text-dim, #a0a1a5);
+}
+
+.editTabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px 0;
+}
+
+.editTab {
+  appearance: none;
+  border: 1px solid rgba(62, 199, 201, 0.22);
+  background: rgba(8, 16, 28, 0.7);
+  color: var(--tl-text-soft, #c8d0dc);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editTabActive {
+  border-color: rgba(62, 199, 201, 0.55);
+  background: rgba(62, 199, 201, 0.16);
+  color: #dffcff;
+}
+
+.countBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.count {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fbbf24;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.countComplete {
+  color: #86efac;
+}
+
+.dirty {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tl-text-dim, #a0a1a5);
+}
+
+.targetHint {
+  flex: 0 0 auto;
+  padding: 6px 14px 10px;
+  font-size: 0.78rem;
+  color: #fde68a;
+  border-top: 1px solid rgba(251, 191, 36, 0.18);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  padding: 48px 24px;
+  color: var(--tl-text-soft, #c8d0dc);
+  text-align: center;
+}
+
+.missing p {
+  margin: 0;
+}
+
+@media (max-width: 899px) {
+  .infoBar {
+    align-items: stretch;
+  }
+
+  .nameField {
+    max-width: none;
+  }
+}

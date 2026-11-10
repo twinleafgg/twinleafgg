@@ -120,7 +120,6 @@ export function DeckEditView({ deckId }: DeckEditViewProps) {
   const [ruleMessage, setRuleMessage] = useState<string | null>(null);
   const [cardInfoCard, setCardInfoCard] = useState<Card | null>(null);
   const [quantityEditCard, setQuantityEditCard] = useState<Card | null>(null);
-  const [deckCardSlotW, setDeckCardSlotW] = useState(DECK_DEFAULT_SLOT_W);
 
   const isThemeDeck = deckId < 0;
   const disabled = isThemeDeck || loading;
@@ -446,7 +445,7 @@ export function DeckEditView({ deckId }: DeckEditViewProps) {
 
   const libraryPane = (
     <DeckLibraryPane
-      cardSlotW={deckCardSlotW}
+      cardSlotW={DECK_DEFAULT_SLOT_W}
       cards={filteredLibrary}
       scanComplete={libraryScanComplete}
       onNearCatalogEnd={requestScrollBoost}
@@ -476,7 +475,6 @@ export function DeckEditView({ deckId }: DeckEditViewProps) {
       onRemoveCopy={(fullName) => setSlots((prev) => removeOneCopy(prev, fullName))}
       onEditQuantity={openQuantityEdit}
       onOpenCardInfo={(c) => setCardInfoCard(c)}
-      onSlotWidthChange={setDeckCardSlotW}
     />
   );
 

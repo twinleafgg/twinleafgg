@@ -30,6 +30,7 @@ export function useIncrementalFilteredLibrary(allCards: Card[], filter: DeckEdit
 
     let cursor = 0;
     let raf = 0;
+    let timer = 0;
 
     const tick = () => {
       if (runId !== runIdRef.current) {
@@ -37,7 +38,10 @@ export function useIncrementalFilteredLibrary(allCards: Card[], filter: DeckEdit
       }
 
       const boost = boostRef.current;
-      const chunk = Math.floor(CHUNK_BASE * (1 + boost * 0.35));
+      // Hidden/occluded tabs pause requestAnimationFrame. Use a larger chunk so
+      // the library still finishes there instead of showing "Loading…" forever.
+      const hidden = typeof document !== 'undefined' && document.hidden;
+      const chunk = Math.floor(CHUNK_BASE * (hidden ? 10 : 1) * (1 + boost * 0.35));
       boostRef.current *= 0.92;
 
       if (isDeckLibraryFilterEmpty(filter)) {
@@ -71,11 +75,30 @@ export function useIncrementalFilteredLibrary(allCards: Card[], filter: DeckEdit
         }
       }
 
-      raf = requestAnimationFrame(tick);
+      schedule();
     };
 
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const schedule = () => {
+      let fired = false;
+      const run = () => {
+        if (fired) {
+          return;
+        }
+        fired = true;
+        cancelAnimationFrame(raf);
+        window.clearTimeout(timer);
+        tick();
+      };
+      const hidden = typeof document !== 'undefined' && document.hidden;
+      raf = requestAnimationFrame(run);
+      timer = window.setTimeout(run, hidden ? 50 : 250);
+    };
+
+    schedule();
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
   }, [allCards, filter]);
 
   return { cards, done, requestScrollBoost };

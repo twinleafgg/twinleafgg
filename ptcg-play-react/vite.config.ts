@@ -16,6 +16,13 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/v1': { target: apiTarget, changeOrigin: true },
         '/socket.io': { target: apiTarget, ws: true, changeOrigin: true },
+        // Server-hosted static assets referenced by appConfig.apiUrl. Keeping
+        // these on the dev origin lets the app run CORS-free on any dev port.
+        '/avatars': { target: apiTarget, changeOrigin: true },
+        '/sleeves': { target: apiTarget, changeOrigin: true },
+        '/deck-boxes': { target: apiTarget, changeOrigin: true },
+        '/coins': { target: apiTarget, changeOrigin: true },
+        '/scans': { target: apiTarget, changeOrigin: true },
       },
     },
     optimizeDeps: {

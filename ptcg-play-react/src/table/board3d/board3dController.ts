@@ -299,7 +299,9 @@ export class Board3dController {
       return undefined;
     }
     const server = this.bottomPlayer?.playableCardIds;
-    const extra = extraPlayableEvolutionCardIds(this.bottomPlayer);
+    const extra = extraPlayableEvolutionCardIds(this.bottomPlayer, {
+      mutantEvolution: this.gameState?.state?.rules?.mutantEvolution === true,
+    });
     if ((!server || server.length === 0) && extra.length === 0) {
       return server;
     }
@@ -481,6 +483,7 @@ export class Board3dController {
     this.adminSpectatorReveal = p.adminSpectatorReveal;
     this.onKoSequenceActiveChange = p.onKoSequenceActiveChange;
     this.interactionService.setHandPlayZoneGameSettings(p.gameState.state.gameSettings);
+    this.interactionService.setMutantEvolution(p.gameState.state.rules?.mutantEvolution === true);
     this.interactionService.setBottomHandCards(p.bottomPlayerHand?.cards ?? []);
     this.interactionService.setPlayableCardIds(this.getHandPlayableCardIdsForDisplay());
     this.interactionService.setPlayableHandAbilityCardIds(

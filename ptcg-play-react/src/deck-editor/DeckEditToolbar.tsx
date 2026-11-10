@@ -42,6 +42,8 @@ export type DeckEditToolbarProps = {
   onExport: () => void;
   onImport: () => void;
   customizeTo?: string;
+  /** Link target for the Back button (defaults to the deck list). */
+  backTo?: string;
   /** When set, shows Delete (e.g. omit for theme / read-only decks). */
   onDelete?: () => void;
   deleting?: boolean;
@@ -59,6 +61,7 @@ export function DeckEditToolbar({
   onExport,
   onImport,
   customizeTo,
+  backTo = '/deck',
   onDelete,
   deleting = false,
 }: DeckEditToolbarProps) {
@@ -121,7 +124,7 @@ export function DeckEditToolbar({
           <span className={styles.deckTitle}>{deckName.trim() || t('DECK_EDIT_UNTITLED')}</span>
         </div>
         <div className={styles.actions}>
-          <ShellButtonLink to="/deck" variant="ghost">
+          <ShellButtonLink to={backTo} variant="ghost">
             {t('DECK_EDIT_BACK')}
           </ShellButtonLink>
           {customizeTo ? (

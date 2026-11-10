@@ -413,13 +413,17 @@ export async function handleBoard2dRetreat(
 export function findAttachTargets(
   bottomPlayer: Player,
   card: Card,
+  options: { mutantEvolution?: boolean } = {},
 ): CardTarget[] {
   const targets: CardTarget[] = [];
   const isEnergy = card.superType === SuperType.ENERGY;
   const isTool = card.superType === SuperType.TRAINER;
+  const stage = card.superType === SuperType.POKEMON ? (card as PokemonCard).stage : undefined;
   const isEvo =
     card.superType === SuperType.POKEMON &&
-    !!(card as PokemonCard).evolvesFrom;
+    (!!(card as PokemonCard).evolvesFrom ||
+      (options.mutantEvolution === true &&
+        (stage === Stage.STAGE_1 || stage === Stage.STAGE_2)));
 
   const isLvX =
     isEvo &&
@@ -439,7 +443,7 @@ export function findAttachTargets(
       return;
     }
     if (isEvo) {
-      if (isValidEvolutionTarget(card as PokemonCard, pokemon as PokemonCard)) {
+      if (isValidEvolutionTarget(card as PokemonCard, pokemon as PokemonCard, options)) {
         targets.push({ player: PlayerType.BOTTOM_PLAYER, slot, index });
       }
       return;
@@ -457,6 +461,7 @@ export function findAttachTargets(
 export function resolveClickToPlayTarget(
   bottomPlayer: Player,
   card: Card,
+  options: { mutantEvolution?: boolean } = {},
 ): CardTarget | CardTarget[] | null {
   const isPokemon = card.superType === SuperType.POKEMON;
   const trainer = card.superType === SuperType.TRAINER ? (card as TrainerCard) : null;
@@ -482,8 +487,8 @@ export function resolveClickToPlayTarget(
     // Ability locked / no open bench: fall through to evolution attach below.
   }
 
-  if (isEnergyOrToolOrEvo(card)) {
-    const targets = findAttachTargets(bottomPlayer, card);
+  if (isEnergyOrToolOrEvo(card, options)) {
+    const targets = findAttachTargets(bottomPlayer, card, options);
     if (targets.length === 0) {
       return null;
     }
@@ -527,7 +532,10 @@ export function resolveClickToPlayTarget(
   return { player: PlayerType.BOTTOM_PLAYER, slot: SlotType.BOARD, index: 0 };
 }
 
-function isEnergyOrToolOrEvo(card: Card): boolean {
+function isEnergyOrToolOrEvo(
+  card: Card,
+  options: { mutantEvolution?: boolean } = {},
+): boolean {
   if (card.superType === SuperType.ENERGY) {
     return true;
   }
@@ -537,8 +545,17 @@ function isEnergyOrToolOrEvo(card: Card): boolean {
   ) {
     return true;
   }
-  if (card.superType === SuperType.POKEMON && !!(card as PokemonCard).evolvesFrom) {
-    return true;
+  if (card.superType === SuperType.POKEMON) {
+    const pokemon = card as PokemonCard;
+    if (pokemon.evolvesFrom) {
+      return true;
+    }
+    if (
+      options.mutantEvolution &&
+      (pokemon.stage === Stage.STAGE_1 || pokemon.stage === Stage.STAGE_2)
+    ) {
+      return true;
+    }
   }
   return false;
 }

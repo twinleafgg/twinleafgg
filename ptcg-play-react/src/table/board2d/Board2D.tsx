@@ -395,11 +395,12 @@ export function Board2D(props: Board2DProps) {
 
   const playableIds = useMemo(() => {
     const ids = new Set(bottomPlayer?.playableCardIds ?? []);
-    for (const id of extraPlayableEvolutionCardIds(bottomPlayer)) {
+    const mutantEvolution = gameState.state?.rules?.mutantEvolution === true;
+    for (const id of extraPlayableEvolutionCardIds(bottomPlayer, { mutantEvolution })) {
       ids.add(id);
     }
     return ids;
-  }, [bottomPlayer]);
+  }, [bottomPlayer, gameState.state?.rules?.mutantEvolution]);
 
   const chooseHandCardsActive = boardInteraction.isChooseHandCardsSelectionActive();
   const legendAssemblyActive = boardInteraction.isLegendAssemblySelectionActive();
@@ -531,7 +532,9 @@ export function Board2D(props: Board2DProps) {
       const isEvolution =
         card.superType === SuperType.POKEMON && !!(card as PokemonCard).evolvesFrom;
       if (canInteract && (playableIds.has(card.id) || isEvolution)) {
-        const resolved = resolveClickToPlayTarget(bottomPlayer, card);
+        const resolved = resolveClickToPlayTarget(bottomPlayer, card, {
+          mutantEvolution: gameState.state?.rules?.mutantEvolution === true,
+        });
         if (Array.isArray(resolved)) {
           boardInteraction.startHandPlayTargetSelection(resolved, (picked) => {
             if (picked) {

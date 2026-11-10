@@ -1,52 +1,22 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useCallback, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useRef, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Card } from 'ptcg-server';
 import { CardFace } from '../components/cards';
-import { DECK_CARD_AR, DECK_CARD_GAP_PX, DECK_DEFAULT_SLOT_W, DECK_MAX_SLOT_W } from './deckCardLayout';
+import { DECK_CARD_GAP_PX, DECK_DEFAULT_SLOT_W } from './deckCardLayout';
 import type { DeckSlot } from './types';
 import headerStyles from './DeckPaneHeader.module.css';
 import styles from './DeckBuildPane.module.css';
 
-const CARD_AR = DECK_CARD_AR;
 const DECK_GAP_PX = DECK_CARD_GAP_PX;
-const MIN_SLOT_W = 44;
-
-function deckGridFits(slotW: number, slotCount: number, cw: number, ch: number, gap: number): boolean {
-  if (slotCount <= 0 || slotW < MIN_SLOT_W) {
-    return true;
-  }
-  const cellH = slotW * CARD_AR;
-  const cmax = Math.max(1, Math.floor((cw + gap) / (slotW + gap)));
-  const maxRows = Math.max(1, Math.floor((ch + gap) / (cellH + gap)));
-  return Math.ceil(slotCount / cmax) <= maxRows;
-}
-
-function computeMaxSlotWidth(slotCount: number, cw: number, ch: number, gap: number): number {
-  if (slotCount <= 0) {
-    return DECK_DEFAULT_SLOT_W;
-  }
-  let lo = MIN_SLOT_W;
-  let hi = Math.min(DECK_MAX_SLOT_W, Math.floor(cw));
-  let best = lo;
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1;
-    if (deckGridFits(mid, slotCount, cw, ch, gap)) {
-      best = mid;
-      lo = mid + 1;
-    } else {
-      hi = mid - 1;
-    }
-  }
-  return best;
-}
 
 function SortableDeckCard({
   slot,
   scanUrl,
   disabled,
+  canAddMore,
   onAddCopy,
   onRemoveCopy,
   onEditQuantity,
@@ -55,6 +25,8 @@ function SortableDeckCard({
   slot: DeckSlot;
   scanUrl: string;
   disabled: boolean;
+  /** When false, the add-copy button is disabled (cube singletons). */
+  canAddMore: boolean;
   onAddCopy: () => void;
   onRemoveCopy: () => void;
   onEditQuantity: () => void;
@@ -116,7 +88,7 @@ function SortableDeckCard({
           <button
             type="button"
             className={`${styles.circleBtn} ${styles.circleBtnAdd}`}
-            disabled={disabled}
+            disabled={disabled || !canAddMore}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
@@ -147,8 +119,12 @@ export type DeckBuildPaneProps = {
   onRemoveCopy: (fullName: string) => void;
   onEditQuantity: (card: Card) => void;
   onOpenCardInfo: (card: Card) => void;
-  /** Fired when measured deck card width changes (library matches this). */
-  onSlotWidthChange?: (slotWidthPx: number) => void;
+  /** Override the pane header title (defaults to the deck copy). */
+  title?: string;
+  /** Override the empty drop-zone hint. */
+  emptyHint?: string;
+  /** When false, the add-copy button is disabled for that card. */
+  canAddCopy?: (card: Card) => boolean;
 };
 
 export function DeckBuildPane({
@@ -164,12 +140,13 @@ export function DeckBuildPane({
   onRemoveCopy,
   onEditQuantity,
   onOpenCardInfo,
-  onSlotWidthChange,
+  title,
+  emptyHint,
+  canAddCopy,
 }: DeckBuildPaneProps) {
   const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: 'deck-drop' });
   const dropElRef = useRef<HTMLDivElement | null>(null);
-  const [slotW, setSlotW] = useState(DECK_DEFAULT_SLOT_W);
 
   const setDropRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -179,56 +156,19 @@ export function DeckBuildPane({
     [setNodeRef],
   );
 
-  const measureDeckFit = useCallback(() => {
-    const el = dropElRef.current;
-    if (!el || slots.length === 0) {
-      setSlotW(DECK_DEFAULT_SLOT_W);
-      onSlotWidthChange?.(DECK_DEFAULT_SLOT_W);
-      return;
-    }
-    const padLr = 24;
-    const padTb = 12 + 72;
-    const cw = Math.max(0, el.clientWidth - padLr);
-    const ch = Math.max(0, el.clientHeight - padTb);
-    // Tabbed layout hides the deck with display:none; size is 0×0 and would collapse slot width
-    // to MIN_SLOT_W and shrink the library grid. Keep the last measured width until the deck is visible.
-    if (cw < 48 || ch < 48) {
-      return;
-    }
-    const next = computeMaxSlotWidth(slots.length, cw, ch, DECK_GAP_PX);
-    setSlotW(next);
-    onSlotWidthChange?.(next);
-  }, [slots.length, onSlotWidthChange]);
-
-  useLayoutEffect(() => {
-    const el = dropElRef.current;
-    if (!el) {
-      return;
-    }
-    const ro = new ResizeObserver(() => {
-      measureDeckFit();
-    });
-    ro.observe(el);
-    const id = requestAnimationFrame(() => {
-      measureDeckFit();
-    });
-    return () => {
-      cancelAnimationFrame(id);
-      ro.disconnect();
-    };
-  }, [measureDeckFit]);
-
   const ids = slots.map((s) => s.card.fullName);
 
   const gridStyle = {
-    '--deck-slot-w': `${slotW}px`,
+    '--deck-slot-w': `${DECK_DEFAULT_SLOT_W}px`,
     '--deck-gap': `${DECK_GAP_PX}px`,
   } as CSSProperties;
 
   return (
     <div className={styles.wrap}>
       <div className={headerStyles.header}>
-        <span className={headerStyles.title}>{t('DECK_EDIT_YOUR_DECK_COUNT', { count: deckCount })}</span>
+        <span className={headerStyles.title}>
+          {title ?? t('DECK_EDIT_YOUR_DECK_COUNT', { count: deckCount })}
+        </span>
         <div className={headerStyles.aside}>
           {showLibraryToggle ? (
             <button type="button" className={headerStyles.actionBtn} onClick={onToggleLibrary}>
@@ -246,7 +186,7 @@ export function DeckBuildPane({
         }}
       >
         {slots.length === 0 ? (
-          <div className={styles.emptyDrop}>{t('DECK_BUILD_DROP_HINT')}</div>
+          <div className={styles.emptyDrop}>{emptyHint ?? t('DECK_BUILD_DROP_HINT')}</div>
         ) : (
           <SortableContext items={ids} strategy={rectSortingStrategy}>
             <div className={styles.grid} style={gridStyle}>
@@ -256,6 +196,7 @@ export function DeckBuildPane({
                   slot={slot}
                   scanUrl={getScanUrl(slot.card)}
                   disabled={disabled}
+                  canAddMore={canAddCopy ? canAddCopy(slot.card) : true}
                   onAddCopy={() => onAddCopy(slot.card.fullName)}
                   onRemoveCopy={() => onRemoveCopy(slot.card.fullName)}
                   onEditQuantity={() => onEditQuantity(slot.card)}

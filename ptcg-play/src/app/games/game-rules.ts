@@ -23,4 +23,5 @@ export const GAME_RULE_OPTIONS: RuleOption[] = [
   { key: 'allowSameNameStadium', label: 'GAMES_ALLOW_SAME_NAME_STADIUM' },
   { key: 'canStartWithFossil', label: 'GAMES_CAN_START_WITH_FOSSIL' },
   { key: 'oldBurnRule', label: 'GAMES_OLD_BURN_RULE' },
+  { key: 'mutantEvolution', label: 'GAMES_MUTANT_EVOLUTION' },
 ];

@@ -172,6 +172,8 @@ export class Board3dInteractionService {
 
   /** Matches server {@link GameSettings} flags for sandbox bench targeting. */
   private handPlayZoneGameSettings: HandPlayPokemonZoneGameSettings = undefined;
+  /** When true, Stage 1/2 may evolve by shared type (Mutant Evolution). */
+  private mutantEvolution = false;
 
   /** Bottom player's hand cards — used for dual LEGEND assembly checks. */
   private bottomHandCards: Card[] = [];
@@ -202,6 +204,10 @@ export class Board3dInteractionService {
   /** Called when game state updates so sandbox “all Pokémon as Basic” affects drop targeting. */
   setHandPlayZoneGameSettings(gs: HandPlayPokemonZoneGameSettings): void {
     this.handPlayZoneGameSettings = gs;
+  }
+
+  setMutantEvolution(enabled: boolean): void {
+    this.mutantEvolution = enabled;
   }
 
   /** Called when the bottom player's hand updates (dual LEGEND assembly targeting). */
@@ -548,7 +554,12 @@ export class Board3dInteractionService {
         return false;
       }
       const targetPokemonCard = this.getPokemonCardFromBoardObject(boardPokemon);
-      if (!targetPokemonCard || !isValidEvolutionTarget(evolutionCard, targetPokemonCard)) {
+      if (
+        !targetPokemonCard ||
+        !isValidEvolutionTarget(evolutionCard, targetPokemonCard, {
+          mutantEvolution: this.mutantEvolution,
+        })
+      ) {
         return false;
       }
       return true;
@@ -1712,7 +1723,12 @@ export class Board3dInteractionService {
         }
         const evolutionCard = ctx.card as PokemonCard;
         const targetPokemonCard = this.getPokemonCardFromBoardObject(pokemon);
-        if (!targetPokemonCard || !isValidEvolutionTarget(evolutionCard, targetPokemonCard)) {
+        if (
+          !targetPokemonCard ||
+          !isValidEvolutionTarget(evolutionCard, targetPokemonCard, {
+            mutantEvolution: this.mutantEvolution,
+          })
+        ) {
           continue;
         }
         // Evolution hosts are chosen by evo rules + occupancy — do not gate on drop-zone

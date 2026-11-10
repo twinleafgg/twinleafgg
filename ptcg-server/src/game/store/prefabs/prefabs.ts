@@ -16,6 +16,7 @@ import { PokemonCard } from '../card/pokemon-card';
 import { Attack, Power, PowerType } from '../card/pokemon-types';
 import { TrainerCard } from '../card/trainer-card';
 import { canPlayDualLegend } from '../dual-legend-utils';
+import { matchesPokemonEvolution } from '../pokemon-evolution';
 import {
   DealDamageEffect,
   PutDamageEffect,
@@ -3648,18 +3649,13 @@ export function CAN_PLAY_POKEMON_CARD(
       const isLvX =
         pokemonCard.stage === Stage.LV_X || pokemonCard.hasTag(CardTag.POKEMON_LV_X);
 
+      const evolutionOpts = { mutantEvolution: state.rules?.mutantEvolution === true };
+
       // Check active Pokemon
       const activePokemon = player.active.getPokemonCard();
       let canEvolveActive = false;
       if (activePokemon) {
-        const matchesEvolution =
-          activePokemon.name === pokemonCard.evolvesFrom ||
-          activePokemon.evolvesTo.includes(pokemonCard.name) ||
-          activePokemon.evolvesToStage.includes(pokemonCard.stage) ||
-          (Array.isArray(activePokemon.evolvesFromBase) &&
-            activePokemon.evolvesFromBase.length > 0 &&
-            activePokemon.evolvesFromBase.includes(pokemonCard.evolvesFrom));
-        if (matchesEvolution) {
+        if (matchesPokemonEvolution(pokemonCard, activePokemon, evolutionOpts)) {
           // Check if Pokemon was played this turn (can't evolve if played this turn)
           // unless an effect (e.g. Evolutionary Advantage) granted canEvolveThisTurn
           if (player.active.pokemonPlayedTurn < state.turn || player.active.canEvolveThisTurn) {
@@ -3674,14 +3670,7 @@ export function CAN_PLAY_POKEMON_CARD(
         for (const bench of player.bench) {
           const benchPokemon = bench.getPokemonCard();
           if (benchPokemon) {
-            const matchesEvolution =
-              benchPokemon.name === pokemonCard.evolvesFrom ||
-              benchPokemon.evolvesTo.includes(pokemonCard.name) ||
-              benchPokemon.evolvesToStage.includes(pokemonCard.stage) ||
-              (Array.isArray(benchPokemon.evolvesFromBase) &&
-                benchPokemon.evolvesFromBase.length > 0 &&
-                benchPokemon.evolvesFromBase.includes(pokemonCard.evolvesFrom));
-            if (matchesEvolution) {
+            if (matchesPokemonEvolution(pokemonCard, benchPokemon, evolutionOpts)) {
               // Check if Pokemon was played this turn (can't evolve if played this turn)
               // unless an effect (e.g. Evolutionary Advantage) granted canEvolveThisTurn
               if (bench.pokemonPlayedTurn < state.turn || bench.canEvolveThisTurn) {

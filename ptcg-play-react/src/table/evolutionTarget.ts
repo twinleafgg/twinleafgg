@@ -1,4 +1,6 @@
 import {
+  CardType,
+  Stage,
   SuperType,
   type Card,
   type Player,
@@ -14,6 +16,16 @@ type PokemonSlot = Pick<PokemonCardList, 'cards'> & {
 
 function isPokemonCard(card: Card | undefined | null): card is PokemonCard {
   return !!card && card.superType === SuperType.POKEMON;
+}
+
+function asTypeList(cardType: PokemonCard['cardType']): CardType[] {
+  return Array.isArray(cardType) ? cardType : [cardType as unknown as CardType];
+}
+
+function pokemonShareCardType(a: PokemonCard, b: PokemonCard): boolean {
+  const left = asTypeList(a.cardType);
+  const right = new Set(asTypeList(b.cardType));
+  return left.some((type) => right.has(type));
 }
 
 /**
@@ -44,44 +56,69 @@ export function getInPlayPokemonCard(
   return undefined;
 }
 
+export type EvolutionMatchOptions = {
+  mutantEvolution?: boolean;
+};
+
+function matchesNamedEvolution(
+  evolutionCard: PokemonCard,
+  targetPokemon: PokemonCard,
+): boolean {
+  const evolvesFrom = evolutionCard.evolvesFrom;
+  if (evolvesFrom && evolvesFrom === targetPokemon.name) {
+    return true;
+  }
+  if (evolvesFrom && targetPokemon.name?.startsWith(`${evolvesFrom} `)) {
+    return true;
+  }
+  if (targetPokemon.evolvesTo?.includes(evolutionCard.name)) {
+    return true;
+  }
+  if (targetPokemon.evolvesToStage?.includes(evolutionCard.stage)) {
+    return true;
+  }
+  if (
+    Array.isArray(targetPokemon.evolvesFromBase) &&
+    targetPokemon.evolvesFromBase.length > 0 &&
+    evolvesFrom &&
+    targetPokemon.evolvesFromBase.includes(evolvesFrom)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function matchesMutantEvolution(
+  evolutionCard: PokemonCard,
+  targetPokemon: PokemonCard,
+): boolean {
+  if (!pokemonShareCardType(evolutionCard, targetPokemon)) {
+    return false;
+  }
+  if (evolutionCard.stage === Stage.STAGE_1 && targetPokemon.stage === Stage.BASIC) {
+    return true;
+  }
+  if (evolutionCard.stage === Stage.STAGE_2 && targetPokemon.stage === Stage.STAGE_1) {
+    return true;
+  }
+  return false;
+}
+
 /** Same host rules as the server PlayPokemon / CAN_PLAY_CARD evolution check. */
 export function isValidEvolutionTarget(
   evolutionCard: PokemonCard | undefined | null,
   targetPokemon: PokemonCard | undefined | null,
+  options: EvolutionMatchOptions = {},
 ): boolean {
   if (!evolutionCard || !targetPokemon) {
     return false;
   }
-
-  if (evolutionCard.evolvesFrom && evolutionCard.evolvesFrom === targetPokemon.name) {
+  if (matchesNamedEvolution(evolutionCard, targetPokemon)) {
     return true;
   }
-
-  // "Eevee ex" (and similar) still evolve from "Eevee"
-  if (
-    evolutionCard.evolvesFrom &&
-    targetPokemon.name &&
-    targetPokemon.name.startsWith(`${evolutionCard.evolvesFrom} `)
-  ) {
+  if (options.mutantEvolution && matchesMutantEvolution(evolutionCard, targetPokemon)) {
     return true;
   }
-
-  if (targetPokemon.evolvesTo?.includes(evolutionCard.name)) {
-    return true;
-  }
-
-  if (targetPokemon.evolvesToStage?.includes(evolutionCard.stage)) {
-    return true;
-  }
-
-  if (
-    Array.isArray(targetPokemon.evolvesFromBase) &&
-    targetPokemon.evolvesFromBase.length > 0 &&
-    targetPokemon.evolvesFromBase.includes(evolutionCard.evolvesFrom)
-  ) {
-    return true;
-  }
-
   return false;
 }
 
@@ -89,7 +126,10 @@ export function isValidEvolutionTarget(
  * Evolution cards that have a same-turn-evolvable host (Forest of Vitality, etc.).
  * Merge into the hand glow list so Stage 2 still lights up after a Stage 1 is played.
  */
-export function extraPlayableEvolutionCardIds(player: Player | undefined | null): number[] {
+export function extraPlayableEvolutionCardIds(
+  player: Player | undefined | null,
+  options: EvolutionMatchOptions = {},
+): number[] {
   if (!player?.hand?.cards?.length) {
     return [];
   }
@@ -100,7 +140,7 @@ export function extraPlayableEvolutionCardIds(player: Player | undefined | null)
       continue;
     }
     const evo = card as PokemonCard;
-    if (!evo.evolvesFrom) {
+    if (!evo.evolvesFrom && !options.mutantEvolution) {
       continue;
     }
     const hasHost = hosts.some((list) => {
@@ -108,7 +148,7 @@ export function extraPlayableEvolutionCardIds(player: Player | undefined | null)
         return false;
       }
       const pokemon = getInPlayPokemonCard(list);
-      return !!pokemon && isValidEvolutionTarget(evo, pokemon);
+      return !!pokemon && isValidEvolutionTarget(evo, pokemon, options);
     });
     if (hasHost) {
       ids.push(card.id);

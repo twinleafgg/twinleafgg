@@ -32,6 +32,10 @@ export class Rules {
   // Tails: burn damage, stays Burned. Burned is never removed automatically.
   public oldBurnRule = false;
 
+  // Mutant Evolution: Stage 1 may evolve from any Basic of the same type, and
+  // Stage 2 from any Stage 1 of the same type. Other stages keep normal rules.
+  public mutantEvolution = false;
+
   constructor(init: Partial<Rules> = {}) {
     Object.assign(this, init);
   }

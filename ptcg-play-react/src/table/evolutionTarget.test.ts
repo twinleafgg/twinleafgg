@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Stage, SuperType, type PokemonCard } from 'ptcg-server';
+import { CardType, Stage, SuperType, type PokemonCard } from 'ptcg-server';
 import {
   extraPlayableEvolutionCardIds,
   getInPlayPokemonCard,
@@ -10,6 +10,7 @@ function pokemon(name: string, extras: Partial<PokemonCard> = {}): PokemonCard {
   return {
     superType: SuperType.POKEMON,
     name,
+    cardType: [CardType.GRASS],
     evolvesFrom: '',
     evolvesTo: [],
     evolvesToStage: [],
@@ -56,6 +57,33 @@ describe('isValidEvolutionTarget', () => {
     const eeveeEx = pokemon('Eevee ex', { stage: Stage.BASIC });
     const vaporeon = pokemon('Vaporeon', { stage: Stage.STAGE_1, evolvesFrom: 'Eevee' });
     expect(isValidEvolutionTarget(vaporeon, eeveeEx)).toBe(true);
+  });
+
+  it('allows Mutant Evolution by stage and shared type', () => {
+    const charmander = pokemon('Charmander', {
+      stage: Stage.BASIC,
+      cardType: [CardType.FIRE],
+    });
+    const salazzle = pokemon('Salazzle', {
+      stage: Stage.STAGE_1,
+      evolvesFrom: 'Salandit',
+      cardType: [CardType.FIRE],
+    });
+    const emboar = pokemon('Emboar', {
+      stage: Stage.STAGE_2,
+      evolvesFrom: 'Pignite',
+      cardType: [CardType.FIRE],
+    });
+    const oddish = pokemon('Oddish', {
+      stage: Stage.BASIC,
+      cardType: [CardType.GRASS],
+    });
+
+    expect(isValidEvolutionTarget(salazzle, charmander)).toBe(false);
+    expect(isValidEvolutionTarget(salazzle, charmander, { mutantEvolution: true })).toBe(true);
+    expect(isValidEvolutionTarget(emboar, salazzle, { mutantEvolution: true })).toBe(true);
+    expect(isValidEvolutionTarget(salazzle, oddish, { mutantEvolution: true })).toBe(false);
+    expect(isValidEvolutionTarget(emboar, charmander, { mutantEvolution: true })).toBe(false);
   });
 });
 

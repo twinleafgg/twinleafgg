@@ -8,6 +8,7 @@ import { StoreLike } from '../store-like';
 import { CheckPokemonPlayedTurnEffect, CheckSpecialConditionRemovalEffect } from '../effects/check-effects';
 import { EvolveEffect } from '../effects/game-effects';
 import { PowerType } from '../card/pokemon-types';
+import { matchesPokemonEvolution } from '../pokemon-evolution';
 
 /**
  * Helper function to emit animation events
@@ -82,17 +83,16 @@ export function playPokemonReducer(store: StoreLike, state: State, effect: Effec
     if (isLvX && effect.target !== player.active) {
       throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
     }
-    const evolvesFrom = effect.pokemonCard.evolvesFrom;
     const pokemonCard = effect.target.getPokemonCard();
     if (pokemonCard === undefined) {
       throw new GameError(GameMessage.INVALID_TARGET);
     }
 
-    // Check if evolution is valid using either evolvesFrom, evolvesTo, evolvesToStage, or evolvesFromBase
-    const isValidEvolution = (isEvolved && pokemonCard.stage < stage && pokemonCard.name === evolvesFrom) ||
-      (isEvolved && pokemonCard.evolvesTo.includes(effect.pokemonCard.name)) ||
-      (isEvolved && pokemonCard.evolvesToStage.includes(effect.pokemonCard.stage)) ||
-      (isEvolved && Array.isArray(pokemonCard.evolvesFromBase) && pokemonCard.evolvesFromBase.length > 0 && pokemonCard.evolvesFromBase.includes(effect.pokemonCard.evolvesFrom));
+    const isValidEvolution =
+      isEvolved &&
+      matchesPokemonEvolution(effect.pokemonCard, pokemonCard, {
+        mutantEvolution: state.rules?.mutantEvolution === true,
+      });
 
     if (isValidEvolution) {
       if (player.cannotEvolvePokemonCards || effect.target.cannotEvolveNextTurn) {

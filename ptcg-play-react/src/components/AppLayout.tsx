@@ -67,6 +67,14 @@ function isDeckListPath(pathname: string): boolean {
   return pathname === '/deck';
 }
 
+function isCubePath(pathname: string): boolean {
+  return pathname === '/cube' || pathname.startsWith('/cube/');
+}
+
+function isDraftPath(pathname: string): boolean {
+  return pathname === '/draft' || pathname.startsWith('/draft/');
+}
+
 function isRankingPath(pathname: string): boolean {
   return pathname === '/ranking' || pathname.startsWith('/ranking/');
 }
@@ -98,6 +106,8 @@ export function AppLayout() {
   const rankingBleed = isRankingPath(pathname);
   const deckListBleed = isDeckListPath(pathname);
   const deckStatsBleed = isDeckStatsPath(pathname);
+  const cubeBleed = isCubePath(pathname);
+  const draftBleed = isDraftPath(pathname);
   const friendsBleed = isFriendsPath(pathname);
   const settingsBleed = isSettingsPath(pathname);
   const mainBleed =
@@ -112,6 +122,8 @@ export function AppLayout() {
     rankingBleed ||
     deckListBleed ||
     deckStatsBleed ||
+    cubeBleed ||
+    draftBleed ||
     friendsBleed ||
     settingsBleed;
 
@@ -191,7 +203,9 @@ export function AppLayout() {
             deckCustomizeFullBleed ||
             myGamesBleed ||
             battlePassBleed ||
-            messagesBleed
+            messagesBleed ||
+            cubeBleed ||
+            draftBleed
               ? 'hidden'
               : parentMap
                 ? 'hidden'

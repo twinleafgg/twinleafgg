@@ -11,7 +11,8 @@
 .dropZone {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior: contain;
   padding: 12px 12px 72px;
   box-sizing: border-box;

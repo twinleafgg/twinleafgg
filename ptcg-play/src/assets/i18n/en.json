@@ -138,6 +138,7 @@
   "GAMES_ALLOW_SAME_NAME_STADIUM": "Can play a stadium with the same name",
   "GAMES_CAN_START_WITH_FOSSIL": "Can start with a Fossil Trainer card",
   "GAMES_OLD_BURN_RULE": "Old burn rule: flip between turns, damage only on tails, never cured",
+  "GAMES_MUTANT_EVOLUTION": "Mutant Evolution: evolve by stage and type (any Basic → Stage 1 → Stage 2 of the same type)",
   "GAMES_FORMAT": "Format",
   "GAMES_GAME_RULES": "Game rules",
   "GAMES_LIMIT_10_MIN": "10 min",

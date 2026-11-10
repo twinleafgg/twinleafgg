@@ -64,6 +64,7 @@ export * from './store/state/pokemon-card-list';
 export * from './store/state/rules';
 export * from './store/state/state-log';
 export * from './store/state/state';
+export * from './store/pokemon-evolution';
 
 export * from './store/state-utils';
 export * from './store/store-handler';

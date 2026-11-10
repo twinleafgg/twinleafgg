@@ -36,6 +36,9 @@ import { AbilityLockPage } from './pages/ability-lock/AbilityLockPage';
 import { EffectlessCardsPage } from './pages/effectless-cards/EffectlessCardsPage';
 import { DeckBoxPreviewPage } from './pages/deck-box-preview/DeckBoxPreviewPage';
 import { DeckCustomizePage } from './pages/deck-customize/DeckCustomizePage';
+import { CubeListPage } from './cube/CubeListPage';
+import { CubeEditorPage } from './cube/CubeEditorPage';
+import { CubeDraftRoomPage } from './cube/CubeDraftRoomPage';
 
 function ProfileMeRedirect() {
   const { user } = useAuth();
@@ -86,6 +89,9 @@ export default function App() {
                 <Route path="/profile/:userId" element={<ProfilePageRoute />} />
                 <Route path="/parent" element={<ParentPage />} />
                 <Route element={<AdminRoute />}>
+                  <Route path="/cube" element={<CubeListPage />} />
+                  <Route path="/cube/:cubeId" element={<CubeEditorPage />} />
+                  <Route path="/draft/:roomCode" element={<CubeDraftRoomPage />} />
                   <Route path="/admin" element={<AdminHubPage />} />
                   <Route path="/admin/battle-pass" element={<AdminBattlePassListPage />} />
                   <Route path="/admin/battle-pass/:seasonId" element={<AdminBattlePassEditorPage />} />
