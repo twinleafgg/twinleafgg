@@ -22,30 +22,3 @@
 .compactPrimary {
   padding: 5px 8px !important;
 }
-
-.phaseList {
-  list-style: none;
-  margin: 0;
-  padding: 4px 2px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.phaseItem {
-  margin: 0;
-  padding: 0;
-  font-size: 0.48rem;
-  line-height: 1.25;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.35);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.phaseItemActive {
-  color: #ffeb3b;
-  font-weight: 700;
-}

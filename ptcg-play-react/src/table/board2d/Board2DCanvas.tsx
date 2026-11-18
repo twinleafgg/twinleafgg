@@ -31,6 +31,8 @@ export type Board2DCanvasProps = {
   gameActions: Board3dGameActions;
   onKoSequenceActiveChange?: (active: boolean) => void;
   onBoardFps?: (fps: number) => void;
+  /** 2D has no card flights — registers an immediately-resolving idle waiter. */
+  onBoardIdleReady?: (waitForIdle: (() => Promise<void>) | null) => void;
 };
 
 type CardPromptState =
@@ -72,6 +74,14 @@ export function Board2DCanvas(props: Board2DCanvasProps) {
   const settings = useSettings();
   const getScanUrl = useDeckCardScanUrl(serverConfig?.scansUrl);
   const gameActionsStable = useStableGameActions(props.gameActions);
+  const onBoardIdleReady = props.onBoardIdleReady;
+
+  useEffect(() => {
+    onBoardIdleReady?.(() => Promise.resolve());
+    return () => {
+      onBoardIdleReady?.(null);
+    };
+  }, [onBoardIdleReady]);
 
   const catalog =
     props.catalog.length > 0 ? props.catalog : (cardsInfo?.cards ?? EMPTY_CATALOG);

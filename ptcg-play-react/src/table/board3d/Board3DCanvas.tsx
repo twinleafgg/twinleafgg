@@ -49,6 +49,8 @@ export type Board3DCanvasProps = {
   gameActions: Board3dGameActions;
   onKoSequenceActiveChange?: (active: boolean) => void;
   onBoardFps?: (fps: number) => void;
+  /** Register a waiter that resolves when board animations / transitions are idle. */
+  onBoardIdleReady?: (waitForIdle: (() => Promise<void>) | null) => void;
 };
 
 type CardPromptState =
@@ -109,9 +111,20 @@ export function Board3DCanvas(props: Board3DCanvasProps) {
     return settings;
   }, [graphicsPreset.castShadow, graphicsPreset.shadowMapSize]);
   const [cardPrompt, setCardPrompt] = useState<CardPromptState>(null);
-  const onControllerReady = useCallback((c: Board3dController | null) => {
-    controllerRef.current = c;
-  }, []);
+  const onBoardIdleReady = props.onBoardIdleReady;
+  const onControllerReady = useCallback(
+    (c: Board3dController | null) => {
+      controllerRef.current = c;
+      onBoardIdleReady?.(c ? () => c.whenIdle() : null);
+    },
+    [onBoardIdleReady],
+  );
+
+  useEffect(() => {
+    return () => {
+      onBoardIdleReady?.(null);
+    };
+  }, [onBoardIdleReady]);
 
   const maps = useCardImageMaps();
   const { serverConfig, cardsInfo } = useAuth();

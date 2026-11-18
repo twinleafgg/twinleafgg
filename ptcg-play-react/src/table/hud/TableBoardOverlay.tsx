@@ -31,6 +31,8 @@ export type TableBoardOverlayProps = {
   onSwitchSides: () => void;
   onSendChat: (message: string) => void;
   onReplayStep: (position: number, state: LocalGameState['state'], logs: LocalGameState['logs']) => void;
+  /** Wait until board transitions / animations finish (replay playback pacing). */
+  waitForBoardIdle?: () => Promise<void>;
   /** Averaged WebGL board frame rate from the 3D canvas (null until first sample). */
   boardFps: number | null;
 };
@@ -52,6 +54,7 @@ export function TableBoardOverlay(props: TableBoardOverlayProps) {
     onSwitchSides,
     onSendChat,
     onReplayStep,
+    waitForBoardIdle,
     boardFps,
     showAdminSpectatorControls,
     adminSpectatorReveal,
@@ -162,6 +165,7 @@ export function TableBoardOverlay(props: TableBoardOverlayProps) {
                 localGame={localGame}
                 replay={localGame.replay}
                 onStep={onReplayStep}
+                waitForBoardIdle={waitForBoardIdle}
               />
             ) : null}
           </div>

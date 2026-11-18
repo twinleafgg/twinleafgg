@@ -98,6 +98,16 @@ export function TablePage() {
     revealHands: false,
   });
   const [shareOpen, setShareOpen] = useState(false);
+  const boardIdleWaiterRef = useRef<(() => Promise<void>) | null>(null);
+  const onBoardIdleReady = useCallback((waitForIdle: (() => Promise<void>) | null) => {
+    boardIdleWaiterRef.current = waitForIdle;
+  }, []);
+  const waitForBoardIdle = useCallback(async () => {
+    const wait = boardIdleWaiterRef.current;
+    if (wait) {
+      await wait();
+    }
+  }, []);
   const clientIdRef = useRef(clientId);
   clientIdRef.current = clientId;
   const localGameRef = useRef(localGame);
@@ -811,6 +821,7 @@ export function TablePage() {
           gameActions={gameActions}
           onKoSequenceActiveChange={onKoSequenceActiveChange}
           onBoardFps={onBoardFps}
+          onBoardIdleReady={onBoardIdleReady}
         />
       ) : (
         <Board2DCanvas
@@ -833,6 +844,7 @@ export function TablePage() {
           gameActions={gameActions}
           onKoSequenceActiveChange={onKoSequenceActiveChange}
           onBoardFps={onBoardFps}
+          onBoardIdleReady={onBoardIdleReady}
         />
       )}
       <TableBoardOverlay
@@ -852,6 +864,7 @@ export function TablePage() {
         onSwitchSides={toggleSwitchSides}
         onSendChat={onSendChat}
         onReplayStep={onReplayStep}
+        waitForBoardIdle={waitForBoardIdle}
         boardFps={boardFps}
       />
       <ShareStateDialog

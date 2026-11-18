@@ -1241,6 +1241,45 @@ export class Board3dController {
     };
   }
 
+  /** True while a board transition or residual card animation is still in flight. */
+  isBusy(): boolean {
+    return (
+      this.transitionQueue.isBusy() ||
+      this.animationService.hasActiveAnimations() ||
+      this.outstandingDeckEntrances > 0
+    );
+  }
+
+  /**
+   * Resolves when the transition queue and residual GSAP / deck-entrance work are idle.
+   * Used by replay playback so the next state waits for the current animation to finish.
+   */
+  async whenIdle(): Promise<void> {
+    for (;;) {
+      await this.transitionQueue.whenIdle();
+      if (this.outstandingDeckEntrances > 0) {
+        await this.whenDeckEntrancesIdle();
+        continue;
+      }
+      if (this.animationService.hasActiveAnimations()) {
+        await new Promise<void>((resolve) => {
+          const id = window.setInterval(() => {
+            if (!this.animationService.hasActiveAnimations()) {
+              window.clearInterval(id);
+              resolve();
+            }
+          }, 40);
+        });
+        continue;
+      }
+      // Post-commit hooks may schedule work on the next frame.
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      if (!this.isBusy()) {
+        return;
+      }
+    }
+  }
+
   destroy(): void {
     // Stop animation loop
     if (this.animationFrameId) {
