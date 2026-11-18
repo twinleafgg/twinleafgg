@@ -812,6 +812,8 @@ export class Board3dController {
           deckLimboByPlayer: this.deckLimboByPlayer,
           showCardsRevealIds: showCards.ids,
           showCardsDestinationHint: showCards.destinationHint,
+          // Live games use socket entrance events; replays only have snapshot diffs.
+          animatePokemonEntrances: !!props.gameState.replay,
         });
         koGhostPlan.showCardsById = showCards.byId;
         koGhostPlan.showCardsSourcePlayerById = showCards.sourcePlayerById;
@@ -894,6 +896,12 @@ export class Board3dController {
   private stepsWithoutHandOrigins(steps: TransitionStep[]): TransitionStep[] {
     return steps.flatMap((step): TransitionStep[] => {
       if (step.kind === 'handToDeck' || (step.kind === 'trainerToPlayZone' && !step.preFlown)) {
+        return [];
+      }
+      if (step.kind === 'pokemonToBoard' && step.source === 'hand') {
+        return [];
+      }
+      if (step.kind === 'energyAttach' && step.source === 'hand') {
         return [];
       }
       if (step.kind === 'toPile') {
@@ -1068,6 +1076,7 @@ export class Board3dController {
       animationService: this.animationService,
       assetLoader: this.assetLoader,
       cardsAdapter: this.cardsAdapter,
+      scene: () => this.scene,
       bottomPlayer: () => this.bottomPlayer,
       topPlayer: () => this.topPlayer,
       bottomHand: () => this.bottomPlayerHand,
@@ -1089,6 +1098,17 @@ export class Board3dController {
       render: () => this.renderDisplay(),
       setKoActive: (active) => this.onKoSequenceActiveChange?.(active),
       markDirty: () => this.markDirty(),
+      hideBoardEntrance: (meshId) => {
+        this.pendingEntranceMeshIds.add(meshId);
+        this.stateSync.hideBoardCardForHandFlight(meshId);
+      },
+      showBoardEntrance: (meshId) => {
+        this.pendingEntranceMeshIds.delete(meshId);
+        const boardCard = this.stateSync.getCardById(meshId);
+        if (boardCard) {
+          boardCard.getGroup().visible = true;
+        }
+      },
       consumePendingAttackDamage: (defenderId) =>
         this.boardInteractionService.consumePendingAttackDamageForDefender(defenderId),
     };

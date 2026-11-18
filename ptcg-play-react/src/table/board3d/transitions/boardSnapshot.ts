@@ -10,8 +10,33 @@ export interface BoardCardLocation {
   isTopPokemon: boolean;
 }
 
+/** Cumulative attack logs — diff consecutive snapshots for new attacks. */
+export interface AttackLogEntry {
+  playerName: string;
+  attackName: string;
+}
+
+/** Cumulative coin-flip logs. */
+export interface CoinFlipLogEntry {
+  playerName: string;
+  heads: boolean;
+}
+
+/** Cumulative attach-from-hand logs (energy / tool). */
+export interface AttachLogEntry {
+  playerName: string;
+  cardName: string;
+  pokemonName: string;
+}
+
+/** Ordered attack/coin events for replay (preserves log interleaving). */
+export type ReplayAnimEvent =
+  | { kind: 'attack'; playerName: string; attackName: string }
+  | { kind: 'coinFlip'; playerName: string; heads: boolean };
+
 export interface PlayerSnapshot {
   playerId: number;
+  playerName: string;
   /** Real hand ids in order, or null when the viewer only receives placeholders. */
   handIds: number[] | null;
   handCount: number;
@@ -24,6 +49,8 @@ export interface PlayerSnapshot {
   /** Real prize ids per grid slot; null when the slot is empty or secret. */
   prizeIds: (number | null)[];
   boardCards: Map<number, BoardCardLocation>;
+  /** Damage on Active (for replay attack hit visuals). */
+  activeDamage: number;
   /**
    * Trainer names this player has logged as played in `state.logs`.
    * When broadcasts keep untrimmed logs this is cumulative; consumers must
@@ -40,6 +67,13 @@ export interface BoardSnapshot {
   players: Map<number, PlayerSnapshot>;
   cardNames: Map<number, string>;
   trainerIds: Set<number>;
+  energyIds: Set<number>;
+  /** Cumulative across the match log; diff to find new events. */
+  attackLogs: AttackLogEntry[];
+  coinFlipLogs: CoinFlipLogEntry[];
+  attachLogs: AttachLogEntry[];
+  /** Attack + coin events in log order (for interleaved replay steps). */
+  animEvents: ReplayAnimEvent[];
 }
 
 export interface CaptureSnapshotOptions {
@@ -96,12 +130,30 @@ export function captureSnapshot(state: State, options: CaptureSnapshotOptions): 
   const players = new Map<number, PlayerSnapshot>();
   const cardNames = new Map<number, string>();
   const trainerIds = new Set<number>();
+  const energyIds = new Set<number>();
 
   const noteCards = (list: CardList | undefined) => {
     for (const c of list?.cards ?? []) {
       cardNames.set(c.id, c.name);
       if (c.superType === SuperType.TRAINER) {
         trainerIds.add(c.id);
+      }
+      if (c.superType === SuperType.ENERGY) {
+        energyIds.add(c.id);
+      }
+    }
+  };
+
+  const notePokemonList = (list: PokemonCardList | undefined) => {
+    noteCards(list);
+    noteCards(list?.energies);
+    for (const tool of list?.tools ?? []) {
+      cardNames.set(tool.id, tool.name);
+      if (tool.superType === SuperType.TRAINER) {
+        trainerIds.add(tool.id);
+      }
+      if (tool.superType === SuperType.ENERGY) {
+        energyIds.add(tool.id);
       }
     }
   };
@@ -128,6 +180,8 @@ export function captureSnapshot(state: State, options: CaptureSnapshotOptions): 
     noteCards(player.lostzone);
     noteCards(player.supporter);
     noteCards(player.stadium);
+    notePokemonList(player.active);
+    player.bench.forEach((b) => notePokemonList(b));
 
     const playedTrainerNames: string[] = [];
     for (const log of state.logs ?? []) {
@@ -142,6 +196,7 @@ export function captureSnapshot(state: State, options: CaptureSnapshotOptions): 
 
     players.set(player.id, {
       playerId: player.id,
+      playerName: player.name,
       handIds: handReal ? ids(player.hand) : null,
       handCount: player.hand?.cards?.length ?? 0,
       deckCount: player.deck?.cards?.length ?? 0,
@@ -152,8 +207,46 @@ export function captureSnapshot(state: State, options: CaptureSnapshotOptions): 
       prizeOccupied,
       prizeIds,
       boardCards,
+      activeDamage: player.active?.damage ?? 0,
       playedTrainerNames,
     });
+  }
+
+  const attackLogs: AttackLogEntry[] = [];
+  const coinFlipLogs: CoinFlipLogEntry[] = [];
+  const attachLogs: AttachLogEntry[] = [];
+  const animEvents: ReplayAnimEvent[] = [];
+  for (const log of state.logs ?? []) {
+    const params = (log.params ?? {}) as {
+      name?: string;
+      attack?: string;
+      card?: string;
+      pokemon?: string;
+    };
+    if (log.message === GameLog.LOG_PLAYER_USES_ATTACK && params.name && params.attack) {
+      const entry = { playerName: String(params.name), attackName: String(params.attack) };
+      attackLogs.push(entry);
+      animEvents.push({ kind: 'attack', ...entry });
+    } else if (log.message === GameLog.LOG_PLAYER_FLIPS_HEADS && params.name) {
+      const entry = { playerName: String(params.name), heads: true };
+      coinFlipLogs.push(entry);
+      animEvents.push({ kind: 'coinFlip', ...entry });
+    } else if (log.message === GameLog.LOG_PLAYER_FLIPS_TAILS && params.name) {
+      const entry = { playerName: String(params.name), heads: false };
+      coinFlipLogs.push(entry);
+      animEvents.push({ kind: 'coinFlip', ...entry });
+    } else if (
+      log.message === GameLog.LOG_PLAYER_ATTACHES_CARD &&
+      params.name &&
+      params.card &&
+      params.pokemon
+    ) {
+      attachLogs.push({
+        playerName: String(params.name),
+        cardName: String(params.card),
+        pokemonName: String(params.pokemon),
+      });
+    }
   }
 
   return {
@@ -164,5 +257,10 @@ export function captureSnapshot(state: State, options: CaptureSnapshotOptions): 
     players,
     cardNames,
     trainerIds,
+    energyIds,
+    attackLogs,
+    coinFlipLogs,
+    attachLogs,
+    animEvents,
   };
 }

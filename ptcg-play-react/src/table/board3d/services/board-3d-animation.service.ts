@@ -667,11 +667,16 @@ export class Board3dAnimationService {
     }
   }
 
-  playCoinFlipAnimation(scene: Scene, isHeads: boolean, headsUrl?: string, tailsUrl?: string): void {
+  playCoinFlipAnimation(
+    scene: Scene,
+    isHeads: boolean,
+    headsUrl?: string,
+    tailsUrl?: string,
+  ): Promise<void> {
     this.initCoinFlipScene(scene, headsUrl, tailsUrl);
     const graph = this.activeCoinFlipScene;
     if (!graph) {
-      return;
+      return Promise.resolve();
     }
 
     if (this.activeCoinFlipTimeline) {
@@ -682,32 +687,36 @@ export class Board3dAnimationService {
 
     const generation = ++this.coinFlipGeneration;
 
-    const startSpin = (): void => {
-      if (generation !== this.coinFlipGeneration) {
-        return;
-      }
-      let timeline: gsap.core.Timeline;
-      const finish = (): void => {
-        if (this.activeCoinFlipTimeline === timeline) {
-          this.activeCoinFlipTimeline = null;
+    return new Promise((resolve) => {
+      const startSpin = (): void => {
+        if (generation !== this.coinFlipGeneration) {
+          resolve();
+          return;
         }
-        this.removeAnimation(timeline);
+        let timeline: gsap.core.Timeline;
+        const finish = (): void => {
+          if (this.activeCoinFlipTimeline === timeline) {
+            this.activeCoinFlipTimeline = null;
+          }
+          this.removeAnimation(timeline);
+          this.updateAnimationState();
+          resolve();
+        };
+
+        timeline = buildCoinFlipTimeline(graph.coin, isHeads, finish);
+
+        this.activeCoinFlipTimeline = timeline;
+        this.activeAnimations.push(timeline);
         this.updateAnimationState();
       };
 
-      timeline = buildCoinFlipTimeline(graph.coin, isHeads, finish);
+      if (headsUrl && tailsUrl) {
+        void graph.setFaceTextures(headsUrl, tailsUrl).then(startSpin).catch(startSpin);
+        return;
+      }
 
-      this.activeCoinFlipTimeline = timeline;
-      this.activeAnimations.push(timeline);
-      this.updateAnimationState();
-    };
-
-    if (headsUrl && tailsUrl) {
-      void graph.setFaceTextures(headsUrl, tailsUrl).then(startSpin).catch(startSpin);
-      return;
-    }
-
-    startSpin();
+      startSpin();
+    });
   }
 
   cancelCoinFlipAnimation(): void {

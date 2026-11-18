@@ -1,6 +1,13 @@
-import { Vector3, type Object3D, type Texture } from 'three';
+import { Vector3, type Object3D, type Scene, type Texture } from 'three';
 import gsap from 'gsap';
-import { CardList, PlayerType, type Card, type Player } from 'ptcg-server';
+import {
+  CardList,
+  PlayerType,
+  type Card,
+  type Player,
+  type PokemonCard,
+  type PokemonCardList,
+} from 'ptcg-server';
 import { Board3dCard } from '../board-3d-card';
 import { getBenchPositions, ZONE_POSITIONS } from '../board-3d-zone-positions';
 import {
@@ -21,13 +28,18 @@ import {
   type Board3dAnimationService,
   type DrawFlightVisualPreset,
 } from '../services/board-3d-animation.service';
-import type { Board3dHandService, DrawSequenceFlight } from '../services/board-3d-hand.service';
+import {
+  BOARD3D_PLAYER_HAND_Z,
+  type Board3dHandService,
+  type DrawSequenceFlight,
+} from '../services/board-3d-hand.service';
 import type {
   Board3dDisplayOverrides,
   Board3dStateSyncService,
 } from '../services/board-3d-state-sync.service';
 import type { Board3dAssetLoaderService } from '../services/board-3d-asset-loader.service';
 import type { Board3dCardsAdapter } from '../board3dCardsAdapter';
+import { playAttackSfx, playSfx } from '../../../sfx';
 import type { BoardCardLocation, BoardSnapshot } from './boardSnapshot';
 import type { PileOrigin, PileZone, TransitionPlan, TransitionStep } from './planTransition';
 
@@ -54,6 +66,8 @@ export interface Board3dTransitionHost {
   readonly animationService: Board3dAnimationService;
   readonly assetLoader: Board3dAssetLoaderService;
   readonly cardsAdapter: Board3dCardsAdapter;
+  /** Three.js scene (coin flips). */
+  scene(): Scene | null;
   bottomPlayer(): Player;
   topPlayer(): Player;
   bottomHand(): CardList;
@@ -71,6 +85,10 @@ export interface Board3dTransitionHost {
   render(): Promise<void>;
   setKoActive(active: boolean): void;
   markDirty(): void;
+  /** Hide a board slot mesh while a Pokémon entrance flight is in the air. */
+  hideBoardEntrance(meshId: string): void;
+  /** Reveal a board slot mesh after its entrance flight lands. */
+  showBoardEntrance(meshId: string): void;
   /** Pending attack damage for this defending player, or null if none / already applied. */
   consumePendingAttackDamage?(defenderId: number): number | null;
 }
@@ -85,6 +103,9 @@ const FLIGHT_LIFT_Y = 0.35;
 const LOCAL_TRAINER_LANDING_TIMEOUT_MS = 2000;
 const OPPONENT_DRAW_STAGGER_SEC = 0.12;
 const REVEAL_FLIP_DURATION_SEC = 0.3;
+/** Matches live {@link Board3dController} deck→bench drop pacing. */
+const DECK_TO_BOARD_DROP_PACE = 0.6;
+const HAND_PLAY_FLIGHT_INITIAL_SCALE = 1.3;
 
 const sleep = (ms: number) => new Promise<void>((r) => globalThis.setTimeout(r, ms));
 
@@ -112,7 +133,28 @@ function findCard(player: Player | undefined, cardId: number): Card | undefined 
       return hit;
     }
   }
+  // Attachments live on PokemonCardList.energies / .tools
+  for (const slot of [player.active, ...player.bench]) {
+    const energyHit = slot?.energies?.cards?.find((c) => c.id === cardId);
+    if (energyHit) {
+      return energyHit;
+    }
+    const toolHit = slot?.tools?.find((c) => c.id === cardId);
+    if (toolHit) {
+      return toolHit;
+    }
+  }
   return undefined;
+}
+
+function pokemonListForLoc(
+  player: Player | undefined,
+  loc: BoardCardLocation,
+): PokemonCardList | undefined {
+  if (!player) {
+    return undefined;
+  }
+  return loc.slot === 'active' ? player.active : player.bench[loc.index];
 }
 
 function playerOwnsLiveCard(player: Player, cardId: number): boolean {
@@ -218,6 +260,18 @@ export class Board3dTransitionRunner {
             break;
           case 'trainerToDiscard':
             await this.runTrainerToDiscard(step);
+            break;
+          case 'pokemonToBoard':
+            await this.runPokemonToBoard(step);
+            break;
+          case 'energyAttach':
+            await this.runEnergyAttach(step);
+            break;
+          case 'attack':
+            await this.runAttack(step);
+            break;
+          case 'coinFlip':
+            await this.runCoinFlip(step);
             break;
           case 'showCards':
             await this.runShowCards(step);
@@ -587,6 +641,321 @@ export class Board3dTransitionRunner {
   }
 
   // --- Steps ---------------------------------------------------------------
+
+  private async runPokemonToBoard(
+    step: Extract<TransitionStep, { kind: 'pokemonToBoard' }>,
+  ): Promise<void> {
+    const { playerId, cardId, loc, source, setupFaceDown } = step;
+    const seat = this.seatOf(playerId);
+    const meshId = boardSlotMeshId(seat, playerId, loc);
+    const isTop = seat === 'topPlayer';
+    const endRotationY = isTop ? Math.PI : 0;
+    const endScale = loc.slot === 'active' ? 1.5 : 1.0;
+    const target = this.boardSlotWorld(playerId, loc);
+    target.y = Math.max(target.y, 0.08);
+    const player = this.playerOf(playerId);
+
+    this.host.hideBoardEntrance(meshId);
+    await this.render();
+
+    const card = findCard(player, cardId);
+    const realHand = this.plan.players.get(playerId)?.realHand ?? false;
+
+    try {
+      if (source === 'hand') {
+        const flight = await this.takeFromHand(playerId, cardId, card, realHand);
+        const group = flight.group;
+        // Match live hand→board start pose when the detached mesh is still near the hand.
+        if (playerId === this.host.bottomPlayer()?.id) {
+          group.position.set(group.position.x, 0.15, BOARD3D_PLAYER_HAND_Z);
+          group.rotation.set(0, 0, 0);
+          group.scale.setScalar(HAND_PLAY_FLIGHT_INITIAL_SCALE);
+        }
+        playSfx('pokemonplay');
+        if (setupFaceDown) {
+          const [cardBack, mask] = await Promise.all([
+            this.backTexture(player),
+            this.host.assetLoader.loadCardMaskTexture(),
+          ]);
+          const flightCard =
+            (group.userData?.board3dCard as Board3dCard | undefined) ??
+            null;
+          await this.host.animationService.playHandCardDropOnBoard(group, target, {
+            endScale,
+            endRotationY,
+            flipFaceDownDuringTravel: {
+              onHideFace: () => {
+                flightCard?.updateTexture(cardBack, cardBack, mask);
+                flightCard?.setHolo(null);
+                group.userData.isFaceDown = true;
+              },
+            },
+          });
+          flightCard?.updateTexture(cardBack, cardBack, mask);
+          flightCard?.setHolo(null);
+          group.userData.isFaceDown = true;
+          group.rotation.z = 0;
+        } else {
+          await Promise.all([
+            this.host.animationService.playHandCardDropOnBoard(group, target, {
+              endScale,
+              endRotationY,
+            }),
+            this.flipFaceUp(group),
+          ]);
+        }
+        group.removeFromParent();
+        flight.dispose();
+      } else if (setupFaceDown) {
+        // Setup should only place from hand; treat unknown→board as face-down deck drop.
+        const count = this.deckCount.get(playerId) ?? 0;
+        this.deckCount.set(playerId, Math.max(0, count - 1));
+        await this.render();
+        const flight = await this.createFlightCard(
+          playerId,
+          card,
+          this.deckTopWorld(playerId, count),
+          { faceDown: true, scale: 1.1 },
+        );
+        const group = flight.getGroup();
+        group.rotation.set(0, endRotationY, Math.PI);
+        playSfx('pokemonplay');
+        await this.host.animationService.playHandCardDropOnBoard(group, target, {
+          endScale,
+          endRotationY,
+          durationScale: DECK_TO_BOARD_DROP_PACE,
+          flipFaceDownDuringTravel: {
+            onHideFace: () => {
+              group.userData.isFaceDown = true;
+            },
+          },
+        });
+        group.removeFromParent();
+        flight.dispose();
+      } else {
+        const count = this.deckCount.get(playerId) ?? 0;
+        this.deckCount.set(playerId, Math.max(0, count - 1));
+        await this.render();
+        const flight = await this.createFlightCard(
+          playerId,
+          card,
+          this.deckTopWorld(playerId, count),
+          { faceDown: true, scale: 1.1 },
+        );
+        const group = flight.getGroup();
+        group.rotation.set(0, endRotationY, Math.PI);
+        playSfx('pokemonplay');
+        await this.host.animationService.playDrawDeckToBoard(group, target, {
+          endRotationY,
+          onRevealFace: () => {
+            group.rotation.z = 0;
+            this.host.markDirty();
+          },
+        });
+        await this.host.animationService.playHandCardDropOnBoard(group, target, {
+          endScale,
+          endRotationY,
+          durationScale: DECK_TO_BOARD_DROP_PACE,
+        });
+        group.removeFromParent();
+        flight.dispose();
+      }
+    } finally {
+      this.host.showBoardEntrance(meshId);
+      await this.render();
+    }
+  }
+
+  private async runEnergyAttach(
+    step: Extract<TransitionStep, { kind: 'energyAttach' }>,
+  ): Promise<void> {
+    const { playerId, cardId, loc, source } = step;
+    const seat = this.seatOf(playerId);
+    const hostMeshId = boardSlotMeshId(seat, playerId, loc);
+    const hostBoardCard = this.host.stateSync.getCardById(hostMeshId);
+    const player = this.playerOf(playerId);
+    const pokemonList = pokemonListForLoc(player, loc);
+    const energyCard = findCard(player, cardId);
+    const energies = pokemonList?.energies;
+    const energyCards = energies?.cards ?? [];
+    const foundIdx = energyCards.findIndex((c) => c.id === cardId);
+    const energySlotIndex =
+      foundIdx >= 0 ? foundIdx : Math.max(0, energyCards.length - 1);
+    const realHand = this.plan.players.get(playerId)?.realHand ?? false;
+
+    if (hostBoardCard) {
+      this.host.stateSync.setSuppressedEnergyIconSlot(hostMeshId, energySlotIndex);
+    }
+
+    let flightDispose: (() => void) | undefined;
+    let flightCard: Board3dCard | undefined;
+
+    try {
+      if (source === 'hand') {
+        const taken = await this.takeFromHand(playerId, cardId, energyCard, realHand);
+        flightDispose = taken.dispose;
+        flightCard = taken.group.userData?.board3dCard as Board3dCard | undefined;
+        if (flightCard && playerId === this.host.bottomPlayer()?.id) {
+          const group = flightCard.getGroup();
+          group.position.set(group.position.x, 0.15, BOARD3D_PLAYER_HAND_Z);
+          group.rotation.set(0, 0, 0);
+          group.scale.setScalar(HAND_PLAY_FLIGHT_INITIAL_SCALE);
+        }
+        // Opponent/hidden hands spawn face-down — reveal before morphing into the icon.
+        if (flightCard && Math.abs(flightCard.getGroup().rotation.z) > 0.01) {
+          await this.flipFaceUp(flightCard.getGroup());
+        }
+      } else {
+        const count = this.deckCount.get(playerId) ?? 0;
+        this.deckCount.set(playerId, Math.max(0, count - 1));
+        await this.render();
+        flightCard = await this.createFlightCard(
+          playerId,
+          energyCard,
+          this.deckTopWorld(playerId, count),
+          { faceDown: true },
+        );
+        flightDispose = () => flightCard!.dispose();
+        await this.flipFaceUp(flightCard.getGroup());
+      }
+
+      if (!hostBoardCard || !flightCard || !energyCard) {
+        return;
+      }
+
+      playSfx('energyattach');
+      const energyList = energies ?? new CardList();
+      const iconTexture = await this.host.stateSync.loadEnergyIconTexture(energyCard, energyList);
+      await this.host.animationService.playEnergyAttachToPokemon(
+        flightCard,
+        hostBoardCard,
+        energySlotIndex,
+        iconTexture,
+      );
+    } finally {
+      flightDispose?.();
+      if (hostBoardCard) {
+        this.host.stateSync.clearSuppressedEnergyIconSlot(hostMeshId);
+        if (energies) {
+          await this.host.stateSync.refreshEnergyOverlayForCard(hostMeshId, energies);
+        }
+      }
+      await this.render();
+    }
+  }
+
+  private async runAttack(step: Extract<TransitionStep, { kind: 'attack' }>): Promise<void> {
+    const { playerId, damageDealt } = step;
+    const seat = this.seatOf(playerId);
+    const meshId = `${seat}_${playerId}_active`;
+    const boardCard = this.host.stateSync.getCardById(meshId);
+    if (!boardCard) {
+      return;
+    }
+
+    const attackerCard = boardCard.getGroup().userData?.cardData as PokemonCard | undefined;
+    if (attackerCard?.cardType != null) {
+      playAttackSfx(attackerCard.cardType, damageDealt);
+    }
+
+    const opponentId =
+      this.host.bottomPlayer()?.id === playerId
+        ? this.host.topPlayer()?.id
+        : this.host.bottomPlayer()?.id;
+    const attackerWorld = boardCard.getGroup().position.clone();
+    let hitPromise: Promise<void> = Promise.resolve();
+    let damageApplied = false;
+
+    // Next-state sync already carries post-attack damage — roll the counter back to the
+    // previous snapshot so the impact bump is visible.
+    const prevOppDamage =
+      opponentId != null ? (this.prev.players.get(opponentId)?.activeDamage ?? 0) : 0;
+    const nextOppDamage =
+      opponentId != null
+        ? (this.next.players.get(opponentId)?.activeDamage ?? prevOppDamage + damageDealt)
+        : 0;
+    if (opponentId != null && damageDealt > 0) {
+      const defSeat = this.seatOf(opponentId);
+      const defMeshId = `${defSeat}_${opponentId}_active`;
+      this.host.stateSync.applyDamageCounterVisual(defMeshId, prevOppDamage);
+      const defender = this.host.stateSync.getCardById(defMeshId);
+      const cardList = defender?.getGroup().userData.cardList as { damage?: number } | undefined;
+      if (cardList) {
+        cardList.damage = prevOppDamage;
+      }
+    }
+
+    const applyDamage = () => {
+      if (damageApplied || damageDealt <= 0 || opponentId == null) {
+        damageApplied = true;
+        return;
+      }
+      damageApplied = true;
+      const defSeat = this.seatOf(opponentId);
+      const defMeshId = `${defSeat}_${opponentId}_active`;
+      const defender = this.host.stateSync.getCardById(defMeshId);
+      if (!defender) {
+        return;
+      }
+      const cardList = defender.getGroup().userData.cardList as { damage?: number } | undefined;
+      this.host.stateSync.applyDamageCounterVisual(defMeshId, nextOppDamage);
+      if (cardList) {
+        cardList.damage = nextOppDamage;
+      }
+    };
+
+    this.host.stateSync.lockBoardCardPose(meshId);
+    try {
+      await this.host.animationService.playAttackAnimation(boardCard.getGroup(), {
+        onImpact: () => {
+          applyDamage();
+          if (opponentId == null || damageDealt <= 0) {
+            return;
+          }
+          const defSeat = this.seatOf(opponentId);
+          const defMeshId = `${defSeat}_${opponentId}_active`;
+          const defender = this.host.stateSync.getCardById(defMeshId);
+          if (!defender) {
+            return;
+          }
+          this.host.stateSync.lockBoardCardPose(defMeshId);
+          hitPromise = this.host.animationService
+            .playGetHitReaction(defender.getGroup(), { awayFromWorld: attackerWorld })
+            .finally(() => {
+              this.host.stateSync.unlockBoardCardPose(defMeshId);
+            });
+        },
+      });
+    } finally {
+      this.host.stateSync.unlockBoardCardPose(meshId);
+    }
+    if (!damageApplied) {
+      applyDamage();
+    }
+    await hitPromise;
+  }
+
+  private async runCoinFlip(step: Extract<TransitionStep, { kind: 'coinFlip' }>): Promise<void> {
+    const scene = this.host.scene();
+    if (!scene) {
+      return;
+    }
+    const flippingPlayer = this.playerOf(step.playerId);
+    const frontPath =
+      (flippingPlayer as { coinImagePath?: string } | undefined)?.coinImagePath ||
+      'twinleaf-coin.png';
+    const headsUrl = this.host.cardsAdapter.getCoinUrl(frontPath);
+    const tailsUrl = this.host.cardsAdapter.getCoinUrl('twinleaf-coin-back.png');
+    playSfx('coinflip');
+    await this.host.animationService.playCoinFlipAnimation(
+      scene,
+      step.heads,
+      headsUrl,
+      tailsUrl,
+    );
+    // Brief hold so the settled face is readable before the next step.
+    await sleep(400);
+  }
 
   private async runTrainerToPlayZone(
     step: Extract<TransitionStep, { kind: 'trainerToPlayZone' }>,
@@ -1089,9 +1458,25 @@ export class Board3dTransitionRunner {
         continue;
       }
 
+      // Already in hand both before and after: a lingering ShowCards prompt — do not re-fly.
+      if (
+        prevLoc?.zone === 'hand' &&
+        nextLoc?.zone === 'hand' &&
+        prevLoc.playerId === nextLoc.playerId
+      ) {
+        continue;
+      }
+
       let origin: Vector3;
       if (prevLoc) {
-        origin = this.zoneWorld(prevLoc.playerId, prevLoc.zone, prevLoc.loc, prevLoc.grid, deckCursor);
+        origin = this.zoneWorld(
+          prevLoc.playerId,
+          prevLoc.zone,
+          prevLoc.loc,
+          prevLoc.grid,
+          deckCursor,
+          cardId,
+        );
       } else {
         const deck = deckCursor.get(ownerId) ?? 0;
         origin = this.deckTopWorld(ownerId, deck);
@@ -1110,10 +1495,17 @@ export class Board3dTransitionRunner {
       let toDeck = false;
       const endScale = 1.1;
       if (nextLoc && !unmoved) {
-        dest = this.zoneWorld(nextLoc.playerId, nextLoc.zone, nextLoc.loc, nextLoc.grid, deckCursor);
+        dest = this.zoneWorld(
+          nextLoc.playerId,
+          nextLoc.zone,
+          nextLoc.loc,
+          nextLoc.grid,
+          deckCursor,
+          cardId,
+        );
         toDeck = nextLoc.zone === 'deck';
       } else if (step.destinationHint === 'hand') {
-        dest = this.zoneWorld(ownerId, 'hand', undefined, undefined, deckCursor);
+        dest = this.zoneWorld(ownerId, 'hand', undefined, undefined, deckCursor, cardId);
       } else {
         // Secret zone (deck) or show-before-move with deck hint / default.
         const deck = deckCursor.get(ownerId) ?? 0;
@@ -1283,16 +1675,27 @@ export class Board3dTransitionRunner {
     loc: BoardCardLocation | undefined,
     grid: number | undefined,
     deckCursor: Map<number, number>,
+    cardId?: number,
   ): Vector3 {
     const seat = this.seatOf(playerId);
     const zp = ZONE_POSITIONS[seat];
     switch (zone) {
       case 'hand': {
         const isBottom = playerId === this.host.bottomPlayer()?.id;
-        if (isBottom) {
-          return this.host.handService.getHandSlotWorld(0, 1);
+        const handSnap = this.next.players.get(playerId);
+        const ids = handSnap?.handIds;
+        const total = Math.max(1, ids?.length ?? handSnap?.handCount ?? 1);
+        let index = total - 1;
+        if (cardId != null && ids) {
+          const found = ids.indexOf(cardId);
+          if (found >= 0) {
+            index = found;
+          }
         }
-        return this.host.handService.getOpponentHandSlotWorld(0, 1);
+        if (isBottom) {
+          return this.host.handService.getHandSlotWorld(index, total);
+        }
+        return this.host.handService.getOpponentHandSlotWorld(index, total);
       }
       case 'discard':
         return zp.discard.clone().setY(FLIGHT_LIFT_Y);

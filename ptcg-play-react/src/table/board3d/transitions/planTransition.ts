@@ -56,6 +56,34 @@ export type TransitionStep =
     }
   | { kind: 'trainerToDiscard'; playerId: number; cardId: number; zone: PileZone }
   | {
+      kind: 'pokemonToBoard';
+      playerId: number;
+      cardId: number;
+      loc: BoardCardLocation;
+      source: 'hand' | 'deck';
+      /** Setup placement: land face-down (revealed later by setupReveal). */
+      setupFaceDown?: boolean;
+    }
+  | {
+      kind: 'energyAttach';
+      playerId: number;
+      cardId: number;
+      /** Host Pokémon slot (same slot/index as the attached energy). */
+      loc: BoardCardLocation;
+      source: 'hand' | 'deck';
+    }
+  | {
+      kind: 'attack';
+      playerId: number;
+      /** Damage added to the opponent's Active this tick (0 if none / self-target). */
+      damageDealt: number;
+    }
+  | {
+      kind: 'coinFlip';
+      playerId: number;
+      heads: boolean;
+    }
+  | {
       kind: 'showCards';
       /** Card ids not already covered by a reveal draw this frame. */
       cardIds: number[];
@@ -102,6 +130,11 @@ export interface PlanContext {
    * zone). Derived from a resolved ChooseCardsPrompt message when available.
    */
   showCardsDestinationHint?: 'deck' | 'hand';
+  /**
+   * Emit hand/deck → board Pokémon entrance flights.
+   * Live games use socket entrance events instead; enable for replays.
+   */
+  animatePokemonEntrances?: boolean;
 }
 
 type ZoneName = 'hand' | 'discard' | 'lostzone' | 'supporter' | 'stadium' | 'board' | 'prize';
@@ -121,6 +154,9 @@ const STEP_ORDER: TransitionStep['kind'][] = [
   'setupReveal',
   'draw',
   'trainerToDiscard',
+  'pokemonToBoard',
+  'energyAttach',
+  // attack / coinFlip are appended in log order after per-player steps
   'showCards',
 ];
 
@@ -151,6 +187,15 @@ function indexLocations(snapshot: BoardSnapshot): Map<number, CardLocation> {
 
 function boardLocKey(loc: BoardCardLocation): string {
   return `${loc.slot}:${loc.index}`;
+}
+
+function slotHadTopPokemon(player: PlayerSnapshot, loc: BoardCardLocation): boolean {
+  for (const existing of player.boardCards.values()) {
+    if (existing.isTopPokemon && boardLocKey(existing) === boardLocKey(loc)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function emptiedPrizeSlots(prev: PlayerSnapshot, next: PlayerSnapshot): number[] {
@@ -345,6 +390,68 @@ function planPlayer(
     }
   }
 
+  // --- Pokémon board entrances (replay) --------------------------------------
+  // Live games animate these via socket events; replays only have snapshot diffs.
+  // Setup placements are included (face-down); leave-setup uses setupReveal instead.
+  const pokemonToBoard: Extract<TransitionStep, { kind: 'pokemonToBoard' }>[] = [];
+  const pokemonToBoardIds = new Set<number>();
+  const energyAttach: Extract<TransitionStep, { kind: 'energyAttach' }>[] = [];
+  const energyAttachIds = new Set<number>();
+  if (ctx.animatePokemonEntrances && !leavingSetup) {
+    for (const [id, loc] of N.boardCards) {
+      if (!loc.isTopPokemon || P.boardCards.has(id) || slotHadTopPokemon(P, loc)) {
+        continue;
+      }
+      const prev = prevOrigin(id);
+      let source: 'hand' | 'deck' | null = null;
+      if (prev?.zone === 'hand' && prev.playerId === playerId) {
+        source = 'hand';
+      } else if (prev == null) {
+        // Deck cards are not indexed in snapshots; Nest Ball / similar land as unknown→board.
+        source = 'deck';
+      }
+      if (source == null) {
+        continue;
+      }
+      pokemonToBoard.push({
+        kind: 'pokemonToBoard',
+        playerId,
+        cardId: id,
+        loc,
+        source,
+        ...(inSetup ? { setupFaceDown: true as const } : {}),
+      });
+      pokemonToBoardIds.add(id);
+    }
+
+    // Energy attachments (mid-game only — setup has no energy plays).
+    if (!inSetup) {
+      for (const [id, loc] of N.boardCards) {
+        if (P.boardCards.has(id) || pokemonToBoardIds.has(id)) {
+          continue;
+        }
+        if (!nextSnap.energyIds.has(id)) {
+          continue;
+        }
+        const prev = prevOrigin(id);
+        let source: 'hand' | 'deck' | null = null;
+        if (prev?.zone === 'hand' && prev.playerId === playerId) {
+          source = 'hand';
+        } else if (prev == null) {
+          source = 'deck';
+        }
+        if (source == null) {
+          continue;
+        }
+        energyAttach.push({ kind: 'energyAttach', playerId, cardId: id, loc, source });
+        energyAttachIds.add(id);
+      }
+    }
+  }
+  const deckToBoardCount =
+    pokemonToBoard.filter((p) => p.source === 'deck').length +
+    energyAttach.filter((e) => e.source === 'deck').length;
+
   // --- Hand bookkeeping ------------------------------------------------------
   const emptied = emptiedPrizeSlots(P, N);
   const handToDeckIds: number[] = [];
@@ -367,6 +474,8 @@ function planPlayer(
       ...pileCards
         .filter((pc) => pc.origin && pc.origin !== 'hidden' && pc.origin.kind === 'hand')
         .map((pc) => pc.cardId),
+      ...[...pokemonToBoardIds].filter((id) => prevHandSet.has(id)),
+      ...[...energyAttachIds].filter((id) => prevHandSet.has(id)),
     ]);
     for (const id of removed) {
       if (flownFromHand.has(id)) {
@@ -399,7 +508,7 @@ function planPlayer(
       }
     });
     const freeGrids = emptied.filter((g) => !usedGrids.has(g));
-    const rawDeck = P.deckCount + handToDeckCount - N.deckCount - deckToPileCount;
+    const rawDeck = P.deckCount + handToDeckCount - N.deckCount - deckToPileCount - deckToBoardCount;
     let deckBudget = Math.max(0, rawDeck + limboIn);
     let drawnFromDeck = 0;
     for (const u of unknown) {
@@ -420,18 +529,30 @@ function planPlayer(
       pc.origin !== null && pc.origin !== 'hidden' && pc.origin.kind === 'hand';
     const trainersFromHand = playedToZone.size;
     const hiddenPile = pileCards.filter((pc) => pc.origin === 'hidden' || isHandOrigin(pc));
-    const hiddenBoard = [...N.boardCards.keys()].filter((id) => cameFromHiddenOrHand(id)).length;
+    // Board Pokémon entrances are animated separately when enabled; still count for budgets.
+    const hiddenBoard = [...N.boardCards.keys()].filter(
+      (id) => cameFromHiddenOrHand(id) && !pokemonToBoardIds.has(id),
+    ).length;
     const hiddenStadium = N.stadiumIds.filter(
       (id) => !P.stadiumIds.includes(id) && cameFromHiddenOrHand(id),
     ).length;
-    const arrivals = trainersFromHand + hiddenPile.length + hiddenBoard + hiddenStadium;
+    const pokemonFromHand = pokemonToBoard.filter((p) => p.source === 'hand').length;
+    const energyFromHand = energyAttach.filter((e) => e.source === 'hand').length;
+    const arrivals =
+      trainersFromHand +
+      hiddenPile.length +
+      hiddenBoard +
+      hiddenStadium +
+      pokemonFromHand +
+      energyFromHand +
+      deckToBoardCount;
 
     const g = N.handCount - P.handCount - emptied.length;
-    // Prefer trainers and pile cards coming from hand, board cards from the deck.
+    // Prefer trainers, pile cards, and hand→board Pokémon from hand; rest from the deck.
     const x = Math.min(
       arrivals,
       P.handCount,
-      Math.max(trainersFromHand + hiddenPile.length, -g),
+      Math.max(trainersFromHand + hiddenPile.length + pokemonFromHand + energyFromHand, -g),
     );
     let d = 0;
     let t = 0;
@@ -452,7 +573,7 @@ function planPlayer(
     }
 
     // Pile cards beyond what the hand can supply come from the deck.
-    let handPileBudget = Math.max(0, x - trainersFromHand);
+    let handPileBudget = Math.max(0, x - trainersFromHand - pokemonFromHand - energyFromHand);
     for (const pc of hiddenPile) {
       if (handPileBudget > 0) {
         pc.origin = { kind: 'hand' };
@@ -465,7 +586,16 @@ function planPlayer(
 
     const handPileFlown = hiddenPile.filter(isHandOrigin).length;
     const rowBeforeDraw = N.handCount - d - emptied.length;
-    transition.handPreTrimCount = Math.max(0, P.handCount - trainersFromHand - handPileFlown - t - rowBeforeDraw);
+    transition.handPreTrimCount = Math.max(
+      0,
+      P.handCount -
+        trainersFromHand -
+        handPileFlown -
+        pokemonFromHand -
+        energyFromHand -
+        t -
+        rowBeforeDraw,
+    );
 
     const drawTotal = emptied.length + d;
     const firstIndex = Math.max(0, N.handCount - drawTotal);
@@ -497,6 +627,19 @@ function planPlayer(
 
     for (const group of ghostGroups.values()) {
       steps.push({ kind: 'boardGhostToPile', playerId, zone: group.zone, loc: group.loc, cardIds: group.cardIds });
+    }
+  }
+
+  // Pokémon entrances run in setup (face-down) and mid-game; leave-setup uses setupReveal.
+  if (!leavingSetup) {
+    for (const step of pokemonToBoard) {
+      steps.push(step);
+    }
+  }
+
+  if (!suppressBoardSteps) {
+    for (const step of energyAttach) {
+      steps.push(step);
     }
   }
 
@@ -630,9 +773,75 @@ export function planTransition(
     }
   }
 
+  // Replay-only: attack / coin flips from GameLog (ordered, interleaved).
+  if (ctx.animatePokemonEntrances && !next.isSetup) {
+    appendReplayCombatSteps(plan, prev, next);
+  }
+
   annotateShowCardsReveals(plan, prev, next, ctx.showCardsRevealIds ?? [], ctx.showCardsDestinationHint);
 
   return plan;
+}
+
+/** Map player name → id for log-driven replay steps. */
+function playerIdByName(snapshot: BoardSnapshot, name: string): number | undefined {
+  for (const p of snapshot.players.values()) {
+    if (p.playerName === name) {
+      return p.playerId;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Append attack / coinFlip steps from new GameLog entries, preserving log order.
+ * Inserted after energyAttach (or pokemonToBoard / trainerToDiscard) and before showCards.
+ */
+function appendReplayCombatSteps(
+  plan: TransitionPlan,
+  prev: BoardSnapshot,
+  next: BoardSnapshot,
+): void {
+  const prevLen = prev.animEvents?.length ?? 0;
+  const events = (next.animEvents ?? []).slice(prevLen);
+  if (events.length === 0) {
+    return;
+  }
+
+  const combatSteps: TransitionStep[] = [];
+  for (const ev of events) {
+    const playerId = playerIdByName(next, ev.playerName);
+    if (playerId == null) {
+      continue;
+    }
+    if (ev.kind === 'coinFlip') {
+      combatSteps.push({ kind: 'coinFlip', playerId, heads: ev.heads });
+      continue;
+    }
+    // Damage dealt this tick to the opponent Active (best-effort from snapshot delta).
+    let damageDealt = 0;
+    for (const [id, N] of next.players) {
+      if (id === playerId) {
+        continue;
+      }
+      const P = prev.players.get(id);
+      if (P) {
+        damageDealt = Math.max(0, (N.activeDamage ?? 0) - (P.activeDamage ?? 0));
+      }
+      break;
+    }
+    combatSteps.push({ kind: 'attack', playerId, damageDealt });
+  }
+  if (combatSteps.length === 0) {
+    return;
+  }
+
+  const showIdx = plan.steps.findIndex((s) => s.kind === 'showCards');
+  if (showIdx >= 0) {
+    plan.steps.splice(showIdx, 0, ...combatSteps);
+  } else {
+    plan.steps.push(...combatSteps);
+  }
 }
 
 /**
@@ -697,7 +906,24 @@ function annotateShowCardsReveals(
     }
   }
 
-  const uncovered = [...revealIds].filter((id) => !covered.has(id));
+  const prevLocs = indexLocations(prev);
+  // Skip reveals that are already sitting in hand on both sides (lingering ShowCards
+  // prompts in replays). Re-flying those is a duplicate of the earlier draw/entrance.
+  const uncovered = [...revealIds].filter((id) => {
+    if (covered.has(id)) {
+      return false;
+    }
+    const prevLoc = prevLocs.get(id);
+    const nextLoc = nextLocs.get(id);
+    if (
+      prevLoc?.zone === 'hand' &&
+      nextLoc?.zone === 'hand' &&
+      prevLoc.playerId === nextLoc.playerId
+    ) {
+      return false;
+    }
+    return true;
+  });
   if (uncovered.length > 0) {
     plan.steps.push({
       kind: 'showCards',
