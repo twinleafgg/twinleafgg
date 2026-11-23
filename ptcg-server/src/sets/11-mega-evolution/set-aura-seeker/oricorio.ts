@@ -10,10 +10,10 @@ export class Oricorio extends PokemonCard {
   public retreat = [C];
 
   public attacks = [{
-    name: 'Welcoming Dance',
+    name: 'Passion Dance',
     cost: [C],
     damage: 0,
-    text: 'Look at your opponent\'s hand, choose up to 3 Basic Pokémon you find there, and put them onto their Bench.'
+    text: 'Look at your opponent\'s hand and put up to 3 Basic Pokémon you find there onto your opponent\'s Bench.'
   },
   {
     name: 'Crackle',
@@ -28,8 +28,9 @@ export class Oricorio extends PokemonCard {
   public setNumber: string = '22';
   public name: string = 'Oricorio';
   public fullName: string = 'Oricorio FLO';
+
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
-    // Welcoming Dance
+    // Passion Dance
     if (WAS_ATTACK_USED(effect, 0, this)) {
       const player = effect.player;
       const opponent = StateUtils.getOpponent(state, player);

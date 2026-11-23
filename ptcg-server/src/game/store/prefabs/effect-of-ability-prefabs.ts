@@ -7,7 +7,7 @@
 
 import { GameMessage } from '../../game-message';
 import { PlayerType, SlotType, CardTarget } from '../actions/play-card-action';
-import { SpecialCondition } from '../card/card-types';
+import { SpecialCondition, SuperType } from '../card/card-types';
 import { PokemonCard } from '../card/pokemon-card';
 import { Power, PowerType } from '../card/pokemon-types';
 import { AddSpecialConditionsPowerEffect } from '../effects/check-effects';
@@ -17,6 +17,7 @@ import {
   PlaceDamageCountersEffect,
   PutDamageCountersEffect,
 } from '../effects/game-effects';
+import { AttachEnergyPrompt } from '../prompts/attach-energy-prompt';
 import { ChoosePokemonPrompt } from '../prompts/choose-pokemon-prompt';
 import { SelectPrompt } from '../prompts/select-prompt';
 import { StateUtils } from '../state-utils';
@@ -24,7 +25,7 @@ import { Player } from '../state/player';
 import { PokemonCardList } from '../state/pokemon-card-list';
 import { State } from '../state/state';
 import { StoreLike } from '../store-like';
-import { SWITCH_OUT_OPPONENT_ACTIVE_POKEMON } from './prefabs';
+import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SWITCH_OUT_OPPONENT_ACTIVE_POKEMON } from './prefabs';
 
 export type ProtectedTarget =
   | PokemonCardList
@@ -194,6 +195,31 @@ export function CAN_APPLY_ABILITY_TO_TARGET(
   return !!canApplyAbility.target;
 }
 
+/**
+ * Ability-sourced flat damage bonus (Blastoise Torrential Pump, etc.).
+ * Probes EffectOfAbilityEffect against the damage target so Stealthy Hood /
+ * Hide 'n' Sneak can prevent the bonus. Base attack damage is unchanged.
+ * Returns true if the bonus was applied.
+ */
+export function ADD_DAMAGE_FROM_ABILITY(
+  store: StoreLike,
+  state: State,
+  abilityOwner: Player,
+  power: Power,
+  card: PokemonCard,
+  effect: { damage: number; target: PokemonCardList },
+  amount: number,
+): boolean {
+  if (amount === 0) {
+    return false;
+  }
+  if (!CAN_APPLY_ABILITY_TO_TARGET(store, state, abilityOwner, power, card, effect.target)) {
+    return false;
+  }
+  effect.damage += amount;
+  return true;
+}
+
 export interface GustOpponentBenchedPokemonFromAbilityOptions {
   allowCancel?: boolean;
   blocked?: CardTarget[];
@@ -330,6 +356,71 @@ export interface SwitchOutOpponentActiveFromAbilityOptions {
   allowCancel?: boolean;
   blocked?: CardTarget[];
   onSwitched?: (target: PokemonCardList) => void;
+}
+
+export interface AttachEnergyFromOpponentHandFromAbilityOptions {
+  allowCancel?: boolean;
+  min?: number;
+  max?: number;
+  /** When true (default), reveal the opponent's hand before choosing Energy. */
+  lookAtHand?: boolean;
+}
+
+/**
+ * Ability-sourced attach from opponent's hand (Xatu Energy Leap).
+ * Looks at the hand, chooses Energy, probes EffectOfAbilityEffect against the
+ * chosen attach target (Stealthy Hood / Hide 'n' Sneak), then MOVE_CARDS.
+ */
+export function ATTACH_ENERGY_FROM_OPPONENT_HAND_FROM_ABILITY(
+  store: StoreLike,
+  state: State,
+  player: Player,
+  power: Power,
+  card: PokemonCard,
+  options: AttachEnergyFromOpponentHandFromAbilityOptions = {},
+): State {
+  const { allowCancel = true, min = 0, max = 1, lookAtHand = true } = options;
+  const opponent = StateUtils.getOpponent(state, player);
+
+  if (opponent.hand.cards.length === 0) {
+    return state;
+  }
+
+  if (lookAtHand) {
+    SHOW_CARDS_TO_PLAYER(store, state, player, opponent.hand.cards);
+  }
+
+  const hasEnergy = opponent.hand.cards.some(c => c.superType === SuperType.ENERGY);
+  if (!hasEnergy) {
+    return state;
+  }
+
+  return store.prompt(
+    state,
+    new AttachEnergyPrompt(
+      player.id,
+      GameMessage.ATTACH_ENERGY_CARDS,
+      opponent.hand,
+      PlayerType.TOP_PLAYER,
+      [SlotType.ACTIVE, SlotType.BENCH],
+      { superType: SuperType.ENERGY },
+      { allowCancel, min, max },
+    ),
+    (transfers) => {
+      transfers = transfers || [];
+      for (const transfer of transfers) {
+        const target = StateUtils.getTarget(state, player, transfer.to);
+        if (!CAN_APPLY_ABILITY_TO_TARGET(store, state, player, power, card, target)) {
+          continue;
+        }
+        MOVE_CARDS(store, state, opponent.hand, target, {
+          cards: [transfer.card],
+          sourceCard: card,
+          sourceEffect: power,
+        });
+      }
+    },
+  );
 }
 
 /**

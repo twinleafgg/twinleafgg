@@ -3,7 +3,7 @@ import { CardType, SpecialCondition, SuperType, TrainerType } from '../card/card
 import { EnergyCard } from '../card/energy-card';
 import { PokemonCard } from '../card/pokemon-card';
 import { AddSpecialConditionsEffect, AfterDamageEffect, ApplyWeaknessEffect, CardsToHandEffect, DealDamageEffect, DiscardCardsEffect, DiscardCardsFromOpponentsActivePokemonEffect, DiscardDefendingPokemonEffect, HealTargetEffect, KnockOutOpponentEffect, KnockOutPlayerEffect, MoveOpponentEnergyEffect, PutCountersEffect, PutDamageEffect } from '../effects/attack-effects';
-import { CheckProvidedEnergyEffect } from '../effects/check-effects';
+import { CheckHpEffect, CheckProvidedEnergyEffect } from '../effects/check-effects';
 import { AttackEffect } from '../effects/game-effects';
 import { AfterAttackEffect, BeforeDoingDamageEffect, EndTurnEffect } from '../effects/game-phase-effects';
 import { Effect } from '../effects/effect';
@@ -435,6 +435,53 @@ export function PUT_X_DAMAGE_COUNTERS_IN_ANY_WAY_YOU_LIKE(
       const putCountersEffect = new PutCountersEffect(effect, result.damage);
       putCountersEffect.target = target;
       store.reduceEffect(state, putCountersEffect);
+    }
+  });
+}
+
+/**
+ * "Place damage counters on up to / exactly `count` of your opponent's Pokémon
+ * until their remaining HP is `remainingHp` each."
+ *
+ * Uses {@link PutCountersEffect} so Mist Energy and other effect-of-attack
+ * blockers can prevent the counters.
+ */
+export function PUT_DAMAGE_COUNTERS_ON_X_OF_YOUR_OPPONENTS_POKEMON_UNTIL_REMAINING_HP_IS(
+  count: number,
+  remainingHp: number,
+  store: StoreLike,
+  state: State,
+  effect: AttackEffect,
+  slotTypes: SlotType[] = [SlotType.ACTIVE, SlotType.BENCH],
+): State {
+  const player = effect.player;
+  const opponent = effect.opponent;
+  const inPlay = opponent.getPokemonInPlay().length;
+  const maxTargets = Math.min(count, inPlay);
+
+  if (maxTargets === 0) {
+    return state;
+  }
+
+  return store.prompt(state, new ChoosePokemonPrompt(
+    player.id,
+    GameMessage.CHOOSE_POKEMON_TO_DAMAGE,
+    PlayerType.TOP_PLAYER,
+    slotTypes,
+    { min: maxTargets, max: maxTargets, allowCancel: false },
+  ), targets => {
+    if (!targets || targets.length === 0) {
+      return;
+    }
+
+    for (const selectedTarget of targets) {
+      const checkHpEffect = new CheckHpEffect(player, selectedTarget);
+      store.reduceEffect(state, checkHpEffect);
+
+      const damageAmount = Math.max(0, checkHpEffect.hp - remainingHp - selectedTarget.damage);
+      const putCounters = new PutCountersEffect(effect, damageAmount);
+      putCounters.target = selectedTarget;
+      store.reduceEffect(state, putCounters);
     }
   });
 }
