@@ -12,10 +12,20 @@ import {
   TrainerCard,
   Card,
 } from '../../../game';
-import { CardType, EnergyType, Stage, TrainerType } from '../../../game/store/card/card-types';
+import {
+  CardTag,
+  CardType,
+  EnergyType,
+  Stage,
+  TrainerType,
+} from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {
+  MOVE_CARDS,
+  SHOW_CARDS_TO_PLAYER,
+  SHUFFLE_DECK,
+} from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 function* playCard(
@@ -75,11 +85,13 @@ function* playCard(
 
 export class NetBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'LOT';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '187';
   public name: string = 'Net Ball';
   public fullName: string = 'Net Ball LOT';
+
   public text: string =
     'Search your deck for a Basic [G] Pokémon or a [G] Energy card, reveal it, and put it into your hand. Then, shuffle your deck.';
 

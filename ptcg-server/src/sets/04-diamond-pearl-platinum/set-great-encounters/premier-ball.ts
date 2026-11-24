@@ -1,16 +1,37 @@
-import { CardTag, ChooseCardsPrompt, GameError, GameMessage, PokemonCard, SelectOptionPrompt, Stage, State, StoreLike, SuperType, TrainerCard, TrainerType } from '../../../game';
+import {
+  CardTag,
+  ChooseCardsPrompt,
+  GameError,
+  GameMessage,
+  PokemonCard,
+  SelectOptionPrompt,
+  Stage,
+  State,
+  StoreLike,
+  SuperType,
+  TrainerCard,
+  TrainerType,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
-import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {
+  MOVE_CARDS,
+  SHOW_CARDS_TO_PLAYER,
+  SHUFFLE_DECK,
+} from '../../../game/store/prefabs/prefabs';
 
 export class PremierBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'GE';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '101';
   public name: string = 'Premier Ball';
   public fullName: string = 'Premier Ball GE';
-  public text: string = 'Search your deck or your discard pile for a Pokémon LV.X, show it to your opponent, and put it into your hand. If you search your deck, shuffle your deck afterward.';
+
+  public text: string =
+    'Search your deck or your discard pile for a Pokémon LV.X, show it to your opponent, and put it into your hand. ' +
+    'If you search your deck, shuffle your deck afterward.';
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (effect instanceof TrainerEffect && effect.trainerCard === this) {
@@ -23,7 +44,10 @@ export class PremierBall extends TrainerCard {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
       }
 
-      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
       effect.preventDefault = true;
 
       const options: { message: GameMessage; action: () => void }[] = [];

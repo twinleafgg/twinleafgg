@@ -6,13 +6,16 @@ import { State } from '../../../game/store/state/state';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
-import { COIN_FLIP_PROMPT,
-  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND,  MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import {
+  COIN_FLIP_PROMPT,
+  SEARCH_YOUR_DECK_FOR_POKEMON_AND_PUT_INTO_HAND,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 import { PokemonCard } from '../../../game';
 
 export class TeamAquaBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
-
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'MA';
   public name: string = 'Team Aqua Ball';
   public fullName: string = 'Team Aqua Ball MA';
@@ -27,7 +30,10 @@ export class TeamAquaBall extends TrainerCard {
       const player = effect.player;
 
       effect.preventDefault = true;
-      MOVE_CARDS(store, state, player.hand, player.supporter, { cards: [effect.trainerCard], sourceCard: this });
+      MOVE_CARDS(store, state, player.hand, player.supporter, {
+        cards: [effect.trainerCard],
+        sourceCard: this,
+      });
 
       if (player.deck.cards.length === 0) {
         throw new GameError(GameMessage.CANNOT_PLAY_THIS_CARD);
@@ -67,7 +73,10 @@ export class TeamAquaBall extends TrainerCard {
         { min: 0, max: 1, allowCancel: false, blocked },
       );
 
-      MOVE_CARDS(store, state, player.supporter, player.discard, { cards: [this], sourceCard: this });
+      MOVE_CARDS(store, state, player.supporter, player.discard, {
+        cards: [this],
+        sourceCard: this,
+      });
     }
 
     return state;

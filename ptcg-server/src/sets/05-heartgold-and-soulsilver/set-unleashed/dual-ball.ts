@@ -1,8 +1,26 @@
-import { Card, GameError, GameMessage, Player, Stage, State, StateUtils, StoreLike, SuperType, TrainerCard, TrainerType } from '../../../game';
+import {
+  Card,
+  CardTag,
+  GameError,
+  GameMessage,
+  Player,
+  Stage,
+  State,
+  StateUtils,
+  StoreLike,
+  SuperType,
+  TrainerCard,
+  TrainerType,
+} from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
-import { MULTIPLE_COIN_FLIPS_PROMPT, MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {
+  MULTIPLE_COIN_FLIPS_PROMPT,
+  MOVE_CARDS,
+  SHOW_CARDS_TO_PLAYER,
+  SHUFFLE_DECK,
+} from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 function* playCard(
@@ -57,11 +75,13 @@ function* playCard(
 
 export class DualBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'UL';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '72';
   public name: string = 'Dual Ball';
   public fullName: string = 'Dual Ball UL';
+
   public text: string =
     'Flip 2 coins. For each heads, search your deck for a Basic Pokemon ' +
     'card, show it to your opponent, and put it into your hand. Shuffle your ' +

@@ -1,16 +1,27 @@
-import { SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
-import { State, StoreLike, TrainerCard, GameError, GameMessage, Player, PlayerType, PokemonCard } from '../../../game';
+import {
+  State,
+  StoreLike,
+  TrainerCard,
+  GameError,
+  GameMessage,
+  Player,
+  PlayerType,
+  PokemonCard,
+} from '../../../game';
 import { MOVE_CARDS, SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class RepeatBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'PRC';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '136';
   public name: string = 'Repeat Ball';
   public fullName: string = 'Repeat Ball PRC';
+
   public text: string =
     'Search your deck for a Pokémon with the same name as 1 of your Pokémon in play, reveal it, and put it into your hand. Shuffle your deck afterward.';
 

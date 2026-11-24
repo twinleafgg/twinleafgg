@@ -19,18 +19,17 @@ import { MOVE_CARDS, COIN_FLIP_PROMPT } from '../../../game/store/prefabs/prefab
 
 export class TeamRocketsGreatBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.TEAM_ROCKET, CardTag.BALL];
 
   public set: string = 'DRI';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '175';
-
   public regulationMark = 'I';
-
   public name: string = "Team Rocket's Great Ball";
   public fullName: string = "Team Rocket's Great Ball DRI";
 
   public text: string =
-    'Flip a coin. If heads, search your deck for an Evolution Team Rocket Pokémon, reveal it, and put it into your hand. If tails, search your deck for a Basic Team Rocket Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.';
+    "Flip a coin. If heads, search your deck for an Evolution Team Rocket's Pokémon, reveal it, and put it into your hand. If tails, search your deck for a Basic Team Rocket's Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.";
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     if (player.deck.cards.length === 0) {

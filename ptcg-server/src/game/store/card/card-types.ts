@@ -61,6 +61,7 @@ export enum CardTag {
   ARCEUS = 'Arceus',
   VS = 'VS', // Japanese VS Pack (from movie or theater promos)
   ANTIQUE = 'Antique',
+  BALL = 'Ball', // Poké Ball cards (for Ball Guy, Apricorn Maker...)
 }
 
 export enum SuperType {
@@ -68,7 +69,7 @@ export enum SuperType {
   POKEMON,
   TRAINER,
   ENERGY,
-  ANY
+  ANY,
 }
 
 export enum EnergyType {
@@ -105,7 +106,6 @@ export enum Stage {
 }
 
 export enum Archetype {
-
   PALKIA_ORIGIN = 'Palkia Origin',
   COMFEY = 'Comfey',
   IRON_THORNS = 'Iron Thorns',
@@ -241,8 +241,8 @@ export enum Archetype {
   GALARIAN_SLOWBRO = 'Galarian Slowbro',
   MAGNEMITE = 'Magnemite',
   MAGNETON = 'Magneton',
-  FARFETCHD = 'Farfetch\'d',
-  GALARIAN_FARFETCHD = 'Galarian Farfetch\'d',
+  FARFETCHD = "Farfetch'd",
+  GALARIAN_FARFETCHD = "Galarian Farfetch'd",
   DODUO = 'Doduo',
   DODRIO = 'Dodrio',
   SEEL = 'Seel',
@@ -1107,7 +1107,7 @@ export enum Archetype {
   OBSTAGOON = 'Obstagoon',
   PERRSERKER = 'Perrserker',
   CURSOLA = 'Cursola',
-  SIRFETCHD = 'Sirfetch\'d',
+  SIRFETCHD = "Sirfetch'd",
   MR_RIME = 'Mr. Rime',
   RUNERIGUS = 'Runerigus',
   MILCERY = 'Milcery',
@@ -1266,7 +1266,7 @@ export enum Archetype {
   IRON_BOULDER = 'Iron Boulder',
   IRON_CROWN = 'Iron Crown',
   TERAPAGOS = 'Terapagos',
-  PECHARUNT = 'Pecharunt'
+  PECHARUNT = 'Pecharunt',
 }
 
 export enum CardType {
@@ -1330,7 +1330,7 @@ export enum SpecialCondition {
   CONFUSED,
   ASLEEP,
   POISONED,
-  BURNED
+  BURNED,
 }
 
 export enum BoardEffect {
@@ -1339,7 +1339,7 @@ export enum BoardEffect {
   POWER_NEGATED_GLOW,
   POWER_RETURN,
   EVOLVE,
-  REVEAL_OPPONENT_HAND
+  REVEAL_OPPONENT_HAND,
 }
 
 export enum Format {
@@ -1373,7 +1373,7 @@ export const Energy = {
   R: CardType.FIRE,
   W: CardType.WATER,
   Y: CardType.FAIRY,
-  N: CardType.DRAGON
+  N: CardType.DRAGON,
 } as const;
 
 Object.entries(Energy).forEach(([key, value]) => {
@@ -1395,5 +1395,11 @@ declare global {
 }
 
 export function isCoreFormat(format: Format): boolean {
-  return format === Format.STANDARD || format === Format.EXPANDED || format === Format.UNLIMITED || format === Format.STANDARD_NIGHTLY || format === Format.GLC;
+  return (
+    format === Format.STANDARD ||
+    format === Format.EXPANDED ||
+    format === Format.UNLIMITED ||
+    format === Format.STANDARD_NIGHTLY ||
+    format === Format.GLC
+  );
 }

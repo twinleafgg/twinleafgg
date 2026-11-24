@@ -63,20 +63,13 @@ function* playCard(
 }
 
 export class MasterBall extends TrainerCard {
-  public regulationMark = 'H';
-
-  protected _tags = [CardTag.ACE_SPEC];
-
   protected _trainerType: TrainerType = TrainerType.ITEM;
-
+  protected _tags = [CardTag.ACE_SPEC, CardTag.BALL];
+  public regulationMark = 'H';
   public set: string = 'TEF';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '153';
-
   public name: string = 'Master Ball';
-
   public fullName: string = 'Master Ball TEF';
 
   public text: string =

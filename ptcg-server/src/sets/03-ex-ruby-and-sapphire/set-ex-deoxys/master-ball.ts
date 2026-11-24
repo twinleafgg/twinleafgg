@@ -1,6 +1,6 @@
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import {
@@ -17,6 +17,7 @@ import { MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 export class MasterBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'DX';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '88';

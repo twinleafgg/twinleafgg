@@ -1,7 +1,7 @@
 import { Player } from '../../../game';
 import { GameError } from '../../../game/game-error';
 import { GameMessage } from '../../../game/game-message';
-import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import { Effect } from '../../../game/store/effects/effect';
@@ -15,11 +15,13 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class TimerBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'SUM';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '134';
   public name: string = 'Timer Ball';
   public fullName: string = 'Timer Ball SUM';
+
   public text: string =
     'Flip 2 coins. For each heads, search your deck for an Evolution Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.';
 
@@ -47,7 +49,9 @@ export class TimerBall extends TrainerCard {
 
         const blocked: number[] = [];
         player.deck.cards.forEach((card, index) => {
-          if (!(card instanceof PokemonCard && card.evolvesFrom !== '' && card.stage !== Stage.LV_X)) {
+          if (
+            !(card instanceof PokemonCard && card.evolvesFrom !== '' && card.stage !== Stage.LV_X)
+          ) {
             blocked.push(index);
           }
         });

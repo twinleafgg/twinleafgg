@@ -1,4 +1,4 @@
-import { Stage, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, Stage, TrainerType } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import {
@@ -88,12 +88,14 @@ function* playCard(
 
 export class QuickBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public regulationMark = 'D';
   public set: string = 'SSH';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '179';
   public name: string = 'Quick Ball';
   public fullName: string = 'Quick Ball SSH';
+
   public text: string =
     'You can play this card only if you discard another card from your hand. ' +
     'Search your deck for a Basic Pokemon, reveal it, and put it into your ' +

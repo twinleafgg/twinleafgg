@@ -2,7 +2,7 @@ import { Player } from '../../game';
 import { GameError } from '../../game/game-error';
 import { GameMessage } from '../../game/game-message';
 import { Card } from '../../game/store/card/card';
-import { SuperType, TrainerType } from '../../game/store/card/card-types';
+import { CardTag, SuperType, TrainerType } from '../../game/store/card/card-types';
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { Effect } from '../../game/store/effects/effect';
 import { TrainerEffect } from '../../game/store/effects/play-card-effects';
@@ -44,8 +44,11 @@ function* playCard(
 
   const blocked: number[] = [];
   player.deck.cards.forEach((c, index) => {
-    const regex = /\bBall\b/;
-    if (!c.name.match(regex)) {
+    if (
+      !(c instanceof TrainerCard) ||
+      c.trainerType != TrainerType.ITEM ||
+      !c.hasTag(CardTag.BALL)
+    ) {
       blocked.push(index);
     }
   });
@@ -82,15 +85,10 @@ function* playCard(
 
 export class BallGuy extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.SUPPORTER;
-
   public set: string = 'SHF';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '57';
-
   public name: string = 'Ball Guy';
-
   public fullName: string = 'Ball Guy SHF';
 
   public text: string =

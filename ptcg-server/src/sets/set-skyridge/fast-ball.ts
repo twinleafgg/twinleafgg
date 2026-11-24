@@ -1,7 +1,7 @@
 import { Card } from '../../game/store/card/card';
 import { Effect } from '../../game/store/effects/effect';
 import { TrainerCard } from '../../game/store/card/trainer-card';
-import { Stage, TrainerType } from '../../game/store/card/card-types';
+import { CardTag, Stage, TrainerType } from '../../game/store/card/card-types';
 import { StoreLike } from '../../game/store/store-like';
 import { State } from '../../game/store/state/state';
 import { StateUtils } from '../../game/store/state-utils';
@@ -58,6 +58,7 @@ function* playCard(
 
 export class FastBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'SK';
   public name: string = 'Fast Ball';
   public fullName: string = 'Fast Ball SK';

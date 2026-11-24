@@ -11,6 +11,7 @@ import {
   TrainerCard,
   TrainerType,
   Player,
+  CardTag,
 } from '../../../game';
 import { Effect } from '../../../game/store/effects/effect';
 import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER } from '../../../game/store/prefabs/prefabs';
@@ -18,6 +19,7 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class HisuianHeavyBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public regulationMark = 'F';
   public set: string = 'ASR';
   public cardImage: string = 'assets/cardback.png';

@@ -4,7 +4,7 @@ import { GameMessage } from '../../../game/game-message';
 import { Effect } from '../../../game/store/effects/effect';
 import { Player, PokemonCardList } from '../../../game';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { Stage, TrainerType, SuperType } from '../../../game/store/card/card-types';
+import { Stage, TrainerType, SuperType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
@@ -72,8 +72,9 @@ function* playCard(
   return state;
 }
 export class NestBall extends TrainerCard {
-  public regulationMark = 'G';
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
+  public regulationMark = 'G';
   public set: string = 'SVI';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '181';

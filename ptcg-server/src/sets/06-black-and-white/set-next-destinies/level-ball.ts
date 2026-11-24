@@ -1,5 +1,13 @@
-import { GameError, GameMessage, Player, State, StoreLike, TrainerCard, TrainerType } from '../../../game';
-import { SuperType } from '../../../game/store/card/card-types';
+import {
+  GameError,
+  GameMessage,
+  Player,
+  State,
+  StoreLike,
+  TrainerCard,
+  TrainerType,
+} from '../../../game';
+import { CardTag, SuperType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
@@ -7,11 +15,13 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class LevelBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'NXD';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '89';
   public name: string = 'Level Ball';
   public fullName: string = 'Level Ball NXD';
+
   public text: string =
     'Search your deck for a Pokemon with 90 HP or less, reveal it, ' +
     'and put it into your hand. Shuffle your deck afterward.';

@@ -15,16 +15,16 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class DreamBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public regulationMark = 'E';
   public set: string = 'EVS';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '146';
   public name: string = 'Dream Ball';
   public fullName: string = 'Dream Ball EVS';
+
   public text: string =
-    'You can play this card only if you took it as a face-down Prize card, before you put it into your hand. ' +
-    `
-    ` +
+    'You can play this card only if you took it as a face-down Prize card, before you put it into your hand.\n\n' +
     'Search your deck for a Pokémon and put it onto your Bench. Then, shuffle your deck.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {

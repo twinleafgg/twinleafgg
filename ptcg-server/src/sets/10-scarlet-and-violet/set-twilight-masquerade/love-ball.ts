@@ -1,5 +1,5 @@
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
 import { ShowCardsPrompt } from '../../../game/store/prompts/show-cards-prompt';
@@ -51,7 +51,10 @@ function* playCard(
     },
   );
 
-  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: effect.trainerCard });
+  MOVE_CARDS(store, state, player.deck, player.hand, {
+    cards: cards,
+    sourceCard: effect.trainerCard,
+  });
 
   if (cards.length > 0) {
     yield store.prompt(
@@ -68,6 +71,7 @@ function* playCard(
 
 export class LoveBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public regulationMark = 'H';
   public set: string = 'TWM';
   public cardImage: string = 'assets/cardback.png';

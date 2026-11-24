@@ -49,7 +49,10 @@ function* playCard(
     return state;
   }
 
-  MOVE_CARDS(store, state, player.deck, player.hand, { cards: cards, sourceCard: effect.trainerCard });
+  MOVE_CARDS(store, state, player.deck, player.hand, {
+    cards: cards,
+    sourceCard: effect.trainerCard,
+  });
 
   if (cards.length > 0) {
     yield store.prompt(
@@ -66,15 +69,11 @@ function* playCard(
 
 export class LuxuryBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
-
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'SF';
-
   public name: string = 'Luxury Ball';
-
   public fullName: string = 'Luxury Ball SF';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '86';
 
   public text: string =

@@ -17,11 +17,13 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class BeastBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'CES';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '125';
   public name: string = 'Beast Ball';
   public fullName: string = 'Beast Ball CES';
+
   public text: string =
     "Look at your face-down Prize cards. You may reveal an Ultra Beast card you find there, put it into your hand, and put this Beast Ball in its place. (If you don't reveal an Ultra Beast card, put this card in the discard pile.) Then, shuffle your face-down Prize cards.";
 

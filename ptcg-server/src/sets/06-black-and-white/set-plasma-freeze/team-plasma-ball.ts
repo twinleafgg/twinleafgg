@@ -7,12 +7,13 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class TeamPlasmaBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
-  protected _tags = [CardTag.TEAM_PLASMA];
+  protected _tags = [CardTag.TEAM_PLASMA, CardTag.BALL];
   public set: string = 'PLF';
   public name: string = 'Team Plasma Ball';
   public fullName: string = 'Team Plasma Ball PLF';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '105';
+
   public text: string =
     'Search your deck for a Team Plasma Pokémon, reveal it, and put it into your hand. Shuffle your deck afterward.';
 

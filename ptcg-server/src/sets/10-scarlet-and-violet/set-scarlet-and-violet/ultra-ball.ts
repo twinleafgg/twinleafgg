@@ -1,5 +1,5 @@
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { TrainerType, SuperType } from '../../../game/store/card/card-types';
+import { TrainerType, SuperType, CardTag } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
@@ -78,23 +78,18 @@ function* playCard(
 }
 
 export class UltraBall extends TrainerCard {
-  public regulationMark = 'G';
-
   protected _trainerType: TrainerType = TrainerType.ITEM;
-
+  protected _tags: CardTag[] = [CardTag.BALL];
+  public regulationMark = 'G';
   public set: string = 'SVI';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '196';
-
   public name: string = 'Ultra Ball';
-
   public fullName: string = 'Ultra Ball SVI';
 
-  public text: string = `You can use this card only if you discard 2 other cards from your hand.
-
-Search your deck for a Pokemon, reveal it, and put it into your hand. Then, shuffle your deck.`;
+  public text: string =
+    'You can use this card only if you discard 2 other cards from your hand.\n\n' +
+    'Search your deck for a Pokemon, reveal it, and put it into your hand. Then, shuffle your deck.';
 
   public canPlay(store: StoreLike, state: State, player: Player): boolean {
     // Check if player has at least 2 other cards in hand (excluding Ultra Ball)

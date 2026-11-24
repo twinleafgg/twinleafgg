@@ -1,5 +1,5 @@
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import { GameMessage } from '../../../game/game-message';
 import { ChooseCardsPrompt } from '../../../game/store/prompts/choose-cards-prompt';
@@ -58,18 +58,16 @@ function* playCard(
       });
       if (cards.length > 0) {
         MOVE_CARDS(store, state, player.deck, player.hand, {
-      cards: cards,
-      sourceCard: effect.trainerCard,
-    });
-    state = store.prompt(
+          cards: cards,
+          sourceCard: effect.trainerCard,
+        });
+        state = store.prompt(
           state,
           new ShowCardsPrompt(opponent.id, GameMessage.CARDS_SHOWED_BY_THE_OPPONENT, cards),
           () => state,
         );
       }
     }
-
-    
   }
 
   return store.prompt(state, new ShuffleDeckPrompt(player.id), (order: any[]) => {
@@ -78,10 +76,10 @@ function* playCard(
 }
 
 export class Pokeball extends TrainerCard {
-  public regulationMark = 'G';
-
   protected _trainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
 
+  public regulationMark = 'G';
   public set = 'SVI';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '185';

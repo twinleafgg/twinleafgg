@@ -6,7 +6,7 @@ import {
   PokemonCard,
   SlotType,
 } from '../../game';
-import { CardType, TrainerType } from '../../game/store/card/card-types';
+import { CardTag, CardType, TrainerType } from '../../game/store/card/card-types';
 import { TrainerCard } from '../../game/store/card/trainer-card';
 import { CheckPokemonTypeEffect } from '../../game/store/effects/check-effects';
 import { Effect } from '../../game/store/effects/effect';
@@ -17,6 +17,7 @@ import { StoreLike } from '../../game/store/store-like';
 
 export class FriendBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'SK';
   public setNumber = '126';
   public name: string = 'Friend Ball';

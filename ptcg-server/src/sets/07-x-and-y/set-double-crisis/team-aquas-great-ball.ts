@@ -1,4 +1,10 @@
-import { CardTag, EnergyType, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import {
+  CardTag,
+  EnergyType,
+  Stage,
+  SuperType,
+  TrainerType,
+} from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { TrainerEffect } from '../../../game/store/effects/play-card-effects';
 import {
@@ -13,14 +19,16 @@ import {
   StoreLike,
   TrainerCard,
 } from '../../../game';
-import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../../game/store/prefabs/prefabs';
+import {
+  MOVE_CARDS,
+  SHOW_CARDS_TO_PLAYER,
+  SHUFFLE_DECK,
+} from '../../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 function isTeamAquaGreatBallCard(card: Card): boolean {
   return (
-    (card instanceof PokemonCard &&
-      card.stage === Stage.BASIC &&
-      card.hasTag(CardTag.TEAM_AQUA)) ||
+    (card instanceof PokemonCard && card.stage === Stage.BASIC && card.hasTag(CardTag.TEAM_AQUA)) ||
     (card.superType === SuperType.ENERGY &&
       card.energyType === EnergyType.BASIC &&
       card.name === 'Water Energy')
@@ -72,11 +80,13 @@ function* playCard(
 
 export class TeamAquasGreatBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'DCR';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '27';
   public name: string = "Team Aqua's Great Ball";
   public fullName: string = "Team Aqua's Great Ball DCR";
+
   public text: string =
     'Search your deck for a Basic Team Aqua Pokémon and a basic [W] Energy card, reveal them, and put them into your hand. Shuffle your deck afterward.';
 

@@ -9,11 +9,13 @@ import { GameError, GameMessage, Player, PokemonCard } from '../../../game';
 
 export class CherishBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'UNM';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '191';
   public name: string = 'Cherish Ball';
   public fullName: string = 'Cherish Ball UNM';
+
   public text: string =
     'Search your deck for a Pokémon-GX, reveal it, and put it into your hand. Then, shuffle your deck.';
 

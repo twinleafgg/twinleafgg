@@ -1,4 +1,4 @@
-import { SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { Effect } from '../../../game/store/effects/effect';
 import { State, StoreLike, TrainerCard, GameError, GameMessage, Player } from '../../../game';
 import { MOVE_CARDS, SEARCH_DECK_FOR_CARDS_TO_HAND } from '../../../game/store/prefabs/prefabs';
@@ -41,9 +41,11 @@ export class ApricornMaker extends TrainerCard {
 
       const blocked: number[] = [];
       player.deck.cards.forEach((c, index) => {
-        const isBallItem =
-          c instanceof TrainerCard && c.trainerType === TrainerType.ITEM && /\bBall\b/.test(c.name);
-        if (!isBallItem) {
+        if (
+          !(c instanceof TrainerCard) ||
+          c.trainerType != TrainerType.ITEM ||
+          !c.hasTag(CardTag.BALL)
+        ) {
           blocked.push(index);
         }
       });

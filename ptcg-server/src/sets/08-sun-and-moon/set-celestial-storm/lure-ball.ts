@@ -1,4 +1,4 @@
-import { Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { Effect } from '../../../game/store/effects/effect';
 import { State, StoreLike, TrainerCard, GameError, GameMessage, Player } from '../../../game';
@@ -10,11 +10,13 @@ import { WAS_TRAINER_USED } from '../../../game/store/prefabs/trainer-prefabs';
 
 export class LureBall extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
+  protected _tags: CardTag[] = [CardTag.BALL];
   public set: string = 'CES';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '138';
   public name: string = 'Lure Ball';
   public fullName: string = 'Lure Ball CES';
+
   public text: string =
     'Flip 3 coins. For each heads, put an Evolution Pokémon from your discard pile into your hand.';
 
