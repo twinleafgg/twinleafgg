@@ -8,7 +8,13 @@ import {
   SlotType,
   StateUtils,
 } from '../../../game';
-import { CardType, EnergyType, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import {
+  CardTag,
+  CardType,
+  EnergyType,
+  SuperType,
+  TrainerType,
+} from '../../../game/store/card/card-types';
 import { ColorlessCostReducer } from '../../../game/store/card/pokemon-interface';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import {
@@ -19,26 +25,19 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class TechnicalMachineTurboEnergize extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.TOOL;
-
+  protected _tags: CardTag[] = [CardTag.TM];
   public regulationMark = 'G';
-
-  protected _tags = [];
-
   public set: string = 'PAR';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '179';
-
   public name: string = 'Technical Machine: Turbo Energize';
-
   public fullName: string = 'Technical Machine: Turbo Energize PAR';
 
   public attacks: Attack[] = [
@@ -113,7 +112,10 @@ export class TechnicalMachineTurboEnergize extends TrainerCard {
           transfers = transfers || [];
           for (const transfer of transfers) {
             const target = StateUtils.getTarget(state, player, transfer.to);
-            MOVE_CARDS(store, state, player.deck, target, { cards: [transfer.card], sourceCard: this });
+            MOVE_CARDS(store, state, player.deck, target, {
+              cards: [transfer.card],
+              sourceCard: this,
+            });
           }
 
           state = store.prompt(state, new ShuffleDeckPrompt(player.id), (order) => {

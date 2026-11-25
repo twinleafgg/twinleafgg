@@ -29,7 +29,7 @@ import { StoreLike } from '../../game/store/store-like';
 
 export class MysteryPlateGamma extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
-  protected _tags = [CardTag.TECHNICAL_MACHINE];
+  protected _tags = [CardTag.RETRO_TM];
   public set: string = 'SK';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '135';
@@ -62,7 +62,10 @@ export class MysteryPlateGamma extends TrainerCard {
           { min: 1, max: 1, allowCancel: false },
         ),
         (transfers) => {
-          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.supporter, transfers[0], {
+            cards: [effect.trainerCard],
+            sourceCard: this,
+          });
         },
       );
     }

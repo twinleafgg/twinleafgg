@@ -1,5 +1,5 @@
 import { TrainerCard } from '../../../game/store/card/trainer-card';
-import { SuperType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, SuperType, TrainerType } from '../../../game/store/card/card-types';
 import { StoreLike } from '../../../game/store/store-like';
 import { State } from '../../../game/store/state/state';
 import { Effect } from '../../../game/store/effects/effect';
@@ -40,8 +40,7 @@ function* playCard(
 
   const blocked: number[] = [];
   player.deck.cards.forEach((c, index) => {
-    const regex = /\bTechnical Machine\b/;
-    if (!c.name.match(regex)) {
+    if (!(c instanceof TrainerCard) || c.trainerType != TrainerType.TOOL || !c.hasTag(CardTag.TM)) {
       blocked.push(index);
     }
   });
@@ -78,17 +77,11 @@ function* playCard(
 
 export class TMMachine extends TrainerCard {
   public regulationMark = 'H';
-
   protected _trainerType: TrainerType = TrainerType.ITEM;
-
   public set: string = 'DRI';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '181';
-
   public name: string = 'TM Machine';
-
   public fullName: string = 'TM Machine DRI';
 
   public text: string =

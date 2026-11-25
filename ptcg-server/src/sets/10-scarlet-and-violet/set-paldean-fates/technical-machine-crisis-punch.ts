@@ -1,5 +1,5 @@
 import { Attack, GameError, GameMessage, PlayerType, StateUtils } from '../../../game';
-import { CardType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, CardType, TrainerType } from '../../../game/store/card/card-types';
 import { ColorlessCostReducer } from '../../../game/store/card/pokemon-interface';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import {
@@ -10,24 +10,19 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class TechnicalMachineCrisisPunch extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.TOOL;
-
+  protected _tags: CardTag[] = [CardTag.TM];
   public regulationMark = 'G';
-
   public set: string = 'PAF';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '90';
-
   public name: string = 'Technical Machine: Crisis Punch';
-
   public fullName: string = 'Technical Machine: Crisis Punch PAF';
 
   public attacks: Attack[] = [

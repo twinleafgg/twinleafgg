@@ -1,30 +1,53 @@
-import { Attack, CardTag, ChooseCardsPrompt, ChoosePokemonPrompt, GameMessage, PlayerType, SlotType, State, StoreLike, SuperType, TrainerCard, TrainerType } from '../../game';
+import {
+  Attack,
+  CardTag,
+  ChooseCardsPrompt,
+  ChoosePokemonPrompt,
+  GameMessage,
+  PlayerType,
+  SlotType,
+  State,
+  StoreLike,
+  SuperType,
+  TrainerCard,
+  TrainerType,
+} from '../../game';
 import { ColorlessCostReducer } from '../../game/store/card/pokemon-interface';
-import { CheckAttackCostEffect, CheckPokemonAttacksEffect } from '../../game/store/effects/check-effects';
+import {
+  CheckAttackCostEffect,
+  CheckPokemonAttacksEffect,
+} from '../../game/store/effects/check-effects';
 import { Effect } from '../../game/store/effects/effect';
 import { AttackEffect } from '../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../game/store/effects/game-phase-effects';
-import { YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_BURNED, YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED, YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED } from '../../game/store/prefabs/attack-effects';
+import {
+  YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_BURNED,
+  YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_PARALYZED,
+  YOUR_OPPPONENTS_ACTIVE_POKEMON_IS_NOW_POISIONED,
+} from '../../game/store/prefabs/attack-effects';
 import { MOVE_CARDS, SHOW_CARDS_TO_PLAYER, SHUFFLE_DECK } from '../../game/store/prefabs/prefabs';
 import { WAS_TRAINER_USED } from '../../game/store/prefabs/trainer-prefabs';
 
 export class MysteryPlateAlpha extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
-  protected _tags = [CardTag.TECHNICAL_MACHINE];
+  protected _tags = [CardTag.RETRO_TM];
   public set: string = 'SK';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '133';
   public name: string = 'Mystery Plate α';
   public fullName: string = 'Mystery Plate α SK';
 
-  public attacks: Attack[] = [{
-    name: 'Desert Burn',
-    cost: [C],
-    damage: 0,
-    text: 'If your opponent has 5 or more Prizes, search your deck for a Trainer card, show it to your opponent, and put it into your hand. If your opponent has only 1 Prize, the Defending Pokémon is now Burned, Paralyzed, and Poisoned.',
-  }];
+  public attacks: Attack[] = [
+    {
+      name: 'Desert Burn',
+      cost: [C],
+      damage: 0,
+      text: 'If your opponent has 5 or more Prizes, search your deck for a Trainer card, show it to your opponent, and put it into your hand. If your opponent has only 1 Prize, the Defending Pokémon is now Burned, Paralyzed, and Poisoned.',
+    },
+  ];
 
-  public text: string = 'Attach this card to 1 of your Pokémon in play. That Pokémon may use this card\'s attack instead of its own. At the end of your turn, discard Mystery Plate α.';
+  public text: string =
+    "Attach this card to 1 of your Pokémon in play. That Pokémon may use this card's attack instead of its own. At the end of your turn, discard Mystery Plate α.";
 
   public reduceEffect(store: StoreLike, state: State, effect: Effect): State {
     if (WAS_TRAINER_USED(effect, this)) {
@@ -40,7 +63,10 @@ export class MysteryPlateAlpha extends TrainerCard {
           { min: 1, max: 1, allowCancel: false },
         ),
         (transfers) => {
-          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.supporter, transfers[0], {
+            cards: [effect.trainerCard],
+            sourceCard: this,
+          });
         },
       );
     }

@@ -1,11 +1,39 @@
-import { Card, CardList, ChooseCardsPrompt, GameError, GameMessage, PlayerType, PowerType, State, StateUtils, StoreLike, TrainerCard } from '../../../game';
-import { CardTag, CardType, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import {
+  Card,
+  CardList,
+  ChooseCardsPrompt,
+  GameError,
+  GameMessage,
+  PlayerType,
+  PowerType,
+  State,
+  StateUtils,
+  StoreLike,
+  TrainerCard,
+} from '../../../game';
+import {
+  CardTag,
+  CardType,
+  Stage,
+  SuperType,
+  TrainerType,
+} from '../../../game/store/card/card-types';
 import { PokemonCard } from '../../../game/store/card/pokemon-card';
 import { PutCountersEffect } from '../../../game/store/effects/attack-effects';
-import { CheckPokemonAttacksEffect, CheckPokemonPowersEffect, CheckTableStateEffect } from '../../../game/store/effects/check-effects';
+import {
+  CheckPokemonAttacksEffect,
+  CheckPokemonPowersEffect,
+  CheckTableStateEffect,
+} from '../../../game/store/effects/check-effects';
 import { Effect } from '../../../game/store/effects/effect';
 import { PlayPokemonEffect } from '../../../game/store/effects/play-card-effects';
-import { BLOCK_IF_HAS_SPECIAL_CONDITION, IS_POKEPOWER_BLOCKED, MOVE_CARDS, WAS_ATTACK_USED, WAS_POWER_USED } from '../../../game/store/prefabs/prefabs';
+import {
+  BLOCK_IF_HAS_SPECIAL_CONDITION,
+  IS_POKEPOWER_BLOCKED,
+  MOVE_CARDS,
+  WAS_ATTACK_USED,
+  WAS_POWER_USED,
+} from '../../../game/store/prefabs/prefabs';
 
 export class MismagiusGLLVX extends PokemonCard {
   public stage: Stage = Stage.LV_X;
@@ -17,19 +45,23 @@ export class MismagiusGLLVX extends PokemonCard {
   public resistance = [{ type: C, value: -20 }];
   public retreat = [C];
 
-  public powers = [{
-    name: 'Magical Return',
-    powerType: PowerType.POKEPOWER,
-    useWhenInPlay: true,
-    text: 'As often as you like during your turn (before your attack), you may return a Pokémon Tool or Technical Machine card attached to your Pokémon to your hand. This power can\'t be used if Mismagius GL is affected by a Special Condition.'
-  }];
+  public powers = [
+    {
+      name: 'Magical Return',
+      powerType: PowerType.POKEPOWER,
+      useWhenInPlay: true,
+      text: "As often as you like during your turn (before your attack), you may return a Pokémon Tool or Technical Machine card attached to your Pokémon to your hand. This power can't be used if Mismagius GL is affected by a Special Condition.",
+    },
+  ];
 
-  public attacks = [{
-    name: 'Darkness Magic',
-    cost: [P, P, C],
-    damage: 0,
-    text: 'Count the number of cards in your hand. Put that many damage counters on the Defending Pokémon. You can\'t put more than 8 damage counters in this way.'
-  }];
+  public attacks = [
+    {
+      name: 'Darkness Magic',
+      cost: [P, P, C],
+      damage: 0,
+      text: "Count the number of cards in your hand. Put that many damage counters on the Defending Pokémon. You can't put more than 8 damage counters in this way.",
+    },
+  ];
 
   public set: string = 'RR';
   public cardImage: string = 'assets/cardback.png';
@@ -53,15 +85,17 @@ export class MismagiusGLLVX extends PokemonCard {
         if (!(card instanceof TrainerCard)) {
           return false;
         }
-        return card.trainerType === TrainerType.TOOL
-          || card.hasTag(CardTag.TECHNICAL_MACHINE)
-          || card.name.includes('Technical Machine');
+        return (
+          card.trainerType === TrainerType.TOOL ||
+          card.hasTag(CardTag.RETRO_TM) ||
+          card.name.includes('Technical Machine')
+        );
       };
 
-      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, cardList => {
+      player.forEachPokemon(PlayerType.BOTTOM_PLAYER, (cardList) => {
         const candidates = [...cardList.tools, ...cardList.cards];
         for (const card of candidates) {
-          if (!isToolOrTm(card) || attached.some(entry => entry.card === card)) {
+          if (!isToolOrTm(card) || attached.some((entry) => entry.card === card)) {
             continue;
           }
           pool.cards.push(card);
@@ -73,22 +107,29 @@ export class MismagiusGLLVX extends PokemonCard {
         throw new GameError(GameMessage.CANNOT_USE_POWER);
       }
 
-      return store.prompt(state, new ChooseCardsPrompt(
-        player,
-        GameMessage.CHOOSE_CARD_TO_HAND,
-        pool,
-        {},
-        { min: 1, max: 1, allowCancel: true }
-      ), selected => {
-        const cards = selected || [];
-        if (cards.length === 0) {
-          return;
-        }
-        const match = attached.find(entry => entry.card === cards[0]);
-        if (match) {
-          MOVE_CARDS(store, state, match.list, player.hand, { cards: [cards[0]], sourceCard: this });
-        }
-      });
+      return store.prompt(
+        state,
+        new ChooseCardsPrompt(
+          player,
+          GameMessage.CHOOSE_CARD_TO_HAND,
+          pool,
+          {},
+          { min: 1, max: 1, allowCancel: true },
+        ),
+        (selected) => {
+          const cards = selected || [];
+          if (cards.length === 0) {
+            return;
+          }
+          const match = attached.find((entry) => entry.card === cards[0]);
+          if (match) {
+            MOVE_CARDS(store, state, match.list, player.hand, {
+              cards: [cards[0]],
+              sourceCard: this,
+            });
+          }
+        },
+      );
     }
 
     // Darkness Magic
@@ -150,7 +191,11 @@ export class MismagiusGLLVX extends PokemonCard {
       }
 
       for (const evolutionCard of cardList.cards) {
-        if (evolutionCard.superType === SuperType.POKEMON && evolutionCard !== this && evolutionCard.name === this.evolvesFrom) {
+        if (
+          evolutionCard.superType === SuperType.POKEMON &&
+          evolutionCard !== this &&
+          evolutionCard.name === this.evolvesFrom
+        ) {
           effect.attacks.push(...(evolutionCard.attacks || []));
         }
       }
@@ -177,7 +222,11 @@ export class MismagiusGLLVX extends PokemonCard {
       }
 
       for (const evolutionCard of cardList.cards) {
-        if (evolutionCard.superType === SuperType.POKEMON && evolutionCard !== this && evolutionCard.name === this.evolvesFrom) {
+        if (
+          evolutionCard.superType === SuperType.POKEMON &&
+          evolutionCard !== this &&
+          evolutionCard.name === this.evolvesFrom
+        ) {
           effect.powers.push(...(evolutionCard.powers || []));
         }
       }

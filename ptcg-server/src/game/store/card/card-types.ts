@@ -10,7 +10,7 @@ export enum CardTag {
   ACE_SPEC = 'Ace Spec',
   RADIANT = 'Radiant',
   ROCKETS_SECRET_MACHINE = 'Secret Machine',
-  TECHNICAL_MACHINE = 'Technical Machine', // For old TMs only
+  RETRO_TM = 'Technical Machine (Retro)', // For old TMs only
   TEAM_PLASMA = 'Team Plasma',
   FUSION_STRIKE = 'Fusion Strike',
   SINGLE_STRIKE = 'Single Strike',
@@ -62,6 +62,7 @@ export enum CardTag {
   VS = 'VS', // Japanese VS Pack (from movie or theater promos)
   ANTIQUE = 'Antique',
   BALL = 'Ball', // Poké Ball cards (for Ball Guy, Apricorn Maker...)
+  TM = 'Technical Machine', // "Technical Machine" in name. Will apply to some of the older TMs even though nothing targets them
 }
 
 export enum SuperType {

@@ -8,7 +8,7 @@ import {
   SlotType,
   StateUtils,
 } from '../../../game';
-import { CardType, TrainerType } from '../../../game/store/card/card-types';
+import { CardTag, CardType, TrainerType } from '../../../game/store/card/card-types';
 import { ColorlessCostReducer } from '../../../game/store/card/pokemon-interface';
 import { TrainerCard } from '../../../game/store/card/trainer-card';
 import {
@@ -19,26 +19,23 @@ import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {DAMAGE_OPPONENT_POKEMON, IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import {
+  DAMAGE_OPPONENT_POKEMON,
+  IS_TOOL_BLOCKED,
+  MOVE_CARDS,
+} from '../../../game/store/prefabs/prefabs';
 
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
 
 export class TechnicalMachineBlindside extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.TOOL;
-
+  protected _tags: CardTag[] = [CardTag.TM];
   public regulationMark = 'G';
-
-  protected _tags = [];
-
   public set: string = 'PAR';
-
   public cardImage: string = 'assets/cardback.png';
-
   public setNumber: string = '176';
-
   public name: string = 'Technical Machine: Blindside';
-
   public fullName: string = 'Technical Machine: Blindside PAR';
 
   public attacks: Attack[] = [

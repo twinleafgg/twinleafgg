@@ -73,7 +73,7 @@ export class Porygon2 extends PokemonCard {
 
       if (
         player.active.cards.some(
-          (c) => c.superType === SuperType.TRAINER && c.hasTag(CardTag.TECHNICAL_MACHINE),
+          (c) => c.superType === SuperType.TRAINER && c.hasTag(CardTag.RETRO_TM),
         )
       ) {
         ADD_BURN_TO_PLAYER_ACTIVE(store, state, effect.opponent, this);

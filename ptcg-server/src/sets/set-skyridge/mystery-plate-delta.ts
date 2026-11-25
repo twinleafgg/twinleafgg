@@ -31,7 +31,7 @@ import { StoreLike } from '../../game/store/store-like';
 
 export class MysteryPlateDelta extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
-  protected _tags = [CardTag.TECHNICAL_MACHINE];
+  protected _tags = [CardTag.RETRO_TM];
   public set: string = 'SK';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '136';
@@ -64,7 +64,10 @@ export class MysteryPlateDelta extends TrainerCard {
           { min: 1, max: 1, allowCancel: false },
         ),
         (transfers) => {
-          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.supporter, transfers[0], {
+            cards: [effect.trainerCard],
+            sourceCard: this,
+          });
         },
       );
     }
@@ -118,7 +121,7 @@ export class MysteryPlateDelta extends TrainerCard {
             if (selected) {
               MOVE_CARDS(store, state, player.deck, player.hand, { cards: selected });
               SHOW_CARDS_TO_PLAYER(store, state, opponent, selected);
-              
+
               SHUFFLE_DECK(store, state, player);
             }
           },

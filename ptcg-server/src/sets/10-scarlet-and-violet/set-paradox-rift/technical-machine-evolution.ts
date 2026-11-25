@@ -14,7 +14,13 @@ import {
   ShuffleDeckPrompt,
   SlotType,
 } from '../../../game';
-import { CardType, Stage, SuperType, TrainerType } from '../../../game/store/card/card-types';
+import {
+  CardTag,
+  CardType,
+  Stage,
+  SuperType,
+  TrainerType,
+} from '../../../game/store/card/card-types';
 import {
   ColorlessCostReducer,
   DarkCostReducer,
@@ -28,7 +34,7 @@ import {
 import { Effect } from '../../../game/store/effects/effect';
 import { AttackEffect } from '../../../game/store/effects/game-effects';
 import { EndTurnEffect } from '../../../game/store/effects/game-phase-effects';
-import {IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
+import { IS_TOOL_BLOCKED, MOVE_CARDS } from '../../../game/store/prefabs/prefabs';
 
 import { State } from '../../../game/store/state/state';
 import { StoreLike } from '../../../game/store/store-like';
@@ -134,7 +140,10 @@ function* playCard(
     const evolution = cards[0] as PokemonCard;
 
     // Evolve Pokemon
-    MOVE_CARDS(store, state, player.deck, target, { cards: [evolution], sourceCard: effect.source.getPokemonCard()! });
+    MOVE_CARDS(store, state, player.deck, target, {
+      cards: [evolution],
+      sourceCard: effect.source.getPokemonCard()!,
+    });
     target.clearEffects();
     target.pokemonPlayedTurn = state.turn;
   }
@@ -146,6 +155,7 @@ function* playCard(
 
 export class TechnicalMachineEvolution extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.TOOL;
+  protected _tags: CardTag[] = [CardTag.TM];
   public regulationMark = 'G';
   public set: string = 'PAR';
   public cardImage: string = 'assets/cardback.png';

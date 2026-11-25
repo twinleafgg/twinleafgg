@@ -17,7 +17,7 @@ import { MOVE_CARDS } from '../../game/store/prefabs/prefabs';
 
 export class MultiTechnicalMachine01 extends TrainerCard {
   protected _trainerType: TrainerType = TrainerType.ITEM;
-  protected _tags = [CardTag.TECHNICAL_MACHINE];
+  protected _tags = [CardTag.RETRO_TM, CardTag.TM];
   public set: string = 'EX';
   public cardImage: string = 'assets/cardback.png';
   public setNumber: string = '144';
@@ -50,7 +50,10 @@ export class MultiTechnicalMachine01 extends TrainerCard {
           { min: 1, max: 1, allowCancel: false },
         ),
         (transfers) => {
-          MOVE_CARDS(store, state, player.supporter, transfers[0], { cards: [effect.trainerCard], sourceCard: this });
+          MOVE_CARDS(store, state, player.supporter, transfers[0], {
+            cards: [effect.trainerCard],
+            sourceCard: this,
+          });
         },
       );
     }
