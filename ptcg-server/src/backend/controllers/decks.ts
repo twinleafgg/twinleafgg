@@ -52,9 +52,7 @@ export class Decks extends Controller {
       const deckBoxImagePath = deck.deckBoxIdentifier
         ? deckBoxMap.get(deck.deckBoxIdentifier)
         : undefined;
-      const coinImagePath = deck.coinIdentifier
-        ? coinMap.get(deck.coinIdentifier)
-        : undefined;
+      const coinImagePath = deck.coinIdentifier ? coinMap.get(deck.coinIdentifier) : undefined;
       let format: number[];
       if (deck.formats && deck.formats.trim() !== '') {
         try {
@@ -63,13 +61,13 @@ export class Decks extends Controller {
           const cards = JSON.parse(deck.cards);
           format = getValidFormatsForCardList(cards);
           // Persist so future list requests skip this work (fire-and-forget)
-          Deck.update({ id: deck.id }, { formats: JSON.stringify(format) }).catch(() => { });
+          Deck.update({ id: deck.id }, { formats: JSON.stringify(format) }).catch(() => {});
         }
       } else {
         const cards = JSON.parse(deck.cards);
         format = getValidFormatsForCardList(cards);
         // Persist so future list requests skip this work (fire-and-forget)
-        Deck.update({ id: deck.id }, { formats: JSON.stringify(format) }).catch(() => { });
+        Deck.update({ id: deck.id }, { formats: JSON.stringify(format) }).catch(() => {});
       }
 
       const base: Record<string, any> = {
@@ -197,10 +195,10 @@ export class Decks extends Controller {
       body.id !== undefined
         ? await Deck.findOne(body.id, { relations: ['user'] })
         : (() => {
-          const d = new Deck();
-          d.user = user;
-          return d;
-        })();
+            const d = new Deck();
+            d.user = user;
+            return d;
+          })();
 
     if (deck === undefined || deck.user.id !== user.id) {
       res.status(400);
@@ -1105,21 +1103,13 @@ const SetReleaseDates: { [key: string]: Date } = {
   MEG: new Date('2025-09-26'),
   PFL: new Date('2025-11-14'),
   ASC: new Date('2026-01-28'),
-  MC: new Date('2026-03-27'),
-  M3: new Date('2026-03-27'),
   POR: new Date('2026-03-27'),
-  M4: new Date('2026-05-22'),
   CRI: new Date('2026-05-22'),
-  M5: new Date('2026-05-23'),
   PBL: new Date('2026-07-16'),
-  M6: new Date('2026-11-06'),
-  'J-MEE': new Date("2026-11-06"),
-  'J-MEZ': new Date("2026-11-06"),
-  'J-MEM': new Date("2026-11-06"),
-  M6a: new Date('2026-09-16'),
   '30C': new Date('2026-09-16'),
-  FLO: new Date('2026-11-27'),
-  M7: new Date('2026-11-27'),
+  DLR: new Date('2026-11-06'),
+  M7: new Date('2026-11-27'), // Aura Seeker
+  FLO: new Date('2027-02-06'),
 };
 
 // ========== Format Validation Helpers ==========

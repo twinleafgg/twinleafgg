@@ -1037,22 +1037,17 @@ export const SetReleaseDates: { [key: string]: Date } = {
   BLK: new Date("2025-07-18"),
   WHT: new Date("2025-07-18"),
   MEP: new Date("2025-09-26"),
-  'M-P': new Date('2025-09-26'),
+  "M-P": new Date("2025-09-26"),
   MEG: new Date("2025-09-26"),
   PFL: new Date("2025-11-14"),
   ASC: new Date("2026-01-28"),
   POR: new Date("2026-03-27"),
   CRI: new Date("2026-05-22"),
-  M5: new Date("2026-07-16"), // Abyss Eye
   PBL: new Date("2026-07-16"),
-  M6: new Date("2026-11-06"), // Storm Emerald, no equivalent English release date yet
-  'J-MEE': new Date("2026-11-06"),
-  'J-MEZ': new Date("2026-11-06"),
-  'J-MEM': new Date("2026-11-06"),
-  M6a: new Date("2026-09-16"), // 30th Celebration
   "30C": new Date("2026-09-16"),
-  FLO: new Date('2026-11-27'),
-  M7: new Date('2026-11-27'),
+  DLR: new Date("2026-11-06"),
+  M7: new Date("2026-11-27"), // Aura Seeker
+  FLO: new Date("2027-02-06"),
 };
 
 // ========== Constants ==========

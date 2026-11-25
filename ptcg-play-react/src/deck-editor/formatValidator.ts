@@ -1016,16 +1016,11 @@ export const SetReleaseDates: { [key: string]: Date } = {
   POR: new Date('2026-03-27'),
   M4: new Date('2026-05-22'),
   CRI: new Date('2026-05-22'),
-  M5: new Date('2026-05-23'),
   PBL: new Date('2026-07-16'),
-  M6: new Date('2026-11-06'),
-  'J-MEE': new Date("2026-11-06"),
-  'J-MEZ': new Date("2026-11-06"),
-  'J-MEM': new Date("2026-11-06"),
-  M6a: new Date('2026-09-16'),
   '30C': new Date('2026-09-16'),
-  FLO: new Date('2026-11-27'),
-  M7: new Date('2026-11-27'),
+  DLR: new Date('2026-11-06'),
+  M7: new Date('2026-11-27'), // Aura Seeker
+  FLO: new Date('2027-02-06'),
 };
 
 // ========== Constants ==========
