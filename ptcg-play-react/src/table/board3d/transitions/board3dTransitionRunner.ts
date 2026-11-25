@@ -2,6 +2,7 @@ import { Vector3, type Object3D, type Scene, type Texture } from 'three';
 import gsap from 'gsap';
 import {
   CardList,
+  getPrimaryCardType,
   PlayerType,
   type Card,
   type Player,
@@ -854,8 +855,8 @@ export class Board3dTransitionRunner {
     }
 
     const attackerCard = boardCard.getGroup().userData?.cardData as PokemonCard | undefined;
-    if (attackerCard?.cardType != null) {
-      playAttackSfx(attackerCard.cardType, damageDealt);
+    if (attackerCard?.cardType?.length) {
+      playAttackSfx(getPrimaryCardType(attackerCard), damageDealt);
     }
 
     const opponentId =
