@@ -13,6 +13,7 @@ function player(playerId: number, init: PlayerInit = {}): PlayerSnapshot {
   const handIds = init.handIds === undefined ? [] : init.handIds;
   return {
     playerId,
+    playerName: init.playerName ?? (playerId === ME ? 'Me' : 'Opp'),
     handIds,
     handCount: init.handCount ?? handIds?.length ?? 0,
     deckCount: init.deckCount ?? 40,
@@ -23,6 +24,7 @@ function player(playerId: number, init: PlayerInit = {}): PlayerSnapshot {
     prizeOccupied: init.prizeOccupied ?? [true, true, true, true, true, true],
     prizeIds: init.prizeIds ?? [null, null, null, null, null, null],
     boardCards: new Map(init.board ?? []),
+    activeDamage: init.activeDamage ?? 0,
     playedTrainerNames: init.playedTrainerNames ?? [],
   };
 }
@@ -33,17 +35,21 @@ function snap(
   extra: Partial<Omit<BoardSnapshot, 'players'>> = {},
 ): BoardSnapshot {
   return {
-    isSetup: false,
-    isPlayerTurn: true,
-    activePlayerId: ME,
-    turn: 3,
+    isSetup: extra.isSetup ?? false,
+    isPlayerTurn: extra.isPlayerTurn ?? true,
+    activePlayerId: extra.activePlayerId !== undefined ? extra.activePlayerId : ME,
+    turn: extra.turn ?? 3,
     players: new Map([
       [me.playerId, me],
       [opp.playerId, opp],
     ]),
-    cardNames: new Map(),
-    trainerIds: new Set(),
-    ...extra,
+    cardNames: extra.cardNames ?? new Map(),
+    trainerIds: extra.trainerIds ?? new Set(),
+    energyIds: extra.energyIds ?? new Set(),
+    attackLogs: extra.attackLogs ?? [],
+    coinFlipLogs: extra.coinFlipLogs ?? [],
+    attachLogs: extra.attachLogs ?? [],
+    animEvents: extra.animEvents ?? [],
   };
 }
 
