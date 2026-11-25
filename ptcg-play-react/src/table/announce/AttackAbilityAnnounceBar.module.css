@@ -1,0 +1,146 @@
+.root {
+  --announce-green: var(--twinleaf-green, #548c5c);
+  --announce-angle: 4deg;
+  --announce-bar-h: clamp(60px, 8.5vh, 82px);
+  --announce-card-w: clamp(128px, 13vw, 168px);
+  --announce-card-h: calc(var(--announce-card-w) * 1.4);
+  --announce-gap-w: calc(var(--announce-card-w) + 8px);
+
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  bottom: 44%;
+  height: var(--announce-bar-h);
+  transform: rotate(var(--announce-angle)) scaleX(1.12);
+  transform-origin: 50% 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.48));
+}
+
+.bottomRule {
+  height: 7px;
+  width: 100%;
+  background: var(--announce-green);
+  flex-shrink: 0;
+  will-change: transform;
+}
+
+.topRule {
+  height: 2px;
+  width: 100%;
+  background: var(--announce-green);
+  flex-shrink: 0;
+  will-change: transform, opacity;
+}
+
+/*
+ * Black fills left/right with a transparent gap for the 3D card (no frame).
+ * Green rules stay full-bleed so the bar still reads as one strip.
+ */
+.mid {
+  display: flex;
+  align-items: stretch;
+  height: calc(var(--announce-bar-h) - 9px);
+  width: 100%;
+  will-change: transform;
+  transform-origin: 50% 100%;
+}
+
+.bodyFill {
+  background: #050505;
+  min-width: 0;
+}
+
+/* ~48% — text sits just left of center. */
+.bodyLeft {
+  flex: 0 0 48%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 1.2vw 0 6vw;
+}
+
+/* Transparent window — WebGL card shows through / “on” the bar. */
+.cardGap {
+  position: relative;
+  flex: 0 0 var(--announce-gap-w);
+  width: var(--announce-gap-w);
+  background: transparent;
+}
+
+.bodyRight {
+  flex: 1 1 auto;
+  min-width: 48px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  will-change: transform, opacity;
+}
+
+.kind {
+  margin: 0;
+  font-family: 'Urbanist', system-ui, sans-serif;
+  font-size: clamp(0.62rem, 0.9vw, 0.75rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.1;
+}
+
+.name {
+  margin: 0;
+  font-family: 'Urbanist', system-ui, sans-serif;
+  font-size: clamp(1.45rem, 2.9vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 0.005em;
+  color: #fff;
+  line-height: 1.02;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+
+.energy {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-left: clamp(12px, 1.6vw, 24px);
+  will-change: transform, opacity;
+}
+
+.energyIcon {
+  width: clamp(22px, 2vw, 30px);
+  height: clamp(22px, 2vw, 30px);
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.cardTarget {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--announce-card-w);
+  height: var(--announce-card-h);
+  margin-left: calc(var(--announce-card-w) / -2);
+  margin-top: calc(var(--announce-card-h) / -2);
+  pointer-events: none;
+  visibility: hidden;
+}

@@ -1,0 +1,258 @@
+.page {
+  --lab-bg: #1a1c22;
+  --lab-panel: #242830;
+  --lab-border: #3a4050;
+  --lab-text: #e8eaf0;
+  --lab-muted: #9aa3b5;
+  --lab-green: var(--twinleaf-green, #548c5c);
+
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  overflow: hidden;
+  background: var(--lab-bg);
+  color: var(--lab-text);
+  font-family: 'Urbanist', system-ui, sans-serif;
+}
+
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  color: var(--lab-muted);
+  font-size: 0.95rem;
+}
+
+.sidebar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: min(300px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 16px;
+  border: 1px solid var(--lab-border);
+  border-radius: 12px;
+  background: rgba(36, 40, 48, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--lab-muted);
+  line-height: 1.35;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionLabel {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+}
+
+.segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.segmentBtn {
+  appearance: none;
+  border: 1px solid var(--lab-border);
+  background: #2c313c;
+  color: var(--lab-text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.segmentBtn:hover:not(:disabled) {
+  border-color: rgba(84, 140, 92, 0.55);
+}
+
+.segmentBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.segmentBtnActive {
+  background: linear-gradient(135deg, var(--lab-green), #3d7a4a);
+  border-color: transparent;
+  color: #fff;
+}
+
+.select {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--lab-border);
+  background: #2c313c;
+  color: var(--lab-text);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cardMeta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.thumb {
+  width: 56px;
+  height: 78px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardMetaText {
+  min-width: 0;
+}
+
+.cardMetaName {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.cardMetaSet {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--lab-muted);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--lab-border);
+  background: #2c313c;
+  color: var(--lab-text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: #353b48;
+  border-color: rgba(84, 140, 92, 0.55);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, var(--lab-green), #3d7a4a);
+  border-color: transparent;
+  color: #fff;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5f9a67, #458554);
+  border-color: transparent;
+}
+
+.btnSub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sliderRow input[type='range'] {
+  flex: 1;
+  accent-color: var(--lab-green);
+}
+
+.sliderValue {
+  font-size: 0.8rem;
+  color: var(--lab-muted);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--lab-muted);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-height: 40vh;
+  }
+}

@@ -9,12 +9,25 @@ import {
   PCFSoftShadowMap,
   ACESFilmicToneMapping,
   Vector3,
+  Quaternion,
   Group,
   DoubleSide,
   Object3D,
   Clock,
   Texture,
 } from 'three';
+import {
+  flyCardHomeFromAnnounce,
+  flyCardToWorldPose,
+  snapshotCardTransform,
+  type AnnounceCardFlightSnapshot,
+} from '../announce/announceCardFlight';
+import {
+  ANNOUNCE_BAR_START_AFTER_CARD_FRAC,
+  ANNOUNCE_CARD_FLY_IN_SEC,
+  Board3dAnnounceBar,
+  type AnnounceBarPlayParams,
+} from './board-3d-announce-bar';
 import { updateBoard3dHoloTime } from './board-3d-holo-material';
 import { Subscription } from 'rxjs';
 import gsap from 'gsap';
@@ -1270,6 +1283,100 @@ export class Board3dController {
     );
   }
 
+  private announceFlightSnap: AnnounceCardFlightSnapshot | null = null;
+  private announceFlightCard: Object3D | null = null;
+  private readonly announceBar = new Board3dAnnounceBar();
+  private readonly announcePosePos = new Vector3();
+  private readonly announcePoseQuat = new Quaternion();
+
+  isAnnouncePlaying(): boolean {
+    return this.announceBar.isPlaying() || !!this.announceFlightCard;
+  }
+
+  /**
+   * In-scene Twinleaf announce: board card (Active or bench) flies to a world
+   * anchor on the bar, bar opens mid-flight, then card returns and bar closes.
+   */
+  async playAttackAbilityAnnounce(
+    playerId: number,
+    params: AnnounceBarPlayParams & {
+      /** Defaults to Active. Pass `{ benchIndex }` for a benched Pokémon. */
+      slot?: 'active' | { benchIndex: number };
+    },
+  ): Promise<void> {
+    if (!this.scene || !this.camera) {
+      return;
+    }
+    if (this.announceFlightCard) {
+      await this.returnAnnounceCardFlight();
+    }
+
+    const boardCard = this.resolveAnnounceBoardCard(playerId, params.slot);
+    const group = boardCard?.getGroup();
+    if (!group) {
+      return;
+    }
+
+    this.announceBar.attach(this.scene);
+    this.announceBar.syncToCamera(this.camera);
+    const { scale: targetScale } = this.announceBar.getCardAnchorPose(
+      this.camera,
+      this.announcePosePos,
+      this.announcePoseQuat,
+    );
+
+    // Snapshot immediately so interrupt / return works mid-flight.
+    this.announceFlightSnap = snapshotCardTransform(group);
+    this.announceFlightCard = group;
+
+    const flyIn = flyCardToWorldPose(
+      group,
+      this.scene,
+      {
+        position: this.announcePosePos.clone(),
+        quaternion: this.announcePoseQuat.clone(),
+        scale: targetScale,
+      },
+      () => this.markDirty(),
+    ).then((snap) => {
+      this.announceFlightSnap = snap;
+      this.markDirty();
+      return snap;
+    });
+
+    const barDelayMs = ANNOUNCE_CARD_FLY_IN_SEC * ANNOUNCE_BAR_START_AFTER_CARD_FRAC * 1000;
+    await new Promise<void>((r) => window.setTimeout(r, barDelayMs));
+
+    try {
+      await this.announceBar.play(this.camera, params, {
+        onDirty: () => this.markDirty(),
+        onAfterClose: async () => {
+          await flyIn;
+          await this.returnAnnounceCardFlight();
+        },
+      });
+    } catch (err) {
+      await flyIn.catch(() => undefined);
+      await this.returnAnnounceCardFlight();
+      throw err;
+    } finally {
+      this.markDirty();
+    }
+  }
+
+  /** Return a card previously moved into the announce bay. */
+  async returnAnnounceCardFlight(): Promise<void> {
+    const card = this.announceFlightCard;
+    const snap = this.announceFlightSnap;
+    this.announceFlightCard = null;
+    this.announceFlightSnap = null;
+    if (!card || !snap) {
+      return;
+    }
+    await flyCardHomeFromAnnounce(card, snap, () => this.markDirty());
+    this.markDirty();
+  }
+
   /**
    * Resolves when the transition queue and residual GSAP / deck-entrance work are idle.
    * Used by replay playback so the next state waits for the current animation to finish.
@@ -1305,6 +1412,9 @@ export class Board3dController {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
+
+    void this.returnAnnounceCardFlight();
+    this.announceBar.dispose();
 
     this.transitionQueue.reset();
     this.deckToBenchGeneration++;
@@ -2191,6 +2301,13 @@ export class Board3dController {
   }
 
   private resolveActiveBoardCard(playerId: number): Board3dCard | undefined {
+    return this.resolveAnnounceBoardCard(playerId, 'active');
+  }
+
+  private resolveAnnounceBoardCard(
+    playerId: number,
+    slot: 'active' | { benchIndex: number } = 'active',
+  ): Board3dCard | undefined {
     const seat =
       this.bottomPlayer?.id === playerId
         ? 'bottomPlayer'
@@ -2199,6 +2316,9 @@ export class Board3dController {
           : null;
     if (!seat) {
       return undefined;
+    }
+    if (slot !== 'active' && typeof slot === 'object') {
+      return this.stateSync.getCardById(`${seat}_${playerId}_bench_${slot.benchIndex}`);
     }
     return this.stateSync.getCardById(`${seat}_${playerId}_active`);
   }

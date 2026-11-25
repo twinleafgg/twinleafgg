@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PCFSoftShadowMap, SRGBColorSpace } from 'three';
 import type { Card, CardList, Player } from 'ptcg-server';
@@ -51,6 +51,13 @@ export type Board3DCanvasProps = {
   onBoardFps?: (fps: number) => void;
   /** Register a waiter that resolves when board animations / transitions are idle. */
   onBoardIdleReady?: (waitForIdle: (() => Promise<void>) | null) => void;
+  /** Fires when the Board3dController is created or torn down (lab / tooling). */
+  onControllerReady?: (controller: Board3dController | null) => void;
+  /**
+   * DOM layered over the WebGL canvas (below ability spotlight / prompts).
+   * Used for announce bars and other board-local HUD.
+   */
+  boardOverlay?: ReactNode;
 };
 
 type CardPromptState =
@@ -112,19 +119,22 @@ export function Board3DCanvas(props: Board3DCanvasProps) {
   }, [graphicsPreset.castShadow, graphicsPreset.shadowMapSize]);
   const [cardPrompt, setCardPrompt] = useState<CardPromptState>(null);
   const onBoardIdleReady = props.onBoardIdleReady;
+  const onControllerReadyProp = props.onControllerReady;
   const onControllerReady = useCallback(
     (c: Board3dController | null) => {
       controllerRef.current = c;
       onBoardIdleReady?.(c ? () => c.whenIdle() : null);
+      onControllerReadyProp?.(c);
     },
-    [onBoardIdleReady],
+    [onBoardIdleReady, onControllerReadyProp],
   );
 
   useEffect(() => {
     return () => {
       onBoardIdleReady?.(null);
+      onControllerReadyProp?.(null);
     };
-  }, [onBoardIdleReady]);
+  }, [onBoardIdleReady, onControllerReadyProp]);
 
   const maps = useCardImageMaps();
   const { serverConfig, cardsInfo } = useAuth();
@@ -231,6 +241,9 @@ export function Board3DCanvas(props: Board3DCanvasProps) {
             onBoardFps={props.onBoardFps}
           />
         </Canvas>
+        {props.boardOverlay ? (
+          <div className={styles.boardOverlay}>{props.boardOverlay}</div>
+        ) : null}
         <Board3dAbilityActivationOverlay boardInteraction={props.boardInteraction} />
       </div>
 

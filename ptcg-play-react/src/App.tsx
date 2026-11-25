@@ -36,6 +36,7 @@ import { UiShowcasePage } from './pages/ui-showcase/UiShowcasePage';
 import { AbilityLockPage } from './pages/ability-lock/AbilityLockPage';
 import { EffectlessCardsPage } from './pages/effectless-cards/EffectlessCardsPage';
 import { DeckBoxPreviewPage } from './pages/deck-box-preview/DeckBoxPreviewPage';
+import { AttackAbilityAnnouncePage } from './pages/attack-ability-announce/AttackAbilityAnnouncePage';
 import { DeckCustomizePage } from './pages/deck-customize/DeckCustomizePage';
 import { CubeListPage } from './cube/CubeListPage';
 import { CubeEditorPage } from './cube/CubeEditorPage';
@@ -66,6 +67,7 @@ export default function App() {
             <Route path="/ability-lock" element={<AbilityLockPage />} />
             <Route path="/effectless-cards" element={<EffectlessCardsPage />} />
             <Route path="/deck-box-preview" element={<DeckBoxPreviewPage />} />
+            <Route path="/attack-ability-announce" element={<AttackAbilityAnnouncePage />} />
 
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
